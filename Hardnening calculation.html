@@ -1,0 +1,1404 @@
+<html>
+    <body>
+        <div>
+            <label>Salt</label>
+            <select id="salt">
+                <option value="NaCl" selected>NaCl</option>
+                <option value="CaCl2">CaCl2</option>
+            </select>
+        </div>
+        <div>
+            <label>Bath temperature, C</label>
+            <input type="number" id="Tm" value="60">
+        </div>
+
+
+        <table>
+            <thead><th>Solution data name</th><th>Value</th></thead>
+            <tbody>
+                <tr>
+                    <td>Boiling point, C</td>
+                    <td>
+                      <input type="number" id="Ts" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Density, kg/m3</td>
+                    <td>
+                      <input type="number" id="ps" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Convective HTC</td>
+                    <td>
+                      <input type="number" id="a" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Beta (HTC exponent)</td>
+                    <td>
+                      <input type="number" id="beta" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Thermal diffusivity</td>
+                    <td>
+                      <input type="number" id="ats" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Thermal conductivity</td>
+                    <td>
+                      <input type="number" id="ls" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Surface tension</td>
+                    <td>
+                      <input type="number" id="surfaseTension" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Kinematic viscosity</td>
+                    <td>
+                      <input type="number" id="vs" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Heat capacity</td>
+                    <td>
+                      <input type="number" id="cs" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Volumetric expansion</td>
+                    <td>
+                      <input type="number" id="bs" disabled>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div>
+            <label>Material</label>
+            <select id="material">
+                <option value="steel" disabled>-----Steel----</option>
+                <option value="321" selected>12Х18Н10Т (AISI 421)</option>
+                <option value="1020">20 (AISI 1020)</option>
+                <option value="30HGSA">30ХГСА</option>
+                <option value="5140">40Х (AISI 5140)</option>
+                <option value="4340">40ХН2МА (AISI 4340)</option>
+                <option value="420">40Х13 (AISI 420)</option>
+                <option value="1045">45 (AISI 1045)</option>
+                <option value="S1">5ХВ2СФ (AISI S1)</option>
+                <option value="L6">5ХНМ (AISI L6)</option>
+                <option value="9260">60С2ХФА (SAE 9260)</option>
+                <option value="1066">65Г (AISI 1066)</option>
+                <option value="U7A">У7</option>
+                <option value="440C">95Х18 (AISI 440C)</option>
+                <option value="colorMetal" disabled>-----Color metals----</option>
+                <option value="Al">Aluminium</option>
+                <option value="Cu">Copper</option>
+                <option value="Ag">Silver</option>
+            </select>
+        </div>
+        <div>
+            <label>Metal thermal conductivity</label>
+            <input type="number" id="l" value="22" disabled>
+        </div>
+        <div>
+            <label>Concentration, percents</label>
+            <select id="concentration">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+                <option value="25" selected>25</option>
+                <option value="30">30</option>
+                <option value="35">25</option>
+                <option value="40">40</option>
+                <option value="45">45</option>
+                <option value="50">50</option>
+                <option value="55">55</option>
+                <option value="60">60</option>
+            </select>
+        </div>
+        <div>
+            <label>Initial temperature, C</label>
+            <input type="number" id="T0" value="800">
+        </div>
+        <div>
+            <label>Form</label>
+            <select id="form">
+                <option value="plate" selected>Plate thickness L</option>
+                <option value="plate L123">Plate with sides L1, L2, L3 (square, L3>=L2>=L1)</option>
+                <option value="cylinder">Cylinder infinite with radius R</option>
+                <option value="sphere">Sphere with R</option>
+                <option value="cube">Cube with side L</option>
+                <option value="prism">Square infinite prism with side L</option>
+                <option value="cylinder RL2">Cylinder radius R and height L2</option>
+                <option value="cylinder DZ">Cylinder 2R=Z (height)</option>
+                <option value="cylinder RZ">Cylinder R=Z (height)</option>
+            </select>
+        </div>
+        <div>
+            <label>Size R, D, or L, mm (min size!!!)</label>
+            <input type="number" id="size" value="10">
+            <label>Size L2, mm</label>
+            <input type="number" id="size2" value="">
+            <label>Size L3, mm</label>
+            <input type="number" id="size3" value="">
+        </div>
+
+
+        <div>Results:</div>
+        <div>T nucleate boiling start <span id="T1"></span>C (dt <span id="dt1"></span>C)</div>
+        <div>T nucleate boiling end <span id="T2"></span>C (dt <span id="dt2"></span>C)</div>
+        <div>Nucleate boiling duration <span id="time"></span> s</div>
+
+        <div>Core temperature <span id="core"></span>C</div>
+
+        <div>Temperature at r/R = 3/4 (r=<span id="l34"></span>) <span id="core34"></span>C</div>
+        <div>Temperature at r/R = 2/3 (r=<span id="l23"></span>) <span id="core23"></span>C</div>
+        <div>Temperature at r/R = 1/2 (r=<span id="l12"></span>) <span id="core12"></span>C</div>
+        <div>Temperature at r/R = 1/3 (r=<span id="l13"></span>) <span id="core13"></span>C</div>
+        <div>Temperature at r/R = 1/4 (r=<span id="l14"></span>) <span id="core14"></span>C</div>
+        <div>Temperature at r/R = 1/5 (r=<span id="l15"></span>) <span id="core15"></span>C</div>
+        <div>Temperature at r/R = 1/10 (r=<span id="l110"></span>) <span id="core110"></span>C</div>
+
+        <div>Middle temperature <span id="middleT"></span>C</div>
+
+
+        <div>
+            <label>Needed temperature, C</label>
+            <input type="number" id="middleNeeded" value="250">
+        </div>
+        <div>Needed time for get middle temperature <span id="middleNeededOut"></span>C (surface temperature <span id="surfaceNeeded"></span>C, core temperature <span id="coreNeeded"></span>C): <span id="timeNeeded"></span> s</div>
+        <div>Temperature at r/R = 3/4: <span id="coreNeeded34"></span>C</div>
+        <div>Temperature at r/R = 2/3: <span id="coreNeeded23"></span>C</div>
+        <div>Temperature at r/R = 1/2: <span id="coreNeeded12"></span>C</div>
+        <div>Temperature at r/R = 1/3: <span id="coreNeeded13"></span>C</div>
+        <div>Temperature at r/R = 1/4: <span id="coreNeeded14"></span>C</div>
+        <div>Temperature at r/R = 1/5: <span id="coreNeeded15"></span>C</div>
+        <div>Temperature at r/R = 1/10:<span id="coreNeeded110"></span>C</div>
+
+
+        <div>
+            <label>Needed time, s</label>
+            <input type="number" id="timeNeededForAlfa" value="20">
+        </div>
+        <div>Needed average heat transfer coefficient <span id="AlfaAVG"></span> (actual time <span id="actualTimeForAlfa"></span> s)</div>
+
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Quenchant</th>
+                    <th>HTC,W/m2*K</th>
+                    <th>Temperature, C</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>И20</td>
+                    <td>1530</td>
+                    <td>50</td>
+                </tr>
+                <tr>
+                    <td>И8</td>
+                    <td>1950</td>
+                    <td>50</td>
+                </tr>
+                <tr>
+                    <td>Canola oil</td>
+                    <td>2132</td>
+                    <td>60</td>
+                </tr>
+                <tr>
+                    <td>Corn oil</td>
+                    <td>1842</td>
+                    <td>60</td>
+                </tr>
+                <tr>
+                    <td>Sunflower oil</td>
+                    <td>2212</td>
+                    <td>60</td>
+                </tr>
+                <tr>
+                    <td>Fast quenching oil</td>
+                    <td>1382</td>
+                    <td>60</td>
+                </tr>
+                <tr>
+                    <td>Slow quenching oil</td>
+                    <td>1188</td>
+                    <td>60</td>
+                </tr>
+
+                <tr>
+                    <td>UCON A (PAG)  5% in water</td>
+                    <td>2350</td>
+                    <td>43</td>
+                </tr>
+                <tr>
+                    <td>UCON A (PAG) 10% in water</td>
+                    <td>1900</td>
+                    <td>43</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div>
+            <label>Average heat transfer coefficient</label>
+            <input type="number" id="AlfaAVG0" value="2212">
+        </div>
+
+        <div>Needed time for cooling core to needed core temperature at average heat transfer coefficient <span id="actualTimeForSettedAlfa"></span> s</div>
+
+        <div>
+            <button onclick="calculate()">Calculate</button>
+        </div>
+    </body>
+
+<script>
+
+const PLATE = 'plate';
+const PLATE_L3 = 'plate L123';
+const CYLINDER = 'cylinder';
+const SPHERE = 'sphere';
+const CUBE = 'cube';
+const PRISM = 'prism';
+const CYLINDER_RL2 = 'cylinder RL2';
+const CYLINDER_DZ = 'cylinder DZ';
+const CYLINDER_RZ = 'cylinder RZ';
+
+    let params = {
+        a:380,//convective heat transfer coefficient
+        at:5.4*Math.pow(10, -6),//thermal diffusivity
+        beta:3.41,//solution characteristic for nucleate boiling where q=beta*ΔT^3.333333
+        l:22,//material average thermal conductivity
+        conductivityMetals:{
+            '321': 22,
+            '1020': 37,
+            '30HGSA': 34,
+            '5140': 34,
+            '4340': 32,
+            '420': 28,
+            '1045': 36,
+            'S1': 32,
+            'L6': 42,//???
+            '9260': 29,
+            '1066': 32,
+            'U7A': 35,
+            '440C': 24,
+            'Al':225,
+            'Cu': 375,
+            'Ag': 390
+        },
+        r:0, //characteristic size plate - L, cylinder,sphere - R, cube - L, cylinder D=Z (2R=Z) - R, cylynder R=Z - R
+        l2:0,
+        l3:0,
+        form:'',
+        t:0,
+        t0:0,//initial temperature
+        Ts:0,//boiling point
+        Tm:0,//bath temperature
+        material: '321',
+        middleNeeded:0,
+        pc:322,//water density at critical point
+        Tc:100,//water critical temperature
+        t1:0,//underheat start finding
+        t2:100,//underheat end finding
+        steps:200,//root finding steps
+        x0:0.001,//root finding accuracy
+        ps:1000,//density
+        concentration:50,
+        bs:0,//volumetric expansion
+        ls:0.57,//solution thermal conductivity
+        vs:1,//solution kinematic viscosity
+        vZero:1.787,//water zero temperature viscosity
+        as:0,//solution calculated convective heat transfer coefficient
+        ats:0,//solution thermal diffusivity
+        surfaseTension:1,//solution surface tension
+        waterCS: 4200,
+        saltCS: {
+            // for calculate heat capacity
+            NaCl: 930,
+            CaCl2: -1400,
+        },
+        cs:2600,//solution capacity
+        core:0,//core temperature
+        core34:0,//temperature at distance from surface 3/4R
+        core23:0,//temperature at distance from surface 2/3R
+        core12:0,//temperature at distance from surface 1/2R
+        core13:0,//temperature at distance from surface 1/3R
+        core14:0,//temperature at distance from surface 1/4R
+        l34:0,//distance from surface 3/4R
+        l23:0,//distance from surface 2/3R
+        l12:0,//distance from surface 1/2R
+        l13:0,//distance from surface 1/3R
+        l14:0,//distance from surface 1/4R
+        timeNeededForAlfa:20,
+        AlfaAVG0: 2212,
+        salt: '',
+
+    };
+
+    let viscosityData =
+        {
+            0: [
+                [0,1.77],
+                [10,1.29],
+                [20,1.02],
+                [30,0.79],
+                [40,0.67],
+                [50,0.53],
+                [60,0.46],
+                [70,0.4],
+                [80,0.34],
+                [90,0.30],
+                [100,0.26],
+            ],
+
+            5: [
+                [0,1.84],
+                [10,1.35],
+                [20,1.07],
+                [30,0.82],
+                [40,0.73],
+                [50,0.57],
+                [60,0.51],
+                [70,0.45],
+                [80,0.39],
+                [90,0.35],
+                [100,0.28],
+            ],
+
+            10: [
+                [0,2.13],
+                [10,1.52],
+                [20,1.16],
+                [30,0.93],
+                [40,0.86],
+                [50,0.64],
+                [60,0.57],
+                [70,0.51],
+                [80,0.47],
+                [90,0.42],
+                [100,0.35],
+            ],
+
+            15: [
+                [-10,4.09],
+                [0,2.5],
+                [10,1.84],
+                [20,1.4],
+                [30,1.2],
+                [40,1.03],
+                [50,0.76],
+                [60,0.68],
+                [70,0.62],
+                [80,0.55],
+                [90,0.49],
+                [100,0.42],
+            ],
+
+            20: [
+                [-10,4.97],
+                [0,3.12],
+                [10,2.33],
+                [20,1.81],
+                [30,1.54],
+                [40,1.22],
+                [50,0.99],
+                [60,0.85],
+                [70,0.74],
+                [80,0.68],
+                [90,0.59],
+                [100,0.49],
+            ],
+
+            25: [
+                [-20,9.94],
+                [-10,6.32],
+                [0,4.04],
+                [10,3.07],
+                [20,2.38],
+                [30,1.97],
+                [40,1.54],
+                [50,1.27],
+                [60,1.07],
+                [70,0.9],
+                [80,0.82],
+                [90,0.7],
+                [100,0.59],
+            ],
+
+            30: [
+                [-20,14.27],
+                [-10,9.04],
+                [0,5.77],
+                [10,4.3],
+                [20,3.33],
+                [30,2.62],
+                [40,2.07],
+                [50,1.73],
+                [60,1.43],
+                [70,1.24],
+                [80,1.01],
+                [90,0.89],
+                [100,0.73],
+            ],
+            35: [
+                [0,8.83],
+                [10,6.62],
+                [20,4.99],
+                [30,3.87],
+                [40,3.07],
+                [50,2.54],
+                [60,2.17],
+                [70,1.82],
+                [80,1.46],
+                [90,1.12],
+                [100,1.03],
+            ],
+
+            40: [
+                [10,11.75],
+                [20,8.48],
+                [30,6.39],
+                [40,4.9],
+                [50,4],
+                [60,3.26],
+                [70,2.72],
+                [80,2.15],
+                [90,1.74],
+                [100,1.52],
+            ],
+
+            45: [
+                [30,11.5],
+                [40,8.9],
+                [50,6.57],
+                [60,5.24],
+                [70,4.25],
+                [80,3.39],
+                [90,2.77],
+                [100,2.33],
+            ],
+
+            50: [
+                [50,11.8],
+                [60,9.24],
+                [70,7.25],
+                [80,5.97],
+                [90,4.95],
+                [100,4.28],
+            ]
+        };
+
+
+    let cacl2BoilingPointData = {
+        5: 100.9,
+        10: 101.9,
+        15: 103.2,
+        20: 105.0,
+        25: 107.4,
+        30: 110.5,
+        35: 114.4,
+        40: 119.0,
+        45: 124.1,
+        50: 129.7,
+        55: 135.9,
+        60: 143.0,
+        65: 152.0,
+        70: 162.6,
+        75: 175.7
+    }
+    let getBetaWater = function(){
+        /*
+        //0
+        let lambdaWater = 0.56;
+        let tensionWater = 0.07564;
+        let viscosityWater = 1.789*Math.pow(10,-6);
+        let PrWater = 13.5;*/
+
+        /*
+        //20
+        let lambdaWater = 0.597;
+        let tensionWater = 0.07269;
+        let viscosityWater = 1.996*Math.pow(10,-6);
+        let PrWater = 7.03;*/
+
+        /*
+        //80
+        let lambdaWater = 0.669;
+        let tensionWater = 0.06259;
+        let viscosityWater = 0.365*Math.pow(10,-6);
+        let PrWater = 2.23;*/
+
+        //100
+        let lambdaWater = 0.684;
+        let tensionWater = 0.05886;
+        let viscosityWater = 0.295*Math.pow(10,-6);
+        let PrWater = 1.75;
+
+        let roWater = 999;
+        let roVapor = 0.598;
+        let g = 9.81;
+        let w2Water = 0.155;
+        let evaporation = 2256400;
+
+        let betaWater =  75*lambdaWater*Math.pow((roWater-roVapor)*g/tensionWater, 0.5)/(Math.pow(evaporation*roVapor*w2Water,0.7)*Math.pow(PrWater,0.2));
+        let betaWater2 = 0.075*(1+10*Math.pow(roVapor/(roWater-roVapor),2/3))*Math.pow(lambdaWater*lambdaWater/(viscosityWater*tensionWater*(100+273.16)),1/3);
+        console.log({betaWater,betaWater2});
+        //betaWater t=80C 3.1896782453436385
+        //betaWater2 t=80C 3.0078740603735943
+
+        //betaWater t=100C 3.5299826441026974
+        //betaWater2 t=100C 3.34501563297734
+    };
+
+    let getBeta = function(t, c, ats = false){
+        let roVapor = 0.598;
+
+        //let T = params.Tc;
+        let T = getTS(c);
+        let ls = params.ls;
+        let ps =getPS(T, c);
+        let vs =getVS(params.Tc, c);
+        let tension = getSurfaceTension(T, c);
+        ats = ats === false ? params.ats: ats;
+        
+        //let roWater = 999;
+        let g = 9.81;
+        let w2Water = 0.155;
+        let evaporation = 2256400;
+        let Pr = vs/ats;
+
+        //console.log({T,ls,ps,vs,tension, ats, Pr});
+
+        let K = 75*Math.pow(g, 0.5)/Math.pow(evaporation*roVapor*w2Water,0.7);
+        return K*Math.pow((ps-roVapor)/tension,0.5)/Math.pow(Pr,0.2);
+ 
+        /*
+        // beta2 variant
+        return 0.075*(1+10*Math.pow(roVapor/(ps-roVapor),2/3))*Math.pow(ls*ls/(vs*tension*(T+273.16)),1/3);
+        */
+    };
+
+    let getTS = function (c = false){
+        let concentration = c !== false ? Number.parseInt(c) : Number.parseInt(params.concentration);
+        switch (params.salt){
+            case 'NaCl':
+                return 2.923030207* Math.pow(10,-6)*Math.pow(concentration,4) - 3.731111134*0.0001*Math.pow(concentration,3) + 0.02931422065*concentration*concentration - 0.3278552617*concentration + 101.9502373;
+                break;
+            case 'CaCl2':
+                if(typeof cacl2BoilingPointData[concentration] !== 'undefined'){
+                    return cacl2BoilingPointData[concentration];
+                }
+                else{
+                    return 0.0001*Math.pow(concentration,3) + 0.0008*Math.pow(concentration,2) + 0.2492*concentration + 99.1845;
+                }
+                break;
+            default:
+                return 2.923030207* Math.pow(10,-6)*Math.pow(concentration,4) - 3.731111134*0.0001*Math.pow(concentration,3) + 0.02931422065*concentration*concentration - 0.3278552617*concentration + 101.9502373;
+                break;
+        }
+    };
+
+    /*let getPS = function(T=false){
+        let ro = [
+            1,
+            0.836014,**
+            -0.436300,
+            0.105642
+        ];
+        let b = [
+            1.9937718430,
+            1.0985211604,
+            -0.5094492996,
+            -1.7619124270,
+            -45.9005480267,
+            -723692.2618632
+        ];
+        let concentration = Number.parseInt(params.concentration);
+        let pc = params.pc;
+        let concentrationRatio = concentration/100;
+        if(T == false){
+            T = params.Tm;
+        }
+        let teta = T/params.Tc;
+
+        let tau = 1-teta;
+
+        let roSum = 0;
+        ro.forEach((item,i,arr)=>{
+            roSum+=item*Math.pow(concentrationRatio/(1-concentrationRatio),i);
+        });
+        return pc*roSum*(1+b[0]*Math.pow(tau,1/3)+b[1]*Math.pow(tau,2/3)+b[2]*Math.pow(tau,5/3)+b[3]*Math.pow(tau,16/3)+b[4]*Math.pow(tau,43/3)+b[5]*Math.pow(tau,110/3));//TODO???
+    };*/
+
+    let getPS = function(t = false, c = false){
+        const T = t === false ? params.Tm+273.16 : t+273.16;
+        const concentration = c === false ? Number.parseInt(params.concentration) : c;
+        switch (concentration) {
+
+            case 8:
+                return 950.78 + 1.084 * T - 0.0024 * T * T;
+                break;
+
+            case 12:
+                return 1034.3 + 0.8028 * T - 0.002 * T * T;
+                break;
+
+            case 16:
+                return 1116.6 + 0.5376 * T - 0.0016 * T * T;
+                break;
+
+            case 20:
+                return 1196 + 0.3018 * T - 0.0012 * T * T;
+                break;
+            case 25:
+                return 1291.6 + 0.0461 * T - 0.0009 * T * T;
+                break;
+            case 30:
+                return 1393.9 - 0.2327 * T - 0.0005 * T * T;
+                break;
+            case 35:
+                return 1494.9 - 0.4864 * T - 0.0002 * T * T;
+                break;
+            case 40:
+                return 1616.8 - 0.846 * T + 0.0003 * T * T;
+            break;
+            default:
+                let data = [];
+                if(concentration<20){
+                    data = [
+                        [8, getPS(t,8)],
+                        [12, getPS(t,12)],
+                        [16, getPS(t,16)],
+                        [20, getPS(t,20)],
+                    ];
+                }
+                else if(concentration<30){
+                    data = [
+                        [16, getPS(t,16)],
+                        [20, getPS(t,20)],
+                        [25, getPS(t,25)],
+                        [30, getPS(t,30)],
+                    ];
+                }
+                else if(concentration<40){
+                    data = [
+                        [25, getPS(t,25)],
+                        [30, getPS(t,30)],
+                        [35, getPS(t,35)],
+                        [40, getPS(t,40)],
+                    ];
+                }
+                else{
+                    data = [
+                        [30, getPS(t,30)],
+                        [40, getPS(t,40)],
+                    ];
+                }
+                let ps;
+                if(concentration<40) {
+                    let cubicFunction = getCubic(data);
+                    ps = getCubicValue(concentration, cubicFunction);
+                }
+                else{
+                    let linearFunction = getLinear(data);
+                    ps = getLinearValue(concentration,linearFunction);
+                }
+                return ps;
+                /*
+            case 45:
+
+
+                return 2*(1616.8 - 0.846 * T + 0.0003 * T * T ) - (1494.9 - 0.4864 * T - 0.0002 * T * T);
+                break;
+            case 50:
+                return 3*(1616.8 - 0.846 * T + 0.0003 * T * T ) - 2*(1494.9 - 0.4864 * T - 0.0002 * T * T);
+                break;*/
+        }
+    };
+
+
+    let getVS = function(t = false, c = false){
+        let T = t !== false ? t :params.Tm;
+        let ps = getPS(T);
+
+        let concentration = c !== false ? Number.parseInt(c) : Number.parseInt(params.concentration);
+
+        let result = 1;
+        if(typeof viscosityData[concentration] != "undefined"){
+            let data = viscosityData[concentration];
+            let currentData = data.find(item=>item[0] == T);
+            if(typeof  currentData != "undefined"){
+                result = currentData[1];
+            }
+            else{
+                //TODO
+            }
+        }
+
+        else {
+            switch (concentration) {
+                case 40:
+                    return (3.260489511 * Math.pow(10, -7) * Math.pow(T, 4) - 9.318376068 * Math.pow(10, -5) * Math.pow(T, 3) + 0.01028988928 * T * T - 0.5734566822 * T + 16.54333333) / (1000 * ps);
+                case 50:
+                    return 1.8 * (3.260489511 * Math.pow(10, -7) * Math.pow(T, 4) - 9.318376068 * Math.pow(10, -5) * Math.pow(T, 3) + 0.01028988928 * T * T - 0.5734566822 * T + 16.54333333) / (1000 * ps);
+                default:
+                    if(concentration>40) {
+                        const data = [
+                            [40, getVS(t,40)],
+                            [50, getVS(t,50)],
+                        ];
+                        let linearFunction = getLinear(data);
+                        return getLinearValue(concentration,linearFunction);
+
+                    }
+                    else{
+                        let vZero = params.vZero;
+
+                        let concentrationRatio = concentration / 100;
+                        let teta = (T + 273.15) / 228 - 1;
+
+                        let k = concentrationRatio / Math.pow(1 - concentrationRatio, 1 / 0.6);
+
+                        let a = [
+                            1.0261862,
+                            12481.702,
+                            -19510.923,
+                            7065.286,
+                            -395.561,
+                            143922.996
+                        ];
+
+                        let n = [
+                            -0.169310,
+                            0.817350,
+                            0.574230,
+                            0.398750
+                        ];
+
+                        let K = Math.exp(n[0] * Math.pow(k, 3.6) + n[1] * k + n[2] * k / teta + n[0] * k * k);
+
+                        let nWater = Math.exp(-3.7188 + 578.919 / (-137.546 + 273.15 + T));
+
+                        result = T > 0 ? K * nWater : K * vZero * (a[0] + a[1] * Math.pow(teta, 0.02) + a[2] * Math.pow(teta, 0.04) + a[3] * Math.pow(teta, 0.08) + a[4] * Math.pow(teta, 2.25) + a[5] * Math.pow(teta, 8)); //TODO
+                    }
+
+            }
+        }
+        return Math.abs(result / (1000 * ps));
+    };
+
+    let getAS = function(vs, bs, ats, t){
+        let ls = params.ls;
+        /*let vs = params.vs;
+        let bs = params.bs;
+        let ats = params.ats;
+        let t = params.t;*/
+        let h = params.r;
+        let doubleRFormat = [CYLINDER,CYLINDER_DZ, CYLINDER_RL2, SPHERE];
+        if( doubleRFormat.indexOf(params.form)>=0){
+            h=2*params.r
+        }
+        let k = (9.81*bs*t)/(ats*vs)*Math.pow(h,3);
+
+        let asParams = [
+            {B:1.18,n:1/8},
+            {B:0.54,n:1/4},
+            {B:0.135,n:1/3}
+        ];
+        let index = 2;
+        if(k>100){
+            if(k<2*Math.pow(10,7)){
+                index=1;
+            }
+        }
+        else{
+            index = 0;
+        }
+        return asParams[index].B*ls*Math.pow(k,asParams[index].n)/h;
+    };
+
+
+
+
+    let getATS= function(ps = false, cs = false){
+        const ls = params.ls;
+        ps = ps !== false ? ps : params.ps;
+        cs = cs !== false ? cs : params.cs;
+        return ls/(ps*cs);
+    };
+
+    let getWaterTension = function(T){
+        /*let waterTensionData = [[0, 0.07564],
+            [40, 0.06965],
+            [60, 0.06622],
+            [100,0.05886]];
+        let c = getCubic(waterTensionData);*/
+        let c =[0.07564, -0.00013154999999999957, -5.166666666666775e-7, 1.541666666666734e-9];
+        return getCubicValue(T,c);
+    }
+
+    let getSurfaceTension = function(t = false, c = false){
+        let T = t !== false ? t :params.Tm;
+        let concentration = c!== false ? Number.parseInt(c) : Number.parseInt(params.concentration);
+        let teta = T/params.Tc;
+
+        let waterTension = getWaterTension(T);
+        let a = [2.33067, -10.78779, 13.56611, 1.95017, -1.77990];
+        let ksi = concentration/100;
+        return waterTension*(1+a[0]*ksi+a[1]*ksi*teta+a[2]*ksi*teta*teta+a[3]*ksi*ksi+a[4]*ksi*ksi*ksi);
+    };
+
+    //calculate solution heat capacity
+    let getCS = function(c){
+        const cs = params.saltCS[params.salt];
+        return c*cs/100+(100-c)*params.waterCS/100;
+    }
+
+    // volumetric expansion
+    let getBS = function(ps, Tm, c){
+        let bs = ps/getPS(Tm+1, c)-1;
+        if(bs<0){
+            bs = 0.1*(ps/getPS(Tm+10), c)-1;
+        }
+        return bs;
+    }
+
+    let setParams = function(){
+        params.material = document.getElementById('material').value; 
+        params.l = params.conductivityMetals[params.material];
+        params.r = document.getElementById('size').value/1000;
+        params.l2 = document.getElementById('size2').value/1000;
+        params.l3 = document.getElementById('size3').value/1000;
+        params.concentration = document.getElementById('concentration').value;
+        params.Ts = getTS();
+        document.getElementById('Ts').value =params.Ts.toFixed(1);
+        params.Tm = document.getElementById('Tm').value/1;
+        params.middleNeeded = document.getElementById('middleNeeded').value/1;
+
+        params.timeNeededForAlfa = document.getElementById('timeNeededForAlfa').value/1;
+        params.AlfaAVG0 = document.getElementById('AlfaAVG0').value/1;
+
+        params.t = params.Ts-params.Tm;
+        params.t0 = document.getElementById('T0').value/1;
+        params.form = document.getElementById('form').value;
+        params.salt = document.getElementById('salt').value;
+        params.ps = getPS();
+        params.bs = getBS(params.ps, params.Tm, params.concentration);
+        params.cs = getCS(params.concentration);
+
+        /*params.bs = params.ps/getPS(params.Tm+1)-1;
+        if(params.bs<0){
+            params.bs = 0.1*(params.ps/getPS(params.Tm+10))-1;
+        }*/
+        params.vs = getVS();
+        params.ats = getATS();
+        params.as = getAS(params.vs, params.bs, params.ats, params.t);
+        params.a = params.as;
+        params.beta = getBeta();
+        //if we have lower beta will be hiigher dt1 (underheat nucleate boiling started)
+        //params.beta = 3.41;
+    };
+
+    let setResult = function(data){
+        for(let id in data) {
+            const element = document.getElementById(id);
+            if(element instanceof HTMLInputElement){
+                if(data[id]>0.1){
+                    element.value = data[id].toFixed(2).toString();
+                }
+                else{
+                    element.value = data[id].toFixed(8).toString();
+                }
+            }
+            else{
+                element.textContent = data[id].toFixed(2).toString();
+            }
+        }
+    };
+
+    let getX2 = function(y){
+        let a = params.a;
+        let b = params.beta;
+        let t = params.t;
+        return y-(Math.pow(a*(t+y),0.3)/b);
+    };
+
+    let getX1 = function(y){
+        let l= params.l;
+        let b = params.beta;
+        let r = params.r;
+        let t = params.t0-params.Tm;
+        return y-(Math.pow(2*l*(t-y)/r,0.3)/b);
+    };
+
+    let getXforCoreTemp = function(y){
+        let middleNeeded = params.middleNeeded - params.Ts;
+        let b = params.beta;
+        let l = params.l;
+        let r = getCoreL();
+        let coreNeeded = y+Math.pow(b,10/3)*r*Math.pow(y,10/3)/(2*l);
+        if(coreNeeded<middleNeeded){
+            return 10*Math.abs(coreNeeded-middleNeeded);
+        }
+        return middleNeeded-middleTemp(coreNeeded,y);
+    };
+
+    let getTime = function(dt1,dt2){
+        let k= getFormK();
+        let K = getKondratiev();
+        let at = params.at;
+        return (0.24*k+3.21*Math.log(dt1/dt2))*K/at;
+    };
+
+
+    let getKondratiev = function(){
+        const r = params.r;
+        const l2 = params.l2;
+        const l3 = params.l3;
+        const pi = Math.PI;
+        const form = params.form;
+        let K = 0;
+        switch (form){
+            case PLATE:
+                K=r*r/(pi*pi);
+                break;
+            case CYLINDER:
+                K=r*r/5.784;
+                break;
+            case SPHERE:
+                K=r*r/(pi*pi);
+                break;
+            case CUBE:
+                K=r*r/(3*pi*pi);
+                break;
+            case CYLINDER_DZ:
+                K=r*r/8.252;
+                break;
+            case CYLINDER_RZ:
+                K=r*r/15.65;
+                break;
+            case CYLINDER_RL2:
+                K=1/(5.784/(r*r)+pi*pi/(l2*l2));
+                break;
+            case PRISM:
+                K=r*r/(2*pi*pi);
+                break;
+            case PLATE_L3:
+                K=1/(pi*pi*(1/(r*r)+1/(l2*l2)+1/(l3*l3)));
+                break;
+        }
+        return K;
+    };
+
+
+    let getFormK = function(){
+        let form = params.form;
+        let K = 2;
+        switch (form){
+            case PLATE:
+                K=1;
+                break;
+            case CYLINDER:
+                K=2;
+                break;
+            case SPHERE:
+                K=3;
+                break;
+            case CUBE:
+                K=2;
+                break;
+            case CYLINDER_DZ:
+                K=2;
+                break;
+        }
+        return K;
+    };
+
+
+
+    let getRoot = function(method, t1 = false, t2 = false){
+        t1 = t1 === false ? params.t1: t1;
+        t2 = t2 === false ? params.t2: t2;
+        let t1Initial =t1;
+        let t2Initial =t2;
+        let tmin=t1;
+        for(let i=0; i<params.steps; i++){
+
+            let tData = [];
+            tData.push({t:t1});
+            tData.push({t:t1+(t2-t1)/3});
+            tData.push({t:t2-(t2-t1)/3});
+            tData.push({t:t2});
+
+            tData.forEach((item,index, arr)=>{
+                arr[index].x = method(item.t);
+            });
+
+            tData.sort(function(item1, item2){
+                return Math.pow(item1.x,2)-Math.pow(item2.x, 2);
+            });
+
+            if(Math.abs(tData[0].x)<params.x0 || i == params.steps-1){
+                tmin=tData[0].t;
+                break;
+            }
+            else{
+                t1=tData[0].t;
+                t2=tData[1].t != t2 ? tData[1].t : tData[2].t;
+
+                if (Math.abs(2*(tData[1].x - tData[0].x)/(tData[0].x + tData[1].x)) < 1/3) {
+
+                    if(Math.abs(tData[0].x)<Math.abs(tData[1].x)){
+                        t1 = (t1+t2)/2-2*Math.abs(t2-t1);
+                    }
+                    else{
+                        t2 = (t1+t2)/2+2*Math.abs(t2-t1);
+
+                    }
+                }
+            }
+        }
+        return tmin;
+    };
+
+    let getCoreTemp = function(t){
+        let r = getCoreL();
+        return params.Ts+t+Math.pow(params.beta,10/3)*r*Math.pow(t,10/3)/(2*params.l);
+    };
+
+    let getLTemp = function(distance,core,t){
+        let dCore = core - params.Ts;
+        return params.Ts+dCore - (dCore-t)*Math.pow(1-distance, 2);
+    };
+
+    let getCoreL = function(){
+        let r = params.r;
+        const rIsHalf = [CUBE, PLATE, PRISM, PLATE_L3];
+        if(rIsHalf.includes( params.form )){
+            r=r/2;
+        }
+        return r;
+    };
+
+
+    // calculate average temperature for finite cylinder
+    let getFiniteCylinderAverageTemp = function(core, surface, r, z){
+        let t = core;
+        if(r>=z/2){
+            const a = 2*r/z;
+            t = t - (15*a*a+2*a+16)/(60*a*a)*(core - surface);
+        }
+        else{
+            const a = z/r;
+            t = t - (8*a -1)*(core - surface)/(30*a);
+
+        }
+        return t;
+    }
+
+    let middleTemp = function(core, surface){
+      /*
+      calculate based on
+      deltaT = Integral(S(r)*r*(1-r^2)dr)(from 0 to 1)/V(r)
+      Where S(r) is surface area function of r
+            V(r) -is volume function of r
+            1-r^2 is function of square distribution when r from 0 to 1, dT(r) = (Tc-Ts)*(1-r^2) Tx = Ts-dT(r)
+      */
+      let t = 0;
+        switch(params.form){
+            case PLATE:
+                t = (3*core+surface)/4;
+                break;
+            case CYLINDER:
+                t= (11*core+4*surface)/15;
+                break;
+            case SPHERE:
+                t= (3*core+surface)/4;
+                break;
+            case CUBE:
+                t= (3*core+surface)/4;
+                break;
+            case PLATE_L3:
+                const a = params.l2/params.r;
+                const b = params.l3/params.r;
+                t = core - ((a+b-4)/(30*a*b)+1/4)*(core-surface);
+                //when a=b=1 t= core - deltaT*(1/4-1/15)  this value 13/60 near value 1/4 for cube
+                break;
+            case CYLINDER_DZ:
+                t = getFiniteCylinderAverageTemp(core, surface, params.r, params.r*2);
+                break;
+
+            case CYLINDER_RL2:
+                t = getFiniteCylinderAverageTemp(core, surface, params.r, params.l2);
+                break;
+
+            case CYLINDER_RZ:
+                t = getFiniteCylinderAverageTemp(core, surface, params.r, params.r);
+                break;
+            default:
+                t = (3*core+surface)/4;
+                break;
+        }
+        return t;
+    };
+
+    let getTime2 = function(AlfaAVG){
+        let ksv = 1;
+        switch (params.form){
+            case PLATE:
+                ksv=2;
+                break;
+            case CYLINDER:
+                ksv=2;
+                break;
+            case SPHERE:
+                ksv=3;
+                break;
+            case CUBE:
+                ksv=6;
+                break;
+            case CYLINDER_DZ:
+                ksv=3;
+                break;
+            case CYLINDER_RZ:
+                ksv=4;
+                break;
+            case PRISM:
+                ksv=4;
+                break;
+            case CYLINDER_RL2:
+                ksv=2*(params.l2+params.r)/params.l2;
+                break;
+            case PLATE_L3:
+                ksv=2*(params.r*params.l2 + params.l2*params.l3 + params.r*params.l3)/(params.l2*params.l3);
+                break
+        }
+        let S_to_V=ksv/params.r;
+        let K = getKondratiev();
+        let Biv = AlfaAVG*K*S_to_V/params.l;
+        let Kn = Biv/Math.pow(Biv*Biv+1.437*Biv+1, 0.5);
+        //console.log(`Kn ${Kn}, AlfaAVG ${AlfaAVG}`);
+        let k = getFormK();
+
+        let time = (k*Biv/(2.095+3.867*Biv)+Math.log((params.t0-params.Tm)/(params.middleNeeded-params.Tm)))*K/(params.at*Kn);
+        /*console.log({time:{
+            kkk: Biv/(2.095+3.867*Biv),
+            Biv,
+            k1:(1*Biv/(2.095+3.867*Biv)+Math.log((params.t0-params.Tm)/(params.middleNeeded-params.Tm)))*K/(params.at*Kn),
+            k2:(2*Biv/(2.095+3.867*Biv)+Math.log((params.t0-params.Tm)/(params.middleNeeded-params.Tm)))*K/(params.at*Kn),
+            k3:(3*Biv/(2.095+3.867*Biv)+Math.log((params.t0-params.Tm)/(params.middleNeeded-params.Tm)))*K/(params.at*Kn)
+        }});*/
+        return time;
+    };
+
+    let getTime2X = function (y) {
+        let time = getTime2(y);
+        return time-params.timeNeededForAlfa;
+    };
+
+    let getCubic = function(data){
+        let matrix = [];
+        for(let i = 0; i<4; i++){
+            let x = data[i][0];
+            let y = data[i][1];
+            matrix.push([
+                1,x,x*x,x*x*x,y
+            ]);
+        }
+        return getMatrixRoots(matrix);
+    };
+
+    let getLinear = function(data){
+        let matrix = [];
+        for(let i = 0; i<2; i++){
+            let x = data[i][0];
+            let y = data[i][1];
+            matrix.push([
+                1,x,y
+            ]);
+        }
+        return getMatrixRoots(matrix);
+    };
+
+    let getMatrixRoots = function(matrix){
+        let length = matrix.length;
+        for(let j=1;j<length;j++) {
+            let matrixNext = [];
+            for (let k = 0; k < length; k++) {
+                if (k < j) {
+                    matrixNext.push(matrix[k]);
+                }
+                else {
+                    let g = matrix[k][j-1]/matrix[j-1][j-1];
+                    let row = [];
+                    for(let m = 0; m<length+1; m++){
+                        row.push(matrix[k][m]-g*matrix[j-1][m]);
+                    }
+                    matrixNext.push(row);
+                }
+            }
+            matrix = matrixNext;
+        }
+        let row = [];
+        for(let n = 0; n<length; n++){
+            row.push(0);
+        }
+        for(let n = length-1; n>=0; n--){
+            let sum = matrix[n][length];
+            for(let s=length-2; s>=n; s--){
+                sum -= row[s+1]*matrix[n][s+1];
+            }
+            row[n] = sum/matrix[n][n];
+        }
+        return(row);
+    };
+
+    let getCubicValue = function(x,row){
+        //console.log(`function: ${row[0]}+${row[1]}*x+${row[2]}*x^2+${row[3]}*x^3`);
+        return row[0]+row[1]*x+row[2]*x*x+row[3]*x*x*x;
+    };
+
+    let getLinearValue = function(x,row){
+        //console.log(`function: ${row[0]}+${row[1]}*x`);
+        return row[0]+row[1]*x;
+    };
+
+    let calculateSolutions = function() {
+        const solutionData = [];
+        for(let c = 0; c< 70; c+=5){
+            const tempData = [];
+            for(let t=10; t<101; t+=10) {
+                const boilingTemp = getTS(c);
+                const viscosity = getVS(t, c);
+                const density = getPS(t,c);
+                const volumetricExpansion = getBS(density, t, c);
+                const solutionHeatCapacity = getCS(c);
+                const thermalDiffusivity = getATS(density, solutionHeatCapacity);
+                const convectiveHTC= getAS(viscosity, volumetricExpansion, thermalDiffusivity, boilingTemp-t);
+                const beta = getBeta(t, c, thermalDiffusivity);
+                const data = {
+                    t,
+                    boilingTemp,
+                    viscosity,
+                    density,
+                    volumetricExpansion,
+                    solutionHeatCapacity,
+                    thermalDiffusivity,
+                    convectiveHTC,
+                    beta,
+                }
+                tempData.push(data);
+            }
+            solutionData.push ({
+               concentration: c,
+               tempData
+
+            });
+        }
+        return solutionData;
+    }
+
+    let calculate = function(){
+        setParams();
+
+        let result = {
+            dt1:0,
+            dt2:0,
+            T1:0,
+            T2:0,
+            time:0,
+            core:0,
+            core34:0,
+            core23:0,
+            core12:0,
+            core13:0,
+            core14:0,
+            core15:0,
+            core110:0,
+            l34:0,
+            l23:0,
+            l12:0,
+            l13:0,
+            l14:0,
+            l15:0,
+            l110:0,
+            timeNeeded:0,
+            middleNeededOut:0,
+            coreNeeded:0,
+            surfaceNeeded:0,
+            coreNeeded34:0,
+            coreNeeded23:0,
+            coreNeeded12:0,
+            coreNeeded13:0,
+            coreNeeded14:0,
+            coreNeeded15:0,
+            coreNeeded110:0,
+
+        };
+
+        result.dt1 = getRoot(getX1);
+        result.dt2 = getRoot(getX2);
+
+        result.T1 = params.Ts+result.dt1;
+        result.T2 = params.Ts+result.dt2;
+
+        result.time = getTime(result.dt1,result.dt2);
+        result.core = getCoreTemp(result.dt2);//at the end of nucleation boiling
+        let r = getCoreL();
+        result.l34 = 1000*r*3/4;
+        result.l23 = 1000*r*2/3;
+        result.l12 = 1000*r*1/2;
+        result.l13 = 1000*r*1/3;
+        result.l14 = 1000*r*1/4;
+        result.l15 = 1000*r*1/5;
+        result.l110 = 1000*r*1/10;
+        result.core34 = getLTemp(3/4,result.core,result.dt2);
+        result.core23 = getLTemp(2/3,result.core,result.dt2);
+        result.core12 = getLTemp(1/2,result.core,result.dt2);
+        result.core13 = getLTemp(1/3,result.core,result.dt2);
+        result.core14 = getLTemp(1/4,result.core,result.dt2);
+        result.core15 = getLTemp(1/5,result.core,result.dt2);
+        result.core110 = getLTemp(1/10,result.core,result.dt2);
+        result.middleT = middleTemp(result.core,result.T2);
+        result.middleNeededOut = params.middleNeeded;
+        const surfaceNeeded = getRoot(getXforCoreTemp, result.dt2, result.dt1);
+        
+        result.timeNeeded = getTime(result.dt1,surfaceNeeded);
+        result.coreNeeded = getCoreTemp(surfaceNeeded);
+
+        result.coreNeeded34 = getLTemp(3/4,result.coreNeeded,surfaceNeeded);
+        result.coreNeeded23 = getLTemp(2/3,result.coreNeeded,surfaceNeeded);
+        result.coreNeeded12 = getLTemp(1/2,result.coreNeeded,surfaceNeeded);
+        result.coreNeeded13 = getLTemp(1/3,result.coreNeeded,surfaceNeeded);
+        result.coreNeeded14 = getLTemp(1/4,result.coreNeeded,surfaceNeeded);
+        result.coreNeeded15 = getLTemp(1/5,result.coreNeeded,surfaceNeeded);
+        result.coreNeeded110 = getLTemp(1/10,result.coreNeeded,surfaceNeeded);
+
+        result.surfaceNeeded = params.Ts + surfaceNeeded;
+        result.AlfaAVG = getRoot(getTime2X,params.Ts+0.5,50000);
+
+        result.actualTimeForAlfa = getTime2(result.AlfaAVG);
+        result.actualTimeForSettedAlfa = getTime2(params.AlfaAVG0);
+        console.log({result,params});
+        const addParamsFields = ['Ts','ps', 'a', 'beta','ats','ls', 'surfaseTension', 'vs','cs', 'bs', 'l'];
+
+        for (const key in params) {
+            if(addParamsFields.includes(key)){
+                result[key] = params[key];
+            }
+        }
+        setResult(result);
+    };
+    calculate();
+    console.log({calculateSolutions: calculateSolutions()});
+</script>
+</html>
