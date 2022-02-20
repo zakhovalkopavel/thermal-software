@@ -1,14 +1,15 @@
 let params = {
+    zero: 0.000000001,
     aPressure: 101325, // Pa
     tFlame:1553, // K
     tFlame1: 1553, // K
     tFlame1C: 1280, // C
-    flameToSmokeTRatio: 1.2,
+    flameToSmokeTRatio: 1.2,//some energy may be already lost
     tSmokeStartC: 1200,// C
     tSmokeEndC: 200, // C
     tAirStartC: 20, // C
     tAirEndC: 800, // C
-    tSmokeStartMax: 1950, // K
+    tSmokeStartMax: 1750, // K
     tSmokeStart: 1573, // K
     tSmokeEnd: 473, // K
     tAirStart: 293, // K
@@ -18,6 +19,8 @@ let params = {
     nSmoke: 4,
     d0: 0.03, //m
     d0mm: 30, // mm
+    h0: 0.02, //m
+    h0mm: 20, //m
     densityAirStart: 1.29,// kg/m3
     fPowerKW: 12,
     fPower: 12000,
@@ -81,6 +84,24 @@ let params = {
                 H2: 0,
             }
         },
+        room: {
+            partial: {
+                N2: 79,
+                O2: 21,
+                CO2: 0,
+                CO: 0,
+                H2O: 0,
+                H2: 0,
+            },
+            mass: {
+                N2: 76.7,
+                O2: 23.3,
+                CO2: 0,
+                CO: 0,
+                H2O: 0,
+                H2: 0,
+            }
+        },
     },
     wH2Om: 0, // mass fraction H2O to air
     concentrationO2: 0.21,
@@ -123,6 +144,10 @@ let params = {
         smokeStartAirEnd: 0,
         average: 0,
     },
+    surfaces: {
+        smokeEndAirStart: {},
+        smokeStartAirEnd: {},
+    },
     averageDeltaT: 0, // K
     smokeEnergyDecrease: 0, // J/h
     airEnergyIncrease: 0, // J/h
@@ -139,9 +164,9 @@ let params = {
     tFlameReal: 0,
     wantedRecuperatorLength: 1, // m
     recuperatorLength: 0, // m
-    maxIterations: 500,//1000,
+    maxIterations: 100,//5000,
     criteria: 100,// stop searching
-    dTmin: 0.1, // minimal t step when stopping
+    dTmin: 0.2, // minimal t step when stopping
     //criteriaDeviation: 0.01,
     thermalInsulationThicknessMM: 25, // mm
     thermalInsulationThickness: 0.025, // m
@@ -157,6 +182,7 @@ let params = {
         'nAir',
         'nSmoke',
         'd0mm',
+        'h0mm',
         'fPowerKW',
         'kExcessAir',
         'refractoryLambda',
@@ -166,6 +192,7 @@ let params = {
         'wantedRecuperatorLength',
         'holeForm',
         'wH2Om',
+        'maxIterations',
     ],
     textParams: ['holeForm',],
 };
@@ -461,21 +488,23 @@ const findIsobaricFlameT = (
     fuelCapacity = params.fuelCapacity,
     ashCapacity = params.ashCapacity,
     f0 = 0.2,
-    f = 0.8,
+    f = 0.6,
     maxIterations = 100,
     dQmin = 10,
+    characteristicSize = 0.0008 //800mkm , for higher size the same t, but for lower is much higher
 ) => {
     // coke flame temperature
     const mFuel = 1;
     const mCarbon = q/carbonQ*mFuel;
     const mAsh = mFuel - mCarbon;
-    const mAir = k*32/(pO2*12)*mCarbon;
+    let mAir = k*32/(pO2*12)*mCarbon;
     const mN2 = mAir*(1-pO2)*28/((1-pO2)*28+32*pO2);
     const mO2 = mAir - mN2;
     let kCO2 = k>=1 ? 1 : (k>0.5 ? 2*k-1: 0);
     let kCO = k>=1 ? 0 : (k>0.5 ? 2-2*k: 2*k);
 
     const mH2O = mAir*wH2Om;
+    mAir+=mH2O;
     const kH2O = mH2O*12/(18*mCarbon);
 
     //CO + H2O → CO2 + H2
@@ -500,7 +529,9 @@ const findIsobaricFlameT = (
         + mO2*gasHeatCapacity(t0, 'O2', 0)*t0
         + mH2O*gasHeatCapacity(t0, 'H20', 0)*t0
     ;
-    const Q = mCarbon*(kCO*carbonMonoxideQ + kCO2*carbonQ + kH2*dQHydrogenGas);
+
+    // Left this, but it no needed, it doesn't allow emission, fo flame T is too high
+    /*const Q = mCarbon*(kCO*carbonMonoxideQ + kCO2*carbonQ + kH2*dQHydrogenGas);
 
     let factor = f0;
     for( let i=0; i<maxIterations; i++) {
@@ -519,7 +550,8 @@ const findIsobaricFlameT = (
             //console.log({dQ,dT,mN2, mO2, mO2after, mCO2, mCO, mAsh, mFuel, mH2, ashCapacity, fuelCapacity, k, kCO, kCO2, kH2, kH2O, kH2Oafter});
             break;
         }
-    }
+    }*/
+    tStart = 6.23*Math.pow(1900 - t0, 0.74)*Math.pow(characteristicSize, -0.16)*mO2/mAir + t0;
     setSystemComposition(mN2, mO2, 0, 0, mH2O, 0, 0, mFuel, 'before');
     setSystemComposition(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0,'after');
     return tStart;
@@ -562,13 +594,24 @@ const getPerimeter = (a, holeForm = params.holeForm, type = 'air', nAir = params
             break;
         case 'triangle':
             perimeter = type === 'air' ? 3*a : 3*(a+2*h);
+        case 'circle_in_ring':
+            perimeter = type === 'air' ? Math.PI*a : Math.PI*(a-2*h);
+            break;
     }
     return perimeter*factor;
 };
 
-const getArea = (a, holeForm = params.holeForm, type = 'air', nAir = params.nAir, nSmoke = params.nSmoke, h = params.refractoryMediumThickness) => {
+const getSizeByTypeForArea = (a,  type, holeForm, h, airDepth ) => {
+    if(holeForm === 'circle_in_ring'){
+        return type == 'smoke' ? a-2*h : Math.pow(Math.pow(a+2*airDepth, 2)-a*a, 0.5);
+    }
+    return a;
+}
+
+const getArea = (a,  holeForm = params.holeForm, type = 'air',  nAir = params.nAir, nSmoke = params.nSmoke, h = params.refractoryMediumThickness, airDepth = params.h0) => {
     let area = 0;
     let factor = 1;
+    a = getSizeByTypeForArea(a, type, holeForm, h, airDepth);
     switch(holeForm){
         case 'square':
             area = a*a;
@@ -585,7 +628,11 @@ const getArea = (a, holeForm = params.holeForm, type = 'air', nAir = params.nAir
                 const rOuter = rInner + h;
                 factor = (Math.pow(rOuter, 2)*Math.PI - Math.pow(a+2*h, 2)*Math.pow(3,0.5)/4)/area;
             }
+        case 'circle_in_ring':
+            area = Math.PI*a*a/4;
+            break;
     }
+    console.log({areaOut: area*factor})
     return area*factor;
 };
 
@@ -596,8 +643,8 @@ const getFlameTemperature = (tAir) =>{
         0       1280
         1000    2000
     */
-    //return 0.7200*tAir + 1356;
-    return findIsobaricFlameT(tAir);
+    findIsobaricFlameT(tAir);
+    return 0.7200*tAir + 1356;
 };
 
 
@@ -668,13 +715,25 @@ const airNaturalConvectionAlpha = (tHot, tCold, l, d) => {
         ;
 }
 
-const airNusseltNumber = (tAir, tSurface, l, d, w=0) => {
+const airNusseltNumber = (tAir, tSurface, l, d, w=0, isSphere = false, isDiffusion = false) => {
     const tAverage = getLogariphmicAvearge(tAir, tSurface);
     const tHot = tAir > tSurface ? tAir : tSurface;
     const tCold = tAir < tSurface ? tAir : tSurface;
     const Ra = airRayleighNumber(tHot, tCold, l);
     const Re = airReynoldsNumber(tAverage, w, d);
     const Pr = airPrandtlnumber(tAverage);
+
+    if(isSphere) {
+        let NuSphere = 2;
+        if(isDiffusion){
+            NuSphere = 2+0.17*Math.pow(Re, 2/3);
+        }
+        else{
+            NuSphere = 2+0.4*Math.pow(Re, 0.5)*Math.pow(Pr, 1/3);
+        }
+        return {Nu: NuSphere, isSphere, isDiffusion};
+    }
+
     const PrAir = airPrandtlnumber(tAir);
     const PrSurface = airPrandtlnumber(tSurface);
     // dynamic viscosity, μ
@@ -733,6 +792,19 @@ const airNusseltNumber = (tAir, tSurface, l, d, w=0) => {
         L/D>=10
      */
     const NuTurbulentSiederTate = 0.027*Math.pow(Re, 4/5)*Math.pow(Pr, 1/3)*Math.pow(airViscosityAir/airViscositySurface, 0.14);
+
+
+    /*
+        The empirical correlation of Dittus-Boelter [10-12] has gained widespread acceptance for prediction of the
+        Nusselt number with turbulent flow in the smoothsurface tubes
+        0.6<= Pr <= 160, Re>= 10^4  L/d>=60
+        The exponent of the Prandtl number is n = 0.4 for heating of the fluid and n = 0.3 if the fluid is being
+        cooled.
+    */
+
+    const n = tAir > tSurface ? 0.3 : 0.4;
+    const NuTurbulentDittusBoelte = 0.023*Math.pow(Re, 0.8)*Math.pow(Pr,n);
+
     /*
      Величина коэффициента , входящая в уравнения (1.5), (1.6), (1.8), определяется из таблиц (1.2) и (1.3).
      */
@@ -769,6 +841,7 @@ const airNusseltNumber = (tAir, tSurface, l, d, w=0) => {
         NuTransient,
         NuTurbulentSiederTate,
         NuTurbulentGnielinski,
+        NuTurbulentDittusBoelte,
         NuNaturalConvection,
         NuLaminar,
         NuLaminarSiederTate,
@@ -911,14 +984,16 @@ const getMaxThermalLose = (tCold, tHot, tRoom, alpha, h, area) => {
 }
 
 const getLogariphmicAvearge = (x1, x2) => {
-    // console.log({x1,x2});
+    if(x1 === x2){
+        return x1;
+    }
     return (x1-x2)/Math.log(x1/x2);
 };
 
 
-const getAverageAlpha = (a1, a2, perimeter1, perimeter2, h, lambda) => {
-    const perimeterAverage = getLogariphmicAvearge(perimeter1, perimeter2);
-    return 1/(1/a1 + perimeter1/(perimeter2*a2) + h*perimeter1/(lambda*perimeterAverage));
+const getAverageAlpha = (a1, a2, perimeter1, perimeter2, h1, lambda1, h2  = 0, lambda2 =1000, perimeter11 = 0, perimeter22 = 1 ) => {
+    perimeter11 = perimeter11 ?  perimeter11 : getLogariphmicAvearge(perimeter1, perimeter2);
+    return 1/(1/a1 + perimeter1/(perimeter2*a2) + h1*perimeter1/(lambda1*perimeter11) + h2*perimeter1/(lambda2*perimeter22));
 };
 
 const getRadiationEmissivity = (t) => {
@@ -949,6 +1024,10 @@ const getRadiationAlpha = (Tg, Ts, Es, pH2O, pCO2, l) => {
 
 
 const fullRadiationAlpha = (t1, t2, emissivity1 = 1, emissivity2= 1) => {
+    //console.log({t1, t2, emissivity1, emissivity2});
+    if(Math.abs(t1-t2)<params.zero){
+        return 0;
+    }
     return Math.abs(5.67*(emissivity1*Math.pow(t1/100, 4) - emissivity2*Math.pow(t2/100, 4))/(t1-t2));
 }
 
@@ -964,6 +1043,7 @@ const setParams = () => {
     params.densityAirStart = airDensity(params.tAirStart);
 
     params.d0 = params.d0mm/1000;
+    params.h0 = params.h0mm/1000;
     params.thermalInsulationThickness = params.thermalInsulationThicknessMM/1000;
 
     //params.L0 =  getPerimeter(params.d0);
@@ -974,12 +1054,18 @@ const setParams = () => {
     params.Lair =  getPerimeter(params.d0, params.holeForm, 'air',params.nAir, params.nSmoke, params.refractoryMediumThickness);
     params.Lsmoke = getPerimeter(params.d0, params.holeForm, 'smoke',params.nAir, params.nSmoke, params.refractoryMediumThickness);
 
-    if(params.holeForm === 'triangle') {
-        params.dSurface = params.d0*Math.pow(3/(Math.PI*16), 0.25)+4*params.refractoryMediumThickness+2*params.thermalInsulationThickness;
+    switch (params.holeForm) {
+        case 'triangle':
+            params.dSurface = params.d0*Math.pow(3/(Math.PI*16), 0.25)+4*params.refractoryMediumThickness+2*params.thermalInsulationThickness;
+            break;
+        case 'circle_in_ring':
+            params.dSurface = params.d0+2*(params.thermalInsulationThickness+params.h0);
+            break;
+        default:
+            params.dSurface = Math.ceil(Math.pow(params.nAir + params.nSmoke, 0.5))*(params.d0+params.refractoryMediumThickness)+params.refractoryMediumThickness+2*params.thermalInsulationThickness;
+            break;
     }
-    else{
-        params.dSurface = Math.ceil(Math.pow(params.nAir + params.nSmoke, 0.5))*(params.d0+params.refractoryMediumThickness)+params.refractoryMediumThickness+2*params.thermalInsulationThickness;
-    }
+
     params.fPower = params.fPowerKW*1000;
 
     params.mPerHour = params.fPower*3600/params.fuelQ;
@@ -998,8 +1084,11 @@ const setParams = () => {
     params.mAirPerHour = 32/(12*params.pO2)*params.kExcessAir*params.mPerHour*params.fuelQ/params.carbonQ;
     params.wAirStart = params.mAirPerHour/(params.densityAirStart*3600*params.Sair);
 
+    console.log([params.mAirPerHour,params.densityAirStart,params.Sair]);
+
     params.wSmokeStart = params.wAirStart*getTemperetureExpansion(params.tAirStart, params.tSmokeStart)*params.Sair/params.Ssmoke;
-    params.surfaceArea = Math.PI*params.dSurface*params.wantedRecuperatorLength;
+
+    params.surfaceArea = Math.PI * params.dSurface * params.wantedRecuperatorLength;
 };
 
 let setResult = function(data){
@@ -1054,27 +1143,85 @@ const calculateCriteria = (params, tSmokeEnd, tAirEnd) => {
     const tSmokeStartAirEndSurface = getLogariphmicAvearge(params.tAirEnd, params.tSmokeStart);
     const tSmokeEndAirStartSurface = getLogariphmicAvearge(params.tAirStart, params.tSmokeEnd);
 
-    params.alpha.air.convective.start = airConvectionAlpha(params.tAirStart, tSmokeEndAirStartSurface, params.wantedRecuperatorLength, params.d0, params.wAirStart);//getConvectiveAlpha(params.wAirStart);
-    params.alpha.air.convective.end = airConvectionAlpha(params.tAirEnd, tSmokeStartAirEndSurface, params.wantedRecuperatorLength, params.d0, params.wAirEnd);//getConvectiveAlpha(params.wAirEnd);
+    if(params.holeForm !== 'circle_in_ring') {
+        params.alpha.air.convective.start = airConvectionAlpha(params.tAirStart, tSmokeEndAirStartSurface, params.wantedRecuperatorLength, params.d0, params.wAirStart);//getConvectiveAlpha(params.wAirStart);
+        params.alpha.air.convective.end = airConvectionAlpha(params.tAirEnd, tSmokeStartAirEndSurface, params.wantedRecuperatorLength, params.d0, params.wAirEnd);//getConvectiveAlpha(params.wAirEnd);
 
-    const rayLength = 0.9*params.d0;
-    params.alpha.air.radiation.start = getRadiationAlpha(params.tAirStart, tSmokeEndAirStartSurface, params.refractoryEmissivity, params.systemComposition.before.partial.H2O, params.systemComposition.before.partial.CO2, rayLength );
-    params.alpha.air.radiation.end = getRadiationAlpha(params.tAirEnd, tSmokeStartAirEndSurface, params.refractoryEmissivity, params.systemComposition.before.partial.H2O, params.systemComposition.before.partial.CO2, rayLength);
+        const rayLength = 0.9 * params.d0;
+        params.alpha.air.radiation.start = getRadiationAlpha(params.tAirStart, tSmokeEndAirStartSurface, params.refractoryEmissivity, params.systemComposition.before.partial.H2O, params.systemComposition.before.partial.CO2, rayLength);
+        params.alpha.air.radiation.end = getRadiationAlpha(params.tAirEnd, tSmokeStartAirEndSurface, params.refractoryEmissivity, params.systemComposition.before.partial.H2O, params.systemComposition.before.partial.CO2, rayLength);
 
-    params.alpha.air.start = params.alpha.air.convective.start+params.alpha.air.radiation.start;
-    params.alpha.air.end = params.alpha.air.convective.end+params.alpha.air.radiation.end;
+        params.alpha.air.start = params.alpha.air.convective.start + params.alpha.air.radiation.start;
+        params.alpha.air.end = params.alpha.air.convective.end + params.alpha.air.radiation.end;
 
-    params.alpha.smoke.convective.start = airConvectionAlpha(params.tSmokeStart, tSmokeStartAirEndSurface, params.wantedRecuperatorLength, params.d0, params.wSmokeStart);//getConvectiveAlpha(params.wSmokeStart);
-    params.alpha.smoke.convective.end = airConvectionAlpha(params.tSmokeEnd, tSmokeEndAirStartSurface, params.wantedRecuperatorLength, params.d0, params.wSmokeEnd);//getConvectiveAlpha(params.wSmokeEnd);
-
-
-    params.alpha.smoke.radiation.start = getRadiationAlpha(params.tSmokeStart, tSmokeStartAirEndSurface, params.refractoryEmissivity, params.systemComposition.after.partial.H2O, params.systemComposition.after.partial.CO2, rayLength );
-    params.alpha.smoke.radiation.end = getRadiationAlpha(params.tSmokeEnd, tSmokeEndAirStartSurface, params.refractoryEmissivity, params.systemComposition.after.partial.H2O, params.systemComposition.after.partial.CO2, rayLength);
-
-    params.alpha.smoke.start = params.alpha.smoke.convective.start+params.alpha.smoke.radiation.start;
-    params.alpha.smoke.end = params.alpha.smoke.convective.end+params.alpha.smoke.radiation.end;
+        params.alpha.smoke.convective.start = airConvectionAlpha(params.tSmokeStart, tSmokeStartAirEndSurface, params.wantedRecuperatorLength, params.d0, params.wSmokeStart);//getConvectiveAlpha(params.wSmokeStart);
+        params.alpha.smoke.convective.end = airConvectionAlpha(params.tSmokeEnd, tSmokeEndAirStartSurface, params.wantedRecuperatorLength, params.d0, params.wSmokeEnd);//getConvectiveAlpha(params.wSmokeEnd);
 
 
+        params.alpha.smoke.radiation.start = getRadiationAlpha(params.tSmokeStart, tSmokeStartAirEndSurface, params.refractoryEmissivity, params.systemComposition.after.partial.H2O, params.systemComposition.after.partial.CO2, rayLength);
+        params.alpha.smoke.radiation.end = getRadiationAlpha(params.tSmokeEnd, tSmokeEndAirStartSurface, params.refractoryEmissivity, params.systemComposition.after.partial.H2O, params.systemComposition.after.partial.CO2, rayLength);
+
+        params.alpha.smoke.start = params.alpha.smoke.convective.start + params.alpha.smoke.radiation.start;
+        params.alpha.smoke.end = params.alpha.smoke.convective.end + params.alpha.smoke.radiation.end;
+    }
+    else{
+        const dSmoke = params.d0-2*params.refractoryMediumThickness;
+        params.surfaces.smokeEndAirStart = calculateSurface (
+            params.tSmokeEnd, dSmoke, params.wSmokeEnd, params.systemComposition.after.partial, 0.9*dSmoke,
+            params.tAirStart, params.wAirStart, params.systemComposition.before.partial, 1.8*params.h0,
+            params.refractoryEmissivity, params.refractoryMediumThickness, params.refractoryLambda,
+            params.wantedRecuperatorLength,
+            params.refractoryEmissivity,params.thermalInsulationThickness, 0.26,
+            false,  false, params.tRoom,
+            true,
+            true,
+            params.h0
+        );
+
+        params.surfaces.smokeStartAirEnd = calculateSurface (
+            params.tSmokeStart, dSmoke, params.wSmokeStart, params.systemComposition.after.partial, 0.9*dSmoke,
+            params.tAirEnd, params.wAirEnd, params.systemComposition.before.partial, 1.8*params.h0,
+            params.refractoryEmissivity, params.refractoryMediumThickness, params.refractoryLambda,
+            params.wantedRecuperatorLength,
+            params.refractoryEmissivity,params.thermalInsulationThickness, 0.26,
+            false,  false, params.tRoom,
+            true,
+            true,
+            params.h0
+        );
+
+        params.alpha = {
+            air: {
+                start: params.surfaces.smokeEndAirStart.alpha.side23.total,
+                end: params.surfaces.smokeStartAirEnd.alpha.side23.total,
+                convective: {
+                    start: params.surfaces.smokeEndAirStart.alpha.side23.convection,
+                    end: params.surfaces.smokeStartAirEnd.alpha.side23.convection
+                },
+
+                radiation: {
+                    start: params.surfaces.smokeEndAirStart.alpha.side23.radiation,
+                    end: params.surfaces.smokeStartAirEnd.alpha.side23.radiation
+                }
+            },
+            smoke: {
+                start: params.surfaces.smokeStartAirEnd.alpha.side1.total,
+                end: params.surfaces.smokeEndAirStart.alpha.side1.total,
+                convective: {
+                    start: params.surfaces.smokeStartAirEnd.alpha.side1.convection,
+                    end: params.surfaces.smokeEndAirStart.alpha.side1.convection
+                },
+
+                radiation: {
+                    start: params.surfaces.smokeStartAirEnd.alpha.side1.radiation,
+                    end: params.surfaces.smokeEndAirStart.alpha.side1.radiation
+                }
+            },
+            smokeEndAirStart:0,
+            smokeStartAirEnd: 0,
+            average: 0,
+        }
+    }
     params.alpha.smokeEndAirStart = getAverageAlpha(params.alpha.air.start, params.alpha.smoke.end, params.Lair, params.Lsmoke, params.refractoryMediumThickness, params.refractoryLambda);
     params.alpha.smokeStartAirEnd = getAverageAlpha(params.alpha.air.end, params.alpha.smoke.start, params.Lair, params.Lsmoke, params.refractoryMediumThickness, params.refractoryLambda);
 
@@ -1095,8 +1242,12 @@ const calculateCriteria = (params, tSmokeEnd, tAirEnd) => {
     params.airEnergyIncrease = systemEnergyChange(params.systemComposition.before.mass, params.mPerHour, params.tAirEnd, params.tAirStart);
     //params.mAirPerHour*(params.tAirEnd-params.tAirStart)*params.cAirAverage;
 
-    params.energyLost = getMaxThermalLose(tSmokeEnd, params.tSmokeStart, params.tRoom, params.alpha.smoke, params.thermalInsulationThickness, params.surfaceArea)*3600;
-
+    if(params.holeForm !== 'circle_in_ring' ) {
+        params.energyLost = getMaxThermalLose(tSmokeEnd, params.tSmokeStart, params.tRoom, params.alpha.smoke, params.thermalInsulationThickness, params.surfaceArea) * 3600;
+    }
+    else{
+        params.energyLost = getMaxThermalLose(params.surfaces.smokeEndAirStart.tSurface3, params.surfaces.smokeStartAirEnd.tSurface3, params.tRoom, {start: 1000000, end: 1000000}, params.thermalInsulationThickness, params.surfaceArea) * 3600;
+    }
     params.energyReturnedPercents = params.airEnergyIncrease/(params.mPerHour*params.fuelQ)*100;
 
     if(params.smokeEnergyDecrease<params.airEnergyIncrease || params.airEnergyIncrease<0){
@@ -1221,8 +1372,413 @@ const calculate = () => {
 
     setResult(results);
 
+    //calculateOptimalCoaxialTube(params);
+
+    /*calculateFuelBurnLayer(
+        params.mAirPerHour,
+        params.mPerHour,
+        Math.PI*0.2*0.2/4,// for now is area of circle with d=20cm
+        params.systemComposition.before.partial,
+        params.kExcessAir,
+        params.tAirEnd, params.tFlame
+    );*/
+
     //calculateTestData(testData);
 };
+
+
+const getSmokeArea = (dSmoke, dAir, hRefractory) => {
+    return Math.PI*(Math.pow(dSmoke, 2) - Math.pow(dAir+2*hRefractory, 2))/4;
+}
+
+
+const fullGasAlpha = (Tg, Ts, Es, pH2O, pCO2, l, d, w = 0) => {
+    const convection = airConvectionAlpha (Tg, Ts, l, d, w);
+    const radiation =  getRadiationAlpha(Tg, Ts, Es, pH2O, pCO2, l);
+    return {
+        radiation,
+        convection,
+        total: radiation + convection
+    };
+}
+
+const calculateSurface = (
+    t1, d1, w1, systemComposition1, rayLength1, //inner side
+    t2, w2, systemComposition2, rayLength2, //outer side
+    E3, h3, lambda3,
+    l,
+    E4, h4=0, lambda4=1000,
+    side1Toinfinity = false,
+    side2Toinfinity = false,
+    tInfinity = 273,
+    infinityIsSurface3 = false,
+    useInsulationFunctionForAverageLambda = false,
+    h5 = 0.02, // air depth between 2 and 3
+    tSurface1 = 0,
+    tSurface2 = 0,
+    tSurface3 = 0,
+    iteration = 0,
+    maxIterations= params.maxIterations < 20 ? params.maxIterations : 20,
+) => {
+    /*                                  E4,h4,lambda4     E3,h3,lambda3
+    t2, w2, systemComposition2     |----------------|++++++++++++++++|   t1, d1, w1, systemComposition1
+
+                                      E3,h3,lambda3
+    t2, w2, systemComposition2     |++++++++++++++++|   t1, d1, w1, systemComposition1
+
+
+
+    infinityIsSurface3:
+    used for scheme : core - smoke pipe into pipe with air and outer insulation
+
+    |----insulation----|      Air      |++|        Smoke       |++|      Air      |----insulation----|      Room air
+
+
+                    E4,h4,lambda4                                         E3,h3,lambda3
+    tInfinity T4|----------------|T3     t2, w2, systemComposition2   |++++++++++++++++|   t1, d1, w1, systemComposition1
+     */
+
+
+    tSurface1 = tSurface1 === 0 ? (t1+t2)/2 : tSurface1;
+    tSurface2 = tSurface2 === 0 ? (t1+t2)/2 : tSurface2;
+    tSurface3 = tSurface3 === 0 && infinityIsSurface3 ? (tInfinity+t2)/2 : tSurface3;
+
+    const alpha = {
+        side1: fullGasAlpha (
+            t1, tSurface1, E3, systemComposition1.H2O,
+            systemComposition1.CO2, l, rayLength1/*0.9*d1*/, w1
+        ),
+        side2: fullGasAlpha (
+            t2, tSurface2, E4, systemComposition2.H2O,
+            systemComposition2.CO2, l, rayLength2/*1.8*(dSmoke-d2)*/, w2
+        ),
+        side3: {},
+        side23: {}, // average data for S2+S3 calculated as for side S2 (P23=alpha23*S2=alpha2*S2+alpha3*s3)
+        average: 0,
+    };
+
+    const d2 = !infinityIsSurface3 ? d1+2*(h3+h4): d1+2*h3;
+    const dT = Math.abs(t1-t2);
+
+    if(side1Toinfinity){
+        alpha.side1.radiation = fullRadiationAlpha(tSurface1, tInfinity, E3);
+        alpha.side1.total =  alpha.side1.convection + alpha.side1.radiation;
+    }
+    if(side2Toinfinity){
+        alpha.side2.radiation = fullRadiationAlpha(tSurface2, tInfinity, E4);
+        alpha.side2.total =  alpha.side2.convection + alpha.side2.radiation;
+    }
+
+
+    if(!infinityIsSurface3) {
+        alpha.average = getAverageAlpha(
+            alpha.side1.total, alpha.side2.total, d1, d2, h3, lambda3, h4, lambda4, d1+h3, d2+2*h3+h4 );
+    }
+    else {
+        alpha.average = getAverageAlpha(
+            alpha.side1.total, alpha.side2.total, d1, d2, h3, lambda3);
+    }
+    const t1Factor = t1<t2 ? 1 : -1;
+    tSurface1 = t1Factor*alpha.average*d1*dT/(alpha.side1.total*d1)+t1;
+    tSurface2 = t2 - t1Factor*alpha.average*d1*dT/(alpha.side2.total*d2);
+    if(infinityIsSurface3){
+        //re-emission to back surface
+        const radiation = fullRadiationAlpha(tSurface2, tSurface3, E4);
+        const d3 = d1+2*(h3+h5);
+        const d34 = d3+h4;
+        if(useInsulationFunctionForAverageLambda) {
+            lambda4 = getThermalInsulationLambda(tSurface2);
+        }
+        tSurface3 = (radiation*d2*tSurface2 + alpha.side2.convection*t2*d3 + lambda4*tInfinity*d34/h4)/
+            (lambda4*d34/h4 + alpha.side2.convection*d3 + radiation*d2);
+        alpha.side3 = fullGasAlpha (
+            t2, tSurface3, E4, systemComposition2.H2O,
+            systemComposition2.CO2, l, rayLength2/*1.8*(dSmoke-d2)*/, w2
+        );
+        alpha.side23 = {
+            convection: alpha.side2.convection + alpha.side3.convection*d3/d2,
+            radiation: alpha.side2.radiation + alpha.side3.radiation*d3/d2,
+        };
+        alpha.side23.total =  alpha.side23.convection + alpha.side23.radiation;
+
+    }
+    const standardLength = 1;
+    const flux = alpha.average*Math.abs(t1-t2)*d1*standardLength;
+    iteration++;
+    if(iteration>=maxIterations) {
+        // outer surface with cooling by room air
+        const tSurface4 = infinityIsSurface3 ? getMaxSurfaceTemperature(tSurface3, tInfinity, h4, 1000000 ) : 0;
+
+        return {
+            alpha,
+            t1, t2,
+            tSurface1,
+            tSurface2,
+            tSurface3,
+            tSurface4,
+            flux
+        }
+    }
+    else{
+        return calculateSurface (
+            t1, d1, w1, systemComposition1, rayLength1, //inner side
+            t2, w2, systemComposition2, rayLength2, //outer side
+            E3, h3, lambda3,
+            l,
+            E4, h4, lambda4,
+            side1Toinfinity,
+            side2Toinfinity,
+            tInfinity,
+            infinityIsSurface3,
+            useInsulationFunctionForAverageLambda,
+            h5,
+            tSurface1,
+            tSurface2,
+            tSurface3,
+            iteration,
+        );
+    }
+}
+
+
+const heatFlux = (
+    tAir, tSmoke, tRoom,  Es, dSmoke, dAir,
+    hRefractory, hInsulation, refractoryLambda, l,
+    systemComposition, mAirPerHour, densityAirStart
+) => {
+    const sAir = Math.PI * Math.pow(dAir, 2) / 4;
+    let sSmoke = getSmokeArea(dSmoke, dAir, hRefractory);
+    if (sSmoke<=params.zero){
+        return params.zero;
+    }
+    const wAir = mAirPerHour / (densityAirStart * 3600 * sAir);
+    const wSmoke = wAir * getTemperetureExpansion(tAir, tSmoke) * sAir / sSmoke;
+    console.log({wSmoke, wAir});
+
+    const surfaceInner = calculateSurface (
+        tAir, dAir, wAir, systemComposition.before.partial, 0.9*dAir,
+        tSmoke, wSmoke, systemComposition.after.partial, 1.8*(dSmoke-dAir-2*hRefractory),
+        Es, hRefractory, refractoryLambda,
+        l,
+        Es
+    );
+
+    const surfaceOuter = calculateSurface (
+        tSmoke, dSmoke, wSmoke, systemComposition.after.partial, 1.8*(dSmoke-dAir),
+        tRoom, 0, systemComposition.room.partial, 0,
+        Es, hRefractory, refractoryLambda,
+        l,
+        Es, hInsulation, getLogariphmicAvearge(getThermalInsulationLambda(tRoom), getThermalInsulationLambda(tSmoke)),
+        false, true,
+        tRoom,
+    );
+    const outerSteelTubeWithAir = calculateSurface (
+        tSmoke, dSmoke, wSmoke, systemComposition.after.partial, 1.8*(dSmoke-dAir),
+        tAir, wAir, systemComposition.before.partial, 0.04,
+        Es, hRefractory, refractoryLambda,
+        l,
+        Es,false, true,
+        false,  true, tAir,
+        true,
+
+    );
+    console.log({dSmoke, surfaceInner, surfaceOuter, outerSteelTubeWithAir});
+    return surfaceInner.flux - surfaceOuter.flux;
+}
+
+
+const calculateOptimalCoaxialTube = (params) => {
+    const {
+        tAirEnd: tAir,
+        tSmokeStart: tSmoke,
+        d0: dAir,
+        thermalInsulationThickness: hInsulation,
+        refractoryMediumThickness: hRefractory,
+        refractoryEmissivity: Es,
+        refractoryLambda,
+        wantedRecuperatorLength: l,
+        systemComposition,
+        mAirPerHour,
+        densityAirStart,
+        tRoom,
+        maxIterations,
+    } = params;
+
+    let dSmoke = 1.5 * dAir + 2 * hRefractory;
+    const k = 1; // min sSmoke/sAir
+    const dSmokeMin = Math.pow(Math.pow(dAir+ 2 * hRefractory, 2) + k*Math.pow(dAir, 2), 0.5);
+    let factor = 0.2;
+    let f = 0.6;
+    for(let i=0; i<maxIterations; i++) {
+        const flux = [];
+        const dX = (dSmoke-(dAir + 2 * hRefractory))*factor;
+        const dSmoke1 = dSmoke + dX;
+        const dSmoke2 = dSmoke - dX;
+        flux.push( {dSmoke, flux: heatFlux(
+            tAir, tSmoke, tRoom,  Es, dSmoke, dAir,
+                hRefractory, hInsulation, refractoryLambda, l,
+                systemComposition, mAirPerHour, densityAirStart
+        )});
+        flux.push( {dSmoke1, flux: heatFlux(
+                tAir, tSmoke, tRoom,  Es, dSmoke1, dAir,
+                hRefractory, hInsulation, refractoryLambda, l,
+                systemComposition, mAirPerHour, densityAirStart
+            )});
+        flux.push( {dSmoke2, flux: heatFlux(
+                tAir, tSmoke, tRoom,  Es, dSmoke2, dAir,
+                hRefractory, hInsulation, refractoryLambda, l,
+                systemComposition, mAirPerHour, densityAirStart
+            )});
+        flux.sort((a,b) => {return b.flux-a.flux});
+        console.log({flux});
+        dSmoke = flux[0].dSmoke > dSmokeMin ? flux[0].dSmoke : dSmokeMin;
+        factor = factor*f;
+        if(dX<0.0001){
+            break;
+        }
+    }
+    const sAir = Math.PI * Math.pow(dAir, 2) / 4;
+    const sSmoke = getSmokeArea(dSmoke, dAir, hRefractory);
+    console.log({dSmoke, 'dSmoke/dAir': dSmoke/dAir, 'sSmoke/sAir': sSmoke/sAir, });
+}
+
+
+
+getKburning = (
+    E, // activation energy
+    pX, // partial
+    t
+) => {
+    const k0 = Math.pow(0.208*E/10000 + 1, 10);
+    return k0*Math.exp(-E/(8.31*t))*pX;
+}
+
+const getDXMoles = (N, pX, pXc, S, aD, t) => {
+    return (aD/(8.314*t))*1/(1+N)*pXc*S;
+}
+
+const getNewPartial = (N, pX, pXc, molesTotal, molesTotalNew, S, aD, t) => {
+    const dM = getDXMoles(N, pX, pXc, S, aD, t);
+    return (molesTotal*pX+dM)/molesTotalNew;
+}
+
+calculateFuelBurnLayer = (
+    mAirPerHour,
+    mPerHour,
+    s0, // fuel box area
+    systemComposition,
+    kExcessAir,
+    tAir, tFlame,
+    V=0.005, // default 5l
+    size = 0.04, // default 40mm
+    volumeDensity = 0.5,
+    density = 1, //g/cm3
+    formFactor = 8, // S/V [1/d], 6 for sphere, this slightly more
+    n = 1.9,
+    maxIterations= 10,
+ ) => {
+    let {O2: pO2, CO2: pCO2, H2O: pH2O, CO: pCO, H2: pH2, N2: pN2} = systemComposition;
+    const massPerOneMole = pO2*0.032+pCO*0.044+pH2O*0.018+pCO*0.028+pH2*0.002+pN2*0.028;
+    let molesTotal = mAirPerHour/(3600*massPerOneMole);
+    let molesTotalBefore = totalMolesInSecond;
+
+    const S = Math.pow(volumeDensity, 2/3)*s0;
+    const sArea = formFactor*V*volumeDensity/size;
+
+    const tAverage = getLogariphmicAvearge(tAir, tFlame);
+    const airDensityTair = airDensity(tAir);
+    const airDensityTflame = airDensity(tFlame);
+
+    const wAir = mAirPerHour/(3600*airDensityTair*S);
+    const wFlame = mAirPerHour/(3600*airDensityTflame*S);
+    const w = getLogariphmicAvearge(wAir, wFlame);
+
+    console.log({wAir, wFlame, w: getLogariphmicAvearge(wAir, wFlame)});
+
+    const E1 = 140000; // J/mol activation energy of reaction C+O2=>CO2+395kJ/mol
+    const E2 = 1.1*E1; // 2C+O2=>2CO+219kJ/mol
+    const E3 = 2.2*E1; // C+CO2=>2CO-175.5kJ/mol
+    const E31 = 1.6*E1; // C+H2O=>CO+H2-130.5kJ/mol
+    const E4 = 96300; // 2C0+O2=>2CO2+571kJ/mol
+
+
+    let GcSum = 0;
+    const h = V/s0;
+    const dH = h/maxIterations;
+    const dS = S/maxIterations;
+    for(let i=0; i<maxIterations; i++) {
+        const k1 = getKburning(E1, pO2, tAverage);
+        const k2 = getKburning(E2, pO2, tAverage);
+        const k3 = getKburning(E3, pCO2, tAverage);
+        const k31 = getKburning(E31, pH2O, tAverage);
+        const k4 = getKburning(E4, pCO*pO2, tAverage);
+        /*
+            Reaction 32,33,4,42,43 don't run or run very slow at the surface layer
+            Reaction 41 not actual when use coke - no free hydrogen
+        */
+
+        /*
+        const E32 = ?; // C+2H2O=>CO2+2H2-132kJ/mol
+        const E33 = ?; // C+2H2=>CH4-74.9kJ/mol
+        const E41 = ?; // 2H2+O2=>2H2O+231kJ/mol
+        const E42 = ?; // CH4+2O2=>2H2O+CO2+892kJ/mol
+        const E43 = ?; // CO+H2O=>CO2+H2+40.4kJ/mol
+        */
+        const { Nu } = airNusseltNumber(tAir, tFlame, size, size, w, true, true);
+
+        const D0= (0.004+0.075*density)*Math.pow(tAverage/273, 2)/10000; // m/s
+        //const D0 = 0.16/10000*Math.pow((tAir+tFlame)/2, n); //Бабий стр 106
+        const aD = D0/size;
+
+
+        const N1 = k1/aD;
+        const N2 = k2/aD;
+        const N3 = k3/aD;
+        const N31 = k31/aD;
+        const N4 = k4/aD;
+
+        const r = size/2;
+        //const Gc = aD/(8.314*tAverage)*1/((1+N3)*1+N1+N2)*
+        const pO2c = pO2*101000/(1+N1+N2+N4);
+
+        const pH2Oc = pH2O*101000/(1+N31);
+        const pCOO2c = pCO*pO2*101000/(1+N4);
+
+        const dM1 = getDXMoles(N1, pO2, pO2c, dS, aD, tAverage );
+        const dM2 = getDXMoles(N2, pO2, pO2c, dS, aD, tAverage );
+        const dM3 = getDXMoles(N3, pO2, pO2c, dS, aD, tAverage );
+        const dM31 = getDXMoles(N31, pO2, pO2c, dS, aD, tAverage );
+        const dM4 = getDXMoles(N4, pCO*pO2, pO2c, dS, aD, tAverage );
+
+        const nnn = (aD/(8.314*tAverage));
+        const GciO2CO2 = (aD/(8.314*tAverage))*1/((1+N3)*(1+N1+N2))
+            *pO2c(
+                (N1*(1+2*N3) + 2*N2*(1+N3))
+                + N3*(1+N1+N2)
+            )*12;
+
+        const GciH2O = (aD/(8.314*tAverage))*1/(1+N31)
+            *pH2Oc*12;
+        const Gci = GciO2CO2+GciH2O;
+        console.log({ pO2, pCO2, pH2O, N1, N2, N3, N31, k1,k2,k3, aD, p10, Gci, D0, tAverage, tAir, tFlame, wAir, wFlame, w, Nu, s0, airDensityTflame, airDensityTair})
+
+        GcSum += Gci;
+        pO2-=dpO2;
+        pCO2+=dpCO2;
+        pH2O-=dpH2O;
+    }
+    const Gc = GcSum/maxIterations;
+    const totalBurnPerSecond = Gc*sArea;
+    const totalBurnPerHour = totalBurnPerSecond*3600;
+    console.log({Gc, totalBurnPerSecond, totalBurnPerHour});
+    return Gc;
+}
+
+
+
+
+
+
 //                                          * + * +
 //   * +                    * + *           + * + *
 //  + * *                   + * +           * + * +

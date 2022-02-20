@@ -33,16 +33,23 @@
                 <tr>
                     <td>Hole diameter (or other dimension), mm</td>
                     <td>
-                      <input type="number" id="d0mm" value="30">
+                      <input type="number" id="d0mm" value="100">
                     </td>
                 </tr>
                 <tr>
-                    <td>Hole form</td>
+                    <td>Air depth in ring (Circle smoke into ring of air), mm</td>
+                    <td>
+                        <input type="number" id="h0mm" value="20">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Hole shape</td>
                     <td>
                         <select id="holeForm">
+                            <option value="circle_in_ring" selected>Circle smoke into ring of air</option>
                             <option value="circle">Circle</option>
                             <option value="square">Square</option>
-                            <option value="triangle" selected>1 triangle tube for air into it</option>
+                            <option value="triangle">1 triangle tube for air into it</option>
                         </select>
                     </td>
                 </tr>
@@ -68,7 +75,7 @@
                 <tr>
                     <td>Mass part H2O added to air</td>
                     <td>
-                        <input type="number" id="wH2Om" value="0">
+                        <input type="number" id="wH2Om" value="0.0">
                     </td>
                 </tr>
                 <tr>
@@ -93,7 +100,7 @@
                 <tr>
                     <td>Refractory medium thickness, mm</td>
                     <td>
-                      <input type="number" id="refractoryMediumThicknessMM" value="15">
+                      <input type="number" id="refractoryMediumThicknessMM" value="8">
                     </td>
                 </tr>
                 <tr>
@@ -108,7 +115,12 @@
                       <input type="number" id="wantedRecuperatorLength" value="1">
                     </td>
                 </tr>
-                
+                <tr>
+                    <td>Max iterations</td>
+                    <td>
+                        <input type="number" id="maxIterations" value="500">
+                    </td>
+                </tr>
             </tbody>
         </table>
 
