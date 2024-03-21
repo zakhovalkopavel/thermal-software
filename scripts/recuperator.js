@@ -15,10 +15,12 @@ let params = {
     tAirStart: 293, // K
     tRoom: 293,//K
     tAirEnd: 1073, // K
+    nPasses: 1, // for circle in ring - it means, that there is 1 or more passes of air, it reduce Sair and increase vAir
+    smokeTurbulence: false, // off or on  smoke turbulence
     nAir: 5,
     nSmoke: 4,
     d0: 0.03, //m
-    d0mm: 30, // mm
+    d0mm: 30, // mmn
     h0: 0.02, //m
     h0mm: 20, //m
     densityAirStart: 1.29,// kg/m3
@@ -179,6 +181,8 @@ let params = {
         'tSmokeEndC',
         'tAirStartC',
         'tAirEndC',
+        'nPasses',
+        'smokeTurbulence',
         'nAir',
         'nSmoke',
         'd0mm',
@@ -572,6 +576,9 @@ const systemEnergyChange = (systemEnergy,  massFactor, t1, t2, isOnlyGases = tru
 const autosetParams = () => {
     for(const param of params.autosetParamsList){
         const textValue = document.getElementById(param).value;
+        if(typeof params[param] ==="boolean"){
+            params[param] = textValue !== '0';
+        }
         params[param] = params.textParams.includes(param) ? textValue: textValue*1;
     }
 };
@@ -608,7 +615,7 @@ const getSizeByTypeForArea = (a,  type, holeForm, h, airDepth ) => {
     return a;
 }
 
-const getArea = (a,  holeForm = params.holeForm, type = 'air',  nAir = params.nAir, nSmoke = params.nSmoke, h = params.refractoryMediumThickness, airDepth = params.h0) => {
+const getArea = (a,  holeForm = params.holeForm, type = 'air',  nAir = params.nAir, nSmoke = params.nSmoke, h = params.refractoryMediumThickness,  airDepth = params.h0, nPasses = params.nPasses) => {
     let area = 0;
     let factor = 1;
     a = getSizeByTypeForArea(a, type, holeForm, h, airDepth);
@@ -628,11 +635,14 @@ const getArea = (a,  holeForm = params.holeForm, type = 'air',  nAir = params.nA
                 const rOuter = rInner + h;
                 factor = (Math.pow(rOuter, 2)*Math.PI - Math.pow(a+2*h, 2)*Math.pow(3,0.5)/4)/area;
             }
+            break;
         case 'circle_in_ring':
-            area = Math.PI*a*a/4;
+            area = Math.PI * a * a / 4;
+            if(type === 'air') {
+                area = area / nPasses;
+            }
             break;
     }
-    console.log({areaOut: area*factor})
     return area*factor;
 };
 
@@ -715,12 +725,15 @@ const airNaturalConvectionAlpha = (tHot, tCold, l, d) => {
         ;
 }
 
-const airNusseltNumber = (tAir, tSurface, l, d, w=0, isSphere = false, isDiffusion = false) => {
+const airNusseltNumber = (tAir, tSurface, l, d, w=0, isSphere = false, isDiffusion = false, isTurbulence = false) => {
     const tAverage = getLogariphmicAvearge(tAir, tSurface);
     const tHot = tAir > tSurface ? tAir : tSurface;
     const tCold = tAir < tSurface ? tAir : tSurface;
     const Ra = airRayleighNumber(tHot, tCold, l);
-    const Re = airReynoldsNumber(tAverage, w, d);
+    const Re = isTurbulence? airReynoldsNumber(tAverage, w, d)*2 : airReynoldsNumber(tAverage, w, d);
+    /*if(isTurbulence) {
+        console.log({Re, Re0: airReynoldsNumber(tAverage, w, d), tAverage, w, d});
+    }*/
     const Pr = airPrandtlnumber(tAverage);
 
     if(isSphere) {
@@ -860,9 +873,9 @@ const airNusseltNumber = (tAir, tSurface, l, d, w=0, isSphere = false, isDiffusi
         )), isNatural};
 }
 
-const airConvectionAlpha = (tAir, tSurface, l, d, w = 0) => {
+const airConvectionAlpha = (tAir, tSurface, l, d, w = 0, isTurbulence = false) => {
     const tAverage = getLogariphmicAvearge(tAir, tSurface);
-    const {Nu, isNatural} = airNusseltNumber(tAir, tSurface, l, d, w);
+    const {Nu, isNatural} = airNusseltNumber(tAir, tSurface, l, d, w,false, false, isTurbulence);
     const lambda = airThermalConductivity(tAverage);
     return isNatural ? Nu*lambda/l : Nu*lambda/d;
 }
@@ -1045,11 +1058,12 @@ const setParams = () => {
     params.d0 = params.d0mm/1000;
     params.h0 = params.h0mm/1000;
     params.thermalInsulationThickness = params.thermalInsulationThicknessMM/1000;
+    params.refractoryMediumThickness = params.refractoryMediumThicknessMM/1000;
 
     //params.L0 =  getPerimeter(params.d0);
     //params.S0 = getArea(params.d0);
-    params.Sair = getArea(params.d0, params.holeForm, 'air',params.nAir, params.nSmoke, params.refractoryMediumThickness);
-    params.Ssmoke = getArea(params.d0, params.holeForm, 'smoke',params.nAir, params.nSmoke, params.refractoryMediumThickness);
+    params.Sair = getArea(params.d0, params.holeForm, 'air',params.nAir, params.nSmoke, params.refractoryMediumThickness, params.h0, params.nPasses);
+    params.Ssmoke = getArea(params.d0, params.holeForm, 'smoke',params.nAir, params.nSmoke, params.refractoryMediumThickness, params.h0, params.nPasses);
 
     params.Lair =  getPerimeter(params.d0, params.holeForm, 'air',params.nAir, params.nSmoke, params.refractoryMediumThickness);
     params.Lsmoke = getPerimeter(params.d0, params.holeForm, 'smoke',params.nAir, params.nSmoke, params.refractoryMediumThickness);
@@ -1083,17 +1097,16 @@ const setParams = () => {
 
     params.mAirPerHour = 32/(12*params.pO2)*params.kExcessAir*params.mPerHour*params.fuelQ/params.carbonQ;
     params.wAirStart = params.mAirPerHour/(params.densityAirStart*3600*params.Sair);
-
-    console.log([params.mAirPerHour,params.densityAirStart,params.Sair]);
-
     params.wSmokeStart = params.wAirStart*getTemperetureExpansion(params.tAirStart, params.tSmokeStart)*params.Sair/params.Ssmoke;
-
     params.surfaceArea = Math.PI * params.dSurface * params.wantedRecuperatorLength;
 };
 
 let setResult = function(data){
     for(let id in data) {
         const element = document.getElementById(id);
+        if(element === null){
+            continue;
+        }
         if(element instanceof HTMLInputElement){
             if(data[id]>0.1){
                 element.value = data[id].toFixed(2).toString();
@@ -1175,7 +1188,8 @@ const calculateCriteria = (params, tSmokeEnd, tAirEnd) => {
             false,  false, params.tRoom,
             true,
             true,
-            params.h0
+            params.h0,
+            params.smokeTurbulence,
         );
 
         params.surfaces.smokeStartAirEnd = calculateSurface (
@@ -1187,7 +1201,8 @@ const calculateCriteria = (params, tSmokeEnd, tAirEnd) => {
             false,  false, params.tRoom,
             true,
             true,
-            params.h0
+            params.h0,
+            params.smokeTurbulence,
         );
 
         params.alpha = {
@@ -1248,7 +1263,10 @@ const calculateCriteria = (params, tSmokeEnd, tAirEnd) => {
     else{
         params.energyLost = getMaxThermalLose(params.surfaces.smokeEndAirStart.tSurface3, params.surfaces.smokeStartAirEnd.tSurface3, params.tRoom, {start: 1000000, end: 1000000}, params.thermalInsulationThickness, params.surfaceArea) * 3600;
     }
-    params.energyReturnedPercents = params.airEnergyIncrease/(params.mPerHour*params.fuelQ)*100;
+    const totalEnergy = params.mPerHour*params.fuelQ;
+    //params.energyReturnedPercents = params.airEnergyIncrease/totalEnergy*100;
+    const smokeTotalEnergy = systemEnergyChange(params.systemComposition.after.mass, params.mPerHour, params.tSmokeStart, params.tAirStart);
+    params.energyReturnedPercents = params.airEnergyIncrease/smokeTotalEnergy*100;
 
     if(params.smokeEnergyDecrease<params.airEnergyIncrease || params.airEnergyIncrease<0){
         return params.energyCriteriaError;
@@ -1280,7 +1298,7 @@ const calculateTestData = (data) => {
         const naturalAlphaSimple = getConvectiveAlpha(w);
         const RadiationAlpha = getRadiationAlpha(tAir, tSurface, 0.8);
         console.log({tSurface, tAir, w, d, l, forcedAlpha, naturalAlpha, naturalAlphaSimple, RadiationAlpha});
-;    }
+    }
     const airData = []
     for(let t=273; t<1573; t+=100) {
         const Pr = airPrandtlnumber(t);
@@ -1302,6 +1320,10 @@ const calculateTestData = (data) => {
     }
 }
 
+const getEquivalentDiameter = (s) => {
+    return Math.pow(4*s/Math.PI, 0.5);
+}
+
 const calculate = () => {
     setParams();
 
@@ -1313,12 +1335,12 @@ const calculate = () => {
         const dSmoke = (tSmokeStart - tSmokeEnd)/divider;
         const dAir = (tAirEnd - tAirStart)/divider;
         if( currentCriteria<params.criteria || (dSmoke < params.dTmin && dAir < params.dTmin) ) {
-            console.log([tSmokeEnd>=tSmokeStart-50,
+            /*console.log([tSmokeEnd>=tSmokeStart-50,
             tAirStart>=tAirEnd-50 ,
             tAirEnd>=tSmokeStart,
             tSmokeEnd<=tAirStart,
             currentCriteria<params.criteria
-            ]);
+            ]);*/
             break;
         }
         else{
@@ -1353,14 +1375,23 @@ const calculate = () => {
             });
             params.tSmokeEnd = criteriaResults[0].data[0];
             params.tAirEnd = criteriaResults[0].data[1];
-            console.log({criteriaResults, i, divider, dSmoke, dAir});
+            //console.log({criteriaResults, i, divider, dSmoke, dAir});
         }
     }
 
     console.log({params});
+    console.log({surfaces: params.surfaces, refractoryMediumThicknessMM: params.refractoryMediumThicknessMM, refractoryLambda: params.refractoryLambda});
     const results = {
         tSmokeStartC: params.tSmokeStartC,
         tSmokeEndC: params.tSmokeEndC,
+        sAirS: params.Sair*10000,
+        sSmokeS: params.Ssmoke*10000,
+        dAirS: getEquivalentDiameter(params.Sair)*100,
+        dSmokeS: getEquivalentDiameter(params.Ssmoke)*100,
+        wAirStart: params.wAirStart,
+        wAirEnd: params.wAirEnd,
+        wSmokeStart: params.wSmokeStart,
+        wSmokeEnd: params.wSmokeEnd,
         energyReturnedPercents: params.energyReturnedPercents,
         recuperatorLength: params.recuperatorLength,
         tAirEndC: params.tAirEndC,
@@ -1392,8 +1423,8 @@ const getSmokeArea = (dSmoke, dAir, hRefractory) => {
 }
 
 
-const fullGasAlpha = (Tg, Ts, Es, pH2O, pCO2, l, d, w = 0) => {
-    const convection = airConvectionAlpha (Tg, Ts, l, d, w);
+const fullGasAlpha = (Tg, Ts, Es, pH2O, pCO2, l, d, w = 0, isTurbulence = false) => {
+    const convection = airConvectionAlpha (Tg, Ts, l, d, w, isTurbulence);
     const radiation =  getRadiationAlpha(Tg, Ts, Es, pH2O, pCO2, l);
     return {
         radiation,
@@ -1414,6 +1445,7 @@ const calculateSurface = (
     infinityIsSurface3 = false,
     useInsulationFunctionForAverageLambda = false,
     h5 = 0.02, // air depth between 2 and 3
+    smokeTurbulence = false,
     tSurface1 = 0,
     tSurface2 = 0,
     tSurface3 = 0,
@@ -1446,7 +1478,8 @@ const calculateSurface = (
     const alpha = {
         side1: fullGasAlpha (
             t1, tSurface1, E3, systemComposition1.H2O,
-            systemComposition1.CO2, l, rayLength1/*0.9*d1*/, w1
+            systemComposition1.CO2, l, rayLength1/*0.9*d1*/, w1,
+            smokeTurbulence
         ),
         side2: fullGasAlpha (
             t2, tSurface2, E4, systemComposition2.H2O,
@@ -1532,6 +1565,7 @@ const calculateSurface = (
             infinityIsSurface3,
             useInsulationFunctionForAverageLambda,
             h5,
+            smokeTurbulence,
             tSurface1,
             tSurface2,
             tSurface3,
@@ -1679,8 +1713,8 @@ calculateFuelBurnLayer = (
  ) => {
     let {O2: pO2, CO2: pCO2, H2O: pH2O, CO: pCO, H2: pH2, N2: pN2} = systemComposition;
     const massPerOneMole = pO2*0.032+pCO*0.044+pH2O*0.018+pCO*0.028+pH2*0.002+pN2*0.028;
-    let molesTotal = mAirPerHour/(3600*massPerOneMole);
-    let molesTotalBefore = totalMolesInSecond;
+    //let molesTotal = mAirPerHour/(3600*massPerOneMole);
+    //let molesTotalBefore = totalMolesInSecond;
 
     const S = Math.pow(volumeDensity, 2/3)*s0;
     const sArea = formFactor*V*volumeDensity/size;
@@ -1742,7 +1776,7 @@ calculateFuelBurnLayer = (
         const pO2c = pO2*101000/(1+N1+N2+N4);
 
         const pH2Oc = pH2O*101000/(1+N31);
-        const pCOO2c = pCO*pO2*101000/(1+N4);
+        const pCOCO2c = pCO*pO2*101000/(1+N4);
 
         const dM1 = getDXMoles(N1, pO2, pO2c, dS, aD, tAverage );
         const dM2 = getDXMoles(N2, pO2, pO2c, dS, aD, tAverage );
@@ -1750,9 +1784,9 @@ calculateFuelBurnLayer = (
         const dM31 = getDXMoles(N31, pO2, pO2c, dS, aD, tAverage );
         const dM4 = getDXMoles(N4, pCO*pO2, pO2c, dS, aD, tAverage );
 
-        const nnn = (aD/(8.314*tAverage));
+        //const nnn = (aD/(8.314*tAverage));
         const GciO2CO2 = (aD/(8.314*tAverage))*1/((1+N3)*(1+N1+N2))
-            *pO2c(
+            *pO2c*(
                 (N1*(1+2*N3) + 2*N2*(1+N3))
                 + N3*(1+N1+N2)
             )*12;
@@ -1760,7 +1794,9 @@ calculateFuelBurnLayer = (
         const GciH2O = (aD/(8.314*tAverage))*1/(1+N31)
             *pH2Oc*12;
         const Gci = GciO2CO2+GciH2O;
-        console.log({ pO2, pCO2, pH2O, N1, N2, N3, N31, k1,k2,k3, aD, p10, Gci, D0, tAverage, tAir, tFlame, wAir, wFlame, w, Nu, s0, airDensityTflame, airDensityTair})
+        console.log({ pO2, pCO2, pH2O, N1, N2, N3, N31, k1,k2,k3, aD,
+            pCOO2c, Gci, D0, tAverage, tAir, tFlame, wAir, wFlame, w,
+            Nu, s0, airDensityTflame, airDensityTair});
 
         GcSum += Gci;
         pO2-=dpO2;

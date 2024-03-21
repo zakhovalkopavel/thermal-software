@@ -31,15 +31,63 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>Hole diameter (or other dimension), mm</td>
+                    <td>S air, cm2</td>
                     <td>
-                      <input type="number" id="d0mm" value="100">
+                        <input type="number" id="sAirS" value="0" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>S smoke, cm2</td>
+                    <td>
+                        <input type="number" id="sSmokeS" value="0" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Air equivalent diameter, cm</td>
+                    <td>
+                        <input type="number" id="dAirS" value="0" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Smoke equivalent diameter, cm</td>
+                    <td>
+                        <input type="number" id="dSmokeS" value="0" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>V air start, m/s</td>
+                    <td>
+                        <input type="number" id="wAirStart" value="0" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>V air end, m/s</td>
+                    <td>
+                        <input type="number" id="wAirEnd" value="0" disabled>
+                    </td>
+                </tr><tr>
+                    <td>V smoke start, m/s</td>
+                    <td>
+                        <input type="number" id="wSmokeStart" value="0" disabled>
+                    </td>
+                </tr><tr>
+                    <td>V smoke end, m/s</td>
+                    <td>
+                        <input type="number" id="wSmokeEnd" value="0" disabled>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Hole diameter, mm<br>
+                        (or other dimension, for Circle smoke into ring of air this is outer diameter of smoke tube)
+                    </td>
+                    <td>
+                      <input type="number" id="d0mm" value="60">
                     </td>
                 </tr>
                 <tr>
                     <td>Air depth in ring (Circle smoke into ring of air), mm</td>
                     <td>
-                        <input type="number" id="h0mm" value="20">
+                        <input type="number" id="h0mm" value="15">
                     </td>
                 </tr>
                 <tr>
@@ -51,6 +99,12 @@
                             <option value="square">Square</option>
                             <option value="triangle">1 triangle tube for air into it</option>
                         </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Number of passes of air</td>
+                    <td>
+                        <input type="number" id="nPasses" value="1">
                     </td>
                 </tr>
                 <tr>
@@ -67,6 +121,12 @@
                 </tr>
 
                 <tr>
+                    <td>Smoke turbulence</td>
+                    <td>
+                        <input type="number" id="smokeTurbulence" value="0">
+                    </td>
+                </tr>
+                <tr>
                     <td>Excess Air</td>
                     <td>
                       <input type="number" id="kExcessAir" value="1.3">
@@ -81,7 +141,7 @@
                 <tr>
                     <td>Furnace power, kW</td>
                     <td>
-                      <input type="number" id="fPowerKW" value="12">
+                      <input type="number" id="fPowerKW" value="5">
                     </td>
                 </tr>
                 <tr>
@@ -112,7 +172,7 @@
                 <tr>
                     <td>Wanted recuperator length, m</td>
                     <td>
-                      <input type="number" id="wantedRecuperatorLength" value="1">
+                      <input type="number" id="wantedRecuperatorLength" value="0.6">
                     </td>
                 </tr>
                 <tr>
