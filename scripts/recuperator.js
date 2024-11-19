@@ -175,6 +175,18 @@ let params = {
     surfaceArea: 0,
     roomTemperature: 20, //C
     tSurfase: 423, // C, surface between outer thermal insulation and room air
+    furnaceForm: [
+        'sphere',
+        'cylinder',
+        'cube',
+    ],
+    materials: {
+        chamotte_solid: 'chamotte_solid',
+        chamotte_1300: 'chamotte_1300',
+        chamotte_1000: 'chamotte_1000',
+        chamotte_900: 'chamotte_900',
+        chamotte_400: 'chamotte_400',
+    },
     dSurface: 0.2, // m
     autosetParamsList: [
         'tSmokeStartC',
@@ -945,13 +957,9 @@ const getAverageThermalInsulationLambda = (t1, t2) => {
     return getLogariphmicAvearge(getThermalInsulationLambda(t1),getThermalInsulationLambda(t2));
 }
 
-const getMaxSurfaceTemperature = (tHot,  tRoom, h, alphaInner,  lInner = params.Lsmoke, dSurface = params.dSurface, lSurface = params.wantedRecuperatorLength, eSurface =params.surfaceEmissivity, tSurface = params.tSurfase, currentStep=0, iterations=20) => {
-   //   tRoom  |<---tSurface      tInner ---> |   tHot
-    tSurfase = tSurface>tHot ? tRoom+10 : tSurface;
-    //tInner = tInner === 0  ? tHot*0.8 : tInner;
-
-    let alpha = 0;
-
+const getFullNaturalConvectionAlpha = (tRoom, tSurface, lSurface, dSurface, eSurface) =>
+{
+    let alpha;
     if(tSurface<=423) {
         alpha = getAlphaForNaturalLowTempCooling (tRoom, tSurface);
     }
@@ -961,6 +969,15 @@ const getMaxSurfaceTemperature = (tHot,  tRoom, h, alphaInner,  lInner = params.
         //console.log({tSurface, tRoom, naturalConvectionAlpha, radiationAlpha});
         alpha = naturalConvectionAlpha + radiationAlpha;
     }
+    return alpha;
+}
+
+const getMaxSurfaceTemperature = (tHot,  tRoom, h, alphaInner,  lInner = params.Lsmoke, dSurface = params.dSurface, lSurface = params.wantedRecuperatorLength, eSurface =params.surfaceEmissivity, tSurface = params.tSurfase, currentStep=0, iterations=20) => {
+   //   tRoom  |<---tSurface      tInner ---> |   tHot
+    tSurfase = tSurface>tHot ? tRoom+10 : tSurface;
+    //tInner = tInner === 0  ? tHot*0.8 : tInner;
+
+    const alpha = getFullNaturalConvectionAlpha(tRoom, tSurface, lSurface, dSurface, eSurface);
 
     const lambda = getAverageThermalInsulationLambda(tSurface, tHot);
     // console.log({tHot,  tRoom, h,  tSurface, currentStep, iterations, alpha, lambda});
@@ -1402,7 +1419,11 @@ const calculate = () => {
     }
 
     setResult(results);
+    const furnace = heatFluxFurnace(0.01,0.04 ,params.materials.chamotte_solid, params.materials.chamotte_400, params.refractoryEmissivity, params.wSmokeStart/5, params.systemComposition.after, 1400+273, params.tAirStart, 'cylinder', 0.1, 0.1);
+    console.log(furnace);
 
+    const furnace2 = heatFluxFurnace(0.02,0.03 ,params.materials.chamotte_1300, params.materials.chamotte_400, params.refractoryEmissivity, 19, params.systemComposition.after, 1500+273, params.tAirStart, 'sphere', 0.1, 0.1);
+    console.log(furnace2);
     //calculateOptimalCoaxialTube(params);
 
     /*calculateFuelBurnLayer(
@@ -1572,6 +1593,184 @@ const calculateSurface = (
             iteration,
         );
     }
+}
+
+const getFormDimentions = (form, a, b=0, c=0) => {
+    let lSurface, dSurface;
+    switch(form){
+        case 'sphere':
+            lSurface = 2*a;
+            dSurface = 2*a;
+            break;
+        case 'cylinder':
+            lSurface = 2*b;
+            dSurface = 2*a;
+            break;
+        case 'cube':
+            lSurface = a;
+            dSurface = a;
+            break;
+    }
+    return {lSurface, dSurface};
+}
+
+const surfaceFunction = (form, a, b=0, c=0) => {
+    /*
+    sphere - a - radius
+    cylinder - a - radius, b - height
+    cube - a
+     */
+    let surface;
+    switch(form){
+        case 'sphere':
+            surface = 4*Math.PI*a*a;
+            break;
+        case 'cylinder':
+            surface = 2*Math.PI*a*a + 2*Math.PI*a*b;
+            break;
+        case 'cube':
+            surface = 6*a*a;
+            break;
+    }
+    return surface;
+}
+
+const getRayLength = (form, a, b = 0, c = 0) => {
+    /*
+    sphere 0.6d
+    cylinder h=d 0.6d
+    cylinder infinite 0.9d
+    parallel  infinite surface 1.8d
+    cube 0.6h
+     */
+    let length;
+    switch (form) {
+        case 'sphere':
+            length = 0.6*2*a;
+            break;
+        case 'cylinder':
+            length = b == 2*a ? 0.6*2*a : 0.9*2*a;
+            break;
+        case 'sphere':
+            length = 0.6*2*a;
+            break;
+    }
+    return length;
+}
+
+const getLambda = (type, t) =>
+{
+    let lambda;
+    const tCelcium = t - 273;
+    switch (type) {
+        case params.materials.chamotte_solid:
+            lambda = 0.7+0.00064*tCelcium;
+            break;
+        case params.materials.chamotte_1300:
+            lambda = 0.47+0.00035*tCelcium;
+            break;
+        case params.materials.chamotte_1000:
+            lambda = 0.35+0.00035*tCelcium;
+            break;
+        case params.materials.chamotte_900:
+            lambda = 0.29+0.00023*tCelcium;
+            break;
+        case params.materials.chamotte_400:
+            lambda = 0.1+0.00021*tCelcium;
+            break;
+    }
+    return lambda;
+}
+
+const heatFluxFurnace = (h1,h2,lambda1, lambda2, E, w, composition, tFlame, tAir, form, a, b =0, c=0, endFactor = 0.001) =>
+{
+    //console.log({h1,h2,lambda1, lambda2, E, w, composition, tFlame, tAir, form, a, b, c, endFactor});
+    let tOuter = tAir;
+    let tInnerMin = tOuter;
+    let tInnerMax = tFlame;
+    let tInner = getLogariphmicAvearge(tInnerMin,tInnerMax);
+    let tBetweenInsulation;
+    let fluxInner, fluxOuter;
+    let alphaInner, alphaOuter;
+
+    const h = h1+h2;
+    const numberOfSteps = 50;
+    const step = h/numberOfSteps;
+    const rayLength = getRayLength(form, a, b, c);
+    const sInner = surfaceFunction(form, a, b, c);
+    const sOuter = surfaceFunction(form, a, b, c);
+    const {lSurface, dSurface} = getFormDimentions(form, a, b, c);
+
+    for(let i=0; i< numberOfSteps; i++) {
+        tInner = getLogariphmicAvearge(tInnerMin,tInnerMax);
+        alphaInner = fullGasAlpha (
+                tFlame, tInner, E, composition.partial.H2O,
+                composition.partial.CO2, dSurface, rayLength, w);
+        fluxInner = alphaInner.total*(tFlame-tInner)*sInner;
+        //console.log({tInner, alphaInner, fluxInner, sInner, sOuter});
+        let isFirstLayer = true;
+        let tCurrent = tInner;
+        let x = 0;
+        let surfaceCurrent = sInner;
+        while(x<h) {
+            let stepCurrent = step;
+            let lambdaCurrent = isFirstLayer ? getLambda(lambda1,tCurrent) :  getLambda(lambda2,tCurrent);
+            let isLayerBorder = false;
+            if(isFirstLayer) {
+                if(x + stepCurrent >= h1) {
+                    stepCurrent = h1 - x;
+                    isFirstLayer = false;
+                    isLayerBorder = true;
+                }
+            }
+            else if(x + step > h){
+                stepCurrent = h - x;
+            }
+            x +=stepCurrent;
+            const surfaceNext = surfaceFunction(form, a+x, b+x, c+x);
+            const surfaceAverage = (surfaceNext + surfaceCurrent)/2;
+            const dT = fluxInner*stepCurrent/(surfaceAverage*lambdaCurrent);
+            tCurrent -= dT;
+            if(isLayerBorder) {
+                tBetweenInsulation = tCurrent;
+            }
+            if(tCurrent<tAir){
+                x=h;
+            }
+        }
+        tOuter = tCurrent;
+        let currentEndFactor;
+        if(tCurrent<tAir){
+            tInnerMin = tInner;
+        }
+        else{
+            alphaOuter = getFullNaturalConvectionAlpha(tAir, tOuter, lSurface, dSurface, E);
+            fluxOuter = alphaOuter*(tOuter-tAir)*sOuter;
+            currentEndFactor = Math.abs(2*(fluxInner - fluxOuter)/(fluxInner+fluxOuter));
+            if(currentEndFactor <= endFactor) {
+                console.log({i,
+                    currentEndFactor,
+                    tInnerC: tInner-273,
+                    tOuterC:tOuter-273,
+                    tBetweenInsulationC:tBetweenInsulation-273,
+                    dT_inner: tFlame-tInner,
+                    fluxOuter,
+                    fluxInner,
+                    alphaInner,
+                    alphaOuter});
+                break;
+            }
+            else{
+                if(fluxInner>fluxOuter) {
+                    tInnerMin = tInner;
+                }
+                else{
+                    tInnerMax = tInner
+                }
+            }
+        }
+    }
+    return {tInner, tOuter, tBetweenInsulation, fluxOuter, fluxInner, alphaInner, alphaOuter}
 }
 
 
