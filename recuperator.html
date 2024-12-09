@@ -192,6 +192,208 @@
         <div>Energy given by smoke <span id="smokeEnergyDecrease"></span> J/h</div>
         <div>Recuperator length <span id="recuperatorLength"></span> m</div>
 
+
+        <table>
+            <thead><th>Furnace parameters</th><th>Value</th></thead>
+            <tbody>
+                <tr>
+                    <td>Flame temperature, C</td>
+                    <td>
+                        <input type="number" id="tFlameFC" value="1500">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Layer 0 material (inside): </td>
+                    <td>
+                        chamotte_solid: 'chamotte_solid',
+                        chamotte_1300: 'chamotte_1300',
+                        chamotte_1000: 'chamotte_1000',
+                        chamotte_900: 'chamotte_900',
+                        chamotte_600: 'chamotte_600',
+                        chamotte_400: 'chamotte_400',
+                        mullite_2300: 'mullite_2300',
+                        quartz_2000: 'quartz_2000',
+                        quartz_1000: 'quartz_1000',
+                        quartz_sand_1: 'quartz_sand_1',
+                        quartz_sand_05: 'quartz_sand_05',
+                        quartz_sand_02: 'quartz_sand_02',
+                        alumina_2500: 'alumina_2500',
+                        alumina_1300: 'alumina_1300',
+                        alumina_sand_1: 'alumina_sand_1',
+                        alumina_sand_05: 'alumina_sand_05',
+                        alumina_sand_02: 'alumina_sand_02',
+                        silicon_carbide: 'silicon_carbide',
+                        basalt_fiber_mat: 'basalt_fiber_mat',
+                        <select id="layer[0].material">
+                            <option value="chamotte_solid">Solid chamotte</option>
+                            <option value="chamotte_1300">Chamotte lightweight 1300</option>
+                            <option value="chamotte_1000">Chamotte lightweight 1000</option>
+                            <option value="chamotte_900">Chamotte lightweight 900</option>
+                            <option value="chamotte_600">Chamotte lightweight 600</option>
+                            <option value="chamotte_400">Chamotte lightweight 400</option>
+                            <option value="mullite_2300">Mullite solid 2300</option>
+                            <option value="quartz_2000" selected>Quartz 2000</option>
+                            <option value="quartz_1000" selected>Quartz lightweight 1000</option>
+                            <option value="quartz_sand_1">Quartz sand 1mm</option>
+                            <option value="quartz_sand_05">Quartz sand 0.5mm</option>
+                            <option value="quartz_sand_02">Quartz sand 0.2mm</option>
+                            <option value="alumina_2500">Alumina solid 2500</option>
+                            <option value="alumina_1300">Alumina lightweight 1300</option>
+                            <option value="alumina_sand_1">Alumina sand 1mm</option>
+                            <option value="alumina_sand_05">Alumina sand 0.5mm</option>
+                            <option value="alumina_sand_0.2">Alumina sand 0.2mm</option>
+                            <option value="silicon_carbide">Silicon carbide</option>
+                            <option value="basalt_fiber_mat">Basalt fiber mat</option>
+                            <option value="square">Square</option>
+                            <option value="triangle">1 triangle tube for air into it</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Layer 0 thickness mm: </td>
+                    <td>
+                        <input type="number" id="layer[0].h" value="10">
+                    </td>
+                </tr>
+                <tr>
+                    <td>Layer 1 material: </td>
+                    <td>
+                        <select id="layer[1].material">
+                            <option value="chamotte_solid">Solid chamotte</option>
+                            <option value="chamotte_1300">Chamotte lightweight 1300</option>
+                            <option value="chamotte_1000">Chamotte lightweight 1000</option>
+                            <option value="chamotte_900">Chamotte lightweight 900</option>
+                            <option value="chamotte_600">Chamotte lightweight 600</option>
+                            <option value="chamotte_400">Chamotte lightweight 400</option>
+                            <option value="quartz_2000">Quartz 2000</option>
+                            <option value="quartz_sand_1">Quartz sand 1mm</option>
+                            <option value="quartz_sand_05" selected>Quartz sand 0.5mm</option>
+                            <option value="quartz_sand_02">Quartz sand 0.2mm</option>
+                            <option value="alumina_sand_1">Alumina sand 1mm</option>
+                            <option value="alumina_sand_05">Alumina sand 0.5mm</option>
+                            <option value="alumina_sand_0.2">Alumina sand 0.2mm</option>
+                            <option value="silicon_carbide">Silicon carbide</option>
+                            <option value="basalt_fiber_mat">Basalt fiber mat</option>
+                            <option value="square">Square</option>
+                            <option value="triangle">1 triangle tube for air into it</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Layer 1 thickness mm: </td>
+                    <td>
+                        <input type="number" id="layer[1].h" value="15">
+                    </td>
+                </tr>
+
+
+
+                <tr>
+                    <td>Layer 2 material: </td>
+                    <td>
+                        <select id="layer[2].material">
+                            <option value="chamotte_solid" selected>Solid chamotte</option>
+                            <option value="chamotte_1300">Chamotte lightweight 1300</option>
+                            <option value="chamotte_1000">Chamotte lightweight 1000</option>
+                            <option value="chamotte_900">Chamotte lightweight 900</option>
+                            <option value="chamotte_600">Chamotte lightweight 600</option>
+                            <option value="chamotte_400">Chamotte lightweight 400</option>
+                            <option value="quartz_2000">Quartz 2000</option>
+                            <option value="quartz_sand_1">Quartz sand 1mm</option>
+                            <option value="quartz_sand_05">Quartz sand 0.5mm</option>
+                            <option value="quartz_sand_02">Quartz sand 0.2mm</option>
+                            <option value="alumina_sand_1">Alumina sand 1mm</option>
+                            <option value="alumina_sand_05">Alumina sand 0.5mm</option>
+                            <option value="alumina_sand_0.2">Alumina sand 0.2mm</option>
+                            <option value="silicon_carbide">Silicon carbide</option>
+                            <option value="basalt_fiber_mat">Basalt fiber mat</option>
+                            <option value="square">Square</option>
+                            <option value="triangle">1 triangle tube for air into it</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Layer 2 thickness mm: </td>
+                    <td>
+                        <input type="number" id="layer[2].h" value="10">
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <td>Layer 3 material: </td>
+                    <td>
+                        <select id="layer[3].material">
+                            <option value="chamotte_solid">Solid chamotte</option>
+                            <option value="chamotte_1300">Chamotte lightweight 1300</option>
+                            <option value="chamotte_1000">Chamotte lightweight 1000</option>
+                            <option value="chamotte_900">Chamotte lightweight 900</option>
+                            <option value="chamotte_600" selected>Chamotte lightweight 600</option>
+                            <option value="chamotte_400">Chamotte lightweight 400</option>
+                            <option value="quartz_2000">Quartz 2000</option>
+                            <option value="quartz_sand_1">Quartz sand 1mm</option>
+                            <option value="quartz_sand_05">Quartz sand 0.5mm</option>
+                            <option value="quartz_sand_02">Quartz sand 0.2mm</option>
+                            <option value="alumina_sand_1">Alumina sand 1mm</option>
+                            <option value="alumina_sand_05">Alumina sand 0.5mm</option>
+                            <option value="alumina_sand_0.2">Alumina sand 0.2mm</option>
+                            <option value="silicon_carbide">Silicon carbide</option>
+                            <option value="basalt_fiber_mat">Basalt fiber mat</option>
+                            <option value="square">Square</option>
+                            <option value="triangle">1 triangle tube for air into it</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Layer 3 thickness mm: </td>
+                    <td>
+                        <input type="number" id="layer[3].h" value="30">
+                    </td>
+                </tr>
+
+
+                <tr>
+                    <td>Layer 4 material: </td>
+                    <td>
+                        <select id="layer[4].material">
+                            <option value="chamotte_solid">Solid chamotte</option>
+                            <option value="chamotte_1300">Chamotte lightweight 1300</option>
+                            <option value="chamotte_1000">Chamotte lightweight 1000</option>
+                            <option value="chamotte_900">Chamotte lightweight 900</option>
+                            <option value="chamotte_600">Chamotte lightweight 600</option>
+                            <option value="chamotte_400">Chamotte lightweight 400</option>
+                            <option value="quartz_2000" selected>Quartz 2000</option>
+                            <option value="quartz_sand_1">Quartz sand 1mm</option>
+                            <option value="quartz_sand_05">Quartz sand 0.5mm</option>
+                            <option value="quartz_sand_02">Quartz sand 0.2mm</option>
+                            <option value="alumina_sand_1">Alumina sand 1mm</option>
+                            <option value="alumina_sand_05">Alumina sand 0.5mm</option>
+                            <option value="alumina_sand_0.2">Alumina sand 0.2mm</option>
+                            <option value="silicon_carbide">Silicon carbide</option>
+                            <option value="basalt_fiber_mat">Basalt fiber mat</option>
+                            <option value="square">Square</option>
+                            <option value="triangle">1 triangle tube for air into it</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Layer 4 thickness mm: </td>
+                    <td>
+                        <input type="number" id="layer[4].h" value="10">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div>Total insulation <span id="totalLayersThickness"></span>mm</div>
+
+        <div>T inner <span id="tFurnaceInner"></span>C</div>
+        <div>T outer <span id="tFurnaceOuter"></span>mm</div>
+        <div>Total heat flux <span id="furnaceTotalHeatFlux"></span>J</div>
+        <div>Heat flux inner <span id="furnaceHeatFluxInner"></span>J/dm2</div>
+        <div><span id="betweenLayers0.name"></span> <span id="betweenLayers0.tCelsius"></span>C</div>
+        <div><span id="betweenLayers1.name"></span> <span id="betweenLayers1.tCelsius"></span>C</div>
+        <div><span id="betweenLayers2.name"></span> <span id="betweenLayers2.tCelsius"></span>C</div>
+        <div><span id="betweenLayers3.name"></span> <span id="betweenLayers3.tCelsius"></span>C</div>
         <div>
             <button onclick="calculate()">Calculate</button>
         </div>
