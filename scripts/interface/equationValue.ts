@@ -1,14 +1,11 @@
 import {EquationTypeDto} from "../dto";
+import {AlyLeeEquation, LinearHyperbolicEquation, LinearEquation, QuadraticEquation, QuarticEquation, CubicEquation} from "../type";
 
 export interface EquationValue {
     type: EquationTypeDto,
     ref:number,
     page: number,
-    a: number,
-    b: number,
-    c: number,
-    d: number,
-    e: number,
+    vars: AlyLeeEquation | LinearHyperbolicEquation | LinearEquation | QuadraticEquation | CubicEquation | QuarticEquation,
     min: number,
     max: number,
 }

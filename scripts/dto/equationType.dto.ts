@@ -4,5 +4,5 @@ export enum EquationTypeDto {
     cubic = "cubic", //a+bT+cT2+dT3
     quartic = "quartic",//a+bT+cT2+dT3+eT4
     linearHyperbolic = "linearHyperbolic", // a+bT+c/T2
-    alyLee ="alyLee", // a + b×{(c/T)/sinh(c/T)}2 + d×{(e/T)/cosh(e/T)}2
+    alyLee ="alyLee", // c1 + c2×{(c3/T)/sinh(c3/T)}2 + c4×{(c5/T)/cosh(c5/T)}2
 }

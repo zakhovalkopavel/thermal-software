@@ -2,27 +2,31 @@ import {EquationTypeDto} from "../dto";
 import {EquationValue} from "./equationValue";
 
 export interface CompoundValue {
-    name: string;
-    chemicalFormula: string;
-    Mr: number, // molar mass kg/mol
-    enthalpyFormation: {
-        defaultType: EquationTypeDto,
+    readonly name: string;
+    readonly chemicalFormula: string;
+    readonly Mr: number, // molar mass kg/mol
+    readonly enthalpyFormation298: number,
+    readonly enthalpyFormation: {
+        def: EquationTypeDto,
         values:[EquationValue],
     },
-    // ΔG = M + NT (J/(mol*K))), Reference [1]
-    gibbsEnergy:{
-        g0: number,
-        m: number,
-        n: number,
-        reagents: [],
-        min: number,
-        max: number,
-        ref:number,
-        page: number,
+    readonly gibbsEnergy298: number,
+    // ΔG = M + NT (J/(mol*K)) [ => a+bT]
+    readonly gibbsEnergy:{
+        reagents: string[],
+        values: EquationValue
     },
     // Isobaric molar heat capacity J/(mol*K)
-    heatCapacity: {
-        defaultType: EquationTypeDto,
+    readonly heatCapacity: {
+        def: number,
+        values:EquationValue[]
+    }
+    readonly viscosity:{
+        def: number,
+        values:EquationValue[]
+    },
+    readonly density:{
+        def: number,
         values:EquationValue[]
     }
 }
