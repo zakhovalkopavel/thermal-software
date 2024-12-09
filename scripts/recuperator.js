@@ -185,7 +185,21 @@ let params = {
         chamotte_1300: 'chamotte_1300',
         chamotte_1000: 'chamotte_1000',
         chamotte_900: 'chamotte_900',
+        chamotte_600: 'chamotte_600',
         chamotte_400: 'chamotte_400',
+        mullite_2300: 'mullite_2300',
+        quartz_2000: 'quartz_2000',
+        quartz_1000: 'quartz_1000',
+        quartz_sand_1: 'quartz_sand_1',
+        quartz_sand_05: 'quartz_sand_05',
+        quartz_sand_02: 'quartz_sand_02',
+        alumina_2500: 'alumina_2500',
+        alumina_1300: 'alumina_1300',
+        alumina_sand_1: 'alumina_sand_1',
+        alumina_sand_05: 'alumina_sand_05',
+        alumina_sand_02: 'alumina_sand_02',
+        silicon_carbide: 'silicon_carbide',
+        basalt_fiber_mat: 'basalt_fiber_mat',
     },
     dSurface: 0.2, // m
     autosetParamsList: [
@@ -321,8 +335,7 @@ const testData = [{
 
 const gasHeatCapacity = (t, gas, t0 = -1) => {
     /*
-    Table 7.2.3: Heat Capacity Coefficients for the Expansion: Cp,m = a + b T + c T2
-+ d T3
+    Table 7.2.3: Heat Capacity Coefficients for the Expansion: Cp,m = a + b T + c T2 + d T3
  from
 300 to 1800 K.3
 Substance a
@@ -489,6 +502,79 @@ const setSystemComposition = (mN2, mO2, mCO2, mCO, mH2O, mH2, mAsh, mFuel, direc
     params.systemComposition[direction] = data;
 }
 
+const findIsobaricTwoStageFlame = (
+    tAir,
+    wH2Om, // mass additional fraction to air
+    kExcessAir,
+    kExcessAir1, // excess air first stage 0.5 - 100% CO, 0% CO2; 1 - 0% CO, 100% CO2
+    mFuelPerHour,
+    fuelQ,
+    ashPart,
+    maxIterations = 100,
+    dQmin = 10,
+    tStart = 3000,
+    dtAir1 = 50,
+    dtAir2 = 400,
+) => {
+    // coke flame temperature
+    const mFuel = mFuelPerHour/3600;
+    const mCarbon = fuelQ/carbonQ*mFuel;
+    const mAsh = mFuel*ashPart;
+
+
+    //first burning stage finishes at 100% CO
+    const mAir1 = kExcessAir1*(32/(pO2*12)*mCarbon; //first stage air
+    const mAir = kExcessAir*(32/(pO2*12)*mCarbon); //full air
+    const mAir2 = mAir - mAir1; //second stage air
+
+    // First stage
+
+    const mN2Stage1 = mAir1*(1-pO2)*28/((1-pO2)*28+32*pO2);
+    const mO2Stage1 = mAir1 - mN2Stage1;
+
+    const mN2 = mAir*(1-pO2)*28/((1-pO2)*28+32*pO2);
+    const mO2 = mAir - mN2;
+    let kCO2 = k>=1 ? 1 : (k>0.5 ? 2*k-1: 0);
+    let kCO = k>=1 ? 0 : (k>0.5 ? 2-2*k: 2*k);
+
+    const mH2O = mAir*wH2Om;
+
+    const mCO2 = 44/12*mCarbon*kCO2;
+    const mCO = 28/12*mCarbon*kCO;
+    const mH2 = 2/12*mCarbon*kH2;
+    const mO2after = k>1 ? (k-1)*mO2 : 0;
+    const energyBefore = t0*mFuel*fuelCapacity
+        + mN2*gasHeatCapacity(t0, 'N2', 0)*t0
+        + mO2*gasHeatCapacity(t0, 'O2', 0)*t0
+        + mH2O*gasHeatCapacity(t0, 'H20', 0)*t0
+    ;
+
+    // Left this, but it no needed, it doesn't allow emission, fo flame T is too high
+    /*const Q = mCarbon*(kCO*carbonMonoxideQ + kCO2*carbonQ + kH2*dQHydrogenGas);
+
+    let factor = f0;
+    for( let i=0; i<maxIterations; i++) {
+        factor = factor*f;
+        const dQ = [];
+        const dT = (tStart-t0)*factor;
+        const t1 = tStart - dT;
+        const t2 = tStart + dT;
+        dQ.push({t:tStart, dQ: Math.abs(Q + energyBefore -  getSystemEnergy(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0, ashCapacity, fuelCapacity, tStart, t0))});
+        dQ.push({t:t1, dQ: Math.abs(Q + energyBefore - getSystemEnergy(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0, ashCapacity, fuelCapacity, t1, t0))});
+        dQ.push({t:t2, dQ: Math.abs(Q + energyBefore - getSystemEnergy(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0, ashCapacity, fuelCapacity, t2, t0))});
+        dQ.sort((a, b) => { return a.dQ - b.dQ});
+
+        tStart = dQ[0].t > t0 ? dQ[0].t : tStart;
+        if(dQ[0].dQ<dQmin){
+            //console.log({dQ,dT,mN2, mO2, mO2after, mCO2, mCO, mAsh, mFuel, mH2, ashCapacity, fuelCapacity, k, kCO, kCO2, kH2, kH2O, kH2Oafter});
+            break;
+        }
+    }*/
+    tStart = 6.23*Math.pow(1900 - t0, 0.74)*Math.pow(characteristicSize, -0.16)*mO2/mAir + t0;
+    setSystemComposition(mN2, mO2, 0, 0, mH2O, 0, 0, mFuel, 'before');
+    setSystemComposition(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0,'after');
+    return tStart;
+}
 
 const findIsobaricFlameT = (
     t0,
@@ -1675,8 +1761,55 @@ const getLambda = (type, t) =>
         case params.materials.chamotte_900:
             lambda = 0.29+0.00023*tCelcium;
             break;
+        case params.materials.chamotte_600:
+            lambda = 0.13+0.00028*tCelcium;
+            break;
         case params.materials.chamotte_400:
             lambda = 0.1+0.00021*tCelcium;
+            break;
+
+        case params.materials.mullite_2300:
+            lambda = 1.55+0.0002*tCelcium;
+            break;
+
+        case params.materials.quartz_2000:
+            lambda = 0.815+0.00067*tCelcium;
+            break;
+        case params.materials.quartz_1000:
+            lambda = 0.55+0.0003*tCelcium;
+            break;
+        case params.materials.quartz_sand_1://quartz_1000
+            lambda = 0.55+0.0003*tCelcium;
+            break;
+        case params.materials.quartz_sand_02://quartz_1000
+            lambda = 0.55+0.0003*tCelcium;
+            break;
+        case params.materials.quartz_sand_05://quartz_1000
+            lambda = 0.55+0.0003*tCelcium;
+            break;
+
+        case params.materials.alumina_2500:
+            lambda = 1.9+0.0016*tCelcium;
+            break;
+        case params.materials.alumina_1300:
+            lambda = 0.84-0.00035*tCelcium;
+            break;
+        case params.materials.alumina_sand_1://alumina_1300
+            lambda = 0.84-0.00035*tCelcium;
+            break;
+        case params.materials.alumina_sand_05://alumina_1300
+            lambda = 0.84-0.00035*tCelcium;
+            break;
+        case params.materials.alumina_sand_02://alumina_1300
+            lambda = 0.84-0.00035*tCelcium;
+            break;
+
+        case params.materials.silicon_carbide:
+            lambda = 13.73-0.004555*tCelcium;
+            break;
+
+        case params.materials.basalt_fiber_mat:
+            lambda =  0.139 - 7.97*Math.pow(10,-5)*tCelcium + 1.3*Math.pow(10,-7)*Math.pow(tCelcium, 2) + 2.73*Math.pow(10,-10)*Math.pow(tCelcium, 3);
             break;
     }
     return lambda;
@@ -1771,6 +1904,130 @@ const heatFluxFurnace = (h1,h2,lambda1, lambda2, E, w, composition, tFlame, tAir
         }
     }
     return {tInner, tOuter, tBetweenInsulation, fluxOuter, fluxInner, alphaInner, alphaOuter}
+}
+
+interface LayerType {
+    h: number,
+    material: string,
+    start: number,
+    end: number,
+}
+
+const getLayerNumber = (x:number, layers: [LayerType]) => {
+    for (let i=0; i<= layers.length; i++) {
+        if (x >= layers[i].start && x < layers[i].end) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+const getFlameSmokeSurfaceBalance = (surface, tFlame, tSurface, dSurface, E, w, rayLength, composition, mComposition, maxStep = 50, step = 0) => {
+    const alphaInner = fullGasAlpha (
+        tFlame, tSurface, E, composition.partial.H2O,
+        composition.partial.CO2, dSurface, rayLength, w);
+    const fluxInner = alphaInner.total*(tFlame-tSurface)*surface;
+
+}
+const heatFluxFurnaceMultyLayer = (layers: [LayerType], step, E, w, composition, tFlame, tAir, form, a, b =0, c=0, endFactor = 0.001) =>
+{
+    //console.log({h1,h2,lambda1, lambda2, E, w, composition, tFlame, tAir, form, a, b, c, endFactor});
+    let tOuter = tAir;
+    let tInnerMin = tOuter;
+    let tInnerMax = tFlame;
+    let tInner = getLogariphmicAvearge(tInnerMin,tInnerMax);
+    let betweenInsulation = [];
+    let fluxInner, fluxOuter;
+    let alphaInner, alphaOuter;
+
+    let h = 0;
+
+    for (let i=0; i<= layers.length; i++) {
+        layers[i].start= h;
+        layers[i].end= h + layers[i].h;
+        h = layers[i].end;
+    }
+    const rayLength = getRayLength(form, a, b, c);
+    const sInner = surfaceFunction(form, a, b, c);
+    const sOuter = surfaceFunction(form, a, b, c);
+    const {lSurface, dSurface} = getFormDimentions(form, a, b, c);
+
+    const maxSteps = 50;
+    for(let i=0; i< maxSteps; i++) {
+        tInner = getLogariphmicAvearge(tInnerMin,tInnerMax);
+        alphaInner = fullGasAlpha (
+            tFlame, tInner, E, composition.partial.H2O,
+            composition.partial.CO2, dSurface, rayLength, w);
+        fluxInner = alphaInner.total*(tFlame-tInner)*sInner;
+        //console.log({tInner, alphaInner, fluxInner, sInner, sOuter});
+        let tCurrent = tInner;
+        let x = 0;
+        let surfaceCurrent = sInner;
+        while(x<h) {
+            let stepCurrent = step;
+            const layerNumber = getLayerNumber(x, layers);
+            if(layerNumber < 0) {
+                throw new Error("Undefined layer");
+                break;
+            }
+            let lambdaCurrent =getLambda(layers[layerNumber].material,tCurrent);
+            let isLayerBorder = false;
+            if(x+stepCurrent>=layers[layerNumber].end){
+                stepCurrent = layers[layerNumber].end - x;
+                isLayerBorder = true;
+            }
+            x +=stepCurrent;
+            const surfaceNext = surfaceFunction(form, a+x, b+x, c+x);
+            const surfaceAverage = (surfaceNext + surfaceCurrent)/2;
+            const dT = fluxInner*stepCurrent/(surfaceAverage*lambdaCurrent);
+            tCurrent -= dT;
+            if(isLayerBorder) {
+                const nextLayerNumber = layerNumber+1 < layers.length-1 ? layerNumber+1 : -1;
+                if(nextLayerNumber>0) {
+                    betweenInsulation.push({
+                        name: `layer ${layerNumber} (${layers[layerNumber].material}) - layer ${nextLayerNumber} (${layers[nextLayerNumber].material})`,
+                        t: tCurrent,
+                        tCelsius: tCurrent - 273
+                    });
+                }
+            }
+            if(tCurrent<tAir){
+                x=h;
+            }
+        }
+        tOuter = tCurrent;
+        let currentEndFactor;
+        if(tCurrent<tAir){
+            tInnerMin = tInner;
+        }
+        else{
+            alphaOuter = getFullNaturalConvectionAlpha(tAir, tOuter, lSurface, dSurface, E);
+            fluxOuter = alphaOuter*(tOuter-tAir)*sOuter;
+            currentEndFactor = Math.abs(2*(fluxInner - fluxOuter)/(fluxInner+fluxOuter));
+            if(currentEndFactor <= endFactor) {
+                console.log({i,
+                    currentEndFactor,
+                    tInnerC: tInner-273,
+                    tOuterC:tOuter-273,
+                    tBetweenInsulationC:tBetweenInsulation-273,
+                    dT_inner: tFlame-tInner,
+                    fluxOuter,
+                    fluxInner,
+                    alphaInner,
+                    alphaOuter});
+                break;
+            }
+            else{
+                if(fluxInner>fluxOuter) {
+                    tInnerMin = tInner;
+                }
+                else{
+                    tInnerMax = tInner
+                }
+            }
+        }
+    }
+    return {tInner, tOuter, betweenInsulation, fluxOuter, fluxInner, alphaInner, alphaOuter}
 }
 
 
