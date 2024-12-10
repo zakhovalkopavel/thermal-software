@@ -5,6 +5,7 @@ export interface EquationValue {
     type: EquationTypeDto,
     ref:number,
     page: number,
+    k?: number,
     vars: AlyLeeEquation | LinearHyperbolicEquation | LinearEquation | QuadraticEquation | CubicEquation | QuarticEquation,
     min: number,
     max: number,

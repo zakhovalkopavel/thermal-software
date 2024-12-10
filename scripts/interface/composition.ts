@@ -7,4 +7,6 @@ export interface Composition<T> {
     CH4: T,
     H2O: T,
     NH3: T,
+    NO: T,
+    NO2: T,
 }

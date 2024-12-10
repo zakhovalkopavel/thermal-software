@@ -1,0 +1,134 @@
+import {EquationTypeDto} from "../../../dto";
+
+export const n=[
+    {//O2
+        type: EquationTypeDto.alyLee,
+        ref: 4,
+        page: 223,
+        k: 1e-3,
+        vars: {
+            c1: 29100,
+            c2: 10040,
+            c3: 2526.5,
+            c4: 9360,
+            c5: 1153.8,
+        },
+        min: 60,
+        max: 1500,
+    },
+
+    {//CO2
+        type: EquationTypeDto.alyLee,
+        ref: 4,
+        page: 223,
+        k: 1e-3,
+        vars: {
+            c1: 29370,
+            c2: 34540,
+            c3: 1428,
+            c4: 26400,
+            c5: 588,
+        },
+        min: 50,
+        max: 5000,
+    },
+
+    {//NO
+        type: EquationTypeDto.alyLee,
+        ref: 4,
+        page: 223,
+        k: 1e-3,
+        vars: {
+            c1: 34980,
+            c2: -35.32,
+            c3: 7.729e-2,
+            c4: -5.7357e-5,
+            c5: 1.4526e-8,
+        },
+        min: 100,
+        max: 1500,
+    },
+
+    {//NH3
+        type: EquationTypeDto.alyLee,
+        ref: 4,
+        page: 223,
+        k: 1e-3,
+        vars: {
+            c1: 33430,
+            c2: 48980,
+            c3: 2036,
+            c4: 22560,
+            c5: 882,
+        },
+        min: 100,
+        max: 1500,
+    },
+
+    {//N2
+        type: EquationTypeDto.alyLee,
+        ref: 4,
+        page: 223,
+        k: 1e-3,
+        vars: {
+            c1: 29110,
+            c2: 8610,
+            c3: 1701.6,
+            c4: 100,
+            c5: 909.79,
+        },
+        min: 50,
+        max: 1500,
+    },
+
+    {//Air
+        type: EquationTypeDto.alyLee,
+        ref: 4,
+        page: 223,
+        k: 1e-3,
+        vars: {
+            c1: 28960,
+            c2: 9390,
+            c3: 3012,
+            c4: 7580,
+            c5: 1484,
+        },
+        min: 50,
+        max: 1500,
+    },
+
+    {
+
+    {//SO2
+        type: EquationTypeDto.alyLee,
+        ref: 4,
+        page: 223,
+        k: 1e-3,
+        vars: {
+            c1: 33380,
+            c2: 25860,
+            c3: 932.8,
+            c4: 10880,
+            c5: 423.7,
+        },
+        min: 100,
+        max: 1500,
+    },
+
+    {//SO3
+        type: EquationTypeDto.alyLee,
+        ref: 4,
+        page: 223,
+        k: 1e-3,
+        vars: {
+            c1: 33410,
+            c2: 49680,
+            c3: 873.2,
+            c4: 28560,
+            c5: 393.74,
+        },
+        min: 100,
+        max: 1500,
+    },
+
+];

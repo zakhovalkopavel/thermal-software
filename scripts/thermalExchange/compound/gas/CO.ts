@@ -13,27 +13,32 @@ export class CO implements CompoundValue{
         max: 0,
     };
     heatCapacity: {
-        defaultType: EquationTypeDto.linearHyperbolic,
+        defaultType: 0,
         values:[
             {
                 type: EquationTypeDto.quartic,
-                ref:2,
-                page:834,
-            a: ,
-            b: ,
-            c: ,
-            d: ,
-            e: ,
-            min: 250,
+                ref:6,
+                page:36,
+                vars: {
+                    a: 29.556,
+                    b: -6.5807e-3,
+                    c: 2.0130e-5,
+                    d: -1.2227e-8,
+                    e: 2.2617e-12,
+                },
+            min: 60,
             max: 1500,
         },
         {
             type: EquationTypeDto.cubic,
             ref:5,
-            page:911,            a: 28.142,
-            b: 0.167,
-            c: 0.537,
-            d: -2.221,
+            page:911,
+            vars: {
+                a: 28.142,
+                b: 0.167,
+                c: 0.537,
+                d: -2.221,
+            },
             min: 300,
             max: 1800,
         },
@@ -41,11 +46,28 @@ export class CO implements CompoundValue{
             type: EquationTypeDto.linearHyperbolic,
             ref:1,
             page:268,
-            a: 28.43,
-            b: 4.1,
-            d: -0.46,
+            vars: {
+                a: 28.43,
+                b: 4.1,
+                d: -0.46,
+            },
             min: 298,
             max: 2500,
+        },
+        {
+            type: EquationTypeDto.alyLee,
+            ref:4,
+            page:223,
+            k:1e-3,
+            vars:{
+                c1:29110,
+                c2:8770,
+                c3:3085.1,
+                c4:8460,
+                c5:1538.2,
+            }
+            min: 60,
+            max: 1500,
         }
-    }
+    ]
 }
