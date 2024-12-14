@@ -6,15 +6,11 @@ export interface CompoundValue {
     readonly chemicalFormula: string;
     readonly Mr: number, // molar mass kg/mol
     readonly enthalpyFormation298: number,
-    readonly enthalpyFormation: {
-        def: EquationTypeDto,
-        values:[EquationValue],
-    },
     readonly gibbsEnergy298: number,
     // ΔG = M + NT (J/(mol*K)) [ => a+bT]
-    readonly gibbsEnergy:{
+    readonly gibbsEnergy?:{
         reagents: string[],
-        values: EquationValue
+        value: EquationValue
     },
     // Isobaric molar heat capacity J/(mol*K)
     readonly heatCapacity: {
@@ -29,4 +25,5 @@ export interface CompoundValue {
         def: number,
         values:EquationValue[]
     }
+
 }

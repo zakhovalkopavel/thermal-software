@@ -8,5 +8,6 @@ var EquationTypeDto;
     EquationTypeDto["cubic"] = "cubic";
     EquationTypeDto["quartic"] = "quartic";
     EquationTypeDto["linearHyperbolic"] = "linearHyperbolic";
+    EquationTypeDto["linearHyperbolicLogarithmic"] = "linearHyperbolicLogarithmic";
     EquationTypeDto["alyLee"] = "alyLee";
 })(EquationTypeDto = exports.EquationTypeDto || (exports.EquationTypeDto = {}));

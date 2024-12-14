@@ -4,21 +4,16 @@ import {EquationTypeDto} from "../../../dto";
 export class H2O implements CompoundValue{
     name: "Water gas";
     chemicalFormula: "H2O";
-    Mr: 0.018;
-    gibbsEnergy: {
-        m: 0,
-        n: 0,
-        reagents: [],
-        min: 0,
-        max: 0,
-    };
+    Mr: 0.018015;
+    enthalpyFormation298: -241.8e3;
+    gibbsEnergy298:-228.6e3;
     heatCapacity: {
-        defaultType: EquationTypeDto.cubic,
+        def: 1,
         values: [
             {
                 type: EquationTypeDto.quartic,
-                ref: 2,
-                page: 834,
+                ref: 6,
+                page: 52,
                 vars: {
                     a: 33.933,
                     b: -8.4186e-3,
@@ -34,21 +29,23 @@ export class H2O implements CompoundValue{
                 ref: 5,
                 page: 911,
                 vars: {
-                    a: 32.218,
-                    b: 0.192,
-                    c: 1.055,
-                    d: -3.593,
+                    a: 32.24,
+                    b: 0.1923e-2,
+                    c: 1.055e-5,
+                    d: -3.595e-9,
                 },
-                min: 300,
+                min: 273,
                 max: 1800,
             },
             {
                 type: EquationTypeDto.linearHyperbolic,
                 ref: 1,
-                page: 268,
-                a: 30.02,
-                b: 10.72,
-                d: 0.33,
+                page: 273,
+                vars: {
+                    a: 30.02,
+                    b: 10.72e-3,
+                    d: 0.33e5,
+                },
                 min: 298,
                 max: 2500,
             },
@@ -58,14 +55,26 @@ export class H2O implements CompoundValue{
                 page: 223,
                 k: 1e-3,
                 vars: {
-                    c1: 33360,
-                    c2: 26790,
-                    c3: 2610.5,
-                    c4: 8900,
+                    c1: 0.3336e5,
+                    c2: 0.2679e5,
+                    c3: 2.6105e3,
+                    c4: 0.089e5,
                     c5: 1169,
                 },
                 min: 100,
                 max: 2273.15,
+            },
+            {
+                type: EquationTypeDto.quadratic,
+                ref: 4,
+                page: 203,
+                vars: {
+                    a: 8.22,
+                    b: 0.00015,
+                    c: 0.00000134,
+                },
+                min: 300,
+                max: 2500,
             },
         ],
     }

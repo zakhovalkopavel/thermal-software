@@ -1,6 +1,6 @@
-import {AlyLeeEquation, LinearHyperbolicEquation, LinearEquation, QuadraticEquation, QuarticEquation, CubicEquation} from "../type";
+import { AlyLeeEquation, LinearHyperbolicEquation, LinearHyperbolicLogarithmicEquation, LinearEquation, QuadraticEquation, QuarticEquation, CubicEquation } from "../type";
 
-export interface Equation<Equ extends AlyLeeEquation | LinearHyperbolicEquation | LinearEquation
+export interface Equation<Equ extends AlyLeeEquation | LinearHyperbolicEquation | LinearHyperbolicLogarithmicEquation | LinearEquation
     | QuadraticEquation | QuarticEquation | CubicEquation > {
     calculate(x: number, vars: Equ, min, max, k?:number): number,
     calculateAverage(x1: number, x2, vars: Equ, min, max, k?:number): number,

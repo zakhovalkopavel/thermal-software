@@ -12,6 +12,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./alyLeeEquation"), exports);
 __exportStar(require("./linearHyperbolicEquation"), exports);
+__exportStar(require("./linearHyperbolicLogarithmicEquation"), exports);
 __exportStar(require("./linearEquation"), exports);
 __exportStar(require("./quadraticEquation"), exports);
 __exportStar(require("./cubicEquation"), exports);

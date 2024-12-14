@@ -4,31 +4,32 @@ import {EquationTypeDto} from "../../../dto";
 export class CH4 implements CompoundValue{
     name: "Methane";
     chemicalFormula: "CH4";
-    Mr: 0.016;
+    Mr: 0.016043;
     enthalpyFormation298: -74.85e3;
-    enthalpyFormation:{
-        def: 0,
-        values: [
-            {
-                type:
-
-            }
-        ]
-    }
+    gibbsEnergy298:-50.84e3;
     gibbsEnergy: {
-        m: 0,
-        n: 0,
-        reagents: [],
-        min: 0,
-        max: 0,
+        reagents: ["C","H2"],
+        value: {
+            type: EquationTypeDto.quadratic,
+            ref:6,
+            page:320,
+            k: 1000,
+            vars: {
+                a: -75.262,
+                b: 7.5925e-2,
+                c: 1.87e-5,
+            },
+            min: 298,
+            max: 1000,
+        }
     };
     heatCapacity: {
-        defaultType: 0,
+        def: 1,
         values:[
             {
                 type: EquationTypeDto.quartic,
                 ref:6,//2
-                page:36,//834
+                page:33,//834
                 vars: {
                     a: 34.942,
                     b: -3.9957e-2,
@@ -44,13 +45,13 @@ export class CH4 implements CompoundValue{
                 ref:5,
                 page:911,
                 vars: {
-                    a: 19.875,
-                    b: 5.021,
-                    c: 1.268,
-                    d: -11.004,
+                    a: 19.89,
+                    b: 5.024e-2,
+                    c: 1.269e-5,
+                    d: -11.01e-9,
                 },
-                min: 300,
-                max: 1800,
+                min: 273,
+                max: 1500,
             },
             {
                 type: EquationTypeDto.alyLee,
@@ -58,14 +59,25 @@ export class CH4 implements CompoundValue{
                 page:219,
                 k:1e-3,
                 vars:{
-                    c1:33300,
-                    c2:79930,
-                    c3:2086.9,
-                    c4:41600,
+                    c1:0.333e5,
+                    c2:0.7993e5,
+                    c3:2.0869e3,
+                    c4:0.416e5,
                     c5:991.96,
                 }
                 min: 50,
                 max: 1500,
+            },
+            {
+                type: EquationTypeDto.linear,
+                ref:4,
+                page:203,
+                vars: {
+                    a: 5.34,
+                    b: 0.0115,
+                },
+                min: 273,
+                max: 1200,
             },
         ]
     }
