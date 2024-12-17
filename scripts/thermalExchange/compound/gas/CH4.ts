@@ -7,6 +7,8 @@ export class CH4 implements CompoundValue{
     Mr: 0.016043;
     enthalpyFormation298: -74.85e3;
     gibbsEnergy298:-50.84e3;
+    collisionDiameter:3.758;
+    epsilonToKb: 148.6;
     gibbsEnergy: {
         reagents: ["C","H2"],
         value: {
@@ -80,5 +82,23 @@ export class CH4 implements CompoundValue{
                 max: 1200,
             },
         ]
-    }
+    };
+    viscosity: {
+        def: 0,
+        values:[
+            {
+                type: EquationTypeDto.quadratic,
+                ref:6,
+                page:455,
+                k: 1e6,
+                vars: {
+                    a: 3.844,
+                    b: 4.0112e-1,
+                    c: -1.4303e-4,
+                },
+                min: 91,
+                max: 850,
+            },
+        ]
+    };
 }

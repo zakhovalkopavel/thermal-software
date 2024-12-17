@@ -7,6 +7,8 @@ export class CO implements CompoundValue {
     Mr: 0.02801;
     enthalpyFormation298:-110.54e3;
     gibbsEnergy298:-137.28e3;
+    collisionDiameter: 3.69;
+    epsilonToKb: 91.7;
     gibbsEnergy: {
         reagents: ["C","O2"],
         value: {
@@ -25,11 +27,11 @@ export class CO implements CompoundValue {
     };
     heatCapacity: {
         def: 3,
-        values:[
+        values: [
             {
                 type: EquationTypeDto.quartic,
-                ref:6,
-                page:51,
+                ref: 6,
+                page: 51,
                 vars: {
                     a: 29.556,
                     b: -6.5807e-3,
@@ -37,59 +39,78 @@ export class CO implements CompoundValue {
                     d: -1.2227e-8,
                     e: 2.2617e-12,
                 },
-            min: 60,
-            max: 1500,
-        },
-        {
-            type: EquationTypeDto.cubic,
-            ref:5,
-            page:911,
-            vars: {
-                a: 28.16,
-                b: 0.1675e-2,
-                c: 0.5372e-5,
-                d: -2.222e-9,
+                min: 60,
+                max: 1500,
             },
-            min: 273,
-            max: 1800,
-        },
-        {
-            type: EquationTypeDto.linearHyperbolic,
-            ref:1,
-            page:271,
-            vars: {
-                a: 28.43,
-                b: 4.1e-3,
-                d: -0.46e5,
+            {
+                type: EquationTypeDto.cubic,
+                ref: 5,
+                page: 911,
+                vars: {
+                    a: 28.16,
+                    b: 0.1675e-2,
+                    c: 0.5372e-5,
+                    d: -2.222e-9,
+                },
+                min: 273,
+                max: 1800,
             },
-            min: 298,
-            max: 2500,
-        },
-        {
-            type: EquationTypeDto.alyLee,
-            ref:4,
-            page:223,
-            k:1e-3,
-            vars:{
-                c1:0.2911e5,
-                c2:0.0877e5,
-                c3:3.0851e3,
-                c4:0.0846e5,
-                c5:1538.2,
-            }
-            min: 60,
-            max: 1500,
-        },
-        {
-            type: EquationTypeDto.linear,
-            ref:4,
-            page:203,
-            vars: {
-                a: 6.6,
-                b: 0.0012,
+            {
+                type: EquationTypeDto.linearHyperbolic,
+                ref: 1,
+                page: 271,
+                vars: {
+                    a: 28.43,
+                    b: 4.1e-3,
+                    d: -0.46e5,
+                },
+                min: 298,
+                max: 2500,
             },
-            min: 273,
-            max: 2500,
-        },
-    ]
+            {
+                type: EquationTypeDto.alyLee,
+                ref: 4,
+                page: 223,
+                k: 1e-3,
+                vars: {
+                    c1: 0.2911e5,
+                    c2: 0.0877e5,
+                    c3: 3.0851e3,
+                    c4: 0.0846e5,
+                    c5: 1538.2,
+                }
+                min: 60,
+                max: 1500,
+            },
+            {
+                type: EquationTypeDto.linear,
+                ref: 4,
+                page: 203,
+                vars: {
+                    a: 6.6,
+                    b: 0.0012,
+                },
+                min: 273,
+                max: 2500,
+            },
+        ]
+    };
+    viscosity: {
+        def: 0,
+        values:[
+            {
+                type: EquationTypeDto.quadratic,
+                ref:6,
+                page:455,
+                k: 1e6,
+                vars: {
+                    a: 23.811,
+                    b: 5.3944e-1,
+                    c: -1.5411e-4,
+                },
+                min: 68,
+                max: 1250,
+            },
+        ]
+    };
 }

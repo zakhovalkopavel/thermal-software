@@ -6,26 +6,12 @@ export class Air implements CompoundValue{
     chemicalFormula: "78.084%(v) N2, 20.946%(v) O2, 0.934%(v) Ar, 0.0412%(v) CO2";
     Mr: 0.028951;
     enthalpyFormation298: 0;
-    gibbsEnergy: {
-        m: 0,
-        n: 0,
-        reagents: [],
-        min: 0,
-        max: 0,
-    };
+    gibbsEnergy298:0;
+    collisionDiameter:3.6;
+    epsilonToKb: 103.3;
     heatCapacity: {
-        defaultType: 0,
+        def: 0,
         values:[
-            {//?????
-                type: EquationTypeDto.quartic,
-                ref:6,//2
-                page:36,//834
-                vars: {
-
-                },
-                min: 50,
-                max: 1500,
-            },
             {
                 type: EquationTypeDto.cubic,
                 ref:5,
@@ -53,16 +39,6 @@ export class Air implements CompoundValue{
                 },
                 min: 50,
                 max: 1500,
-            },
-            {
-                type: EquationTypeDto.linear,
-                ref:4,
-                page:203,
-                vars: {
-
-                },
-                min: 273,
-                max: 1200,
             },
         ]
     }

@@ -7,6 +7,8 @@ export class CO2 implements CompoundValue{
     Mr: 0.04401;
     enthalpyFormation298: -393.51e3;
     gibbsEnergy298:-394.38e3;
+    collisionDiameter: 3.941;
+    epsilonToKb: 195.2;
     gibbsEnergy: {
         reagents: ["C","O2"],
         value: {
@@ -24,7 +26,7 @@ export class CO2 implements CompoundValue{
         }
     };
     heatCapacity: {
-        defaultType: EquationTypeDto.linearHyperbolic,
+        def: 1,
         values: [
             {
                 type: EquationTypeDto.quartic,
@@ -93,5 +95,23 @@ export class CO2 implements CompoundValue{
                 max: 1200,
             },
         ]
-    }
+    };
+    viscosity: {
+        def: 0,
+        values:[
+            {
+                type: EquationTypeDto.quadratic,
+                ref:6,
+                page:455,
+                k: 1e6,
+                vars: {
+                    a: 11.811,
+                    b: 4.9838e-1,
+                    c: -1.0851e-4,
+                },
+                min: 195,
+                max: 1500,
+            },
+        ]
+    };
 }

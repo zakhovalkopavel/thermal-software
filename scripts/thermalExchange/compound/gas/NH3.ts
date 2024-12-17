@@ -7,8 +7,10 @@ export class NH3 implements CompoundValue{
     Mr: 0.017031;
     enthalpyFormation298: -45.9e3;
     gibbsEnergy298:-16.4e3;
+    collisionDiameter: 2.9;
+    epsilonToKb: 558.3;
     heatCapacity: {
-        defaultType: 1,
+        def: 1,
         values: [
             {
                 type: EquationTypeDto.quartic,
@@ -64,5 +66,23 @@ export class NH3 implements CompoundValue{
                 max: 1500,
             },
         ]
-    }
+    };
+    viscosity: {
+        def: 0,
+        values:[
+            {
+                type: EquationTypeDto.quadratic,
+                ref:6,
+                page:475,
+                k: 1e6,
+                vars: {
+                    a: -7.874,
+                    b: 3.67e-1,
+                    c: -4.47e-6,
+                },
+                min: 195,
+                max: 1000,
+            },
+        ]
+    };
 }

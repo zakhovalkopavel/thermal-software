@@ -7,8 +7,10 @@ export class SO2 implements CompoundValue{
     Mr: 0.064065;
     enthalpyFormation298: -296.8e3;
     gibbsEnergy298:-300.1e3;
+    collisionDiameter: 4.112;
+    epsilonToKb: 335.4;
     heatCapacity: {
-        defaultType: EquationTypeDto.linearHyperbolic,
+        def: 1,
         values: [
             {
                 type: EquationTypeDto.quartic,
@@ -77,6 +79,23 @@ export class SO2 implements CompoundValue{
                 max: 1500,
             },
         ]
-
     }
+    viscosity: {
+        def: 0,
+        values:[
+            {
+                type: EquationTypeDto.quadratic,
+                ref:6,
+                page:476,
+                k: 1e6,
+                vars: {
+                    a: -11.103,
+                    b: 5.02e-1,
+                    c: -1.08e-4,
+                },
+                min: 200,
+                max: 1000,
+            },
+        ]
+    };
 }

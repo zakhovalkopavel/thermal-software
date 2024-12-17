@@ -11,3 +11,10 @@
    https://engineering.wayne.edu/mechanical/pdfs/thermodynamic-_tables-updated.pdf
 6. Chemical properties handbook : physical, thermodynamic, environmental, transport, safety, and health related properties 
    for organic and inorganic chemicals (Yaws 1999)
+7. The properties of gases and liquids 5th edition (Poling, Prausnitz, O'Connell 2000)
+8. Mass Transfer From Fundamentals to Modern Industrial Applications (Asano 2006)
+   - Lennard-Jones parameters
+9. Viscosity and Thermal Conductivity Equations for Nitrogen, Oxygen, Argon, and Air (Lemmon, Jacobsen 2003)
+   https://trc.nist.gov/refprop/FAQ/NAO.PDF
+10. Thermal conductivity 
+   https://www.physchemres.org/article_57774_2e932c91424b9180df6a5d3b309c8720.pdf

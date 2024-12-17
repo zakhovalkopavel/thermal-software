@@ -7,8 +7,10 @@ export class O2 implements CompoundValue{
     Mr: 0.031999;
     enthalpyFormation298: 0;
     gibbsEnergy298:0;
+    collisionDiameter: 3.467;
+    epsilonToKb: 106.7;
     heatCapacity: {
-        defaultType: EquationTypeDto.cubic,
+        def: 1,
         values: [
             {
                 type: EquationTypeDto.quartic,
@@ -78,4 +80,22 @@ export class O2 implements CompoundValue{
             },
         ]
     }
+    viscosity: {
+        def: 0,
+        values:[
+            {
+                type: EquationTypeDto.quadratic,
+                ref:6,
+                page:475,
+                k: 1e6,
+                vars: {
+                    a: 44.224,
+                    b: 5.62e-1,
+                    c: -1.13e-4,
+                },
+                min: 150,
+                max: 1500,
+            },
+        ]
+    };
 }

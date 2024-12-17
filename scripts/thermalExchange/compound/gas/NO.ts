@@ -7,8 +7,10 @@ export class NO implements CompoundValue{
     Mr: 0.030006;
     enthalpyFormation298: 90.3e3;
     gibbsEnergy298:86.6e3;
+    collisionDiameter: 4.495;
+    epsilonToKb: 116.7;
     heatCapacity: {
-        defaultType: EquationTypeDto.linearHyperbolic,
+        def: 2,
         values: [
             {
                 type: EquationTypeDto.quartic,
@@ -65,6 +67,23 @@ export class NO implements CompoundValue{
                 max: 5000,
             },
         ]
-
-    }
+    };
+    viscosity: {
+        def: 0,
+        values:[
+            {
+                type: EquationTypeDto.quadratic,
+                ref:6,
+                page:475,
+                k: 1e6,
+                vars: {
+                    a: 39.921,
+                    b: 5.37e-1,
+                    c: -1.24e-4,
+                },
+                min: 150,
+                max: 1500,
+            },
+        ]
+    };
 }

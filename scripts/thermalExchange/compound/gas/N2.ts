@@ -7,6 +7,8 @@ export class N2 implements CompoundValue{
     Mr: 0.028;
     enthalpyFormation298: 0;
     gibbsEnergy298:0;
+    collisionDiameter: 3.798;
+    epsilonToKb: 71.4;
     heatCapacity: {
         def:1,
         values:[
@@ -75,5 +77,23 @@ export class N2 implements CompoundValue{
                 max: 1500,
             },
         ]
-    }
+    };
+    viscosity: {
+        def: 0,
+        values:[
+            {
+                type: EquationTypeDto.quadratic,
+                ref:6,
+                page:475,
+                k: 1e6,
+                vars: {
+                    a: 42.606,
+                    b: 4.75e-1,
+                    c: -9.88e-5,
+                },
+                min: 150,
+                max: 1500,
+            },
+        ]
+    };
 }

@@ -1,6 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Common = void 0;
+const dto_1 = require("../dto");
+const linearEquationMethod_1 = require("./linearEquationMethod");
+const alyLeeEquationMethod_1 = require("./alyLeeEquationMethod");
+const linearHyperbolicEquationMethod_1 = require("./linearHyperbolicEquationMethod");
+const linearHyperbolicLogarithmicEquationMethod_1 = require("./linearHyperbolicLogarithmicEquationMethod");
+const quadraticEquationMethod_1 = require("./quadraticEquationMethod");
+const cubicEquationMethod_1 = require("./cubicEquationMethod");
+const quarticEquationMethod_1 = require("./quarticEquationMethod");
 class Common {
     static logarithmicAverage(x1, x2) {
         if (x1 < 0 || x2 < 0) {
@@ -28,5 +36,35 @@ class Common {
     static isValidInterval(x, min, max) {
         return x >= min && x <= max ? true : false;
     }
+    static equation(equationType) {
+        let result;
+        switch (equationType) {
+            case dto_1.EquationTypeDto.alyLee:
+                result = new alyLeeEquationMethod_1.AlyLeeEquationMethod();
+                break;
+            case dto_1.EquationTypeDto.linear:
+                result = new linearEquationMethod_1.LinearEquationMethod();
+                break;
+            case dto_1.EquationTypeDto.linearHyperbolic:
+                result = new linearHyperbolicEquationMethod_1.LinearHyperbolicEquationMethod();
+                break;
+            case dto_1.EquationTypeDto.linearHyperbolicLogarithmic:
+                result = new linearHyperbolicLogarithmicEquationMethod_1.LinearHyperbolicLogarithmicEquationMethod();
+                break;
+            case dto_1.EquationTypeDto.quadratic:
+                result = new quadraticEquationMethod_1.QuadraticEquationMethod();
+                break;
+            case dto_1.EquationTypeDto.cubic:
+                result = new cubicEquationMethod_1.CubicEquationMethod();
+                break;
+            case dto_1.EquationTypeDto.quartic:
+                result = new quarticEquationMethod_1.QuarticEquationMethod();
+                break;
+        }
+        return result;
+    }
 }
 exports.Common = Common;
+Common.kB = 1.380649e-23; // Boltzmann's constant J/K;
+Common.R = 8.31446261815324; // The molar gas constant , J/(mol*K)
+Common.Na = 6.02214076e23; // The Avogadro constant mol−1

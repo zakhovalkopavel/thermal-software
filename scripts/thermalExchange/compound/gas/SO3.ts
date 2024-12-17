@@ -7,8 +7,11 @@ export class SO3 implements CompoundValue{
     Mr: 0.080064;
     enthalpyFormation298: -395.7e3;
     gibbsEnergy298:-371.1e3;
+    //σ (collision diameter) and ε/k from method of  Patrick and Golden (1983), ref
+    collisionDiameter: 4.19; // 1.18Vb^(1/3) => Vb=Mr/(ρb*NA), ρb = 1806.8kg/m3
+    epsilonToKb: 384.8; // =1.21Tb, Tb=318K
     heatCapacity: {
-        defaultType: EquationTypeDto.linearHyperbolic,
+        def: 1,
         values: [
             {
                 type: EquationTypeDto.quartic,
@@ -55,4 +58,22 @@ export class SO3 implements CompoundValue{
             },
         ]
     }
+    viscosity: {
+        def: 0,
+        values:[
+            {
+                type: EquationTypeDto.quadratic,
+                ref:6,
+                page:476,
+                k: 1e6,
+                vars: {
+                    a: -12.039,
+                    b: 5.43e-1,
+                    c: -1.6e-4,
+                },
+                min: 298,
+                max: 694,
+            },
+        ]
+    };
 }

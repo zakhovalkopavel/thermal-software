@@ -14,3 +14,4 @@ __exportStar(require("./composition"), exports);
 __exportStar(require("./compoundValue"), exports);
 __exportStar(require("./equation"), exports);
 __exportStar(require("./equationValue"), exports);
+__exportStar(require("./fluid"), exports);

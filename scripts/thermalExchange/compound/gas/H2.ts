@@ -7,6 +7,8 @@ export class H2 implements CompoundValue{
     Mr: 0.002016;
     enthalpyFormation298: 0;
     gibbsEnergy298:0;
+    collisionDiameter: 2.827;
+    epsilonToKb: 59.7;
     heatCapacity: {
         def: 1,
         values:[
@@ -76,5 +78,23 @@ export class H2 implements CompoundValue{
                 max: 1500,
             }
         ]
-    }
+    };
+    viscosity: {
+        def: 0,
+        values:[
+            {
+                type: EquationTypeDto.quadratic,
+                ref:6,
+                page:474,
+                k: 1e6,
+                vars: {
+                    a: 27.758,
+                    b: 2.12e-1,
+                    c: -3.28e-5,
+                },
+                min: 150,
+                max: 1500,
+            },
+        ]
+    };
 }

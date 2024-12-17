@@ -6,7 +6,8 @@ export interface EquationValue {
     ref:number,
     page: number,
     k?: number,
-    vars: AlyLeeEquation | LinearHyperbolicEquation | LinearHyperbolicLogarithmicEquation | LinearEquation | QuadraticEquation | CubicEquation | QuarticEquation,
+    vars: AlyLeeEquation | LinearHyperbolicEquation | LinearHyperbolicLogarithmicEquation
+        | LinearEquation | QuadraticEquation | CubicEquation | QuarticEquation,
     min: number,
     max: number,
 }

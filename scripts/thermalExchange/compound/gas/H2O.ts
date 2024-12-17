@@ -7,6 +7,8 @@ export class H2O implements CompoundValue{
     Mr: 0.018015;
     enthalpyFormation298: -241.8e3;
     gibbsEnergy298:-228.6e3;
+    collisionDiameter: 2.641;
+    epsilonToKb: 809.1;
     heatCapacity: {
         def: 1,
         values: [
@@ -77,5 +79,23 @@ export class H2O implements CompoundValue{
                 max: 2500,
             },
         ],
-    }
+    };
+    viscosity: {
+        def: 0,
+        values:[
+            {
+                type: EquationTypeDto.quadratic,
+                ref:6,
+                page:474,
+                k: 1e6,
+                vars: {
+                    a: -36.826,
+                    b: 4.29e-1,
+                    c: -1.62e-5,
+                },
+                min: 280,
+                max: 1073,
+            },
+        ]
+    };
 };
