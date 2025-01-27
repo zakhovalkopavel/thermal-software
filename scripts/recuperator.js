@@ -12,7 +12,7 @@ let params = {
     tFlame:1553, // K
     tFlame1: 1553, // K
     tFlame1C: 1280, // C
-    flameToSmokeTRatio: 1.2,//some energy may be already lost
+    flameToSmokeTRatio: 1.33,//some energy may be already lost, furnace efficiency = 75% (1.33 = 0.75^-1)
     tSmokeStartC: 1200,// C
     tSmokeEndC: 200, // C
     tAirStartC: 20, // C
@@ -48,6 +48,7 @@ let params = {
     Sair:0,// m2
     Ssmoke: 0,// m2
     mPerHour: 0, // kg/h
+    mPerSecond: 0, // burning rate kg/s
     mAirPerHour: 0, // kg/h
     mSmokePerSecond: 0, // kg/h
     refractoryEmissivity: 0.8,
@@ -257,12 +258,13 @@ let params = {
         'wH2Om',
         'maxIterations',
         'furnaceForm',
-        'tFlameFC',
         'furnaceW',
         'furnaceInternalSize_a_CM',
         'furnaceInternalSize_b_CM',
         'furnaceInternalSize_c_CM',
-
+        'generatorSurfaceDm2',
+        'generatorHeatFluxDm2',
+        'airPreheat'
     ],
     textParams: [
         'holeForm',
@@ -290,6 +292,11 @@ let params = {
     furnaceInternalSizeB: 0,//m
     furnaceInternalSize_c_CM: 0,//cm
     furnaceInternalSizeC: 0,//m
+    generatorSurfaceDm2: 0,//dm2
+    generatorSurface: 0,//dm2
+    generatorHeatFluxDm2: 0,//W/dm2
+    generatorHeatFlux: 0,//W/dm2
+    airPreheat: 0, //C
 };
 
 
@@ -514,21 +521,6 @@ const capacityFunctionAverage = ( vars, t, t0) => {
     return Math.abs((a*(t-t0) + b*(t*t-t0*t0)/200 + c*(t*t*t-t0*t0*t0)*Math.pow(10,-5)/3 + d*(t*t*t*t-t0*t0*t0*t0)*Math.pow(10, -9)/4)/((t-t0)*Mr));
 };
 
-const findTflame = ( t0,  k=params.kExcessAir, pressure = params.aPressure, q = params.fuelQ ) => {
-    const m0 = 15.5*k;
-    const m1 = m0+1;
-    const a = 968.00208;
-    const b = 0.11904;
-    const n = pressure/287.4;
-
-    const A = m1*b/2;
-    const B = - m0*pressure/n + m1*a;
-    const C = -( m1*b*t0*t0/2 + m1*a*t0 + q );
-    // At^2+Bt+C=0
-    const D = Math.pow(B*B-4*A*C, 0.5);
-    return (D - B)/(2*A);
-};
-
 const getGasSystemCapacity = (system, t, t0 = -1) => {
     let result =0;
     for ( const [gasName,partial] of Object.entries( system ) ) {
@@ -585,103 +577,24 @@ const setSystemComposition = (mN2, mO2, mCO2, mCO, mH2O, mH2, mAsh, mFuel, direc
     params.systemComposition[direction] = data;
 }
 
-const findIsobaricTwoStageFlame = (
-    tAir,
-    wH2Om, // weight additional fraction to air
-    kExcessAir,
-    kExcessAir1, // excess air first stage 0.5 - 100% CO, 0% CO2; 1 - 0% CO, 100% CO2
-    mFuelPerHour,
-    fuelQ,
-    ashPart,
-    maxIterations = 100,
-    dQmin = 10,
-    tStart = 3000,
-    dtAir1 = 50,
-    dtAir2 = 400,
-) => {
-    // coke flame temperature
-    const mFuel = mFuelPerHour/3600;
-    const mCarbon = fuelQ/carbonQ*mFuel;
-    const mAsh = mFuel*ashPart;
-
-
-    //first burning stage finishes at 100% CO
-    const mAir1 = kExcessAir1*(32/(pO2*12)*mCarbon); //first stage air
-    const mAir = kExcessAir*(32/(pO2*12)*mCarbon); //full air
-    const mAir2 = mAir - mAir1; //second stage air
-
-    // First stage
-
-    const mN2Stage1 = mAir1*(1-pO2)*28/((1-pO2)*28+32*pO2);
-    const mO2Stage1 = mAir1 - mN2Stage1;
-
-    const mN2 = mAir*(1-pO2)*28/((1-pO2)*28+32*pO2);
-    const mO2 = mAir - mN2;
-    let kCO2 = k>=1 ? 1 : (k>0.5 ? 2*k-1: 0);
-    let kCO = k>=1 ? 0 : (k>0.5 ? 2-2*k: 2*k);
-
-    const mH2O = mAir*wH2Om;
-
-    const mCO2 = 44/12*mCarbon*kCO2;
-    const mCO = 28/12*mCarbon*kCO;
-    const mH2 = 2/12*mCarbon*kH2;
-    const mO2after = k>1 ? (k-1)*mO2 : 0;
-    const energyBefore = t0*mFuel*fuelCapacity
-        + mN2*gasHeatCapacity(t0, 'N2', 0)*t0
-        + mO2*gasHeatCapacity(t0, 'O2', 0)*t0
-        + mH2O*gasHeatCapacity(t0, 'H20', 0)*t0
-    ;
-
-    // Left this, but it no needed, it doesn't allow emission, fo flame T is too high
-    /*const Q = mCarbon*(kCO*carbonMonoxideQ + kCO2*carbonQ + kH2*dQHydrogenGas);
-
-    let factor = f0;
-    for( let i=0; i<maxIterations; i++) {
-        factor = factor*f;
-        const dQ = [];
-        const dT = (tStart-t0)*factor;
-        const t1 = tStart - dT;
-        const t2 = tStart + dT;
-        dQ.push({t:tStart, dQ: Math.abs(Q + energyBefore -  getSystemEnergy(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0, ashCapacity, fuelCapacity, tStart, t0))});
-        dQ.push({t:t1, dQ: Math.abs(Q + energyBefore - getSystemEnergy(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0, ashCapacity, fuelCapacity, t1, t0))});
-        dQ.push({t:t2, dQ: Math.abs(Q + energyBefore - getSystemEnergy(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0, ashCapacity, fuelCapacity, t2, t0))});
-        dQ.sort((a, b) => { return a.dQ - b.dQ});
-
-        tStart = dQ[0].t > t0 ? dQ[0].t : tStart;
-        if(dQ[0].dQ<dQmin){
-            //console.log({dQ,dT,mN2, mO2, mO2after, mCO2, mCO, mAsh, mFuel, mH2, ashCapacity, fuelCapacity, k, kCO, kCO2, kH2, kH2O, kH2Oafter});
-            break;
-        }
-    }*/
-    tStart = 6.23*Math.pow(1900 - t0, 0.74)*Math.pow(characteristicSize, -0.16)*mO2/mAir + t0;
-    setSystemComposition(mN2, mO2, 0, 0, mH2O, 0, 0, mFuel, 'before');
-    setSystemComposition(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0,'after');
-    return tStart;
-}
-
-const findIsobaricFlameT = (
+const findMaxFlameT = (
     t0,
+    mPerSecond,
+    k= 1 ,
+    toSetSystemComposition = true,
+    generatorSurface = 0,//m2
+    generatorInnerFlux = 7000, // default inner flux 70W/dm2 = 7000 W/m2
     wH2Om = params.wH2Om, // weight additional fraction to air
-    tStart = 3000,
-    k=params.kExcessAir,
-    pressure = params.aPressure,
     pO2 = params.pO2,
     q = params.fuelQ,
     carbonQ = params.carbonQ,
     carbonMonoxideQ = params.carbonMonoxideQ,
     dQHydrogenGas = params.dQHydrogenGas,
-    fuelCapacity = params.fuelCapacity,
-    ashCapacity = params.ashCapacity,
-    f0 = 0.2,
-    f = 0.6,
     maxIterations = 100,
-    dQmin = 10,
-    characteristicSize = 0.0008 //800mkm , for higher size the same t, but for lower is much higher
+    dTend = 1,
 ) => {
-    // coke flame temperature
-    const mFuel = 1;
-    const mCarbon = q/carbonQ*mFuel;
-    const mAsh = mFuel - mCarbon;
+    const mCarbon = q/carbonQ*mPerSecond;
+    const mAsh = mPerSecond - mCarbon;
     let mAir = k*32/(pO2*12)*mCarbon;
     const mN2 = mAir*(1-pO2)*28/((1-pO2)*28+32*pO2);
     const mO2 = mAir - mN2;
@@ -689,7 +602,6 @@ const findIsobaricFlameT = (
     let kCO = k>=1 ? 0 : (k>0.5 ? 2-2*k: 2*k);
 
     const mH2O = mAir*wH2Om;
-    mAir+=mH2O;
     const kH2O = mH2O*12/(18*mCarbon);
 
     //CO + H2O → CO2 + H2
@@ -709,37 +621,40 @@ const findIsobaricFlameT = (
     const mCO = 28/12*mCarbon*kCO;
     const mH2 = 2/12*mCarbon*kH2;
     const mO2after = k>1 ? (k-1)*mO2 : 0;
-    const energyBefore = t0*mFuel*fuelCapacity
-        + mN2*gasHeatCapacity(t0, 'N2', 0)*t0
-        + mO2*gasHeatCapacity(t0, 'O2', 0)*t0
-        + mH2O*gasHeatCapacity(t0, 'H20', 0)*t0
-    ;
+
+    const mGasAfter = mN2 + mO2after + mCO2 + mCO + mH2Oafter + mH2;
+    const composition = {
+        N2: mN2/mGasAfter,
+        O2: mO2after/mGasAfter,
+        CO2: mCO2/mGasAfter,
+        CO: mCO/mGasAfter,
+        H2O: mH2Oafter/mGasAfter,
+        H2: mH2/mGasAfter,
+    }
+
+    //generator insulation thermal loss
+    const generatorQ = generatorInnerFlux * generatorSurface;
 
     // Left this, but it no needed, it doesn't allow emission, fo flame T is too high
-    /*const Q = mCarbon*(kCO*carbonMonoxideQ + kCO2*carbonQ + kH2*dQHydrogenGas);
+    const Q = mCarbon*(kCO*carbonMonoxideQ + kCO2*carbonQ + kH2*dQHydrogenGas) - generatorQ;
 
-    let factor = f0;
+    let tFlame = t0;
+    let gasCapacity = getGasSystemCapacity(composition, tFlame, t0);
     for( let i=0; i<maxIterations; i++) {
-        factor = factor*f;
-        const dQ = [];
-        const dT = (tStart-t0)*factor;
-        const t1 = tStart - dT;
-        const t2 = tStart + dT;
-        dQ.push({t:tStart, dQ: Math.abs(Q + energyBefore -  getSystemEnergy(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0, ashCapacity, fuelCapacity, tStart, t0))});
-        dQ.push({t:t1, dQ: Math.abs(Q + energyBefore - getSystemEnergy(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0, ashCapacity, fuelCapacity, t1, t0))});
-        dQ.push({t:t2, dQ: Math.abs(Q + energyBefore - getSystemEnergy(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0, ashCapacity, fuelCapacity, t2, t0))});
-        dQ.sort((a, b) => { return a.dQ - b.dQ});
-
-        tStart = dQ[0].t > t0 ? dQ[0].t : tStart;
-        if(dQ[0].dQ<dQmin){
-            //console.log({dQ,dT,mN2, mO2, mO2after, mCO2, mCO, mAsh, mFuel, mH2, ashCapacity, fuelCapacity, k, kCO, kCO2, kH2, kH2O, kH2Oafter});
+        const dT  = Q/(gasCapacity*mGasAfter);
+        const endFactor = Math.abs(t0+dT-tFlame);
+        tFlame = t0 + dT;
+        gasCapacity = getGasSystemCapacity(composition, tFlame, t0);
+        if(endFactor<dTend){
+            console.log({i, Q,endFactor, tFlame, dT,mN2, mO2, mO2after, mCO2, mCO, mAsh, mPerSecond, mH2, k, kCO, kCO2, kH2, kH2O, kH2Oafter});
             break;
         }
-    }*/
-    tStart = 6.23*Math.pow(1900 - t0, 0.74)*Math.pow(characteristicSize, -0.16)*mO2/mAir + t0;
-    setSystemComposition(mN2, mO2, 0, 0, mH2O, 0, 0, mFuel, 'before');
-    setSystemComposition(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0,'after');
-    return tStart;
+    }
+    if(toSetSystemComposition){
+        setSystemComposition(mN2, mO2, 0, 0, mH2O, 0, 0, mPerSecond, 'before');
+        setSystemComposition(mN2, mO2after, mCO2, mCO, mH2Oafter, mH2, mAsh, 0,'after');
+    }
+    return tFlame;
 };
 
 const systemEnergyChange = (systemEnergy,  weightFactor, t1, t2, isOnlyGases = true, fuelCapacity = params.fuelCapacity, ashCapacity = params.ashCapacity) => {
@@ -831,17 +746,6 @@ const getArea = (a,  holeForm = params.holeForm, type = 'air',  nAir = params.nA
             break;
     }
     return area*factor;
-};
-
-const getFlameTemperature = (tAir) =>{
-    /*
-        linear regression by data
-        tAir    tFlame
-        0       1280
-        1000    2000
-    */
-    findIsobaricFlameT(tAir);
-    return 0.7200*tAir + 1356;
 };
 
 
@@ -1274,14 +1178,15 @@ const setParams = () => {
 
     params.fPower = params.fPowerKW*1000;
 
-    params.mPerHour = params.fPower*3600/params.fuelQ;
+    params.mPerSecond = params.fPower/params.fuelQ;
+    params.mPerHour = params.mPerSecond*3600;
 
     params.refractoryMediumThickness = params.refractoryMediumThicknessMM/1000;
     params.pCO2 = params.pO2/params.kExcessAir;
 
 
     params.tAirEnd = kelvinFromCelsius(params.tAirEndC);
-    params.tFlame = getFlameTemperature(params.tAirEnd);
+    params.tFlame = findMaxFlameT(params.tAirEnd, params.mPerSecond, params.kExcessAir);
     // console.log({tFlame: params.tFlame, tAirEnd: params.tAirEnd})
     params.tSmokeStart = getTsmokeStart(params.tFlame);
     params.tSmokeEnd = params.tAirStart*params.flameToSmokeTRatio;
@@ -1310,11 +1215,13 @@ const setParams = () => {
         params.totalLayersThicknessMM += layer.h*1000;
     });
 
-
     params.mSmokePerSecond = (params.mAirPerHour + params.mPerHour*( 1 - params.ashPart))/3600;
     params.furnaceInternalSizeA = params.furnaceInternalSize_a_CM/100;
     params.furnaceInternalSizeB = params.furnaceInternalSize_b_CM/100;
     params.furnaceInternalSizeC = params.furnaceInternalSize_c_CM/100;
+
+    params.generatorSurface = params.generatorSurfaceDm2/100;
+    params.generatorHeatFlux = params.generatorHeatFluxDm2*100;
 };
 
 const clearResult = () => {
@@ -1367,8 +1274,7 @@ const goalCriteria = (x) => {
 };
 
 const calculateCriteria = (params, tSmokeEnd, tAirEnd) => {
-    params.tFlame = getFlameTemperature(params.tAirEnd);
-
+    params.tFlame = findMaxFlameT(params.tAirEnd, params.mPerSecond, params.kExcessAir);
     params.tSmokeStart = getTsmokeStart(params.tFlame);
 
 
@@ -1545,8 +1451,7 @@ const calculateTestData = (data) => {
     for(let t = 273; t<1274; t+=50) {
         console.log({
             t: celsiusFromKelvin(t),
-            flameC: celsiusFromKelvin(findIsobaricFlameT(t)),
-            tFlame1C: celsiusFromKelvin(findTflame(t, params.kExcessAir, params.aPressure, params.fuelQ))
+            flameC: celsiusFromKelvin(findMaxFlameT(t, params.mPerSecond, params.kExcessAir))
         });
     }
 }
@@ -1650,6 +1555,9 @@ const calculate = () => {
 
     //calculateTestData(testData);
 
+    const tAirPreheated = params.tAirStart + params.airPreheat;
+    const maxFlameT = findMaxFlameT(tAirPreheated, params.mPerSecond, 1, true, params.generatorSurface, params.generatorHeatFlux);
+    results.maxFlameTC = celsiusFromKelvin(maxFlameT);
 
     const furnaceMultyLayer = heatFluxFurnaceMultyLayer(
         params.layers,
@@ -1657,7 +1565,7 @@ const calculate = () => {
         params.furnaceW,
         params.systemComposition.after,
         params.mSmokePerSecond,
-        kelvinFromCelsius(params.tFlameFC),
+        maxFlameT,
         params.tAirStart,
         params.furnaceForm,
         params.furnaceInternalSizeA,
@@ -1689,6 +1597,7 @@ const calculate = () => {
         results[`betweenLayers${index}.name`] = betweenInsulation.name;
         results[`betweenLayers${index}.tCelsius`] = betweenInsulation.tCelsius;
     });
+
 
     console.log(results);
     setResult(results);

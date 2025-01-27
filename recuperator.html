@@ -204,10 +204,17 @@
                 <thead><th>Furnace parameters</th><th>Value</th></thead>
                 <tbody>
                 <tr>
-                    <td>Flame temperature, C</td>
-                    <td>
-                        <input type="number" id="tFlameFC" value="1500">
-                    </td>
+                    <td>Air preheat, C</td>
+                    <td><input type="number" id="airPreheat" value="400"></td>
+                </tr>
+                <tr>
+                    <td>Generator surface for calculating thermal loss, dm2</td>
+                    <td><input type="number" id="generatorSurfaceDm2" value="6"></td>
+                </tr>
+                <tr>
+                    <td>Generator internal heat flux, W/dm2 (80-120W/dm2<br/>
+                        for average surface T=800-900C and average insulation quality)</td>
+                    <td><input type="number" id="generatorHeatFluxDm2" value="120"></td>
                 </tr>
                 <tr>
                     <td>Gas velocity in the furnace, m/s</td>
@@ -229,7 +236,6 @@
                 <tr>
                     <td>Furnace internal sizes, cm</td>
                     <td></td>
-
                 </tr>
                 <tr>
                     <td>a (r)</td>
@@ -407,7 +413,7 @@
             </table>
             <section class="calculation-results results-hidden" id="furnace-calculation">
                 <div>Total insulation <span id="totalLayersThicknessMM"></span>mm</div>
-
+                <div>Calculated max flame T <span id="maxFlameTC"></span>C</div>
                 <div>T inner <span id="tFurnaceInnerC"></span>C</div>
                 <div>T outer <span id="tFurnaceOuterC"></span>C</div>
 
