@@ -3,19 +3,6 @@ import {GasValue} from "../interface/compoundValue";
 export class GasComposition {
     public readonly molPartial: Composition<number>; // partial composition by moles or volumes
     public readonly weightPartial: Composition<number>; // partial composition by mass
-    /*
-        Mr - molar weight kg/mol
-        Isobaric Heat Capacity Coefficients :
-        Cp,m (cubic) = a + b*T + c*T2 + d*T3
-             (linearHyperbolic)= a + b*T + d*T-2
-
-        Interval: from 300 to 1800 K.3
-        Substances:
-            a    J K-1 mol-1
-            b    10-2 J K-2 mol-1
-            c    10-5 J K-3 mol-1
-            d    10-9 J K-4 mol-1
-     */
 
     constructor(weightPartial: Composition<number>) {
         this.weightPartial = weightPartial;
@@ -48,7 +35,7 @@ export class GasComposition {
         } = this.gasValues[gasName];
         return (a + b*t/100 + c*Math.pow(t, 2)*Math.pow(10,-5) + d*Math.pow(t, 3)*Math.pow(10, -9))/Mr;
     }
-    capacityFunctionAverage = ( gasName: keyof Composition<number>, t, t0) => {
+    public capacityFunctionAverage = ( gasName: keyof Composition<number>, t, t0) => {
         t0 = capacityValidInterval(t0);
         t = capacityValidInterval(t);
         if(t === t0) {

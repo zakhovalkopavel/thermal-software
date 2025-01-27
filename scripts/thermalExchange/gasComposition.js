@@ -2,19 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GasComposition = void 0;
 class GasComposition {
-    /*
-        Mr - molar weight kg/mol
-        Isobaric Heat Capacity Coefficients :
-        Cp,m (cubic) = a + b*T + c*T2 + d*T3
-             (linearHyperbolic)= a + b*T + d*T-2
-
-        Interval: from 300 to 1800 K.3
-        Substances:
-            a    J K-1 mol-1
-            b    10-2 J K-2 mol-1
-            c    10-5 J K-3 mol-1
-            d    10-9 J K-4 mol-1
-     */
     constructor(weightPartial) {
         this.capacityFunctionAverage = (gasName, t, t0) => {
             t0 = capacityValidInterval(t0);

@@ -18,3 +18,12 @@
    https://trc.nist.gov/refprop/FAQ/NAO.PDF
 10. Thermal conductivity 
    https://www.physchemres.org/article_57774_2e932c91424b9180df6a5d3b309c8720.pdf
+11. Jones, JM, Mason, PE and Williams, A (2019) 
+    A compilation of data on the radiant emissivity of some materials at high temperatures.
+    Journal of the Energy Institute, 92 (3). pp. 523-534. ISSN 1743-9671
+    https://eprints.whiterose.ac.uk/133266/7/emissivity%20manuscript%20revision%20%28final%29.pdf
+12. Излучательные свойства твердых материалов. Справочник
+    Series:
+    Author(s): Шейндлин А.Е. (ред.)
+    Publisher: Энергия
+    Year: 1974
