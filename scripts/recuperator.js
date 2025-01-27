@@ -1,3 +1,11 @@
+/*
+interface LayerType = {
+    h: number,
+    material: string,
+    start: number,
+    end: number,
+};*/
+
 let params = {
     zero: 0.000000001,
     aPressure: 101325, // Pa
@@ -41,6 +49,7 @@ let params = {
     Ssmoke: 0,// m2
     mPerHour: 0, // kg/h
     mAirPerHour: 0, // kg/h
+    mSmokePerSecond: 0, // kg/h
     refractoryEmissivity: 0.8,
     surfaceEmissivity: 0.8,
     refractoryLambda: 1.4,// W/(m*K)
@@ -59,7 +68,15 @@ let params = {
                 H2O: 0,
                 H2: 0,
             },
-            mass: {
+            weight: {
+                N2: 0,
+                O2: 0,
+                CO2: 0,
+                CO: 0,
+                H2O: 0,
+                H2: 0,
+            },
+            weightPartial: {
                 N2: 0,
                 O2: 0,
                 CO2: 0,
@@ -77,7 +94,15 @@ let params = {
                 H2O: 0,
                 H2: 0,
             },
-            mass: {
+            weight: {
+                N2: 0,
+                O2: 0,
+                CO2: 0,
+                CO: 0,
+                H2O: 0,
+                H2: 0,
+            },
+            weightPartial: {
                 N2: 0,
                 O2: 0,
                 CO2: 0,
@@ -95,9 +120,17 @@ let params = {
                 H2O: 0,
                 H2: 0,
             },
-            mass: {
+            weight: {
                 N2: 76.7,
                 O2: 23.3,
+                CO2: 0,
+                CO: 0,
+                H2O: 0,
+                H2: 0,
+            },
+            weightPartial: {
+                N2: 0,
+                O2: 0,
                 CO2: 0,
                 CO: 0,
                 H2O: 0,
@@ -105,7 +138,7 @@ let params = {
             }
         },
     },
-    wH2Om: 0, // mass fraction H2O to air
+    wH2Om: 0, // weight fraction H2O to air
     concentrationO2: 0.21,
     cAirAverage: 1200, //J/(kg*K),
     cSmokeAverage: 1200, //J/(kg*K),
@@ -175,11 +208,11 @@ let params = {
     surfaceArea: 0,
     roomTemperature: 20, //C
     tSurfase: 423, // C, surface between outer thermal insulation and room air
-    furnaceForm: [
-        'sphere',
-        'cylinder',
-        'cube',
-    ],
+    furnaceForms: {
+        sphere: 'sphere',
+        cylinder: 'cylinder',
+        cube:'cube',
+    },
     materials: {
         chamotte_solid: 'chamotte_solid',
         chamotte_1300: 'chamotte_1300',
@@ -223,8 +256,40 @@ let params = {
         'holeForm',
         'wH2Om',
         'maxIterations',
+        'furnaceForm',
+        'tFlameFC',
+        'furnaceW',
+        'furnaceInternalSize_a_CM',
+        'furnaceInternalSize_b_CM',
+        'furnaceInternalSize_c_CM',
+
     ],
-    textParams: ['holeForm',],
+    textParams: [
+        'holeForm',
+        'layer[0].material',
+        'layer[1].material',
+        'layer[2].material',
+        'layer[3].material',
+        'layer[4].material',
+        'furnaceForm',
+    ],
+    textParamsREGEX: [
+        /betweenLayers\d+\.name/,
+        /layer\[\d+\]\.material/
+    ],
+    layers:[],
+    layersAmount:5,
+    totalLayersThicknessMM: 0,//mm
+    tFlameFC:0,//C
+    furnaceW:0,//m/s
+    ashPart: 0.06,
+    furnaceForm: 'sphere',
+    furnaceInternalSize_a_CM: 0,//cm
+    furnaceInternalSizeA: 0,//m
+    furnaceInternalSize_b_CM: 0,//cm
+    furnaceInternalSizeB: 0,//m
+    furnaceInternalSize_c_CM: 0,//cm
+    furnaceInternalSizeC: 0,//m
 };
 
 
@@ -464,6 +529,14 @@ const findTflame = ( t0,  k=params.kExcessAir, pressure = params.aPressure, q = 
     return (D - B)/(2*A);
 };
 
+const getGasSystemCapacity = (system, t, t0 = -1) => {
+    let result =0;
+    for ( const [gasName,partial] of Object.entries( system ) ) {
+        result += partial*gasHeatCapacity(t, gasName, t0);
+    }
+    return result;
+}
+
 const getSystemEnergy = (mN2, mO2, mCO2, mCO, mH2O, mH2, mAsh, mFuel, ashCapacity, fuelCapacity, t, t0 = 0) => {
     return (
         mN2*gasHeatCapacity(t, 'N2', t0) +
@@ -479,6 +552,7 @@ const getSystemEnergy = (mN2, mO2, mCO2, mCO, mH2O, mH2, mAsh, mFuel, ashCapacit
 
 const setSystemComposition = (mN2, mO2, mCO2, mCO, mH2O, mH2, mAsh, mFuel, direction = 'before') => {
     const molesTotal = mN2/28 + mO2/32 + mCO2/44 + mCO/28 + mH2O/18 + mH2/2;
+    const weightTotal = mN2 + mO2 + mCO2 + mCO + mH2O + mH2;
     const data = {
         partial: {
             N2: mN2 / (28 * molesTotal),
@@ -488,7 +562,7 @@ const setSystemComposition = (mN2, mO2, mCO2, mCO, mH2O, mH2, mAsh, mFuel, direc
             H2O: mH2O / (28 * molesTotal),
             H2: mH2 / (28 * molesTotal),
         },
-        mass: {
+        weight: {
             N2: mN2,
             O2: mO2,
             CO2: mCO2,
@@ -497,6 +571,15 @@ const setSystemComposition = (mN2, mO2, mCO2, mCO, mH2O, mH2, mAsh, mFuel, direc
             H2: mH2,
             Ash: mAsh,
             Fuel: mFuel,
+        },
+        //weight partial for gas composition
+        weightPartial: {
+            N2: mN2/weightTotal,
+            O2: mO2/weightTotal,
+            CO2: mCO2/weightTotal,
+            CO: mCO/weightTotal,
+            H2O: mH2O/weightTotal,
+            H2: mH2/weightTotal,
         }
     };
     params.systemComposition[direction] = data;
@@ -504,7 +587,7 @@ const setSystemComposition = (mN2, mO2, mCO2, mCO, mH2O, mH2, mAsh, mFuel, direc
 
 const findIsobaricTwoStageFlame = (
     tAir,
-    wH2Om, // mass additional fraction to air
+    wH2Om, // weight additional fraction to air
     kExcessAir,
     kExcessAir1, // excess air first stage 0.5 - 100% CO, 0% CO2; 1 - 0% CO, 100% CO2
     mFuelPerHour,
@@ -523,7 +606,7 @@ const findIsobaricTwoStageFlame = (
 
 
     //first burning stage finishes at 100% CO
-    const mAir1 = kExcessAir1*(32/(pO2*12)*mCarbon; //first stage air
+    const mAir1 = kExcessAir1*(32/(pO2*12)*mCarbon); //first stage air
     const mAir = kExcessAir*(32/(pO2*12)*mCarbon); //full air
     const mAir2 = mAir - mAir1; //second stage air
 
@@ -578,7 +661,7 @@ const findIsobaricTwoStageFlame = (
 
 const findIsobaricFlameT = (
     t0,
-    wH2Om = params.wH2Om, // mass additional fraction to air
+    wH2Om = params.wH2Om, // weight additional fraction to air
     tStart = 3000,
     k=params.kExcessAir,
     pressure = params.aPressure,
@@ -659,7 +742,7 @@ const findIsobaricFlameT = (
     return tStart;
 };
 
-const systemEnergyChange = (systemEnergy,  massFactor, t1, t2, isOnlyGases = true, fuelCapacity = params.fuelCapacity, ashCapacity = params.ashCapacity) => {
+const systemEnergyChange = (systemEnergy,  weightFactor, t1, t2, isOnlyGases = true, fuelCapacity = params.fuelCapacity, ashCapacity = params.ashCapacity) => {
     const { N2, O2, CO2, CO, H2O, H2 } = systemEnergy;
     let { Ash, Fuel } = systemEnergy;
     if(isOnlyGases){
@@ -668,16 +751,22 @@ const systemEnergyChange = (systemEnergy,  massFactor, t1, t2, isOnlyGases = tru
     }
     const energyChanged = getSystemEnergy(N2, O2, CO2, CO, H2O, H2, Ash, Fuel, ashCapacity, fuelCapacity, t1, t2);
     //console.log({energyChanged, N2, O2, CO2, CO, H2O, H2, Ash, Fuel, ashCapacity, fuelCapacity, t1, t2});
-    return Math.abs(energyChanged*massFactor);
+    return Math.abs(energyChanged*weightFactor);
+}
+
+const getParam = (name, params) => {
+    let result;
+    const textValue = document.getElementById(name).value;
+    if(typeof params[name] ==="boolean"){
+        result = textValue !== '0';
+    }
+    result = params.textParams.includes(name) ? textValue: textValue*1;
+    return result;
 }
 
 const autosetParams = () => {
-    for(const param of params.autosetParamsList){
-        const textValue = document.getElementById(param).value;
-        if(typeof params[param] ==="boolean"){
-            params[param] = textValue !== '0';
-        }
-        params[param] = params.textParams.includes(param) ? textValue: textValue*1;
+    for(const name of params.autosetParamsList){
+        params[name] = getParam(name, params);
     }
 };
 
@@ -1035,8 +1124,8 @@ const getAlphaForNaturalLowTempCooling = (tRoom, tSurface) => {
 
 const getThermalInsulationLambda = (t) => {
     //LYTX 312
-    t=t-273;
-    return 0.139-7.97*Math.pow(10, -5)*t+1.3*Math.pow(10, -7)*t*t+2.73*Math.pow(10, -10)*Math.pow(t, 3);
+    const tCelsius=celsiusFromKelvin(t);
+    return 0.139-7.97*Math.pow(10, -5)*tCelsius+1.3*Math.pow(10, -7)*tCelsius*tCelsius+2.73*Math.pow(10, -10)*Math.pow(tCelsius, 3);
 }
 
 const getAverageThermalInsulationLambda = (t1, t2) => {
@@ -1155,7 +1244,7 @@ const getTsmokeStart = (tFlame) => {
 const setParams = () => {
     autosetParams();
 
-    params.tAirStart = params.tAirStartC*1+273;
+    params.tAirStart = kelvinFromCelsius(params.tAirStartC);
     params.densityAirStart = airDensity(params.tAirStart);
 
     params.d0 = params.d0mm/1000;
@@ -1191,7 +1280,7 @@ const setParams = () => {
     params.pCO2 = params.pO2/params.kExcessAir;
 
 
-    params.tAirEnd = params.tAirEndC+273;
+    params.tAirEnd = kelvinFromCelsius(params.tAirEndC);
     params.tFlame = getFlameTemperature(params.tAirEnd);
     // console.log({tFlame: params.tFlame, tAirEnd: params.tAirEnd})
     params.tSmokeStart = getTsmokeStart(params.tFlame);
@@ -1202,12 +1291,44 @@ const setParams = () => {
     params.wAirStart = params.mAirPerHour/(params.densityAirStart*3600*params.Sair);
     params.wSmokeStart = params.wAirStart*getTemperetureExpansion(params.tAirStart, params.tSmokeStart)*params.Sair/params.Ssmoke;
     params.surfaceArea = Math.PI * params.dSurface * params.wantedRecuperatorLength;
+
+    params.layers.splice(0);
+    console.log(params.layers)
+    for(let i=0; i<params.layersAmount; i++) {
+        const layerData = {
+            material: getParam(`layer[${i}].material`, params),
+            h: getParam(`layer[${i}].h`, params)/1000,
+            start: 0,
+            end: 0,
+        };
+        if(layerData.h>0) {
+            params.layers.push(layerData);
+        }
+    }
+    params.totalLayersThicknessMM = 0;
+    params.layers.forEach( layer => {
+        params.totalLayersThicknessMM += layer.h*1000;
+    });
+
+
+    params.mSmokePerSecond = (params.mAirPerHour + params.mPerHour*( 1 - params.ashPart))/3600;
+    params.furnaceInternalSizeA = params.furnaceInternalSize_a_CM/100;
+    params.furnaceInternalSizeB = params.furnaceInternalSize_b_CM/100;
+    params.furnaceInternalSizeC = params.furnaceInternalSize_c_CM/100;
 };
 
-let setResult = function(data){
+const clearResult = () => {
+    const elements = document.getElementsByClassName('clearable');
+    Array.from(elements).forEach((element) => {
+        element.textContent = '';
+    });
+}
+const setResult = function(data){
+    clearResult();
     for(let id in data) {
         const element = document.getElementById(id);
         if(element === null){
+            console.log(`Element is null ${id}`);
             continue;
         }
         if(element instanceof HTMLInputElement){
@@ -1228,7 +1349,14 @@ let setResult = function(data){
                 }
             }
             else{
-                element.textContent = data[id].toFixed(2).toString();
+                let isText = params.textParams.includes(id);
+                params.textParamsREGEX.forEach((regex)=> isText = isText || regex.test(id));
+                if(isText) {
+                    element.textContent = data[id];
+                }
+                else {
+                    element.textContent = data[id].toFixed(2).toString();
+                }
             }
         }
     }
@@ -1355,9 +1483,9 @@ const calculateCriteria = (params, tSmokeEnd, tAirEnd) => {
     const cAirEnd = airCapacityIsobaric(params.tAirEnd);
     params.cAirAverage = getLogariphmicAvearge(cAirStart, cAirEnd);
 
-    params.smokeEnergyDecrease = systemEnergyChange(params.systemComposition.after.mass, params.mPerHour, params.tSmokeStart, params.tSmokeEnd);
+    params.smokeEnergyDecrease = systemEnergyChange(params.systemComposition.after.weightPartial, params.mPerHour, params.tSmokeStart, params.tSmokeEnd);
     //(params.mPerHour + params.mAirPerHour)*(params.tSmokeStart-params.tSmokeEnd)*params.cSmokeAverage;
-    params.airEnergyIncrease = systemEnergyChange(params.systemComposition.before.mass, params.mPerHour, params.tAirEnd, params.tAirStart);
+    params.airEnergyIncrease = systemEnergyChange(params.systemComposition.before.weightPartial, params.mPerHour, params.tAirEnd, params.tAirStart);
     //params.mAirPerHour*(params.tAirEnd-params.tAirStart)*params.cAirAverage;
 
     if(params.holeForm !== 'circle_in_ring' ) {
@@ -1368,17 +1496,17 @@ const calculateCriteria = (params, tSmokeEnd, tAirEnd) => {
     }
     const totalEnergy = params.mPerHour*params.fuelQ;
     //params.energyReturnedPercents = params.airEnergyIncrease/totalEnergy*100;
-    const smokeTotalEnergy = systemEnergyChange(params.systemComposition.after.mass, params.mPerHour, params.tSmokeStart, params.tAirStart);
+    const smokeTotalEnergy = systemEnergyChange(params.systemComposition.after.weight, params.mPerHour, params.tSmokeStart, params.tAirStart);
     params.energyReturnedPercents = params.airEnergyIncrease/smokeTotalEnergy*100;
 
     if(params.smokeEnergyDecrease<params.airEnergyIncrease || params.airEnergyIncrease<0){
         return params.energyCriteriaError;
     }
 
-    params.tAirEndC = params.tAirEnd-273;
-    params.tSmokeStartC = params.tSmokeStart-273;
-    params.tSmokeEndC = params.tSmokeEnd-273;
-    params.tFlameReal = params.tFlame-273;
+    params.tAirEndC = celsiusFromKelvin(params.tAirEnd);
+    params.tSmokeStartC = celsiusFromKelvin(params.tSmokeStart);
+    params.tSmokeEndC = celsiusFromKelvin(params.tSmokeEnd);
+    params.tFlameReal = celsiusFromKelvin(params.tFlame);
 
     params.recuperatorLength = params.airEnergyIncrease/(params.alpha.average*params.averageDeltaT*params.Lair*3600);
     params.realAirEnergyIncrease = params.recuperatorLength*params.airEnergyIncrease/params.wantedRecuperatorLength;
@@ -1410,15 +1538,15 @@ const calculateTestData = (data) => {
         const Density = airDensity(t);
         const DynamicViscosity = airDynamicViscosity(t);
         const CapacityIsobaric = airCapacityIsobaric(t);
-        const C =t-273;
+        const C =celsiusFromKelvin(t);
         airData.push({C,t, Density, DynamicViscosity, KinematicViscosity, ThermalConductivity, CapacityIsobaric, Pr});
     }
     console.log({airData});
     for(let t = 273; t<1274; t+=50) {
         console.log({
-            t: t - 273,
-            flameC: findIsobaricFlameT(t) - 273,
-            tFlame1C: findTflame(t, params.kExcessAir, params.aPressure, params.fuelQ) - 273
+            t: celsiusFromKelvin(t),
+            flameC: celsiusFromKelvin(findIsobaricFlameT(t)),
+            tFlame1C: celsiusFromKelvin(findTflame(t, params.kExcessAir, params.aPressure, params.fuelQ))
         });
     }
 }
@@ -1484,7 +1612,7 @@ const calculate = () => {
 
     console.log({params});
     console.log({surfaces: params.surfaces, refractoryMediumThicknessMM: params.refractoryMediumThicknessMM, refractoryLambda: params.refractoryLambda});
-    const results = {
+    let results = {
         tSmokeStartC: params.tSmokeStartC,
         tSmokeEndC: params.tSmokeEndC,
         sAirS: params.Sair*10000,
@@ -1504,11 +1632,10 @@ const calculate = () => {
         smokeEnergyDecrease: params.smokeEnergyDecrease
     }
 
-    setResult(results);
-    const furnace = heatFluxFurnace(0.01,0.04 ,params.materials.chamotte_solid, params.materials.chamotte_400, params.refractoryEmissivity, params.wSmokeStart/5, params.systemComposition.after, 1400+273, params.tAirStart, 'cylinder', 0.1, 0.1);
+    const furnace = heatFluxFurnace(0.01,0.04 ,params.materials.chamotte_solid, params.materials.chamotte_400, params.refractoryEmissivity, params.wSmokeStart/5, params.systemComposition.after, kelvinFromCelsius(1400), params.tAirStart, 'cylinder', 0.1, 0.1);
     console.log(furnace);
 
-    const furnace2 = heatFluxFurnace(0.02,0.03 ,params.materials.chamotte_1300, params.materials.chamotte_400, params.refractoryEmissivity, 19, params.systemComposition.after, 1500+273, params.tAirStart, 'sphere', 0.1, 0.1);
+    const furnace2 = heatFluxFurnace(0.02,0.03 ,params.materials.chamotte_1300, params.materials.chamotte_400, params.refractoryEmissivity, 19, params.systemComposition.after, kelvinFromCelsius(1500), params.tAirStart, 'sphere', 0.1, 0.1);
     console.log(furnace2);
     //calculateOptimalCoaxialTube(params);
 
@@ -1522,6 +1649,55 @@ const calculate = () => {
     );*/
 
     //calculateTestData(testData);
+
+
+    const furnaceMultyLayer = heatFluxFurnaceMultyLayer(
+        params.layers,
+        params.maxIterations,
+        params.furnaceW,
+        params.systemComposition.after,
+        params.mSmokePerSecond,
+        kelvinFromCelsius(params.tFlameFC),
+        params.tAirStart,
+        params.furnaceForm,
+        params.furnaceInternalSizeA,
+        params.furnaceInternalSizeB,
+        params.furnaceInternalSizeC,
+
+    );
+    console.log({furnaceMultyLayer});
+    results.tFurnaceInnerC = celsiusFromKelvin(furnaceMultyLayer.tInner);
+    results.tFurnaceOuterC = celsiusFromKelvin(furnaceMultyLayer.tOuter);
+
+    results.sInnerDM2 = furnaceMultyLayer.sInner*100;
+    results.sOuterDM2 = furnaceMultyLayer.sOuter*100;
+
+    results.furnaceTotalHeatLoss = furnaceMultyLayer.fluxOuter;
+    results.furnaceHeatFluxInnerDensity = furnaceMultyLayer.fluxInner/results.sInnerDM2;
+
+
+    results.alphaInnerTotal = furnaceMultyLayer.alphaInner.total;
+    results.alphaInnerRadiation = furnaceMultyLayer.alphaInner.radiation;
+    results.alphaInnerConvection = furnaceMultyLayer.alphaInner.convection;
+
+    results.alphaOuter = furnaceMultyLayer.alphaOuter;
+    results.totalLayersThicknessMM = params.totalLayersThicknessMM;
+    results.tGasEndC = celsiusFromKelvin(furnaceMultyLayer.tGasEnd);
+    results.tGasAverageC = celsiusFromKelvin(furnaceMultyLayer.tGasAverage);
+
+    furnaceMultyLayer.betweenInsulation.forEach((betweenInsulation, index) => {
+        results[`betweenLayers${index}.name`] = betweenInsulation.name;
+        results[`betweenLayers${index}.tCelsius`] = betweenInsulation.tCelsius;
+    });
+
+    console.log(results);
+    setResult(results);
+    //Show results
+    const resultElements = document.getElementsByClassName('calculation-results');
+    Array.from(resultElements).forEach((element) => {
+        element.classList.remove('results-hidden');
+    });
+
 };
 
 
@@ -1533,6 +1709,7 @@ const getSmokeArea = (dSmoke, dAir, hRefractory) => {
 const fullGasAlpha = (Tg, Ts, Es, pH2O, pCO2, l, d, w = 0, isTurbulence = false) => {
     const convection = airConvectionAlpha (Tg, Ts, l, d, w, isTurbulence);
     const radiation =  getRadiationAlpha(Tg, Ts, Es, pH2O, pCO2, l);
+    //  console.log({Tg, Ts, Es, pH2O, pCO2, l, d, w, convection, radiation});
     return {
         radiation,
         convection,
@@ -1681,41 +1858,46 @@ const calculateSurface = (
     }
 }
 
-const getFormDimentions = (form, a, b=0, c=0) => {
+const getFormDimentions = (form, a, b=0, c=0, h = 0) => {
+    /*
+        lSurface - characteristic height (for example for natural convection)
+        dSurface - characteristic diameter
+     */
     let lSurface, dSurface;
     switch(form){
         case 'sphere':
-            lSurface = 2*a;
-            dSurface = 2*a;
+            lSurface = 2*(a+h);
+            dSurface = 2*(a+h);
             break;
         case 'cylinder':
-            lSurface = 2*b;
+            lSurface = b+2*h;
             dSurface = 2*a;
             break;
         case 'cube':
-            lSurface = a;
-            dSurface = a;
+            lSurface = a+2*h;
+            dSurface = a+2*h;
             break;
     }
     return {lSurface, dSurface};
 }
 
-const surfaceFunction = (form, a, b=0, c=0) => {
+const surfaceFunction = (form, a, b=0, c=0, h=0) => {
     /*
-    sphere - a - radius
-    cylinder - a - radius, b - height
-    cube - a
+        sphere - a - radius
+        cylinder - a - radius, b - height
+        cube - a
+        h - insulation thickness
      */
     let surface;
     switch(form){
         case 'sphere':
-            surface = 4*Math.PI*a*a;
+            surface = 4*Math.PI*Math.pow(a+h, 2);
             break;
         case 'cylinder':
-            surface = 2*Math.PI*a*a + 2*Math.PI*a*b;
+            surface = 2*Math.PI*Math.pow(a+h, 2) + 2*Math.PI*(a+h)*(b+2*h);
             break;
         case 'cube':
-            surface = 6*a*a;
+            surface = 6*Math.pow(a+2*h, 2);
             break;
     }
     return surface;
@@ -1723,11 +1905,12 @@ const surfaceFunction = (form, a, b=0, c=0) => {
 
 const getRayLength = (form, a, b = 0, c = 0) => {
     /*
-    sphere 0.6d
-    cylinder h=d 0.6d
-    cylinder infinite 0.9d
-    parallel  infinite surface 1.8d
-    cube 0.6h
+        sphere 0.6d
+        cylinder h=d 0.6d
+        cylinder infinite 0.9d
+        parallel  infinite surface 1.8d
+        cube 0.6h
+        in general - 3.6V/S
      */
     let length;
     switch (form) {
@@ -1735,81 +1918,183 @@ const getRayLength = (form, a, b = 0, c = 0) => {
             length = 0.6*2*a;
             break;
         case 'cylinder':
-            length = b == 2*a ? 0.6*2*a : 0.9*2*a;
+            length = 3.6*a*b/(2*a+2*b);
             break;
-        case 'sphere':
-            length = 0.6*2*a;
+        case 'cube':
+            length = 0.6*a;
             break;
     }
     return length;
 }
-
-const getLambda = (type, t) =>
-{
-    let lambda;
-    const tCelcium = t - 273;
+//Emissivity coefficient
+const getEmissivity = (type, t) => {
+    let E;
     switch (type) {
+        //Fire brick (medium Al2O3 content)
         case params.materials.chamotte_solid:
-            lambda = 0.7+0.00064*tCelcium;
+            E = emissivityFunction(0.84, -20, 0, 0, t, 673, 1673)
             break;
+        //Fire brick (medium Al2O3 content)
         case params.materials.chamotte_1300:
-            lambda = 0.47+0.00035*tCelcium;
+            E = emissivityFunction(0.84, -20, 0, 0, t, 673, 1673)
             break;
+        //Fire brick (medium Al2O3 content)
         case params.materials.chamotte_1000:
-            lambda = 0.35+0.00035*tCelcium;
+            E = emissivityFunction(0.84, -20, 0, 0, t, 673, 1673)
             break;
+        //Fire brick (medium Al2O3 content)
         case params.materials.chamotte_900:
-            lambda = 0.29+0.00023*tCelcium;
+            E = emissivityFunction(0.84, -20, 0, 0, t, 673, 1673)
             break;
+        //Fire brick (medium Al2O3 content)
         case params.materials.chamotte_600:
-            lambda = 0.13+0.00028*tCelcium;
+            E = emissivityFunction(0.84, -20, 0, 0, t, 673, 1673)
             break;
+        //Fire brick (medium Al2O3 content)
         case params.materials.chamotte_400:
-            lambda = 0.1+0.00021*tCelcium;
+            E = emissivityFunction(0.84, -20, 0, 0, t, 673, 1673)
             break;
+
 
         case params.materials.mullite_2300:
-            lambda = 1.55+0.0002*tCelcium;
+            //Fire brick (high Al2O3 content)
+            E = emissivityFunction(0.8, -20, 0, 0, t, 673, 1673)
+            //Mullite brick
+            E = emissivityFunctionExponent(26.186, -0.555, 0, t, 600, 2000)
             break;
-
+        //Fire brick (low Al2O3 content)
         case params.materials.quartz_2000:
-            lambda = 0.815+0.00067*tCelcium;
+            E = emissivityFunction(0.9, -10, 0, 0, t, 673, 1673)
             break;
+        //Fire brick (low Al2O3 content)
         case params.materials.quartz_1000:
-            lambda = 0.55+0.0003*tCelcium;
+            E = emissivityFunction(0.9, -10, 0, 0, t, 673, 1673)
             break;
-        case params.materials.quartz_sand_1://quartz_1000
-            lambda = 0.55+0.0003*tCelcium;
+        case params.materials.quartz_sand_1:
+            E = emissivityFunction(0.9, -10, 0, 0, t, 673, 1673)
             break;
-        case params.materials.quartz_sand_02://quartz_1000
-            lambda = 0.55+0.0003*tCelcium;
+        case params.materials.quartz_sand_02:
+            E = emissivityFunction(0.9, -10, 0, 0, t, 673, 1673)
             break;
-        case params.materials.quartz_sand_05://quartz_1000
-            lambda = 0.55+0.0003*tCelcium;
+        case params.materials.quartz_sand_05:
+            E = emissivityFunction(0.9, -10, 0, 0, t, 673, 1673)
             break;
 
         case params.materials.alumina_2500:
-            lambda = 1.9+0.0016*tCelcium;
+            E = emissivityFunction(0.98, -53, 10.2, 0, t, 300, 1800)
+
             break;
+        // Lightweight alumina 1300g/l
         case params.materials.alumina_1300:
-            lambda = 0.84-0.00035*tCelcium;
+            E = emissivityFunctionExponent(5.6674, -0.3664, 0, t, 600, 2000)
             break;
-        case params.materials.alumina_sand_1://alumina_1300
-            lambda = 0.84-0.00035*tCelcium;
+        case params.materials.alumina_sand_1:
+            E = emissivityFunction(0.98, -53, 10.2, 0, t, 300, 1800)
             break;
-        case params.materials.alumina_sand_05://alumina_1300
-            lambda = 0.84-0.00035*tCelcium;
+        case params.materials.alumina_sand_05:
+            E = emissivityFunction(0.98, -53, 10.2, 0, t, 300, 1800)
             break;
-        case params.materials.alumina_sand_02://alumina_1300
-            lambda = 0.84-0.00035*tCelcium;
+        case params.materials.alumina_sand_02:
+            E = emissivityFunction(0.98, -53, 10.2, 0, t, 300, 1800)
             break;
 
         case params.materials.silicon_carbide:
-            lambda = 13.73-0.004555*tCelcium;
+            E = emissivityFunction(0.8, 15.4, -9.01, 0, t, 400, 1850)
             break;
 
         case params.materials.basalt_fiber_mat:
-            lambda =  0.139 - 7.97*Math.pow(10,-5)*tCelcium + 1.3*Math.pow(10,-7)*Math.pow(tCelcium, 2) + 2.73*Math.pow(10,-10)*Math.pow(tCelcium, 3);
+            E = emissivityFunction(0.92, 0, 0, 0, t, 300, 400)
+            break;
+    }
+    return E;
+}
+const emissivityFunctionExponent = (a, b, t, tMin, tMax) => {
+    if(t>tMax){
+        t = tMax;
+    }
+    if(t<tMin){
+        t=tMin;
+    }
+    return a*Math.pow(t, b);
+}
+
+const emissivityFunction = (a, b, c, d, t, tMin, tMax) => {
+    if(t>tMax){
+        t = tMax;
+    }
+    if(t<tMin){
+        t=tMin;
+    }
+    return a+1E-5*b*t+1E-8*c*t*t+1e-10*d*t*t*t;
+}
+
+//Coefficient of thermal conductivity
+const getLambda = (type, t) =>
+{
+    let lambda;
+    const tCelcius = celsiusFromKelvin(t);
+    switch (type) {
+        case params.materials.chamotte_solid:
+            lambda = 0.7+0.00064*tCelcius;
+            break;
+        case params.materials.chamotte_1300:
+            lambda = 0.47+0.00035*tCelcius;
+            break;
+        case params.materials.chamotte_1000:
+            lambda = 0.35+0.00035*tCelcius;
+            break;
+        case params.materials.chamotte_900:
+            lambda = 0.29+0.00023*tCelcius;
+            break;
+        case params.materials.chamotte_600:
+            lambda = 0.13+0.00028*tCelcius;
+            break;
+        case params.materials.chamotte_400:
+            lambda = 0.1+0.00021*tCelcius;
+            break;
+
+        case params.materials.mullite_2300:
+            lambda = 1.55+0.0002*tCelcius;
+            break;
+
+        case params.materials.quartz_2000:
+            lambda = 0.815+0.00067*tCelcius;
+            break;
+        case params.materials.quartz_1000:
+            lambda = 0.55+0.0003*tCelcius;
+            break;
+        case params.materials.quartz_sand_1://quartz_1000
+            lambda = 0.55+0.0003*tCelcius;
+            break;
+        case params.materials.quartz_sand_02://quartz_1000
+            lambda = 0.55+0.0003*tCelcius;
+            break;
+        case params.materials.quartz_sand_05://quartz_1000
+            lambda = 0.55+0.0003*tCelcius;
+            break;
+
+        case params.materials.alumina_2500:
+            lambda = 1.9+0.0016*tCelcius;
+            break;
+        case params.materials.alumina_1300:
+            lambda = 0.84-0.00035*tCelcius;
+            break;
+        case params.materials.alumina_sand_1://alumina_1300
+            lambda = 0.84-0.00035*tCelcius;
+            break;
+        case params.materials.alumina_sand_05://alumina_1300
+            lambda = 0.84-0.00035*tCelcius;
+            break;
+        case params.materials.alumina_sand_02://alumina_1300
+            lambda = 0.84-0.00035*tCelcius;
+            break;
+
+        case params.materials.silicon_carbide:
+            lambda = 13.73-0.004555*tCelcius;
+            break;
+
+        case params.materials.basalt_fiber_mat:
+            lambda =  0.139 - 7.97*Math.pow(10,-5)*tCelcius + 1.3*Math.pow(10,-7)*Math.pow(tCelcius, 2) + 2.73*Math.pow(10,-10)*Math.pow(tCelcius, 3);
             break;
     }
     return lambda;
@@ -1831,14 +2116,15 @@ const heatFluxFurnace = (h1,h2,lambda1, lambda2, E, w, composition, tFlame, tAir
     const step = h/numberOfSteps;
     const rayLength = getRayLength(form, a, b, c);
     const sInner = surfaceFunction(form, a, b, c);
-    const sOuter = surfaceFunction(form, a, b, c);
-    const {lSurface, dSurface} = getFormDimentions(form, a, b, c);
+    const sOuter = surfaceFunction(form, a, b, c, h);
+    const dimentionsInner = getFormDimentions(form, a, b, c);
+    const dimentionsOuter = getFormDimentions(form, a, b, c, h);
 
     for(let i=0; i< numberOfSteps; i++) {
         tInner = getLogariphmicAvearge(tInnerMin,tInnerMax);
         alphaInner = fullGasAlpha (
                 tFlame, tInner, E, composition.partial.H2O,
-                composition.partial.CO2, dSurface, rayLength, w);
+                composition.partial.CO2, dimentionsInner.dSurface, rayLength, w);
         fluxInner = alphaInner.total*(tFlame-tInner)*sInner;
         //console.log({tInner, alphaInner, fluxInner, sInner, sOuter});
         let isFirstLayer = true;
@@ -1860,7 +2146,7 @@ const heatFluxFurnace = (h1,h2,lambda1, lambda2, E, w, composition, tFlame, tAir
                 stepCurrent = h - x;
             }
             x +=stepCurrent;
-            const surfaceNext = surfaceFunction(form, a+x, b+x, c+x);
+            const surfaceNext = surfaceFunction(form, a, b, c, x);
             const surfaceAverage = (surfaceNext + surfaceCurrent)/2;
             const dT = fluxInner*stepCurrent/(surfaceAverage*lambdaCurrent);
             tCurrent -= dT;
@@ -1877,15 +2163,15 @@ const heatFluxFurnace = (h1,h2,lambda1, lambda2, E, w, composition, tFlame, tAir
             tInnerMin = tInner;
         }
         else{
-            alphaOuter = getFullNaturalConvectionAlpha(tAir, tOuter, lSurface, dSurface, E);
+            alphaOuter = getFullNaturalConvectionAlpha(tAir, tOuter, dimentionsOuter.lSurface, dimentionsOuter.dSurface, E);
             fluxOuter = alphaOuter*(tOuter-tAir)*sOuter;
             currentEndFactor = Math.abs(2*(fluxInner - fluxOuter)/(fluxInner+fluxOuter));
             if(currentEndFactor <= endFactor) {
                 console.log({i,
                     currentEndFactor,
-                    tInnerC: tInner-273,
-                    tOuterC:tOuter-273,
-                    tBetweenInsulationC:tBetweenInsulation-273,
+                    tInnerC: celsiusFromKelvin(tInner),
+                    tOuterC:celsiusFromKelvin(tOuter),
+                    tBetweenInsulationC:celsiusFromKelvin(tBetweenInsulation),
                     dT_inner: tFlame-tInner,
                     fluxOuter,
                     fluxInner,
@@ -1906,14 +2192,8 @@ const heatFluxFurnace = (h1,h2,lambda1, lambda2, E, w, composition, tFlame, tAir
     return {tInner, tOuter, tBetweenInsulation, fluxOuter, fluxInner, alphaInner, alphaOuter}
 }
 
-interface LayerType {
-    h: number,
-    material: string,
-    start: number,
-    end: number,
-}
 
-const getLayerNumber = (x:number, layers: [LayerType]) => {
+const getLayerNumber = (x, layers) => {
     for (let i=0; i<= layers.length; i++) {
         if (x >= layers[i].start && x < layers[i].end) {
             return i;
@@ -1929,42 +2209,105 @@ const getFlameSmokeSurfaceBalance = (surface, tFlame, tSurface, dSurface, E, w, 
     const fluxInner = alphaInner.total*(tFlame-tSurface)*surface;
 
 }
-const heatFluxFurnaceMultyLayer = (layers: [LayerType], step, E, w, composition, tFlame, tAir, form, a, b =0, c=0, endFactor = 0.001) =>
+const celsiusFromKelvin = (t) => {
+    return t-273;
+}
+
+const kelvinFromCelsius = (t) => {
+    return t+273;
+}
+
+const furnaceFluxInnerRecursion = (tFlame, tGasEnd, tInner, E, composition, dSurface, rayLength, w, sInner, mPerSecond, tGasEndDiff = 0.5, recursion = 50) => {
+    const tGasEndOld = tGasEnd;
+    let tGasAverage = getLogariphmicAvearge(tFlame, tGasEnd);
+
+    const alphaInner = fullGasAlpha ( tGasAverage, tInner, E, composition.partial.H2O, composition.partial.CO2, dSurface, rayLength, w);
+
+    let fluxInner = alphaInner.total*(tGasAverage-tInner)*sInner;
+    const compositionHeatCapacity = getGasSystemCapacity(composition.weightPartial, tFlame, tGasEnd);
+    let dT = fluxInner/(compositionHeatCapacity*mPerSecond);
+    let tOverloaded = false;
+
+    if(tFlame - dT > tInner) {
+        tGasEnd = tFlame - dT;
+    }
+    else{
+        tGasEnd = tInner;
+        tOverloaded = true;
+    }
+
+    tGasAverage = getLogariphmicAvearge(tFlame, tGasEnd);
+    const isInvalidTgasEnd = Math.abs(tGasEnd-tGasEndOld)>tGasEndDiff;
+    console.log({recursion, tOverloaded, alphaInner, tInner, tFlame, tGasEnd, tGasEndOld, tGasAverage, fluxInner, sInner, compositionHeatCapacity});
+    let dTaverage = tGasAverage - tInner;
+    if(tOverloaded && !isInvalidTgasEnd){
+        //Thermal flux is limited by gas energy capacity
+        dT = tFlame - tGasEnd;
+        const fluxInnerMax = compositionHeatCapacity*mPerSecond*dT;
+        const alphaInnerTotalMax = fluxInnerMax/(dTaverage*sInner);
+        fluxInner = fluxInnerMax;
+        alphaInner.total = alphaInnerTotalMax;
+    }
+    console.log({recursion, tOverloaded, alphaInner,  tInner, tFlame, tGasEnd, tGasEndOld, tGasAverage, dT, dTaverage, fluxInner, sInner, compositionHeatCapacity});
+    if(recursion>0 && isInvalidTgasEnd) {
+        return furnaceFluxInnerRecursion(tFlame, tGasEnd, tInner, E, composition, dSurface, rayLength, w, sInner, mPerSecond, tGasEndDiff,recursion-1);
+    }
+    else {
+        return {tGasEnd, tGasAverage, alphaInner, fluxInner};
+    }
+}
+
+const heatFluxFurnaceMultyLayer = (layers, step, w, composition, mPerSecond, tFlame, tAir, form, a, b =0, c=0, endFactor = 0.001) =>
 {
     //console.log({h1,h2,lambda1, lambda2, E, w, composition, tFlame, tAir, form, a, b, c, endFactor});
+    let tGasEnd = tFlame;
+    console.log({tFlame, tGasEnd});
+    let tGasAverage = getLogariphmicAvearge(tFlame, tGasEnd);
     let tOuter = tAir;
     let tInnerMin = tOuter;
-    let tInnerMax = tFlame;
+    let tInnerMax = tGasAverage;
     let tInner = getLogariphmicAvearge(tInnerMin,tInnerMax);
     let betweenInsulation = [];
     let fluxInner, fluxOuter;
     let alphaInner, alphaOuter;
 
-    let h = 0;
+    const h = layers.reduce(
+        (totalThickness, currentValue) => totalThickness + currentValue.h,
+        0,
+    );
 
-    for (let i=0; i<= layers.length; i++) {
-        layers[i].start= h;
-        layers[i].end= h + layers[i].h;
-        h = layers[i].end;
+    let stepMax = h/step;
+    let currentPosition = 0;
+    for (let i=0; i< layers.length; i++) {
+        layers[i].start= currentPosition;
+        layers[i].end= currentPosition + layers[i].h;
+        stepMax = stepMax<layers[i].h ? stepMax : layers[i].h;
+        currentPosition = layers[i].end;
     }
     const rayLength = getRayLength(form, a, b, c);
     const sInner = surfaceFunction(form, a, b, c);
-    const sOuter = surfaceFunction(form, a, b, c);
-    const {lSurface, dSurface} = getFormDimentions(form, a, b, c);
+    const sOuter = surfaceFunction(form, a, b, c, h);
+    const dimentionsInner = getFormDimentions(form, a, b, c);
+    const dimentionsOuter = getFormDimentions(form, a, b, c, h);
 
-    const maxSteps = 50;
-    for(let i=0; i< maxSteps; i++) {
-        tInner = getLogariphmicAvearge(tInnerMin,tInnerMax);
-        alphaInner = fullGasAlpha (
-            tFlame, tInner, E, composition.partial.H2O,
-            composition.partial.CO2, dSurface, rayLength, w);
-        fluxInner = alphaInner.total*(tFlame-tInner)*sInner;
-        //console.log({tInner, alphaInner, fluxInner, sInner, sOuter});
+    console.log({tFlame, tGasEnd});
+    for(let i=0; i< step/10; i++) {
+        tInner = (tInnerMin + tInnerMax)/2;
+
+        const emissivityInner = getEmissivity(layers[0].material, tInner);
+        console.log({tFlame, tGasEnd, tInner, material: layers[0].material, emissivityInner, composition});
+        const recursionResult = furnaceFluxInnerRecursion(tFlame, tGasEnd, tInner, emissivityInner, composition, dimentionsInner.dSurface, rayLength, w, sInner, mPerSecond);
+        alphaInner= recursionResult.alphaInner;
+        fluxInner = recursionResult.fluxInner;
+        tGasEnd = recursionResult.tGasEnd;
+        tGasAverage = recursionResult.tGasAverage;
+
         let tCurrent = tInner;
         let x = 0;
         let surfaceCurrent = sInner;
+        betweenInsulation = [];
         while(x<h) {
-            let stepCurrent = step;
+            let stepCurrent = stepMax;
             const layerNumber = getLayerNumber(x, layers);
             if(layerNumber < 0) {
                 throw new Error("Undefined layer");
@@ -1977,57 +2320,69 @@ const heatFluxFurnaceMultyLayer = (layers: [LayerType], step, E, w, composition,
                 isLayerBorder = true;
             }
             x +=stepCurrent;
-            const surfaceNext = surfaceFunction(form, a+x, b+x, c+x);
+            const surfaceNext = surfaceFunction(form, a, b, c, x);
             const surfaceAverage = (surfaceNext + surfaceCurrent)/2;
             const dT = fluxInner*stepCurrent/(surfaceAverage*lambdaCurrent);
+            surfaceCurrent = surfaceNext;
             tCurrent -= dT;
             if(isLayerBorder) {
-                const nextLayerNumber = layerNumber+1 < layers.length-1 ? layerNumber+1 : -1;
+                const nextLayerNumber = layerNumber+1 <= layers.length-1 ? layerNumber+1 : -1;
                 if(nextLayerNumber>0) {
                     betweenInsulation.push({
                         name: `layer ${layerNumber} (${layers[layerNumber].material}) - layer ${nextLayerNumber} (${layers[nextLayerNumber].material})`,
                         t: tCurrent,
-                        tCelsius: tCurrent - 273
+                        tCelsius: celsiusFromKelvin(tCurrent)
                     });
                 }
             }
+            surfaceCurrent = surfaceNext;
             if(tCurrent<tAir){
                 x=h;
             }
         }
         tOuter = tCurrent;
-        let currentEndFactor;
+       // let currentEndFactor;
+
+        const emissivityOuter = getEmissivity(layers[layers.length-1].material, tOuter);
+        console.log({emissivityOuter, material: layers[layers.length-1].material})
+        alphaOuter = getFullNaturalConvectionAlpha(tAir, tOuter, dimentionsOuter.lSurface, dimentionsOuter.dSurface, emissivityOuter);
+        fluxOuter = alphaOuter*(tOuter-tAir)*sOuter;
+        const compositionHeatCapacity = getGasSystemCapacity(composition.weightPartial, tFlame, tGasEnd);
+        tGasEnd = tFlame - fluxInner/(compositionHeatCapacity*mPerSecond);
+        tGasAverage = getLogariphmicAvearge(tFlame, tGasEnd);
+        const currentEndFactor = Math.abs((fluxInner*fluxInner - fluxOuter*fluxOuter)/(fluxInner*fluxOuter));
+        //console.log({ i, currentEndFactor,tInner, tOuter, tInnerMin, tInnerMax,tGasEnd, tGasAverage,  fluxInner, fluxOuter, alphaInner, alphaOuter});
         if(tCurrent<tAir){
             tInnerMin = tInner;
         }
         else{
-            alphaOuter = getFullNaturalConvectionAlpha(tAir, tOuter, lSurface, dSurface, E);
-            fluxOuter = alphaOuter*(tOuter-tAir)*sOuter;
-            currentEndFactor = Math.abs(2*(fluxInner - fluxOuter)/(fluxInner+fluxOuter));
             if(currentEndFactor <= endFactor) {
                 console.log({i,
                     currentEndFactor,
-                    tInnerC: tInner-273,
-                    tOuterC:tOuter-273,
-                    tBetweenInsulationC:tBetweenInsulation-273,
-                    dT_inner: tFlame-tInner,
+                    tInnerC: celsiusFromKelvin(tInner),
+                    tOuterC:celsiusFromKelvin(tOuter),
+                    betweenInsulation,
+                    dtInner: tFlame-tInner,
                     fluxOuter,
                     fluxInner,
                     alphaInner,
-                    alphaOuter});
+                    alphaOuter,
+                    tGasEndC: celsiusFromKelvin(tGasEnd),
+                    tFlameC: celsiusFromKelvin(tFlame),
+                    tGasAverage: celsiusFromKelvin(tGasAverage),
+                });
                 break;
             }
-            else{
-                if(fluxInner>fluxOuter) {
+            else{if(fluxInner>fluxOuter) {
                     tInnerMin = tInner;
                 }
                 else{
-                    tInnerMax = tInner
+                    tInnerMax = tInner;
                 }
             }
         }
     }
-    return {tInner, tOuter, betweenInsulation, fluxOuter, fluxInner, alphaInner, alphaOuter}
+    return {tInner, tOuter, sInner, sOuter, betweenInsulation, fluxOuter, fluxInner, alphaInner, alphaOuter, tGasEnd, tGasAverage};
 }
 
 
@@ -2168,8 +2523,8 @@ calculateFuelBurnLayer = (
     maxIterations= 10,
  ) => {
     let {O2: pO2, CO2: pCO2, H2O: pH2O, CO: pCO, H2: pH2, N2: pN2} = systemComposition;
-    const massPerOneMole = pO2*0.032+pCO*0.044+pH2O*0.018+pCO*0.028+pH2*0.002+pN2*0.028;
-    //let molesTotal = mAirPerHour/(3600*massPerOneMole);
+    const weightPerOneMole = pO2*0.032+pCO*0.044+pH2O*0.018+pCO*0.028+pH2*0.002+pN2*0.028;
+    //let molesTotal = mAirPerHour/(3600*weightPerOneMole);
     //let molesTotalBefore = totalMolesInSecond;
 
     const S = Math.pow(volumeDensity, 2/3)*s0;
