@@ -49,8 +49,8 @@ let params = {
     Ssmoke: 0,// m2
     mPerHour: 0, // kg/h
     mPerSecond: 0, // burning rate kg/s
-    mAirPerHour: 0, // kg/h
-    mSmokePerSecond: 0, // kg/h
+    mAirPerSecond: 0, // kg/s
+    mSmokePerSecond: 0, // kg/s
     refractoryEmissivity: 0.8,
     surfaceEmissivity: 0.8,
     refractoryLambda: 1.4,// W/(m*K)
@@ -185,12 +185,13 @@ let params = {
         smokeStartAirEnd: {},
     },
     averageDeltaT: 0, // K
-    smokeEnergyDecrease: 0, // J/h
-    airEnergyIncrease: 0, // J/h
-    realAirEnergyIncrease: 0, // J/h
-    realEnergyBalance: 0, // J/h
-    currentTempEnergyBalance: 0, // J/h
-    energyLost: 0, // J/h
+    smokeEnergyDecrease: 0, // W
+    smokeTotalEnergy: 0, // W
+    airEnergyIncrease: 0, // W
+    realAirEnergyIncrease: 0, // W
+    realEnergyBalance: 0, // W
+    currentTempEnergyBalance: 0, // W
+    energyLost: 0, // W
     energyCriteria: 0, // airEnergyIncrease/(smokeEnergyDecrease-energyLost),
     energyCriteriaError: 9e20,
     //smokeToAirK: 0.7,
@@ -646,7 +647,7 @@ const findMaxFlameT = (
         tFlame = t0 + dT;
         gasCapacity = getGasSystemCapacity(composition, tFlame, t0);
         if(endFactor<dTend){
-            console.log({i, Q,endFactor, tFlame, dT,mN2, mO2, mO2after, mCO2, mCO, mAsh, mPerSecond, mH2, k, kCO, kCO2, kH2, kH2O, kH2Oafter});
+            //console.log({i, Q,endFactor, tFlame, dT,mN2, mO2, mO2after, mCO2, mCO, mAsh, mPerSecond, mH2, k, kCO, kCO2, kH2, kH2O, kH2Oafter});
             break;
         }
     }
@@ -1192,8 +1193,8 @@ const setParams = () => {
     params.tSmokeEnd = params.tAirStart*params.flameToSmokeTRatio;
 
 
-    params.mAirPerHour = 32/(12*params.pO2)*params.kExcessAir*params.mPerHour*params.fuelQ/params.carbonQ;
-    params.wAirStart = params.mAirPerHour/(params.densityAirStart*3600*params.Sair);
+    params.mAirPerSecond = 32/(12*params.pO2)*params.kExcessAir*params.mPerSecond*params.fuelQ/params.carbonQ;
+    params.wAirStart = params.mAirPerSecond/(params.densityAirStart*params.Sair);
     params.wSmokeStart = params.wAirStart*getTemperetureExpansion(params.tAirStart, params.tSmokeStart)*params.Sair/params.Ssmoke;
     params.surfaceArea = Math.PI * params.dSurface * params.wantedRecuperatorLength;
 
@@ -1215,7 +1216,7 @@ const setParams = () => {
         params.totalLayersThicknessMM += layer.h*1000;
     });
 
-    params.mSmokePerSecond = (params.mAirPerHour + params.mPerHour*( 1 - params.ashPart))/3600;
+    params.mSmokePerSecond = (params.mAirPerSecond + params.mPerSecond*( 1 - params.ashPart));
     params.furnaceInternalSizeA = params.furnaceInternalSize_a_CM/100;
     params.furnaceInternalSizeB = params.furnaceInternalSize_b_CM/100;
     params.furnaceInternalSizeC = params.furnaceInternalSize_c_CM/100;
@@ -1389,21 +1390,19 @@ const calculateCriteria = (params, tSmokeEnd, tAirEnd) => {
     const cAirEnd = airCapacityIsobaric(params.tAirEnd);
     params.cAirAverage = getLogariphmicAvearge(cAirStart, cAirEnd);
 
-    params.smokeEnergyDecrease = systemEnergyChange(params.systemComposition.after.weightPartial, params.mPerHour, params.tSmokeStart, params.tSmokeEnd);
-    //(params.mPerHour + params.mAirPerHour)*(params.tSmokeStart-params.tSmokeEnd)*params.cSmokeAverage;
-    params.airEnergyIncrease = systemEnergyChange(params.systemComposition.before.weightPartial, params.mPerHour, params.tAirEnd, params.tAirStart);
-    //params.mAirPerHour*(params.tAirEnd-params.tAirStart)*params.cAirAverage;
-
+    params.smokeEnergyDecrease = systemEnergyChange(params.systemComposition.after.weightPartial, params.mSmokePerSecond, params.tSmokeStart, params.tSmokeEnd);
+    params.airEnergyIncrease = systemEnergyChange(params.systemComposition.before.weightPartial, params.mAirPerSecond, params.tAirEnd, params.tAirStart);
+    
     if(params.holeForm !== 'circle_in_ring' ) {
-        params.energyLost = getMaxThermalLose(tSmokeEnd, params.tSmokeStart, params.tRoom, params.alpha.smoke, params.thermalInsulationThickness, params.surfaceArea) * 3600;
+        params.energyLost = getMaxThermalLose(tSmokeEnd, params.tSmokeStart, params.tRoom, params.alpha.smoke, params.thermalInsulationThickness, params.surfaceArea);
     }
     else{
-        params.energyLost = getMaxThermalLose(params.surfaces.smokeEndAirStart.tSurface3, params.surfaces.smokeStartAirEnd.tSurface3, params.tRoom, {start: 1000000, end: 1000000}, params.thermalInsulationThickness, params.surfaceArea) * 3600;
+        params.energyLost = getMaxThermalLose(params.surfaces.smokeEndAirStart.tSurface3, params.surfaces.smokeStartAirEnd.tSurface3, params.tRoom, {start: 1000000, end: 1000000}, params.thermalInsulationThickness, params.surfaceArea);
     }
-    const totalEnergy = params.mPerHour*params.fuelQ;
+    const totalEnergy = params.mPerSecond*params.fuelQ;
     //params.energyReturnedPercents = params.airEnergyIncrease/totalEnergy*100;
-    const smokeTotalEnergy = systemEnergyChange(params.systemComposition.after.weight, params.mPerHour, params.tSmokeStart, params.tAirStart);
-    params.energyReturnedPercents = params.airEnergyIncrease/smokeTotalEnergy*100;
+    params.smokeTotalEnergy = systemEnergyChange(params.systemComposition.after.weightPartial, params.mSmokePerSecond, params.tSmokeStart, params.tAirStart);
+    params.energyReturnedPercents = params.airEnergyIncrease/params.smokeTotalEnergy*100;
 
     if(params.smokeEnergyDecrease<params.airEnergyIncrease || params.airEnergyIncrease<0){
         return params.energyCriteriaError;
@@ -1414,7 +1413,7 @@ const calculateCriteria = (params, tSmokeEnd, tAirEnd) => {
     params.tSmokeEndC = celsiusFromKelvin(params.tSmokeEnd);
     params.tFlameReal = celsiusFromKelvin(params.tFlame);
 
-    params.recuperatorLength = params.airEnergyIncrease/(params.alpha.average*params.averageDeltaT*params.Lair*3600);
+    params.recuperatorLength = params.airEnergyIncrease/(params.alpha.average*params.averageDeltaT*params.Lair);
     params.realAirEnergyIncrease = params.recuperatorLength*params.airEnergyIncrease/params.wantedRecuperatorLength;
     params.realEnergyBalance = params.smokeEnergyDecrease - (params.airEnergyIncrease + params.energyLost)*params.recuperatorLength/params.wantedRecuperatorLength;
     params.currentTempEnergyBalance = params.smokeEnergyDecrease - params.airEnergyIncrease - params.energyLost;
@@ -1458,6 +1457,36 @@ const calculateTestData = (data) => {
 
 const getEquivalentDiameter = (s) => {
     return Math.pow(4*s/Math.PI, 0.5);
+}
+
+
+const furnaceSetResults =(results, furnaceMultyLayer) =>
+{
+    results.tFurnaceInnerC = celsiusFromKelvin(furnaceMultyLayer.tInner);
+    results.tFurnaceOuterC = celsiusFromKelvin(furnaceMultyLayer.tOuter);
+
+    results.sInnerDM2 = furnaceMultyLayer.sInner*100;
+    results.sOuterDM2 = furnaceMultyLayer.sOuter*100;
+
+    results.furnaceTotalHeatLoss = furnaceMultyLayer.fluxOuter;
+    results.furnaceHeatFluxInnerDensity = furnaceMultyLayer.fluxInner/results.sInnerDM2;
+
+
+    results.alphaInnerTotal = furnaceMultyLayer.alphaInner.total;
+    results.alphaInnerRadiation = furnaceMultyLayer.alphaInner.radiation;
+    results.alphaInnerConvection = furnaceMultyLayer.alphaInner.convection;
+
+    results.alphaOuter = furnaceMultyLayer.alphaOuter;
+    results.totalLayersThicknessMM = params.totalLayersThicknessMM;
+    results.tGasEndC = celsiusFromKelvin(furnaceMultyLayer.tGasEnd);
+    results.tGasAverageC = celsiusFromKelvin(furnaceMultyLayer.tGasAverage);
+
+    furnaceMultyLayer.betweenInsulation.forEach((betweenInsulation, index) => {
+        results[`betweenLayers${index}.name`] = betweenInsulation.name;
+        results[`betweenLayers${index}.tCelsius`] = betweenInsulation.tCelsius;
+    });
+    console.log(results);
+    return results;
 }
 
 const calculate = () => {
@@ -1511,7 +1540,7 @@ const calculate = () => {
             });
             params.tSmokeEnd = criteriaResults[0].data[0];
             params.tAirEnd = criteriaResults[0].data[1];
-            //console.log({criteriaResults, i, divider, dSmoke, dAir});
+            console.log({criteriaResults, i, divider, dSmoke, dAir});
         }
     }
 
@@ -1534,18 +1563,22 @@ const calculate = () => {
         tFlameReal: params.tFlameReal,
         mPerHour: params.mPerHour,
         airEnergyIncrease: params.airEnergyIncrease,
-        smokeEnergyDecrease: params.smokeEnergyDecrease
+        smokeEnergyDecrease: params.smokeEnergyDecrease,
+        smokeTotalEnergy: params.smokeTotalEnergy
     }
 
+
+   /*
     const furnace = heatFluxFurnace(0.01,0.04 ,params.materials.chamotte_solid, params.materials.chamotte_400, params.refractoryEmissivity, params.wSmokeStart/5, params.systemComposition.after, kelvinFromCelsius(1400), params.tAirStart, 'cylinder', 0.1, 0.1);
     console.log(furnace);
 
     const furnace2 = heatFluxFurnace(0.02,0.03 ,params.materials.chamotte_1300, params.materials.chamotte_400, params.refractoryEmissivity, 19, params.systemComposition.after, kelvinFromCelsius(1500), params.tAirStart, 'sphere', 0.1, 0.1);
     console.log(furnace2);
+    */
     //calculateOptimalCoaxialTube(params);
 
     /*calculateFuelBurnLayer(
-        params.mAirPerHour,
+        params.mAirPerSecond,
         params.mPerHour,
         Math.PI*0.2*0.2/4,// for now is area of circle with d=20cm
         params.systemComposition.before.partial,
@@ -1574,32 +1607,8 @@ const calculate = () => {
 
     );
     console.log({furnaceMultyLayer});
-    results.tFurnaceInnerC = celsiusFromKelvin(furnaceMultyLayer.tInner);
-    results.tFurnaceOuterC = celsiusFromKelvin(furnaceMultyLayer.tOuter);
+    results = furnaceSetResults(results, furnaceMultyLayer);
 
-    results.sInnerDM2 = furnaceMultyLayer.sInner*100;
-    results.sOuterDM2 = furnaceMultyLayer.sOuter*100;
-
-    results.furnaceTotalHeatLoss = furnaceMultyLayer.fluxOuter;
-    results.furnaceHeatFluxInnerDensity = furnaceMultyLayer.fluxInner/results.sInnerDM2;
-
-
-    results.alphaInnerTotal = furnaceMultyLayer.alphaInner.total;
-    results.alphaInnerRadiation = furnaceMultyLayer.alphaInner.radiation;
-    results.alphaInnerConvection = furnaceMultyLayer.alphaInner.convection;
-
-    results.alphaOuter = furnaceMultyLayer.alphaOuter;
-    results.totalLayersThicknessMM = params.totalLayersThicknessMM;
-    results.tGasEndC = celsiusFromKelvin(furnaceMultyLayer.tGasEnd);
-    results.tGasAverageC = celsiusFromKelvin(furnaceMultyLayer.tGasAverage);
-
-    furnaceMultyLayer.betweenInsulation.forEach((betweenInsulation, index) => {
-        results[`betweenLayers${index}.name`] = betweenInsulation.name;
-        results[`betweenLayers${index}.tCelsius`] = betweenInsulation.tCelsius;
-    });
-
-
-    console.log(results);
     setResult(results);
     //Show results
     const resultElements = document.getElementsByClassName('calculation-results');
@@ -2298,14 +2307,14 @@ const heatFluxFurnaceMultyLayer = (layers, step, w, composition, mPerSecond, tFl
 const heatFlux = (
     tAir, tSmoke, tRoom,  Es, dSmoke, dAir,
     hRefractory, hInsulation, refractoryLambda, l,
-    systemComposition, mAirPerHour, densityAirStart
+    systemComposition, mAirPerSecond, densityAirStart
 ) => {
     const sAir = Math.PI * Math.pow(dAir, 2) / 4;
     let sSmoke = getSmokeArea(dSmoke, dAir, hRefractory);
     if (sSmoke<=params.zero){
         return params.zero;
     }
-    const wAir = mAirPerHour / (densityAirStart * 3600 * sAir);
+    const wAir = mAirPerSecond / (densityAirStart * sAir);
     const wSmoke = wAir * getTemperetureExpansion(tAir, tSmoke) * sAir / sSmoke;
     console.log({wSmoke, wAir});
 
@@ -2352,7 +2361,7 @@ const calculateOptimalCoaxialTube = (params) => {
         refractoryLambda,
         wantedRecuperatorLength: l,
         systemComposition,
-        mAirPerHour,
+        mAirPerSecond,
         densityAirStart,
         tRoom,
         maxIterations,
@@ -2371,17 +2380,17 @@ const calculateOptimalCoaxialTube = (params) => {
         flux.push( {dSmoke, flux: heatFlux(
             tAir, tSmoke, tRoom,  Es, dSmoke, dAir,
                 hRefractory, hInsulation, refractoryLambda, l,
-                systemComposition, mAirPerHour, densityAirStart
+                systemComposition, mAirPerSecond, densityAirStart
         )});
         flux.push( {dSmoke1, flux: heatFlux(
                 tAir, tSmoke, tRoom,  Es, dSmoke1, dAir,
                 hRefractory, hInsulation, refractoryLambda, l,
-                systemComposition, mAirPerHour, densityAirStart
+                systemComposition, mAirPerSecond, densityAirStart
             )});
         flux.push( {dSmoke2, flux: heatFlux(
                 tAir, tSmoke, tRoom,  Es, dSmoke2, dAir,
                 hRefractory, hInsulation, refractoryLambda, l,
-                systemComposition, mAirPerHour, densityAirStart
+                systemComposition, mAirPerSecond, densityAirStart
             )});
         flux.sort((a,b) => {return b.flux-a.flux});
         console.log({flux});
@@ -2417,7 +2426,7 @@ const getNewPartial = (N, pX, pXc, molesTotal, molesTotalNew, S, aD, t) => {
 }
 
 calculateFuelBurnLayer = (
-    mAirPerHour,
+    mAirPerSecond,
     mPerHour,
     s0, // fuel box area
     systemComposition,
@@ -2433,7 +2442,7 @@ calculateFuelBurnLayer = (
  ) => {
     let {O2: pO2, CO2: pCO2, H2O: pH2O, CO: pCO, H2: pH2, N2: pN2} = systemComposition;
     const weightPerOneMole = pO2*0.032+pCO*0.044+pH2O*0.018+pCO*0.028+pH2*0.002+pN2*0.028;
-    //let molesTotal = mAirPerHour/(3600*weightPerOneMole);
+    //let molesTotal = mAirPerSecond/(3600*weightPerOneMole);
     //let molesTotalBefore = totalMolesInSecond;
 
     const S = Math.pow(volumeDensity, 2/3)*s0;
@@ -2443,8 +2452,8 @@ calculateFuelBurnLayer = (
     const airDensityTair = airDensity(tAir);
     const airDensityTflame = airDensity(tFlame);
 
-    const wAir = mAirPerHour/(3600*airDensityTair*S);
-    const wFlame = mAirPerHour/(3600*airDensityTflame*S);
+    const wAir = mAirPerSecond/(3600*airDensityTair*S);
+    const wFlame = mAirPerSecond/(3600*airDensityTflame*S);
     const w = getLogariphmicAvearge(wAir, wFlame);
 
     console.log({wAir, wFlame, w: getLogariphmicAvearge(wAir, wFlame)});
