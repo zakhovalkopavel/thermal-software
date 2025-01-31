@@ -27,3 +27,7 @@
     Author(s): Шейндлин А.Е. (ред.)
     Publisher: Энергия
     Year: 1974
+13. Thermal Performance of Fire Resistive Materials I. Characterization with Respect to Thermal Performance Models
+    D. P. Bentz, Kuldeep Prasad 2007
+    https://www.researchgate.net/publication/241211063_Thermal_Performance_of_Fire_Resistive_Materials_I_Characterization_with_Respect_to_Thermal_Performance_Models
+14. https://trc.nist.gov/cryogenics/materials

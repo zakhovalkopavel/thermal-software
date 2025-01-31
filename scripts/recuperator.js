@@ -235,6 +235,8 @@ let params = {
         alumina_sand_02: 'alumina_sand_02',
         silicon_carbide: 'silicon_carbide',
         basalt_fiber_mat: 'basalt_fiber_mat',
+        AISI_304: 'AISI_304',
+        mild_steel: 'mild_steel'
     },
     dSurface: 0.2, // m
     autosetParamsList: [
@@ -269,16 +271,14 @@ let params = {
     ],
     textParams: [
         'holeForm',
-        'layer[0].material',
-        'layer[1].material',
-        'layer[2].material',
-        'layer[3].material',
-        'layer[4].material',
         'furnaceForm',
+        'recuperatorCore.material'
     ],
     textParamsREGEX: [
         /betweenLayers\d+\.name/,
-        /layer\[\d+\]\.material/
+        /layer\[\d+\]\.material/,
+        /recuperatorLayer\[\d+\]\.material/,
+        /recuperatorBetweenLayers\d+\.name/,
     ],
     layers:[],
     layersAmount:5,
@@ -298,6 +298,9 @@ let params = {
     generatorHeatFluxDm2: 0,//W/dm2
     generatorHeatFlux: 0,//W/dm2
     airPreheat: 0, //C
+    recuperatorLayears:[],
+    recuperatorLayersAmount:5,
+    recuperatorCore:null,
 };
 
 
@@ -1500,16 +1503,9 @@ const calculate = () => {
         const dSmoke = (tSmokeStart - tSmokeEnd)/divider;
         const dAir = (tAirEnd - tAirStart)/divider;
         if( currentCriteria<params.criteria || (dSmoke < params.dTmin && dAir < params.dTmin) ) {
-            /*console.log([tSmokeEnd>=tSmokeStart-50,
-            tAirStart>=tAirEnd-50 ,
-            tAirEnd>=tSmokeStart,
-            tSmokeEnd<=tAirStart,
-            currentCriteria<params.criteria
-            ]);*/
             break;
         }
         else{
-
 
             const dataItems =[
                 //01
@@ -1923,6 +1919,14 @@ const getEmissivity = (type, t) => {
         case params.materials.basalt_fiber_mat:
             E = emissivityFunction(0.92, 0, 0, 0, t, 300, 400)
             break;
+        //Stainless steels N-155 oxidised at high temp
+        case params.materials.AISI_304:
+            E = emissivityFunction(0.42, 30, 0, 0, t, 600, 1400)
+            break;
+        //Iron/steel iron oxide, red heat 30 min
+        case params.materials.mild_steel:
+            E = emissivityFunction(0.173, 68.6, -25.6, 0, t, 100, 1050)
+            break;
     }
     return E;
 }
@@ -2013,6 +2017,12 @@ const getLambda = (type, t) =>
 
         case params.materials.basalt_fiber_mat:
             lambda =  0.139 - 7.97*Math.pow(10,-5)*tCelcius + 1.3*Math.pow(10,-7)*Math.pow(tCelcius, 2) + 2.73*Math.pow(10,-10)*Math.pow(tCelcius, 3);
+            break;
+        case params.materials.AISI_304:
+            lambda = 9.705+0.0176*t-1.60*1E-6*t*t;
+            break;
+        case params.materials.mild_steel:
+            lambda = 6.56e-8*Math.pow(tCelcius, 3)-8.34e-5*tCelcius*tCelcius-8.06e-4*tCelcius+49.16;
             break;
     }
     return lambda;
