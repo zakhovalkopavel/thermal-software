@@ -1,5 +1,5 @@
-import {CompoundValue} from "../../../interface";
-import {EquationTypeDto} from "../../../dto";
+import {CompoundValue} from "../../interface";
+import {EquationTypeDto} from "../../dto";
 
 export class SO2 implements CompoundValue{
     name: "Sulfur dioxide";
@@ -95,6 +95,36 @@ export class SO2 implements CompoundValue{
                 },
                 min: 200,
                 max: 1000,
+            },
+        ]
+    };
+    thermalConductivity: {
+        def: 0,
+        values: [
+            {
+                type: EquationTypeDto.quadratic,
+                ref: 2,
+                page: 839,
+                vars: {
+                    a: -0.00394,
+                    b: 4.4847e-5,
+                    c: 2.1066e-9,
+                },
+                min: 198,
+                max: 1000,
+            },
+            {
+                type: EquationTypeDto.dipprN102,
+                ref: 15,
+                page: 330,
+                vars: {
+                    c1: 10.527,
+                    c2: -0.7732,
+                    c3: -1333,
+                    c4: 1506400,
+                },
+                min: 250,
+                max: 900,
             },
         ]
     };

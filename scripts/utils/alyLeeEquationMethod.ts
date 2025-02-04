@@ -2,6 +2,7 @@ import {Equation} from "../interface";
 import {AlyLeeEquation} from "../type";
 import {Common} from "./common";
 
+//The same as DIPPR Equation #107 from ref 16
 export class AlyLeeEquationMethod implements Equation<AlyLeeEquation> {
     calculate(x: number, vars: AlyLeeEquation, min: number, max:number, k:number = 1): number {
         const { c1, c2, c3, c4, c5 } = vars;

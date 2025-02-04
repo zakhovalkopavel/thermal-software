@@ -1,12 +1,3 @@
-import {
-    AlyLeeEquation,
-    CubicEquation,
-    LinearEquation,
-    LinearHyperbolicEquation,
-    LinearHyperbolicLogarithmicEquation,
-    QuadraticEquation,
-    QuarticEquation
-} from "../type";
 import {EquationTypeDto} from "../dto";
 import {LinearEquationMethod} from "./linearEquationMethod";
 import {AlyLeeEquationMethod} from "./alyLeeEquationMethod";
@@ -15,11 +6,13 @@ import {LinearHyperbolicLogarithmicEquationMethod} from "./linearHyperbolicLogar
 import {QuadraticEquationMethod} from "./quadraticEquationMethod";
 import {CubicEquationMethod} from "./cubicEquationMethod";
 import {QuarticEquationMethod} from "./quarticEquationMethod";
+import {DipprEquation102Method} from "./dipprEquation102";
 
 export class Common {
     public static kB: number = 1.380649e-23; // Boltzmann's constant J/K;
     public static R: number =8.31446261815324; // The molar gas constant , J/(mol*K)
     public static Na: number = 6.02214076e23 // The Avogadro constant mol−1
+    public static gaussianSteps = 20;
 
     public static logarithmicAverage(x1: number, x2: number): number {
         if (x1 < 0 || x2 < 0) {
@@ -64,6 +57,9 @@ export class Common {
             case EquationTypeDto.linearHyperbolicLogarithmic:
                 result = new LinearHyperbolicLogarithmicEquationMethod();
                 break;
+            case EquationTypeDto.dipprN102:
+                result = new DipprEquation102Method();
+                break;
             case EquationTypeDto.quadratic:
                 result = new QuadraticEquationMethod();
                 break;
@@ -76,5 +72,41 @@ export class Common {
         }
         return result;
     }
+    public static pochhammerFunction(x: number, n: number, current?: number): number {
+        if(n == 0) {
+            return 1;
+        }
+        else if (typeof current === "number"){
+            return current*(x+n-1);
+        }
+        else {
+            return (x+n-1)*Common.pochhammerFunction(x, n-1);
+        }
 
+    };
+
+    public static factorial(n: number, current?: number): number {
+        if(n == 0) {
+            return 1;
+        }
+        else if (typeof current === "number"){
+            return current*n;
+        }
+        else {
+            return n*Common.factorial(n-1);
+        }
+    }
+    public static gaussian(a: number, b: number, c: number, z: number) {
+        let a_n, b_n, c_n, factorial_n;
+        a_n = b_n = c_n = factorial_n = 1;
+        let result = 0;
+        for(let n=0; n < Common.gaussianSteps; n++) {
+            a_n = Common.pochhammerFunction(a, n, a_n);
+            b_n = Common.pochhammerFunction(a, n, b_n);
+            b_n = Common.pochhammerFunction(a, n, c_n);
+            factorial_n = Common.factorial(n, factorial_n);
+            result += a_n*b_n*Math.pow(z, n)/(c_n*factorial_n);
+        }
+        return result;
+    }
 }

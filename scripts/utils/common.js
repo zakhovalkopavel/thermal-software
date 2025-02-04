@@ -9,6 +9,7 @@ const linearHyperbolicLogarithmicEquationMethod_1 = require("./linearHyperbolicL
 const quadraticEquationMethod_1 = require("./quadraticEquationMethod");
 const cubicEquationMethod_1 = require("./cubicEquationMethod");
 const quarticEquationMethod_1 = require("./quarticEquationMethod");
+const dipprEquation102_1 = require("./dipprEquation102");
 class Common {
     static logarithmicAverage(x1, x2) {
         if (x1 < 0 || x2 < 0) {
@@ -51,6 +52,9 @@ class Common {
             case dto_1.EquationTypeDto.linearHyperbolicLogarithmic:
                 result = new linearHyperbolicLogarithmicEquationMethod_1.LinearHyperbolicLogarithmicEquationMethod();
                 break;
+            case dto_1.EquationTypeDto.dipprN102:
+                result = new dipprEquation102_1.DipprEquation102Method();
+                break;
             case dto_1.EquationTypeDto.quadratic:
                 result = new quadraticEquationMethod_1.QuadraticEquationMethod();
                 break;
@@ -63,8 +67,45 @@ class Common {
         }
         return result;
     }
+    static pochhammerFunction(x, n, current) {
+        if (n == 0) {
+            return 1;
+        }
+        else if (typeof current === "number") {
+            return current * (x + n - 1);
+        }
+        else {
+            return (x + n - 1) * Common.pochhammerFunction(x, n - 1);
+        }
+    }
+    ;
+    static factorial(n, current) {
+        if (n == 0) {
+            return 1;
+        }
+        else if (typeof current === "number") {
+            return current * n;
+        }
+        else {
+            return n * Common.factorial(n - 1);
+        }
+    }
+    static gaussian(a, b, c, z) {
+        let a_n, b_n, c_n, factorial_n;
+        a_n = b_n = c_n = factorial_n = 1;
+        let result = 0;
+        for (let n = 0; n < Common.gaussianSteps; n++) {
+            a_n = Common.pochhammerFunction(a, n, a_n);
+            b_n = Common.pochhammerFunction(a, n, b_n);
+            b_n = Common.pochhammerFunction(a, n, c_n);
+            factorial_n = Common.factorial(n, factorial_n);
+            result += a_n * b_n * Math.pow(z, n) / (c_n * factorial_n);
+        }
+        return result;
+    }
 }
 exports.Common = Common;
 Common.kB = 1.380649e-23; // Boltzmann's constant J/K;
 Common.R = 8.31446261815324; // The molar gas constant , J/(mol*K)
 Common.Na = 6.02214076e23; // The Avogadro constant mol−1
+Common.gaussianSteps = 20;

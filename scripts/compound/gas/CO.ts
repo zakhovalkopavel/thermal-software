@@ -1,5 +1,5 @@
-import {CompoundValue} from "../../../interface";
-import {EquationTypeDto} from "../../../dto";
+import {CompoundValue} from "../../interface";
+import {EquationTypeDto} from "../../dto";
 
 export class CO implements CompoundValue {
     name: "Carbon monoxide";
@@ -78,7 +78,7 @@ export class CO implements CompoundValue {
                     c3: 3.0851e3,
                     c4: 0.0846e5,
                     c5: 1538.2,
-                }
+                },
                 min: 60,
                 max: 1500,
             },
@@ -110,6 +110,36 @@ export class CO implements CompoundValue {
                 },
                 min: 68,
                 max: 1250,
+            },
+        ]
+    };
+    thermalConductivity: {
+        def: 0,
+        values: [
+            {
+                type: EquationTypeDto.quadratic,
+                ref: 2,
+                page: 838,
+                vars: {
+                    a: 0.00158,
+                    b: 8.2511e-5,
+                    c: -1.9081e-8,
+                },
+                min: 70,
+                max: 1250,
+            },
+            {
+                type: EquationTypeDto.dipprN102,
+                ref: 15,
+                page: 325,
+                vars: {
+                    c1: 0.00059882,
+                    c2: 0.6863,
+                    c3: 57.13,
+                    c4: 501.92,
+                },
+                min: 70,
+                max: 1500,
             },
         ]
     };

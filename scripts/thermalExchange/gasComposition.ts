@@ -1,10 +1,10 @@
 import { Composition } from '../interface';
 import {GasValue} from "../interface/compoundValue";
 export class GasComposition {
-    public readonly molPartial: Composition<number>; // partial composition by moles or volumes
-    public readonly weightPartial: Composition<number>; // partial composition by mass
+    public readonly molPartial: Composition; // partial composition by moles or volumes
+    public readonly weightPartial: Composition; // partial composition by mass
 
-    constructor(weightPartial: Composition<number>) {
+    constructor(weightPartial: Composition) {
         this.weightPartial = weightPartial;
         let molesTotal = 0;
         for(const [key, value] of Object.entries(weightPartial)){
@@ -16,7 +16,7 @@ export class GasComposition {
         }
     }
 
-    public heatCapacity(gasName: keyof Composition<number>, t: number, t0: number = -1) {
+    public heatCapacity(gasName: keyof Composition, t: number, t0: number = -1) {
         let result = 0;
         if(t0<0){
             result = this.capacityFunction(gasName, t);
@@ -28,14 +28,14 @@ export class GasComposition {
     }
 
     //Molar isobaric heat capacity
-    public capacityFunction ( gasName: keyof Composition<number>, t): number {
+    public capacityFunction ( gasName: keyof Composition, t): number {
         t = this.capacityValidT(t);
         const {
             a, b, c, d, Mr
         } = this.gasValues[gasName];
         return (a + b*t/100 + c*Math.pow(t, 2)*Math.pow(10,-5) + d*Math.pow(t, 3)*Math.pow(10, -9))/Mr;
     }
-    public capacityFunctionAverage = ( gasName: keyof Composition<number>, t, t0) => {
+    public capacityFunctionAverage = ( gasName: keyof Composition, t, t0) => {
         t0 = capacityValidInterval(t0);
         t = capacityValidInterval(t);
         if(t === t0) {

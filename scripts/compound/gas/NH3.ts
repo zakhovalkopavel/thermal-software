@@ -1,5 +1,5 @@
-import {CompoundValue} from "../../../interface";
-import {EquationTypeDto} from "../../../dto";
+import {CompoundValue} from "../../interface";
+import {EquationTypeDto} from "../../dto";
 
 export class NH3 implements CompoundValue{
     name: "Ammonia";
@@ -22,9 +22,9 @@ export class NH3 implements CompoundValue{
                     c: 8.8906e-5,
                     d: -7.1783e-8,
                     e: 1.8569e-11,
-                    min: 100,
-                    max: 1500,
-                }
+                },
+                min: 100,
+                max: 1500,
             },
             {
                 type: EquationTypeDto.cubic,
@@ -35,7 +35,7 @@ export class NH3 implements CompoundValue{
                     b: 2.563e-2,
                     c: 0.99072e-5,
                     d:-6.6909e-9,
-                }
+                },
                 min:273,
                 max:1500,
             },
@@ -46,7 +46,7 @@ export class NH3 implements CompoundValue{
                 vars: {
                     a:6.7,
                     b:0.0063,
-                }
+                },
                 min:300,
                 max:800,
             },
@@ -82,6 +82,37 @@ export class NH3 implements CompoundValue{
                 },
                 min: 195,
                 max: 1000,
+            },
+        ]
+    };
+    thermalConductivity: {
+        def: 1,
+        values: [
+            {
+                type: EquationTypeDto.quadratic,
+                ref: 2,
+                page: 838,
+                vars: {
+                    a: 0.00457,
+                    b: 2.3239e-05,
+                    c: 1.4810e-07,
+
+                },
+                min: 200,
+                max: 700,
+            },
+            {
+                type: EquationTypeDto.dipprN102,
+                ref: 15,
+                page: 324,
+                vars: {
+                    c1: 9.6608e-6,
+                    c2: 1.3799,
+                    c3: 0,
+                    c4: 0,
+                },
+                min: 200,
+                max: 900,
             },
         ]
     };

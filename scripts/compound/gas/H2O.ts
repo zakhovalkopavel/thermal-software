@@ -1,5 +1,5 @@
-import {CompoundValue} from "../../../interface";
-import {EquationTypeDto} from "../../../dto";
+import {CompoundValue} from "../../interface";
+import {EquationTypeDto} from "../../dto";
 
 export class H2O implements CompoundValue{
     name: "Water gas";
@@ -95,6 +95,37 @@ export class H2O implements CompoundValue{
                 },
                 min: 280,
                 max: 1073,
+            },
+        ]
+    };
+    thermalConductivity: {
+        def: 0,
+        values: [
+            {
+                type: EquationTypeDto.quadratic,
+                ref: 2,
+                page: 839,
+                vars: {
+                    a: 0.00053,
+                    b: 4.7093e-05,
+                    c: 4.9551e-08,
+
+                },
+                min: 275,
+                max: 1073,
+            },
+            {
+                type: EquationTypeDto.dipprN102,
+                ref: 15,
+                page: 330,
+                vars: {
+                    c1: 6.2041e-6,
+                    c2: 1.3973,
+                    c3: 0,
+                    c4: 0,
+                },
+                min: 273.16,
+                max: 1073.15,
             },
         ]
     };

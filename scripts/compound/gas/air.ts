@@ -1,5 +1,5 @@
-import {CompoundValue} from "../../../interface";
-import {EquationTypeDto} from "../../../dto";
+import {CompoundValue} from "../../interface";
+import {EquationTypeDto} from "../../dto";
 
 export class Air implements CompoundValue{
     name: "Air";
@@ -41,5 +41,28 @@ export class Air implements CompoundValue{
                 max: 1500,
             },
         ]
-    }
+    };
+    viscosity: {
+        def: 0,
+        values:[
+        ]
+    };
+    thermalConductivity: {
+        def: 0,
+        values: [
+            {
+                type: EquationTypeDto.dipprN102,
+                ref: 15,
+                page: 324,
+                vars: {
+                    c1: 0.00031417,
+                    c2: 0.7786,
+                    c3: -0.7116,
+                    c4: 2121.7,
+                },
+                min: 70,
+                max: 2000,
+            }
+        ]
+    };
 }

@@ -1,9 +1,9 @@
-import {CompoundValue} from "../../../interface";
+import {CompoundValue} from "../../interface";
 
-export class Water implements CompoundValue{
-    name: "Water";
-    chemicalFormula: "H2O";
-    Mr: 0.018;
+export class C implements CompoundValue{
+    name: "Carbon";
+    chemicalFormula: "C";
+    Mr: 0.012;
     gibbsEnergy: {
         m: 0,
         n: 0,

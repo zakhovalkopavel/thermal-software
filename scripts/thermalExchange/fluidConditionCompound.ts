@@ -14,8 +14,6 @@ export class FluidCondition implements Fluid<CompoundValue>{
         this.p = p;
     }
 
-
-
     public kinematicViscosity(): number {
         return this.dynamicViscosity()/this.density();
     }
@@ -25,8 +23,7 @@ export class FluidCondition implements Fluid<CompoundValue>{
        t:number = this.t,
        method: ThermalConductivityEquationTypeDto = ThermalConductivityEquationTypeDto.stielThodos): number {
         const viscosity = this.dynamicViscosity(t);
-        const heatCapacityIsobaric = this.heatCapacity(t);
-        const heatCapacityIsochoric = heatCapacityIsobaric - Common.R;
+        const heatCapacityIsochoric = this.heatCapacityIsochoric(t);
         let result: number;
         switch (method) {
             case ThermalConductivityEquationTypeDto.eucken:
@@ -42,6 +39,13 @@ export class FluidCondition implements Fluid<CompoundValue>{
         return result;
     }
 
+    //Isochoric heat capacity
+    public heatCapacityIsochoric(t1: number = this.t, t2?: number): number {
+        const heatCapacityIsobaric = this.heatCapacity(t1, t2);
+        return heatCapacityIsobaric - Common.R;
+    }
+
+    //Isobaric heat capacity
     public heatCapacity(t1: number = this.t, t2?: number): number {
         const heatCapacityValue = this.fluid.heatCapacity.values[this.fluid.viscosity.def];
         const {min, max, vars, k} = heatCapacityValue;

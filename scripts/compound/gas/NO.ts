@@ -1,5 +1,5 @@
-import {CompoundValue} from "../../../interface";
-import {EquationTypeDto} from "../../../dto";
+import {CompoundValue} from "../../interface";
+import {EquationTypeDto} from "../../dto";
 
 export class NO implements CompoundValue{
     name: "Nitrogen oxide";
@@ -22,7 +22,7 @@ export class NO implements CompoundValue{
                     c:5.3156e-5,
                     d:-3.7858e-8,
                     e:9.1197e-12,
-                }
+                },
                 min: 50,
                 max: 1500,
             },
@@ -50,7 +50,7 @@ export class NO implements CompoundValue{
                     b:-0.09395e-2,
                     c:0.9747e-5,
                     d:-4.187e-9,
-                }
+                },
                 min: 273,
                 max: 1500,
             },
@@ -84,6 +84,36 @@ export class NO implements CompoundValue{
                 min: 150,
                 max: 1500,
             },
+        ]
+    };
+    thermalConductivity: {
+        def: 1,
+        values: [
+            {
+                type: EquationTypeDto.dipprN102,
+                ref: 15,
+                page: 329,
+                vars: {
+                    c1: 0.0004096,
+                    c2: 0.7509,
+                    c3: 45.6,
+                    c4: 0,
+                },
+                min: 121.38,
+                max: 750,
+            },
+            {
+                type: EquationTypeDto.quadratic,
+                ref: 6,
+                page: 528,
+                vars: {
+                    a: 0.00176,
+                    b: 8.2369e-5,
+                    c: -1.2527e-8,
+                },
+                min: 110,
+                max: 1000,
+            }
         ]
     };
 }

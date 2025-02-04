@@ -55,13 +55,13 @@ class FluidDynamics {
         }
         const fluidConditionCold = new fluidCondition_1.FluidCondition(this.fluid, tCold, this.p, this.composition);
         const fluidConditionHot = new fluidCondition_1.FluidCondition(this.fluid, tHot, this.p, this.composition);
-        const averageViscosity = common_1.Common.getLogarithmicAverage(fluidConditionHot.kinematicViscosity(), fluidConditionCold.kinematicViscosity());
+        const averageViscosity = common_1.Common.logarithmicAverage(fluidConditionHot.kinematicViscosity(), fluidConditionCold.kinematicViscosity());
         return 9.81 * Math.pow(this.characteristicSize, 3) * 2 * (tHot - tCold) / ((tHot + tCold) * Math.pow(averageViscosity, 2));
         // TODO I have to check which characteristic size we use for different form and directions
     }
     //The Rayleigh number is defined as the strength of the thermal buoyancy against the viscous and thermal diffusion
     rayleighNumber() {
-        const tAverage = common_1.Common.getAverage([this.tFluid, this.tSurface]);
+        const tAverage = common_1.Common.average([this.tFluid, this.tSurface]);
         const fluidContitionAverageT = new fluidCondition_1.FluidCondition(this.fluid, tAverage, this.p, this.composition);
         return fluidContitionAverageT.prandtlNumber() * this.grashofNumber();
     }

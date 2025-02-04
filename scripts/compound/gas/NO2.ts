@@ -1,5 +1,5 @@
-import {CompoundValue} from "../../../interface";
-import {EquationTypeDto} from "../../../dto";
+import {CompoundValue} from "../../interface";
+import {EquationTypeDto} from "../../dto";
 
 export class NO2 implements CompoundValue{
     name: "Nitrogen dioxide";
@@ -56,6 +56,23 @@ export class NO2 implements CompoundValue{
                 },
                 min: 295,
                 max: 460,
+            },
+        ]
+    };
+    thermalConductivity: {
+        def: 0,
+        values: [
+            {
+                type: EquationTypeDto.quadratic,
+                ref: 6,
+                page: 528,
+                vars: {
+                    a: -0.01289,
+                    b: 1.039e-4,
+                    c: -2.1445e-8,
+                },
+                min: 298,
+                max: 1000,
             },
         ]
     };

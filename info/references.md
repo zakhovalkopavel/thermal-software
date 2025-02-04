@@ -6,7 +6,7 @@
    https://booksite.elsevier.com/9780750683661/Appendix_C.pdf
 3. Tables of Thermal Properties of Gases, 1954
    https://www.govinfo.gov/content/pkg/GOVPUB-C13-89baf9f9b4a43e5f25820bd51b0f3f11/pdf/GOVPUB-C13-89baf9f9b4a43e5f25820bd51b0f3f11.pdf
-4. Perry’s Chemical Engineers’ Handbook 1997
+4. Perry’s Chemical Engineers’ Handbook 7th edition, 1997
 5. Thermodynamics Tables and Charts
    https://engineering.wayne.edu/mechanical/pdfs/thermodynamic-_tables-updated.pdf
 6. Chemical properties handbook : physical, thermodynamic, environmental, transport, safety, and health related properties 
@@ -31,3 +31,8 @@
     D. P. Bentz, Kuldeep Prasad 2007
     https://www.researchgate.net/publication/241211063_Thermal_Performance_of_Fire_Resistive_Materials_I_Characterization_with_Respect_to_Thermal_Performance_Models
 14. https://trc.nist.gov/cryogenics/materials
+15. Perry’s Chemical Engineers’ Handbook 9th edition, 2019
+16. DIPPR Fit Equations
+    https://chemicals.readthedocs.io/chemicals.dippr.html
+17. Online Integral Calculator by Wolfram|Alpha
+    https://www.wolframalpha.com/calculators/integral-calculator/

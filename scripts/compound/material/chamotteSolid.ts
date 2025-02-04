@@ -1,10 +1,8 @@
-import {CompoundValue, EquationValue} from "../../../interface";
-import {ChemicalComposition} from "../../../interface/chemicalComposition";
+import {CompoundValue, EquationValue} from "../../interface";
+import {ChemicalComposition} from "../../interface/chemicalComposition";
 
 export class ChamotteSolid implements CompoundValue{
     name: "ChamotteSolid";
-
-
 
     readonly chemicalComposition: [
         {

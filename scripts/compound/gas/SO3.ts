@@ -1,5 +1,5 @@
-import {CompoundValue} from "../../../interface";
-import {EquationTypeDto} from "../../../dto";
+import {CompoundValue} from "../../interface";
+import {EquationTypeDto} from "../../dto";
 
 export class SO3 implements CompoundValue{
     name: "Sulfur trioxide";
@@ -73,6 +73,36 @@ export class SO3 implements CompoundValue{
                 },
                 min: 298,
                 max: 694,
+            },
+        ]
+    };
+    thermalConductivity: {
+        def: 0,
+        values: [
+            {
+                type: EquationTypeDto.quadratic,
+                ref: 6,
+                page: 529,
+                vars: {
+                    a: -0.00354,
+                    b: 5.0217e-5,
+                    c: -5.5547e-9,
+                },
+                min: 275,
+                max: 998,
+            },
+            {
+                type: EquationTypeDto.dipprN102,
+                ref: 15,
+                page: 330,
+                vars: {
+                    c1: 1.0702,
+                    c2: -0.2348,
+                    c3: 2010.4,
+                    c4: 1277000,
+                },
+                min: 317.9,
+                max: 1000,
             },
         ]
     };

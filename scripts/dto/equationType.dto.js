@@ -10,4 +10,5 @@ var EquationTypeDto;
     EquationTypeDto["linearHyperbolic"] = "linearHyperbolic";
     EquationTypeDto["linearHyperbolicLogarithmic"] = "linearHyperbolicLogarithmic";
     EquationTypeDto["alyLee"] = "alyLee";
+    EquationTypeDto["dipprN102"] = "dipprN102";
 })(EquationTypeDto = exports.EquationTypeDto || (exports.EquationTypeDto = {}));

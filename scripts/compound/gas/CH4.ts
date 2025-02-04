@@ -1,5 +1,5 @@
-import {CompoundValue} from "../../../interface";
-import {EquationTypeDto} from "../../../dto";
+import {CompoundValue} from "../../interface";
+import {EquationTypeDto} from "../../dto";
 
 export class CH4 implements CompoundValue{
     name: "Methane";
@@ -66,7 +66,7 @@ export class CH4 implements CompoundValue{
                     c3:2.0869e3,
                     c4:0.416e5,
                     c5:991.96,
-                }
+                },
                 min: 50,
                 max: 1500,
             },
@@ -98,6 +98,36 @@ export class CH4 implements CompoundValue{
                 },
                 min: 91,
                 max: 850,
+            },
+        ]
+    };
+    thermalConductivity: {
+        def: 0,
+        values: [
+            {
+                type: EquationTypeDto.quadratic,
+                ref: 2,
+                page: 838,
+                vars: {
+                    a: -0.00935,
+                    b: 1.4028e-4,
+                    c: 3.318e-8,
+                },
+                min: 97,
+                max: 1400,
+            },
+            {
+                type: EquationTypeDto.dipprN102,
+                ref: 15,
+                page: 328,
+                vars: {
+                    c1: 8.3983e-6,
+                    c2: 1.4268,
+                    c3: -49.654,
+                    c4: 0,
+                },
+                min: 111.63,
+                max: 600,
             },
         ]
     };

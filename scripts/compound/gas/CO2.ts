@@ -1,5 +1,5 @@
-import {CompoundValue} from "../../../interface";
-import {EquationTypeDto} from "../../../dto";
+import {CompoundValue} from "../../interface";
+import {EquationTypeDto} from "../../dto";
 
 export class CO2 implements CompoundValue{
     name: "Carbon dioxide";
@@ -38,7 +38,7 @@ export class CO2 implements CompoundValue{
                     c:-1.9555e-5,
                     d:3.9968e-9,
                     e:-2.9872e-13,
-                }
+                },
                 min: 50,
                 max: 5000,
             },
@@ -51,7 +51,7 @@ export class CO2 implements CompoundValue{
                     b: 5.981e-2,
                     c: -3.501e-5,
                     d: 7.469e-9,
-                }
+                },
                 min: 273,
                 max: 1800,
             },
@@ -63,7 +63,7 @@ export class CO2 implements CompoundValue{
                     a: 44.17,
                     b: 9.04e-3,
                     d: -8.54e5,
-                }
+                },
                 min: 298,
                 max: 2500,
             },
@@ -110,6 +110,36 @@ export class CO2 implements CompoundValue{
                     c: -1.0851e-4,
                 },
                 min: 195,
+                max: 1500,
+            },
+        ]
+    };
+    thermalConductivity: {
+        def: 0,
+        values: [
+            {
+                type: EquationTypeDto.quadratic,
+                ref: 2,
+                page: 838,
+                vars: {
+                    a: -0.012,
+                    b: 1.0208e-4,
+                    c: -2.2403e-8,
+                },
+                min: 195,
+                max: 1500,
+            },
+            {
+                type: EquationTypeDto.dipprN102,
+                ref: 15,
+                page: 324,
+                vars: {
+                    c1: 3.69,
+                    c2: -0.3838,
+                    c3: 964,
+                    c4: 1860000,
+                },
+                min: 194.67,
                 max: 1500,
             },
         ]

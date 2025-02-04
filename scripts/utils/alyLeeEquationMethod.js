@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AlyLeeEquationMethod = void 0;
 const common_1 = require("./common");
+//The same as DIPPR Equation #107 from ref 16
 class AlyLeeEquationMethod {
     calculate(x, vars, min, max, k = 1) {
         const { c1, c2, c3, c4, c5 } = vars;

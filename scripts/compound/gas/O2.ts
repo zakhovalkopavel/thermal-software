@@ -1,5 +1,5 @@
-import {CompoundValue} from "../../../interface";
-import {EquationTypeDto} from "../../../dto";
+import {CompoundValue} from "../../interface";
+import {EquationTypeDto} from "../../dto";
 
 export class O2 implements CompoundValue{
     name: "Oxygen";
@@ -22,7 +22,7 @@ export class O2 implements CompoundValue{
                     c: 3.8083e-5,
                     d: -3.2629e-8,
                     e: 8.8607e-12,
-                }
+                },
                 min: 50,
                 max: 1500,
             },
@@ -35,7 +35,7 @@ export class O2 implements CompoundValue{
                     b: 1.52e-2,
                     c: -0.7155e-5,
                     d: 1.312e-9,
-                }
+                },
                 min: 273,
                 max: 1800,
             },
@@ -47,7 +47,7 @@ export class O2 implements CompoundValue{
                     a: 29.98,
                     b: 4.2e-3,
                     d: -1.7e5,
-                }
+                },
                 min: 298,
                 max: 3000,
             },
@@ -59,7 +59,7 @@ export class O2 implements CompoundValue{
                     a: 8.27,
                     b: 0.000258,
                     d: -187700,
-                }
+                },
                 min: 300,
                 max: 5000,
             },
@@ -95,6 +95,36 @@ export class O2 implements CompoundValue{
                 },
                 min: 150,
                 max: 1500,
+            },
+        ]
+    };
+    thermalConductivity: {
+        def: 1,
+        values: [
+            {
+                type: EquationTypeDto.quadratic,
+                ref: 2,
+                page: 839,
+                vars: {
+                    a: 0.00121,
+                    b: 8.6157e-5,
+                    c: -1.3346e-08,
+                },
+                min: 80,
+                max: 1500,
+            },
+            {
+                type: EquationTypeDto.dipprN102,
+                ref: 15,
+                page: 330,
+                vars: {
+                    c1: 0.00044994,
+                    c2: 0.7456,
+                    c3: 56.699,
+                    c4: 0,
+                },
+                min: 80,
+                max: 2000,
             },
         ]
     };

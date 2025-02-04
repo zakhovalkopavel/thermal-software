@@ -15,8 +15,7 @@ class FluidCondition {
     // ref 7, 10-4
     thermalConductivity(t = this.t, method = thermalConductivityEquationType_dto_1.ThermalConductivityEquationTypeDto.stielThodos) {
         const viscosity = this.dynamicViscosity(t);
-        const heatCapacityIsobaric = this.heatCapacity(t);
-        const heatCapacityIsochoric = heatCapacityIsobaric - common_1.Common.R;
+        const heatCapacityIsochoric = this.heatCapacityIsochoric(t);
         let result;
         switch (method) {
             case thermalConductivityEquationType_dto_1.ThermalConductivityEquationTypeDto.eucken:
@@ -31,6 +30,12 @@ class FluidCondition {
         }
         return result;
     }
+    //Isochoric heat capacity
+    heatCapacityIsochoric(t1 = this.t, t2) {
+        const heatCapacityIsobaric = this.heatCapacity(t1, t2);
+        return heatCapacityIsobaric - common_1.Common.R;
+    }
+    //Isobaric heat capacity
     heatCapacity(t1 = this.t, t2) {
         const heatCapacityValue = this.fluid.heatCapacity.values[this.fluid.viscosity.def];
         const { min, max, vars, k } = heatCapacityValue;
