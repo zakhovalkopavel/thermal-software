@@ -252,10 +252,10 @@ let params = {
         'h0mm',
         'fPowerKW',
         'kExcessAir',
-        'refractoryLambda',
-        'refractoryEmissivity',
-        'refractoryMediumThicknessMM',
-        'thermalInsulationThicknessMM',
+        //'refractoryLambda',
+        //'refractoryEmissivity',
+        //'refractoryMediumThicknessMM',
+        //'thermalInsulationThicknessMM',
         'wantedRecuperatorLength',
         'holeForm',
         'wH2Om',
@@ -675,11 +675,12 @@ const systemEnergyChange = (systemEnergy,  weightFactor, t1, t2, isOnlyGases = t
 
 const getParam = (name, params) => {
     let result;
+    console.log(name);
     const textValue = document.getElementById(name).value;
     if(typeof params[name] ==="boolean"){
         result = textValue !== '0';
     }
-    result = params.textParams.includes(name) ? textValue: textValue*1;
+    result = checkIsText(name) ? textValue: textValue*1;
     return result;
 }
 
@@ -1260,8 +1261,7 @@ const setResult = function(data){
                 }
             }
             else{
-                let isText = params.textParams.includes(id);
-                params.textParamsREGEX.forEach((regex)=> isText = isText || regex.test(id));
+                const isText = checkIsText(id);
                 if(isText) {
                     element.textContent = data[id];
                 }
@@ -1272,6 +1272,12 @@ const setResult = function(data){
         }
     }
 };
+
+const checkIsText = (id) => {
+    let isText = params.textParams.includes(id);
+    params.textParamsREGEX.forEach((regex)=> isText = isText || regex.test(id));
+    return isText;
+}
 
 const goalCriteria = (x) => {
     return Math.abs(1-x/params.wantedRecuperatorLength);
@@ -2189,7 +2195,7 @@ const heatFluxFurnaceMultyLayer = (layers, step, w, composition, mPerSecond, tFl
 {
     //console.log({h1,h2,lambda1, lambda2, E, w, composition, tFlame, tAir, form, a, b, c, endFactor});
     let tGasEnd = tFlame;
-    console.log({tFlame, tGasEnd});
+    console.log({layers, tFlame, tGasEnd});
     let tGasAverage = getLogariphmicAvearge(tFlame, tGasEnd);
     let tOuter = tAir;
     let tInnerMin = tOuter;
@@ -2272,7 +2278,7 @@ const heatFluxFurnaceMultyLayer = (layers, step, w, composition, mPerSecond, tFl
        // let currentEndFactor;
 
         const emissivityOuter = getEmissivity(layers[layers.length-1].material, tOuter);
-        console.log({emissivityOuter, material: layers[layers.length-1].material})
+        console.log({emissivityOuter, layers, material: layers[layers.length-1].material})
         alphaOuter = getFullNaturalConvectionAlpha(tAir, tOuter, dimentionsOuter.lSurface, dimentionsOuter.dSurface, emissivityOuter);
         fluxOuter = alphaOuter*(tOuter-tAir)*sOuter;
         const compositionHeatCapacity = getGasSystemCapacity(composition.weightPartial, tFlame, tGasEnd);
