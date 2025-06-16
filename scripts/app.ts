@@ -1,0 +1,1 @@
+import * as Compound from "./src/compound";
