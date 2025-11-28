@@ -1,0 +1,14 @@
+version: '3.9'
+services:
+  node-app:
+    image: node:24-alpine
+    container_name: nodejs-app
+    working_dir: /usr/src/app
+    volumes:
+      - ./furnaceCombustion:/usr/src/app/src
+    ports:
+      - "3010:3000"
+    command: tail -f /dev/null
+    environment:
+      NODE_ENV: development
+    restart: unless-stopped
