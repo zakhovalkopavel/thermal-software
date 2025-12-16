@@ -1,14 +1,42 @@
-version: '3.9'
+
 services:
-  node-app:
-    image: node:24-alpine
-    container_name: nodejs-app
-    working_dir: /usr/src/app
+  thermal-app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: thermal-app
+    working_dir: /usr/src/app/refractory
     volumes:
-      - ./furnaceCombustion:/usr/src/app/src
+      # Furnace Combustion Model
+      - ./furnaceCombustion:/usr/src/app/furnaceCombustion
+      # Refractory Calculator - mount entire directory with write access
+      - ./refractory:/usr/src/app/refractory
+      # Exclude node_modules to avoid conflicts
+      - /usr/src/app/refractory/node_modules
     ports:
       - "3010:3000"
-    command: tail -f /dev/null
     environment:
       NODE_ENV: development
+      PORT: 3000
+    command: node server.js
     restart: unless-stopped
+
+  # Refractory Calculator Web Interface
+  refractory-calculator:
+    image: nginx:alpine
+    container_name: refractory-calculator
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./refractory:/usr/share/nginx/html/refractory:ro
+    ports:
+      - "18080:80"
+    environment:
+      NGINX_HOST: localhost
+      NGINX_PORT: 80
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
