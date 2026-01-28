@@ -1,0 +1,65 @@
+# Configuration file for thermophysical data processor
+# This file defines target cations, anion families, and allowed elements
+
+# Target Cations (20 elements)
+[cations]
+Na,Sodium,alkali_metal
+K,Potassium,alkali_metal
+Li,Lithium,alkali_metal
+Mg,Magnesium,alkaline_earth
+Ca,Calcium,alkaline_earth
+Ba,Barium,alkaline_earth
+Sr,Strontium,alkaline_earth
+Fe,Iron,transition_metal
+Zn,Zinc,transition_metal
+Ni,Nickel,transition_metal
+Cu,Copper,transition_metal
+Al,Aluminum,post_transition_metal
+Ti,Titanium,transition_metal
+Si,Silicon,metalloid
+B,Boron,metalloid
+Cr,Chromium,transition_metal
+Mn,Manganese,transition_metal
+Zr,Zirconium,transition_metal
+Ce,Cerium,rare_earth
+Y,Yttrium,transition_metal
+La,Lanthanum,rare_earth
+
+# Anion Families
+[anion_families]
+# Format: family_name TAB pattern1;;pattern2;;pattern3 TAB elements
+chloride	Cl(?:\d+)?(?:\s|$|·);;chloride	Cl
+fluoride	F(?:\d+)?(?:\s|$|·);;fluoride	F
+bromide	Br(?:\d+)?(?:\s|$|·);;bromide	Br
+iodide	I(?:\d+)?(?:\s|$|·);;iodide	I
+carbonate	CO3;;carbonate	C O
+sulfate	SO4;;sulfate	S O
+sulfite	SO3;;sulfite	S O
+sulfide	S(?:\d+)?(?:\s|$|·)(?!O);;sulfide	S
+pyrosulfate	S2O7;;pyrosulfate	S O
+nitrate	NO3;;nitrate	N O
+nitrite	NO2;;nitrite	N O
+borate	B\d*O\d+;;borate;;tetraborate	B O
+phosphate	P\d*O\d+;;phosphate	P O
+metaphosphate	PO3;;metaphosphate;;trimetaphosphate;;hexametaphosphate	P O
+pyrophosphate	P2O7;;pyrophosphate	P O
+polyphosphate	polyphosphate	P O
+oxide	O\d*(?:\s|$|·)(?!x);;oxide	O
+carbide	C(?:\d+)?(?:\s|$|·)(?!O);;carbide	C
+nitride	N(?:\d+)?(?:\s|$|·)(?!O|H);;nitride	N
+boride	B(?:\d+)?(?:\s|$|·)(?!O);;boride	B
+
+# Allowed Elements for Element Filtering
+[allowed_elements]
+# Cations
+Na,K,Li,Mg,Ca,Ba,Sr,Fe,Zn,Ni,Cu,Al,Ti,Si,B,Cr,Mn,Zr,Ce,Y,La
+# Anions (including N for nitrides/nitrates, C for carbides, H for water, Br for bromides, I for iodides)
+O,Cl,F,Br,I,C,S,P,H,N
+
+# Excluded Patterns (for element filtering)
+[excluded_patterns]
+# Organic compounds (C-H chains)
+organic,C\d*H\d+|CH\d|C\(
+# Ammonium (NH4 pattern) - but allow nitrates/nitrites
+ammonium,NH\d
+
