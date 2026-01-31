@@ -3,107 +3,231 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Refractory Calculator v1.0.0</title>
-    <link rel="stylesheet" href="css/calculator.css">
+    <title>Thermal Software - Refractory Calculator Suite</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/homepage.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🔥 Refractory Calculator</h1>
-            <p class="subtitle">
-                Advanced Phase Distribution & Thermal Performance Analysis
+    <!-- Navigation Menu -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">🔥</span>
+                <span class="brand-name">Thermal Software</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="phase-calculator.html">Phase Calculator</a></li>
+                <li><a href="blend-optimizer.html">Blend Optimizer</a></li>
+                <li><a href="about.html">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <span class="gradient-text">Refractory Calculator Suite</span>
+            </h1>
+            <p class="hero-subtitle">
+                Advanced computational tools for refractory materials design and thermal performance analysis
+            </p>
+            <div class="hero-badges">
                 <span class="badge badge-ts">TypeScript</span>
                 <span class="badge badge-version">v1.0.0</span>
-            </p>
-        </header>
-
-        <div class="main-content">
-            <!-- Input Section -->
-            <div class="section">
-                <h2>📋 Input Parameters</h2>
-
-                <div class="form-group">
-                    <label for="component-select">Add Component:</label>
-                    <select id="component-select">
-                        <option value="">-- Select a component --</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="variant-select">Variant:</label>
-                    <select id="variant-select" disabled>
-                        <option value="">-- Select variant --</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="amount-input">Amount (parts by weight):</label>
-                    <input type="number" id="amount-input" min="0" value="1" step="0.1">
-                    <small style="color: #666; display: block; margin-top: 5px;">
-                        Percentages will be calculated automatically
-                    </small>
-                </div>
-
-                <div class="form-group">
-                    <label for="particle-size-type">Particle Size:</label>
-                    <select id="particle-size-type">
-                        <option value="default">Use default</option>
-                        <option value="classification">Size Range (Coarse/Fine)</option>
-                        <option value="mesh">Mesh Range (ASTM)</option>
-                        <option value="fepa">FEPA Grit Size</option>
-                        <option value="custom">Custom Range (mm)</option>
-                    </select>
-                </div>
-
-                <div class="form-group" id="particle-size-input" style="display: none;">
-                    <!-- Dynamic content based on selection -->
-                </div>
-
-                <button class="btn-primary" onclick="addComponent()">➕ Add Component</button>
-
-                <div style="margin-top: 30px;">
-                    <h3 style="color: #333; margin-bottom: 15px;">Selected Components:</h3>
-                    <div id="components-list"></div>
-                    <div id="total-info" style="margin-top: 10px; padding: 10px; background: #e7f5ff; border-radius: 5px; display: none;">
-                        <strong>Total parts:</strong> <span id="total-parts">0</span><br>
-                        <strong>Normalized to:</strong> 100%
-                    </div>
-                </div>
-
-                <div class="form-group" style="margin-top: 30px;">
-                    <label for="temperature-input">Temperature (°C):</label>
-                    <input type="number" id="temperature-input" value="1450" min="1200" max="1800" step="10">
-                </div>
-
-                <button class="btn-primary" onclick="calculate()" style="margin-top: 20px;">
-                    🔬 Calculate
-                </button>
-            </div>
-
-            <!-- Results Section -->
-            <div class="section">
-                <h2>📊 Results</h2>
-                <div id="results-container">
-                    <div class="loading" style="display: none;" id="loading">
-                        <div class="spinner"></div>
-                        <p>Calculating...</p>
-                    </div>
-                    <p style="color: #666; text-align: center; padding: 40px;">
-                        Add components and click "Calculate" to see results.
-                    </p>
-                </div>
+                <span class="badge badge-docker">Docker</span>
             </div>
         </div>
+    </section>
 
-        <footer>
-            <p>Refractory Calculator</p>
-        </footer>
-    </div>
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Module Cards -->
+        <section class="modules-section">
+            <h2 class="section-title">Available Modules</h2>
 
-    <!-- Load calculator API -->
-    <script src="js/particle-size-constants.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/calculator.js"></script>
+            <div class="modules-grid">
+                <!-- Phase Calculator Module -->
+                <div class="module-card">
+                    <div class="module-icon">🔬</div>
+                    <h3 class="module-title">Phase Equilibrium Calculator</h3>
+                    <p class="module-description">
+                        Calculate liquid/solid phase distribution, mineralogy, and thermal properties
+                        at high temperatures. Includes glass viscosity analysis and refractoriness predictions.
+                    </p>
+                    <ul class="module-features">
+                        <li>✓ Full thermodynamic calculations</li>
+                        <li>✓ Multi-model refractoriness (EN ISO 1893, ASTM, GOST)</li>
+                        <li>✓ Glass viscosity with ASTM C965 fixed points</li>
+                        <li>✓ Mineral phase identification</li>
+                    </ul>
+                    <a href="phase-calculator.html" class="btn btn-primary">Open Calculator</a>
+                </div>
+
+                <!-- Blend Optimizer Module -->
+                <div class="module-card">
+                    <div class="module-icon">🧪</div>
+                    <h3 class="module-title">Polyfractional Blend Optimizer</h3>
+                    <p class="module-description">
+                        Design optimal particle size distributions with advanced packing models.
+                        Predict shrinkage, density, and save custom mix presets to your library.
+                    </p>
+                    <ul class="module-features">
+                        <li>✓ Andreasen & Funk-Dinger PSD models</li>
+                        <li>✓ CPM & Furnas packing calculators</li>
+                        <li>✓ Shrinkage prediction (MSC sintering)</li>
+                        <li>✓ Custom mix library with export/import</li>
+                    </ul>
+                    <a href="blend-optimizer.html" class="btn btn-primary">Open Optimizer</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Overview -->
+        <section class="features-section">
+            <h2 class="section-title">Key Features</h2>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Advanced Physics Models</h3>
+                    <p>Thermodynamically-accurate calculations based on established literature and standards</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">💾</div>
+                    <h3>Custom Mix Library</h3>
+                    <p>Save, organize, and reuse optimized blend configurations with full metadata support</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Seamless Integration</h3>
+                    <p>Use saved blends across modules for complete workflow from design to analysis</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📥</div>
+                    <h3>Export/Import</h3>
+                    <p>Share configurations via JSON, collaborate with team members</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Multi-Scenario Analysis</h3>
+                    <p>Evaluate self-compacting, flowable, vibratable, and hand-pressed formulations</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>Performance Prediction</h3>
+                    <p>Estimate RUL, refractoriness points, packing efficiency, and shrinkage behavior</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Start Guide -->
+        <section class="quickstart-section">
+            <h2 class="section-title">Quick Start</h2>
+
+            <div class="quickstart-content">
+                <div class="quickstart-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Choose Your Module</h3>
+                        <p>Select <strong>Phase Calculator</strong> for thermal analysis or <strong>Blend Optimizer</strong> for mix design</p>
+                    </div>
+                </div>
+
+                <div class="quickstart-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Input Your Data</h3>
+                        <p>Define components, fractions, or load from your saved library</p>
+                    </div>
+                </div>
+
+                <div class="quickstart-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Run Calculations</h3>
+                        <p>Get instant results with detailed property predictions and visualizations</p>
+                    </div>
+                </div>
+
+                <div class="quickstart-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Save & Iterate</h3>
+                        <p>Store successful formulations in your library for future use and refinement</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Getting Started -->
+        <section class="docs-section">
+            <h2 class="section-title">Getting Started</h2>
+
+            <div class="docs-grid">
+                <div class="doc-card">
+                    <h3>📘 Phase Calculator</h3>
+                    <p>Calculate phase equilibrium, refractoriness, and thermal properties</p>
+                    <a href="phase-calculator.html" class="doc-link">Open Calculator →</a>
+                </div>
+
+                <div class="doc-card">
+                    <h3>🚀 Blend Optimizer</h3>
+                    <p>Optimize particle size distributions and predict packing properties</p>
+                    <a href="blend-optimizer.html" class="doc-link">Open Optimizer →</a>
+                </div>
+
+                <div class="doc-card">
+                    <h3>📖 About</h3>
+                    <p>Learn more about the project, features, and technical approach</p>
+                    <a href="about.html" class="doc-link">Learn More →</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Thermal Software</h4>
+                <p>Advanced refractory materials calculation suite</p>
+            </div>
+            <div class="footer-section">
+                <h4>Modules</h4>
+                <ul>
+                    <li><a href="phase-calculator.html">Phase Calculator</a></li>
+                    <li><a href="blend-optimizer.html">Blend Optimizer</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="phase-calculator.html">Phase Calculator</a></li>
+                    <li><a href="blend-optimizer.html">Blend Optimizer</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>About</h4>
+                <ul>
+                    <li><a href="about.html">About Project</a></li>
+                    <li><a href="#license">License (MIT)</a></li>
+                    <li>Version 1.0.0</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Thermal Software - Refractory Calculator Suite</p>
+        </div>
+    </footer>
 </body>
 </html>
 

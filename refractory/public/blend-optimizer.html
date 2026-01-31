@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blend Optimizer - Thermal Software</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/calculator.css">
+    <link rel="stylesheet" href="css/forms.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/blend-optimizer.css">
+</head>
+<body>
+    <!-- Navigation Menu -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">🔥</span>
+                <span class="brand-name">Thermal Software</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="phase-calculator.html">Phase Calculator</a></li>
+                <li><a href="blend-optimizer.html" class="active">Blend Optimizer</a></li>
+                <li><a href="about.html">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="page-header">
+            <h1>🧪 Polyfractional Blend Optimizer</h1>
+            <p class="subtitle">
+                Design Optimal Particle Size Distributions with Custom Mix Library
+                <span class="badge badge-ts">TypeScript</span>
+            </p>
+        </header>
+
+        <div class="main-content">
+            <!-- Library Controls -->
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>📚 Mix Library</h2>
+                    <div>
+                        <button class="btn btn-secondary" onclick="openLibraryBrowser()">
+                            📖 Browse Library
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadFromBase()">
+                            📦 Load Base Composition
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fraction Definition -->
+            <div class="section">
+                <h2>🔬 Fraction Definition</h2>
+
+                <div class="alert alert-info" style="margin-bottom: 15px;">
+                    <strong>💡 Tip:</strong> Check "Fixed" to lock exact amounts for specific fractions
+                    (e.g., cement, additives). Unchecked fractions will be optimized by the PSD model.
+                </div>
+
+                <div class="fraction-header fraction-row">
+                    <div>#</div>
+                    <div>dMin (mm)</div>
+                    <div>dMax (mm)</div>
+                    <div>Material</div>
+                    <div>Fixed?</div>
+                    <div>Amount (%)</div>
+                    <div>Actions</div>
+                </div>
+
+                <div id="fraction-container">
+                    <!-- Fraction rows will be added here -->
+                </div>
+
+                <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <button class="btn btn-secondary" onclick="addFraction()">+ Add Fraction</button>
+                        <button class="btn btn-secondary" onclick="clearFractions()">Clear All</button>
+                    </div>
+                    <div id="fixed-total-display" style="font-weight: bold; color: var(--primary-color);">
+                        <!-- Fixed total will be displayed here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optimization Options -->
+            <div class="section">
+                <h2>⚙️ Optimization Options</h2>
+
+                <div class="options-grid">
+                    <div>
+                        <h3>Methods & Parameters</h3>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="method-andreasen" checked>
+                                Andreasen PSD
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="method-funkdinger" checked>
+                                Funk-Dinger PSD
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>q values (comma-separated):</label>
+                            <input type="text" id="q-values" value="0.25, 0.27, 0.30, 0.33">
+                        </div>
+                        <div class="form-group">
+                            <label>Packing Model:</label>
+                            <select id="packing-model">
+                                <option value="both">Both (CPM & Furnas)</option>
+                                <option value="CPM">CPM Only</option>
+                                <option value="Furnas">Furnas Only</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3>Scenarios</h3>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="scenario-self" checked>
+                                Self-compacting
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="scenario-flowable" checked>
+                                Flowable
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="scenario-vibrated">
+                                Vibratable
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="scenario-handpress">
+                                Hand-pressable
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>Temperature Profile (°C, comma-separated):</label>
+                            <input type="text" id="temp-profile" value="600, 800, 1000, 1200, 1450">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="optimizeBlend()" style="font-size: 18px; padding: 15px 40px;">
+                        🔬 Optimize Blend
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="section" id="results-section" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>📊 Results</h2>
+                    <div>
+                        <button class="btn btn-success" onclick="saveToLibrary()">
+                            💾 Save to Library
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportResults()">
+                            📥 Export Results
+                        </button>
+                    </div>
+                </div>
+
+                <div id="results-container">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <p>&copy; 2026 Thermal Software - Blend Optimizer</p>
+        </footer>
+    </div>
+
+    <!-- Mix Library Browser Modal -->
+    <div id="library-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📚 Mix Library Browser</h2>
+                <span class="close" onclick="closeLibraryBrowser()">&times;</span>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="library-search" placeholder="🔍 Search mixes..."
+                       style="width: 100%; padding: 10px; font-size: 14px;">
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <select id="library-category-filter" style="flex: 1;">
+                    <option value="">All Categories</option>
+                </select>
+                <select id="library-tag-filter" style="flex: 1;">
+                    <option value="">All Tags</option>
+                </select>
+                <button class="btn btn-secondary" onclick="refreshLibrary()">Refresh</button>
+            </div>
+
+            <div id="library-list" style="max-height: 400px; overflow-y: auto;">
+                <!-- Library items will be listed here -->
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="importLibrary()">Import JSON</button>
+                <button class="btn btn-secondary" onclick="exportLibrary()">Export All</button>
+                <button class="btn btn-primary" onclick="loadSelectedMix()">Load Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Mix Modal -->
+    <div id="save-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>💾 Save Mix to Library</h2>
+                <span class="close" onclick="closeSaveModal()">&times;</span>
+            </div>
+
+            <div class="form-group">
+                <label>Mix Name: *</label>
+                <input type="text" id="save-mix-name" placeholder="e.g., High-Alumina Self-Compacting v1">
+            </div>
+
+            <div class="form-group">
+                <label>Description:</label>
+                <textarea id="save-mix-description" rows="3"
+                          placeholder="Optional description of this mix..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Category:</label>
+                <input type="text" id="save-mix-category" placeholder="e.g., Production Mixes">
+            </div>
+
+            <div class="form-group">
+                <label>Tags (comma-separated):</label>
+                <input type="text" id="save-mix-tags" placeholder="e.g., high-alumina, self-compacting">
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closeSaveModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="confirmSaveMix()">Save Mix</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/blend-optimizer.js"></script>
+</body>
+</html>
+

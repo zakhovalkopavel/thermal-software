@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase Equilibrium Calculator - Thermal Software</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/calculator.css">
+    <link rel="stylesheet" href="css/forms.css">
+</head>
+<body>
+    <!-- Navigation Menu -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <span class="brand-icon">🔥</span>
+                <span class="brand-name">Thermal Software</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="phase-calculator.html" class="active">Phase Calculator</a></li>
+                <li><a href="blend-optimizer.html">Blend Optimizer</a></li>
+                <li><a href="about.html">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="page-header">
+            <h1>🔬 Phase Equilibrium Calculator</h1>
+            <p class="subtitle">
+                Advanced Phase Distribution & Thermal Performance Analysis
+                <span class="badge badge-ts">TypeScript</span>
+                <span class="badge badge-version">v1.0.0</span>
+            </p>
+        </header>
+
+        <div class="main-content">
+            <!-- Input Section -->
+            <div class="section">
+                <h2>📋 Input Parameters</h2>
+
+                <div class="form-group">
+                    <label for="component-select">Add Component:</label>
+                    <select id="component-select">
+                        <option value="">-- Select a component --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="variant-select">Variant:</label>
+                    <select id="variant-select" disabled>
+                        <option value="">-- Select variant --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount-input">Amount (parts by weight):</label>
+                    <input type="number" id="amount-input" min="0" value="1" step="0.1">
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        Percentages will be calculated automatically
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="particle-size-type">Particle Size:</label>
+                    <select id="particle-size-type">
+                        <option value="default">Use default</option>
+                        <option value="classification">Size Range (Coarse/Fine)</option>
+                        <option value="mesh">Mesh Range (ASTM)</option>
+                        <option value="fepa">FEPA Grit Size</option>
+                        <option value="custom">Custom Range (mm)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="particle-size-input" style="display: none;">
+                    <!-- Dynamic content based on selection -->
+                </div>
+
+                <button class="btn-primary" onclick="addComponent()">➕ Add Component</button>
+
+                <div style="margin-top: 30px;">
+                    <h3 style="color: #333; margin-bottom: 15px;">Selected Components:</h3>
+                    <div id="components-list"></div>
+                    <div id="total-info" style="margin-top: 10px; padding: 10px; background: #e7f5ff; border-radius: 5px; display: none;">
+                        <strong>Total parts:</strong> <span id="total-parts">0</span><br>
+                        <strong>Normalized to:</strong> 100%
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 30px;">
+                    <label for="temperature-input">Temperature (°C):</label>
+                    <input type="number" id="temperature-input" value="1450" min="1200" max="1800" step="10">
+                </div>
+
+                <button class="btn-primary" onclick="calculate()" style="margin-top: 20px;">
+                    🔬 Calculate
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="section">
+                <h2>📊 Results</h2>
+                <div id="results-container">
+                    <div class="loading" style="display: none;" id="loading">
+                        <div class="spinner"></div>
+                        <p>Calculating...</p>
+                    </div>
+                    <p style="color: #666; text-align: center; padding: 40px;">
+                        Add components and click "Calculate" to see results.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="page-footer">
+            <p>&copy; 2026 Thermal Software - Phase Equilibrium Calculator</p>
+        </footer>
+    </div>
+
+    <!-- Load calculator API -->
+    <script src="js/particle-size-constants.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/calculator.js"></script>
+</body>
+</html>
+

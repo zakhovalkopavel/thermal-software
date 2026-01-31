@@ -1,6 +1,20 @@
 # Documentation Index
 
+**For Developers Only** - This directory is NOT web-accessible.
+
 Complete documentation for the Refractory Calculator project.
+
+---
+
+## 🔒 Access Control
+
+This `docs/` directory is for developers and is **NOT served by the web server**.
+
+- **Web users** access only: `public/` folder (HTML, CSS, JS)
+- **Developers** access: All project files including `docs/`, `src/`
+- See `compose.yaml` and `PROJECT_STRUCTURE.md` for security details
+
+---
 
 ## Quick Links
 

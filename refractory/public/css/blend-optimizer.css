@@ -1,0 +1,171 @@
+/* Blend Optimizer Specific Styles */
+
+/* Fraction Table */
+.fraction-row {
+    display: grid;
+    grid-template-columns: 60px 100px 100px 200px 80px 100px 100px;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    align-items: center;
+    padding: var(--spacing-sm);
+    background: white;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-base);
+}
+
+.fraction-row:hover {
+    box-shadow: var(--shadow-sm);
+}
+
+.fraction-header {
+    font-weight: bold;
+    background: var(--gray-200);
+}
+
+.fraction-row input,
+.fraction-row select {
+    padding: 8px;
+    font-size: var(--font-size-sm);
+}
+
+/* Options Grid */
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+/* Results Cards */
+.results-card {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
+    border-left: 4px solid var(--primary-color);
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+}
+
+.results-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.results-card h3 {
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Property Grid */
+.property-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+}
+
+.property-item {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--spacing-sm);
+    background: var(--gray-50);
+    border-radius: var(--radius-sm);
+}
+
+.property-item span:first-child {
+    color: var(--gray-700);
+}
+
+.property-item strong {
+    color: var(--gray-900);
+}
+
+/* Mix Item (Library Browser) */
+.mix-item {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    border: 2px solid transparent;
+}
+
+.mix-item:hover {
+    background: #e8f4f8;
+    transform: translateX(5px);
+}
+
+.mix-item.selected {
+    background: #d1e7ff;
+    border-color: var(--primary-color);
+}
+
+.mix-item h4 {
+    margin-bottom: var(--spacing-xs);
+    color: var(--gray-900);
+}
+
+.mix-item p {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    margin: var(--spacing-xs) 0;
+}
+
+/* Details/Summary Styling */
+details {
+    margin-top: var(--spacing-md);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+}
+
+summary {
+    cursor: pointer;
+    font-weight: bold;
+    padding: var(--spacing-sm);
+    user-select: none;
+    transition: color var(--transition-base);
+}
+
+summary:hover {
+    color: var(--primary-color);
+}
+
+details[open] summary {
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+/* Responsive Grid Adjustments */
+@media (max-width: 992px) {
+    .options-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .property-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .fraction-row {
+        grid-template-columns: 60px 80px 80px 150px 80px 60px;
+        font-size: var(--font-size-sm);
+    }
+}
+
+@media (max-width: 768px) {
+    .fraction-row {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-xs);
+    }
+
+    .fraction-row > div {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .fraction-header {
+        display: none;
+    }
+}
+

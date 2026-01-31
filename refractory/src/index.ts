@@ -38,12 +38,18 @@ export { ThermalPerformanceCalculator } from './calculators/ThermalPerformanceCa
 export { MineralPhaseIdentifier } from './calculators/MineralPhaseIdentifier';
 export { GlassViscosityCalculator } from './calculators/GlassViscosityCalculator';
 export { RefractorinessStandardsCalculator } from './calculators/RefractorinessStandardsCalculator';
+export { PSDCalculator } from './calculators/PSDCalculator';
+export { PackingCalculator } from './calculators/PackingCalculator';
+export { ShrinkageCalculator } from './calculators/ShrinkageCalculator';
+export { BlendOptimizer } from './calculators/BlendOptimizer';
 
 // Export services
 export { RefractoryCalculatorService } from './services/RefractoryCalculatorService';
+export { MixLibraryService } from './services/MixLibraryService';
 
 // Export data
 export { ComponentDictionary } from './data/ComponentDictionary';
+export { MaterialLibrary } from './data/MaterialLibrary';
 
 // Re-export main service as default
 export { RefractoryCalculatorService as default } from './services/RefractoryCalculatorService';

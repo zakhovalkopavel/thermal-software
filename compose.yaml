@@ -27,16 +27,22 @@ services:
     container_name: refractory-calculator
     volumes:
       - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./refractory:/usr/share/nginx/html/refractory:ro
+      # Only mount public and dist folders - NOT src or docs
+      - ./refractory/public:/usr/share/nginx/html/refractory/public:ro
+      - ./refractory/dist:/usr/share/nginx/html/refractory/dist:ro
     ports:
       - "18080:80"
     environment:
       NGINX_HOST: localhost
       NGINX_PORT: 80
     restart: unless-stopped
+    depends_on:
+      - thermal-app
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
+
