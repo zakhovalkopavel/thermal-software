@@ -23,7 +23,9 @@ echo ""
 
 read -p "Press Enter to start fetching, or Ctrl+C to cancel..."
 
-cd /opt/thermal-software/python_scripts
+# Get script directory and navigate there
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
 echo ""
 echo "Starting fetch..."

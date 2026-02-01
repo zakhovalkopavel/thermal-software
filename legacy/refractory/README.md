@@ -7,7 +7,7 @@ A comprehensive TypeScript-based calculator suite for refractory materials desig
 ## Quick Start
 
 ```bash
-cd /opt/thermal-software
+# From project root directory
 
 # Start services (TypeScript is compiled automatically inside container)
 make up        # Start all services

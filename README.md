@@ -1,146 +1,115 @@
-# Thermal Software
+# Thermal Software - Modern Architecture
 
-A collection of thermal calculation utilities for industrial applications.
+Enterprise-grade thermal engineering software with client-server architecture.
 
-## Features
+---
 
-### 1. Quenching Process Calculations
-- Intensive quenching during nucleate boiling
-- Oil cooling calculations
-- Core temperature timeline analysis
-- Future plans: visualization, air cooling, cooling curve parsing, CCT diagram integration
+## 🎯 **WANT TO START IMPLEMENTATION?**
 
-### 2. Furnace Combustion Model
-- Recuperator calculations for coal furnaces
-- Multiple recuperator configurations
-- Analysis of size, burning power, materials, and geometry
-- Optimization for fuel efficiency and burning temperature
+### → **[START_HERE.md](START_HERE.md)** ⭐ **READ THIS FIRST!**
 
-### 3. Refractory Calculator
-- Chemical composition analysis
-- Particle size fraction calculations
-- Phase equilibrium calculations
-- Component participation analysis
-- Support for various sieve standards (ASTM, ISO, FEPA)
+**This is your SINGLE STARTING POINT for migration implementation.**
 
-## Installation
+Everything you need:
+- ✅ Pre-implementation checklist
+- ✅ Mandatory rules enforcement
+- ✅ Step-by-step phases (0→1→2→3→4)
+- ✅ Checkpoints and verification
+- ✅ Troubleshooting guide
+- ✅ Progress tracking
 
-### Prerequisites
-- Docker
-- Docker Compose
+**Before writing ANY code:** Open [START_HERE.md](START_HERE.md)
 
-### Quick Start
+---
 
-1. Clone the repository:
+## 🏗️ Architecture
+
+```
+├── legacy/              ← Original system (production, read-only)
+├── backend/            ← NestJS API (new)
+├── frontend/           ← React SPA (new)
+├── shared/             ← Shared types/constants
+└── docs/               ← Documentation
+```
+
+## 🚀 Quick Start
+
+### Run Legacy System (Current Production)
 ```bash
-git clone <repository-url>
-cd thermal-software
+docker-compose up legacy-refractory
+# Access: http://localhost:18080
 ```
 
-2. Start the services:
+### Run New System (Development)
 ```bash
-make up
+# Start database
+docker-compose up postgres redis
+
+# Backend (when ready)
+cd backend
+npm install
+npm run start:dev
+# Access: http://localhost:4000/api/docs
+
+# Frontend (when ready)
+cd frontend
+npm install
+npm run dev
+# Access: http://localhost:3000
 ```
 
-3. Access the applications:
-   - **Refractory Calculator Web Interface**: http://localhost:18080/calculator.html
-   - **Thermal App (Node.js)**: Container running on port 3010
-
-### Managing Services
-
-Use the Makefile for easy service management:
-
+### Run Both Systems
 ```bash
-make up          # Start all services
-make down        # Stop and remove containers
-make stop        # Stop containers (without removing)
-make start       # Start existing containers
-make restart     # Restart all services
-make logs        # View service logs
-make status      # Show container status
-make shell       # Access thermal-app container
-make clean       # Stop and remove everything including volumes
-make help        # Show all available commands
+docker-compose up
+# Legacy:  http://localhost:18080
+# New:     http://localhost:3000
+# API:     http://localhost:4000/api/docs
 ```
 
-Or use Docker Compose directly:
+## 📋 Project Rules & Manifests
 
-```bash
-docker-compose up -d      # Start services
-docker-compose down       # Stop services
-docker-compose logs -f    # View logs
-```
+### Core Rules
+1. **Docker-Only:** NO Node.js commands on host → [PROJECT_INDEX.md](PROJECT_INDEX.md#️-important-rules)
+2. **Reports Location:** ALL reports to `tmp/reports/` → [REPORTS_MANAGEMENT.md](docs/REPORTS_MANAGEMENT.md)
+3. **Secrets Protection:** NO `.env`, certificates in git → [.gitignore](.gitignore)
+4. **Version Control:** Latest stable versions → [VERSION.md](VERSION.md)
 
-## Project Structure
+### Manifests
+- **[PROJECT_INDEX.md](PROJECT_INDEX.md)** - Complete project navigation & rules
+- **[VERSION.md](VERSION.md)** - Docker image versions (verified Feb 1, 2026)
+- **[SETUP.md](SETUP.md)** - Environment setup guide
+- **Legacy Manifest:** `legacy/MANIFEST.md` - Original project structure
 
-```
-thermal-software/
-├── compose.yaml              # Docker Compose configuration
-├── furnaceCombustion/        # Furnace combustion models
-├── refractory/               # Refractory calculator module
-│   ├── classes/              # Calculator classes
-│   ├── constants/            # Constants definitions
-│   ├── data/                 # Component and composition data
-│   ├── examples/             # Usage examples
-│   └── docs/                 # Documentation
-├── scripts/                  # Utility scripts
-└── styles/                   # CSS styles
-```
+## 📚 Documentation
 
-## Usage
+### Getting Started
+- **⭐ START HERE:** [docs/migration/DOCKER_FIRST_SETUP.md](docs/migration/DOCKER_FIRST_SETUP.md) - Docker-only setup
+- **Project Index:** [PROJECT_INDEX.md](PROJECT_INDEX.md) - Complete navigation
+- **Setup Guide:** [SETUP.md](SETUP.md) - Environment setup
 
-### Docker Services
+### Migration Guides
+- **Docker-Only Setup:** [docs/migration/DOCKER_FIRST_SETUP.md](docs/migration/DOCKER_FIRST_SETUP.md)
+- **Full Spec:** [docs/migration/NESTJS_MIGRATION_SPEC.md](docs/migration/NESTJS_MIGRATION_SPEC.md)
+- **Quick Start:** [docs/migration/NESTJS_QUICK_START.md](docs/migration/NESTJS_QUICK_START.md)
+- **Architecture:** [docs/migration/ARCHITECTURE_COMPARISON.md](docs/migration/ARCHITECTURE_COMPARISON.md)
+- **Strategy:** [docs/migration/PARALLEL_DEVELOPMENT_STRATEGY.md](docs/migration/PARALLEL_DEVELOPMENT_STRATEGY.md)
 
-The project includes two Docker services:
+### Configuration
+- **Environment:** [docs/ENVIRONMENT_MANAGEMENT.md](docs/ENVIRONMENT_MANAGEMENT.md)
+- **Reports:** [docs/REPORTS_MANAGEMENT.md](docs/REPORTS_MANAGEMENT.md)
+- **Docker:** [docker/README.md](docker/README.md)
 
-1. **thermal-app**: Node.js environment with access to:
-   - Furnace combustion models at `/usr/src/app/src`
-   - Refractory calculator at `/usr/src/app/refractory`
+## 🎯 Current Status
 
-2. **refractory-calculator**: Nginx web server serving the refractory calculator web interface
+- ✅ **Legacy System:** Production-ready, serving users
+- 🚧 **New Backend:** In development
+- 🚧 **New Frontend:** In development
+- 📊 **Migration:** Phase 0 - Structure setup complete
 
-### Development
+## 🔧 Development
 
-To access the thermal-app container for development:
+See `/docs/migration/NESTJS_QUICK_START.md` for setup instructions.
 
-```bash
-make shell
-# or
-docker exec -it thermal-app sh
-```
+## 📞 Support
 
-To run a command in the container:
-
-```bash
-make exec CMD="node /usr/src/app/refractory/examples/examples_with_dictionary.js"
-```
-
-Inside the container, you can run Node.js scripts and access all mounted modules.
-
-## Documentation
-
-- [Refractory Calculator Documentation](./refractory/docs/)
-- [Furnace Combustion Specification](./furnaceCombustion/spec.md)
-
-## Troubleshooting
-
-### Refractory Calculator - "Error loading variants"
-
-If you see an error loading variants in the web interface, ensure that:
-1. All JavaScript modules are loaded in the correct order in the HTML
-2. The modules export to both Node.js (`module.exports`) and browser (`window` object)
-3. The script loading order is:
-   - ChemicalCompositions.js
-   - ParticleSizeFractions.js  
-   - RefractoryCalculatorV2.js
-   - ComponentsDictionary.js
-
-This has been fixed in the current version.
-
-## Contributing
-
-This is a work in progress. Contributions, refactoring suggestions, and proper resource citations are welcome.
-
-## License
-
-[Add license information]
+Check documentation in `/docs/migration/` folder.

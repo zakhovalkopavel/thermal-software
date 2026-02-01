@@ -8,7 +8,7 @@
 ## Root Directory Structure
 
 ```
-/opt/thermal-software/
+thermal-software/            # Project root (portable location)
 ├── MANIFEST.md              # Project manifest (essential)
 ├── README.md                # Project README (essential)
 ├── Makefile                 # Build configuration

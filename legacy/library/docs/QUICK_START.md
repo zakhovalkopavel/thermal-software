@@ -19,9 +19,12 @@ All scripts validated and configured with:
 ### 1. Generate Database
 
 ```bash
-cd /opt/thermal-software/python_scripts
+# From project root directory
+cd legacy/python_scripts
 python3 thermophysical_data_processor.py
 ```
+
+**Note:** This is legacy documentation. The path shown assumes project root as working directory. Adjust paths based on your installation location.
 
 ### 2. Expected Output
 
@@ -205,14 +208,16 @@ arsenate<TAB>AsO4|arsenate<TAB>As O
 
 **Solution:** Check that NBS_Tables Library.xlsx exists:
 ```bash
-ls -lh /opt/thermal-software/library/resources/NBS_Tables\ Library.xlsx
+# From project root directory
+ls -lh legacy/library/resources/NBS_Tables\ Library.xlsx
 ```
 
 ### Issue: Import error
 
 **Solution:** Run from correct directory:
 ```bash
-cd /opt/thermal-software/python_scripts
+# From project root directory
+cd legacy/python_scripts
 python3 thermophysical_data_processor.py
 ```
 
@@ -220,8 +225,9 @@ python3 thermophysical_data_processor.py
 
 **Solution:** Verify resource files exist:
 ```bash
-ls -lh /opt/thermal-software/library/resources/processor_config.txt
-ls -lh /opt/thermal-software/library/resources/compound_names.csv
+# From project root directory
+ls -lh legacy/library/resources/processor_config.txt
+ls -lh legacy/library/resources/compound_names.csv
 ```
 
 ---

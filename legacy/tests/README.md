@@ -11,7 +11,8 @@ Test PubChem fetcher with 10 compounds to verify:
 
 **Usage:**
 ```bash
-cd /opt/thermal-software/tests
+# From project root directory
+cd legacy/tests
 python3 test_pubchem_fetch_10.py
 ```
 
