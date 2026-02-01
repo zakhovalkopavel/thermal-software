@@ -1,74 +1,35 @@
 # Docker Backend - NestJS API
-# Multi-stage build for optimal image size
+# Development-friendly build for initial setup
 
-# ==========================================
-# Stage 1: Builder
-# ==========================================
-ARG NODE_VERSION
-FROM node:${NODE_VERSION} AS builder
-
-LABEL maintainer="Thermal Software Team"
-LABEL version="2.0.0-dev"
-LABEL description="NestJS Backend API for Thermal Software - Builder Stage"
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install ALL dependencies (including devDependencies for build)
-RUN npm ci && \
-    npm cache clean --force
-
-# Copy source code
-COPY . .
-
-# Build application
-RUN npm run build
-
-# ==========================================
-# Stage 2: Production
-# ==========================================
 ARG NODE_VERSION
 FROM node:${NODE_VERSION}
 
 LABEL maintainer="Thermal Software Team"
 LABEL version="2.0.0-dev"
-LABEL description="NestJS Backend API for Thermal Software"
+LABEL description="NestJS Backend API for Thermal Software - Development"
 
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nestjs -u 1001 -G nodejs
-
-# Copy package files for production dependencies
+# Copy package files (if they exist)
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production && \
-    npm cache clean --force
+# Copy source code
+COPY . .
 
-# Copy built application from builder stage
-COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
+# Install dependencies if package-lock.json exists, otherwise skip
+# We'll install interactively inside the container first time
+RUN if [ -f package-lock.json ]; then \
+      npm ci && npm cache clean --force; \
+    elif [ -s package.json ] && [ "$(cat package.json | grep -c '\"dependencies\":{}')" -eq 0 ]; then \
+      npm install && npm cache clean --force; \
+    else \
+      echo "Skipping npm install - run manually inside container"; \
+    fi
 
-# Switch to non-root user
-USER nestjs
-
-# Expose port (configurable via env)
+# Expose port
 ARG BACKEND_PORT
-EXPOSE ${BACKEND_PORT}
+EXPOSE ${BACKEND_PORT:-4000}
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:${BACKEND_PORT}/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
-
-# Use dumb-init to handle signals properly
-ENTRYPOINT ["dumb-init", "--"]
-
-# Start application
-CMD ["node", "dist/main.js"]
+# For development: keep container alive for manual commands
+CMD ["sh", "-c", "if [ -d node_modules ] && [ -f dist/main.js ]; then npm run start:dev; else echo 'Run: npm install && npm run build && npm run start:dev'; tail -f /dev/null; fi"]
 
