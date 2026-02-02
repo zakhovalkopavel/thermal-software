@@ -361,9 +361,10 @@ export function isThermalInput(obj: any): obj is ThermalInput {
 export function isThermalConductivityInput(
   obj: any
 ): obj is ThermalConductivityInput {
+  const o: any = obj;
   return (
     isThermalInput(obj) &&
-    (obj.bulkDensity_kgm3 === undefined || typeof obj.bulkDensity_kgm3 === 'number')
+    (o.bulkDensity_kgm3 === undefined || typeof o.bulkDensity_kgm3 === 'number')
   );
 }
 
@@ -409,11 +410,12 @@ export function isThermalExpansionResult(
  * Type guard for ThermalPerformanceResult
  */
 export function isThermalPerformanceResult(obj: any): obj is ThermalPerformanceResult {
+  const o: any = obj;
   return (
     typeof obj === 'object' &&
     typeof obj.temperature === 'number' &&
     typeof obj.composition === 'object' &&
-    typeof obj.metadata === 'object' &&
+    typeof o.metadata === 'object' &&
     Array.isArray(obj.warnings)
   );
 }

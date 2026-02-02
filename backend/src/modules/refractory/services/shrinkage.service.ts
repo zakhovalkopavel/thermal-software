@@ -1,13 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { GAS_CONSTANT } from '../constants/calculation-constants';
-import {
-  ShrinkageMaterial,
-  ShrinkageInput,
-  ShrinkageResult,
-  ShrinkageStage,
-  DryingShrinkage,
-  FiringShrinkage,
-} from '../interfaces/shrinkage-calculator.interface';
+import { ShrinkageStage, DryingShrinkage, FiringShrinkage, } from '../interfaces';
 
 /**
  * Shrinkage Prediction Service
@@ -87,13 +80,17 @@ export class ShrinkageService {
       avgActivationEnergy += (mat.activationEnergy_Jmol || this.MSC_DEFAULTS.activationEnergy_Jmol) * fraction;
     }
 
-    // 3. Calculate sintering shrinkage at each temperature
-    const sinteringShrinkage_volFracByTemp: Record<string, number> = {};
-    const sinteringShrinkage_linearFracByTemp: Record<string, number> = {};
-    const totalVolumetricShrinkageByTemp: Record<string, number> = {};
-    const totalLinearShrinkageByTemp: Record<string, number> = {};
+    // 3. Build drying stage
+    const dryingStage = this.buildDryingStage(chemicalShrinkage, waterCementRatio, cementContent);
+
+    // 4. Calculate sintering shrinkage at each temperature (firing stages)
+    const firingStages: FiringShrinkage[] = [];
+    const totalVolPercent: number[] = [];
+    const totalLinPercent: number[] = [];
+    const relativeDensities: number[] = [];
 
     let currentDensity = 0.6; // Initial green density (typical for castables)
+    const initialDensity = currentDensity;
 
     for (const temp of temperatureProfile_C) {
       const holdTime_hours = 1.0; // Standard hold time
@@ -101,29 +98,175 @@ export class ShrinkageService {
       // Use MSC model for sintering
       const newDensity = this.calculateMSCSintering(temp, holdTime_hours, avgActivationEnergy, currentDensity);
 
-      // Volumetric shrinkage from sintering
-      const sinteringVolShrinkage = currentDensity > 0 ? (newDensity - currentDensity) / currentDensity : 0;
+      // Volumetric shrinkage from sintering (relative to initial)
+      const sinteringVolShrinkage = initialDensity > 0 ? (newDensity - initialDensity) / initialDensity : 0;
       const sinteringLinearShrinkage = sinteringVolShrinkage / 3;
 
-      sinteringShrinkage_volFracByTemp[temp.toString()] = sinteringVolShrinkage;
-      sinteringShrinkage_linearFracByTemp[temp.toString()] = sinteringLinearShrinkage;
-
       // Total shrinkage (chemical + sintering)
-      totalVolumetricShrinkageByTemp[temp.toString()] = chemicalShrinkage.volumetric + sinteringVolShrinkage;
-      totalLinearShrinkageByTemp[temp.toString()] = chemicalShrinkage.linear + sinteringLinearShrinkage;
+      const totalVol = chemicalShrinkage.volumetric + sinteringVolShrinkage;
+      const totalLin = chemicalShrinkage.linear + sinteringLinearShrinkage;
+
+      totalVolPercent.push(totalVol * 100);
+      totalLinPercent.push(totalLin * 100);
+      relativeDensities.push(newDensity);
+
+      // Create firing stage for this temperature
+      firingStages.push(
+        this.buildFiringStage(temp, sinteringVolShrinkage, newDensity, holdTime_hours, avgActivationEnergy)
+      );
 
       currentDensity = newDensity;
     }
 
+    // 5. Build total stage summary
+    const totalStage = this.buildTotalStage(temperatureProfile_C, totalVolPercent, totalLinPercent, relativeDensities);
+
+    // 6. Build metadata
+    const metadata = this.buildMetadata(
+      totalVolPercent,
+      temperatureProfile_C,
+      currentDensity,
+      waterCementRatio,
+      cementContent,
+    );
+
+    // 7. Return complete ShrinkageResult
     return {
-      chemicalShrinkage_volFrac: chemicalShrinkage.volumetric,
-      chemicalShrinkage_linearFrac: chemicalShrinkage.linear,
-      sinteringShrinkage_volFracByTemp,
-      sinteringShrinkage_linearFracByTemp,
-      totalVolumetricShrinkageByTemp,
-      totalLinearShrinkageByTemp,
-      model: 'MSC',
-      confidence: 'Medium',
+      drying: dryingStage,
+      firing: firingStages,
+      total: totalStage,
+      metadata,
+      warnings: [],
+    };
+  }
+
+  /**
+   * Calculate MSC theta parameter for metadata
+   */
+  private calculateMSCTheta(temperature_C: number, time_hours: number, activationEnergy_Jmol: number): number {
+    const T_K = temperature_C + 273.15;
+    const time_s = time_hours * 3600;
+    return time_s * Math.exp(-activationEnergy_Jmol / (GAS_CONSTANT * T_K));
+  }
+
+  /**
+   * Build drying stage result from chemical shrinkage
+   *
+   * @param chemicalShrinkage Chemical shrinkage values (volumetric and linear)
+   * @param waterCementRatio Water-to-cement ratio
+   * @param cementContent Cement content fraction
+   * @returns DryingShrinkage stage data
+   */
+  private buildDryingStage(
+    chemicalShrinkage: { volumetric: number; linear: number },
+    waterCementRatio: number,
+    cementContent: number,
+  ): DryingShrinkage {
+    return {
+      name: 'drying',
+      temperatures_C: [20], // Room temperature drying
+      shrinkage_volumetric_percent: [chemicalShrinkage.volumetric * 100],
+      shrinkage_linear_percent: [chemicalShrinkage.linear * 100],
+      relativeDensity: [0.6], // Initial green density
+      description: 'Chemical shrinkage during drying/hydration',
+      waterRemoved_percent: Math.min(100, waterCementRatio * cementContent * 100),
+      chemicalShrinkageCoefficient: this.CHEMICAL_SHRINKAGE.CAC,
+    };
+  }
+
+  /**
+   * Build firing stage result for a single temperature point
+   *
+   * @param temperature Temperature (°C)
+   * @param sinteringVolShrinkage Volumetric shrinkage from sintering (fraction)
+   * @param newDensity New relative density after sintering
+   * @param holdTime_hours Hold time at temperature (hours)
+   * @param avgActivationEnergy Average activation energy (J/mol)
+   * @returns FiringShrinkage stage data
+   */
+  private buildFiringStage(
+    temperature: number,
+    sinteringVolShrinkage: number,
+    newDensity: number,
+    holdTime_hours: number,
+    avgActivationEnergy: number,
+  ): FiringShrinkage {
+    const sinteringLinearShrinkage = sinteringVolShrinkage / 3;
+
+    return {
+      name: 'firing',
+      temperatures_C: [temperature],
+      shrinkage_volumetric_percent: [sinteringVolShrinkage * 100],
+      shrinkage_linear_percent: [sinteringLinearShrinkage * 100],
+      relativeDensity: [newDensity],
+      description: `Sintering at ${temperature}°C`,
+      sinteringTemperature_C: temperature,
+      sinteringRate: Math.abs(sinteringVolShrinkage) / holdTime_hours,
+      masterSinteringCurve_theta: this.calculateMSCTheta(temperature, holdTime_hours, avgActivationEnergy),
+    };
+  }
+
+  /**
+   * Build total stage summary combining all shrinkage stages
+   *
+   * @param temperatures_C Temperature profile
+   * @param totalVolPercent Total volumetric shrinkage at each temperature (%)
+   * @param totalLinPercent Total linear shrinkage at each temperature (%)
+   * @param relativeDensities Relative densities at each temperature
+   * @returns ShrinkageStage total summary
+   */
+  private buildTotalStage(
+    temperatures_C: number[],
+    totalVolPercent: number[],
+    totalLinPercent: number[],
+    relativeDensities: number[],
+  ): ShrinkageStage {
+    return {
+      name: 'total',
+      temperatures_C,
+      shrinkage_volumetric_percent: totalVolPercent,
+      shrinkage_linear_percent: totalLinPercent,
+      relativeDensity: relativeDensities,
+      description: 'Total shrinkage (chemical + sintering)',
+    };
+  }
+
+  /**
+   * Build metadata for shrinkage calculation result
+   *
+   * @param totalVolPercent Total volumetric shrinkage percentages
+   * @param temperatureProfile_C Temperature profile
+   * @param finalDensity Final relative density
+   * @param waterCementRatio Water-to-cement ratio
+   * @param cementContent Cement content fraction
+   * @returns ShrinkageMetadata object
+   */
+  private buildMetadata(
+    totalVolPercent: number[],
+    temperatureProfile_C: number[],
+    finalDensity: number,
+    waterCementRatio: number,
+    cementContent: number,
+  ) {
+    const maxShrinkageVol = Math.max(...totalVolPercent);
+    const maxShrinkageIdx = totalVolPercent.indexOf(maxShrinkageVol);
+    const theoreticalDensity = 3500; // kg/m³ for typical alumina-silicate refractories
+    const greenDensity = 0.6; // Initial green density
+
+    return {
+      calculatedAt: new Date(),
+      mixDensity_kgm3: theoreticalDensity * finalDensity,
+      theoreticalDensity_kgm3: theoreticalDensity,
+      greenPorosity_percent: (1 - greenDensity) * 100,
+      finalPorosity_percent: (1 - finalDensity) * 100,
+      maxShrinkage_volumetric_percent: maxShrinkageVol,
+      tempAtMaxShrinkage_C: temperatureProfile_C[maxShrinkageIdx] || temperatureProfile_C[temperatureProfile_C.length - 1],
+      method: 'master-sintering-curve' as const,
+      parameters: {
+        waterCementRatio,
+        cementContent,
+        cementType: 'CAC' as const,
+      },
     };
   }
 
@@ -195,4 +338,3 @@ export class ShrinkageService {
     return Math.max(initialDensity, Math.min(relativeDensity, 1.0));
   }
 }
-

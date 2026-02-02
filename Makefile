@@ -1,4 +1,4 @@
-.PHONY: help setup setup-secrets generate-jwt up down restart logs clean-reports stop-all build-images push-images deploy-build build-version
+.PHONY: help setup setup-secrets generate-jwt up down restart logs clean-reports stop-all build-images push-images deploy-build build-version logs-backend logs-frontend logs-nginx logs-postgres logs-redis logs-python logs-service copy-node-modules copy-node-modules-force test-backend test-frontend test-service check-types check-types-pattern check-types-verbose
 
 # Default target
 help:
@@ -14,6 +14,15 @@ help:
 	@echo "  make down           - Stop all services"
 	@echo "  make restart        - Restart all services"
 	@echo "  make logs           - View logs from all services"
+	@echo "  make logs-backend   - Tail backend service logs"
+	@echo "  make logs-frontend  - Tail frontend service logs"
+	@echo "  make logs-nginx     - Tail nginx service logs"
+	@echo "  make logs-postgres  - Tail postgres service logs"
+	@echo "  make logs-redis     - Tail redis service logs"
+	@echo "  make logs-python    - Tail python service logs"
+	@echo "  make logs-service SERVICE=myservice - Tail a specific service (generic)"
+	@echo "  make copy-node-modules         - Copy node_modules from running containers to host (backend, frontend)"
+	@echo "  make copy-node-modules-force   - Force copy node_modules from containers to host (passes --force to script)"
 	@echo ""
 	@echo "Maintenance:"
 	@echo "  make clean-reports  - Clean old report files (>30 days)"
@@ -25,7 +34,16 @@ help:
 	@echo "  make deploy-build   - Build and push images (complete workflow)"
 	@echo "  make build-version VERSION=x.y.z - Build specific version"
 	@echo ""
-	@echo "Access:"
+	@echo "Testing:"
+	@echo "  make test-backend   - Run backend tests inside container"
+	@echo "  make test-frontend  - Run frontend tests inside container"
+	@echo "  make test-service SERVICE=myservice - Run tests in specific service"
+	@echo ""
+	@echo "Type Checking:"
+	@echo "  make check-types                    - Check TypeScript types (errors only)"
+	@echo "  make check-types-pattern PATTERN=<pattern> - Check specific service/pattern"
+	@echo "  make check-types-verbose            - Show all TypeScript errors (detailed)"
+	@echo ""
 	@echo "  Frontend:           http://localhost:${FRONTEND_PORT}"
 	@echo "  Backend API:        http://localhost:${BACKEND_PORT}/api/v1"
 	@echo "  API Docs:           http://localhost:${BACKEND_PORT}/api/docs"
@@ -173,4 +191,125 @@ build-version:
 	fi
 	@echo "🏗️  Building version $(VERSION)..."
 	@./scripts/build-and-push.sh --version $(VERSION)
+
+# Service-specific logs (shortcuts)
+logs-backend:
+	@echo "📋 Backend logs (service: backend)"
+	docker-compose -f compose.yml logs -f backend
+
+logs-frontend:
+	@echo "📋 Frontend logs (service: frontend)"
+	docker-compose -f compose.yml logs -f frontend
+
+logs-nginx:
+	@echo "📋 Nginx logs (service: nginx)"
+	docker-compose -f compose.yml logs -f nginx
+
+logs-postgres:
+	@echo "📋 Postgres logs (service: postgres)"
+	docker-compose -f compose.yml logs -f postgres
+
+logs-redis:
+	@echo "📋 Redis logs (service: redis)"
+	docker-compose -f compose.yml logs -f redis
+
+logs-python:
+	@echo "📋 Python helper container logs (service: python)"
+	docker-compose -f compose.yml logs -f python
+
+# Generic logs target: usage: make logs-service SERVICE=<service-name>
+logs-service:
+	@if [ -z "$(SERVICE)" ]; then \
+		echo "Usage: make logs-service SERVICE=<service-name>"; \
+		exit 1; \
+	fi
+	@echo "📋 Tailing logs for service: $(SERVICE)"
+	docker-compose -f compose.yml logs -f $(SERVICE)
+
+# Copy node_modules from running containers to host (uses scripts/copy-node-modules-from-containers.sh)
+copy-node-modules:
+	@echo "📦 Copying node_modules from backend/frontend containers to host"
+	@test -f ./scripts/copy-node-modules-from-containers.sh || { echo "Script not found: ./scripts/copy-node-modules-from-containers.sh"; exit 1; }
+	@./scripts/copy-node-modules-from-containers.sh
+
+copy-node-modules-force:
+	@echo "📦 Force copying node_modules from containers to host"
+	@test -f ./scripts/copy-node-modules-from-containers.sh || { echo "Script not found: ./scripts/copy-node-modules-from-containers.sh"; exit 1; }
+	@./scripts/copy-node-modules-from-containers.sh --force
+
+# Run tests inside Docker Compose containers
+# Usage: make test-backend  (runs backend tests inside the backend service container)
+#        make test-frontend (runs frontend tests inside the frontend service container)
+#        make test-service SERVICE=backend  (generic)
+
+test-backend:
+	@echo "🧪 Running backend tests inside Docker Compose (service: backend)"
+	@# If backend container is running use exec, otherwise run a one-off container
+	@if [ -n "$(shell docker-compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
+		docker-compose -f compose.yml exec -T backend sh -lc 'cd /app && npm test --silent'; \
+	else \
+		docker-compose -f compose.yml run --rm backend sh -lc 'cd /app && npm test --silent'; \
+	fi
+
+test-frontend:
+	@echo "🧪 Running frontend tests inside Docker Compose (service: frontend)"
+	@if [ -n "$(shell docker-compose -f compose.yml ps -q frontend 2>/dev/null)" ]; then \
+		docker-compose -f compose.yml exec -T frontend sh -lc 'cd /app && npm test --silent'; \
+	else \
+		docker-compose -f compose.yml run --rm frontend sh -lc 'cd /app && npm test --silent'; \
+	fi
+
+# Generic service test runner: make test-service SERVICE=<service>
+test-service:
+	@if [ -z "$(SERVICE)" ]; then \
+		echo "Usage: make test-service SERVICE=<service>"; \
+		exit 1; \
+	fi
+	@echo "🧪 Running tests in service: $(SERVICE)"
+	@if [ -n "$(shell docker-compose -f compose.yml ps -q $(SERVICE) 2>/dev/null)" ]; then \
+		docker-compose -f compose.yml exec -T $(SERVICE) sh -lc 'cd /app && npm test --silent'; \
+	else \
+		docker-compose -f compose.yml run --rm $(SERVICE) sh -lc 'cd /app && npm test --silent'; \
+	fi
+
+# TypeScript compilation checking
+# Usage: make check-types         (check all TypeScript types in backend)
+#        make check-water-demand  (check water demand service specifically)
+#        make check-types-verbose (show all errors, not just filtered)
+
+check-types:
+	@echo "🔍 Checking TypeScript compilation (backend)..."
+	@if [ -n "$(shell docker-compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
+		docker-compose -f compose.yml exec -T backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error" | head -50'; \
+	else \
+		docker-compose -f compose.yml run --rm backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error" | head -50'; \
+	fi
+
+check-types-pattern:
+	@if [ -z "$(PATTERN)" ]; then \
+		echo "❌ ERROR: PATTERN not specified"; \
+		echo ""; \
+		echo "Usage: make check-types-pattern PATTERN=<search-pattern>"; \
+		echo ""; \
+		echo "Examples:"; \
+		echo "  make check-types-pattern PATTERN=water-demand       # Check water demand service"; \
+		echo "  make check-types-pattern PATTERN=packing            # Check packing service"; \
+		echo "  make check-types-pattern PATTERN=error              # Show all errors"; \
+		echo "  make check-types-pattern PATTERN='water|packing'    # Check multiple patterns"; \
+		exit 1; \
+	fi
+	@echo "🔍 Checking TypeScript compilation - Pattern: $(PATTERN)..."
+	@if [ -n "$(shell docker-compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
+		docker-compose -f compose.yml exec -T backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error\|$(PATTERN)" | head -50'; \
+	else \
+		docker-compose -f compose.yml run --rm backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error\|$(PATTERN)" | head -50'; \
+	fi
+
+check-types-verbose:
+	@echo "🔍 Checking TypeScript compilation (verbose - all errors)..."
+	@if [ -n "$(shell docker-compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
+		docker-compose -f compose.yml exec -T backend sh -lc 'cd /app && npx tsc --noEmit'; \
+	else \
+		docker-compose -f compose.yml run --rm backend sh -lc 'cd /app && npx tsc --noEmit'; \
+	fi
 

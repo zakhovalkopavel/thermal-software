@@ -7,6 +7,8 @@
  * Date: February 2, 2026
  */
 
+import { ShrinkageResult } from './shrinkage-calculator.interface';
+
 // ============================================================
 // FRACTION INTERFACES
 // ============================================================
@@ -117,25 +119,18 @@ export interface BlendOptimizationResult {
   /** Green porosity percentage */
   porosity_percent_green: number;
 
+  /** Water demand for standard workability (%) */
+  waterDemand_percent: number;
+
+  /** Water demand range for different workability levels */
+  waterDemandRange: {
+    min: number;
+    typical: number;
+    max: number;
+  };
+
   /** Shrinkage prediction results */
-  shrinkage: ShrinkagePrediction;
-}
-
-/**
- * Shrinkage prediction data
- */
-export interface ShrinkagePrediction {
-  /** Temperature points for prediction */
-  temperatures_C: number[];
-
-  /** Shrinkage percentages at each temperature */
-  shrinkage_percent: number[];
-
-  /** Maximum shrinkage */
-  maxShrinkage_percent: number;
-
-  /** Temperature at maximum shrinkage */
-  tempAtMaxShrinkage_C: number;
+  shrinkage: ShrinkageResult;
 }
 
 /**
@@ -281,4 +276,3 @@ export function isBlendOptimizationRequest(obj: any): obj is BlendOptimizationRe
     (obj.options === undefined || isBlendOptimizationOptions(obj.options))
   );
 }
-

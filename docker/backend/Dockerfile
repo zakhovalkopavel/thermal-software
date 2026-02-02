@@ -19,7 +19,11 @@ COPY . .
 # Install dependencies if package-lock.json exists, otherwise skip
 # We'll install interactively inside the container first time
 RUN if [ -f package-lock.json ]; then \
-      npm ci && npm cache clean --force; \
+      if [! -d node_modules ]; then \
+        npm install && npm cache clean --force; \
+      else \
+        npm ci && npm cache clean --force; \
+      fi; \
     elif [ -s package.json ] && [ "$(cat package.json | grep -c '\"dependencies\":{}')" -eq 0 ]; then \
       npm install && npm cache clean --force; \
     else \

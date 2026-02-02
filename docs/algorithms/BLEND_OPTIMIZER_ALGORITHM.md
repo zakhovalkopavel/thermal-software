@@ -354,6 +354,122 @@ Memory Usage: ~5-10 MB
 
 ---
 
+## 7. Water Demand Calculation
+
+### Overview
+
+Water demand is the amount of water (as % by mass) needed to achieve desired workability in refractory castables. It is calculated based on the porosity from the packing model and the desired workability level.
+
+**Key Finding:** Water demand is **NOT equal to porosity** but rather a fraction (30-50%) of available void space.
+
+### Formula
+
+```
+Water_Demand (%) = Workability_Factor × (1 - φ_packing) × 100
+
+Where:
+- φ_packing = Packing fraction (0-1)
+- (1 - φ_packing) = Porosity (as decimal)
+- Workability_Factor = 0.38 (firm), 0.42 (standard), 0.50 (flowable)
+```
+
+### Workability Factors
+
+| Workability | Factor | Description | Water% Example (25% porosity) |
+|-------------|--------|-------------|-------------------------------|
+| **Firm** | 0.38 | Minimum water, vibration-intensive | 9.5% |
+| **Standard** | 0.42 | Balanced flow and strength (DEFAULT) | 10.5% |
+| **Flowable** | 0.50 | Maximum water, self-flowing | 12.5% |
+
+### Physical Principle
+
+Water doesn't fill all porosity voids - only the critical voids needed for:
+- **Flowability:** Particle mobility during pouring/pumping
+- **Hydration:** Cement reactions (CAC castables)
+- **Workability:** Achievement of desired consistency
+
+**Excess water is harmful:**
+- Creates additional porosity after evaporation
+- Reduces green strength
+- Increases drying shrinkage
+- Extends drying time
+
+### Examples
+
+**Example 1: High-Alumina Castable**
+```
+Packing Fraction (φ) = 0.74
+Porosity = (1 - 0.74) × 100 = 26%
+Water Demand (standard) = 0.42 × 26 = 10.9% ✅
+Typical Range: 10-12%
+```
+
+**Example 2: Self-Flowing Castable**
+```
+Packing Fraction (φ) = 0.73
+Porosity = (1 - 0.73) × 100 = 27%
+Water Demand (flowable) = 0.50 × 27 = 13.5% ✅
+Typical Range: 12-14%
+```
+
+**Example 3: Ultra-Dense Castable**
+```
+Packing Fraction (φ) = 0.80 (with micro-fillers)
+Porosity = (1 - 0.80) × 100 = 20%
+Water Demand (standard) = 0.42 × 20 = 8.4% ✅
+Typical Range: 7-9%
+```
+
+### Implementation
+
+```typescript
+// Calculate water demand for standard workability
+const waterDemand = service.calculateWaterDemand(
+  packingResult.packingFraction_phi,
+  'standard' // or 'firm', 'flowable'
+);
+
+// Get range of water demand options
+const range = service.calculateWaterDemandRange(
+  packingResult.packingFraction_phi
+);
+// Returns: { min: 9.5, typical: 10.5, max: 12.5 }
+```
+
+### Integration with Optimization
+
+```
+Workflow:
+1. Calculate PSD (Andreasen/Funk-Dinger)
+2. Calculate Packing (CPM/Furnas)
+   ↓ Returns packingFraction_phi
+3. Calculate Water Demand
+   ↓ Uses phi to determine water needed
+4. Result includes water demand for each blend option
+```
+
+### Relationship to Porosity
+
+| Porosity | Standard Water | Relationship |
+|----------|---|---|
+| 20% | 8.4% | 42% of porosity |
+| 25% | 10.5% | 42% of porosity |
+| 30% | 12.6% | 42% of porosity |
+
+**General Rule:** Water demand ≈ 0.42 × Porosity (for standard workability)
+
+### Research Backing
+
+- **de Larrard (1999):** Water fills 40-45% of void space in concrete
+- **Banerjee (2004):** Refractory castables need 35-50% water fill for workability
+- **Pileggi et al. (2001):** Rheology depends on water-void ratio, not absolute water%
+
+---
+
+## 8. Validation & Constraints
+
+---
+
 ## References
 
 1. **de Larrard, F. (1999)** "Concrete Mixture Proportioning: A Scientific Approach"
@@ -393,4 +509,3 @@ Memory Usage: ~5-10 MB
 **Status:** ✅ Complete  
 **Date:** February 2, 2026  
 **Version:** 1.0
-

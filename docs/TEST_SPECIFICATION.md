@@ -554,6 +554,57 @@ docker-compose exec backend npm run test -- calculations > tmp/reports/tests/cal
 
 ---
 
+## Running Tests Inside Docker Containers
+
+For reproducible results we prefer running tests inside the project's Docker Compose services. The top-level `Makefile` includes convenient targets that either `exec` into a running service container or run a one-off container when the service is not running.
+
+Make targets added:
+
+- `make test-backend` — run the backend test suite inside the `backend` service container.
+- `make test-frontend` — run the frontend test suite inside the `frontend` service container.
+- `make test-service SERVICE=<service>` — generic runner for any named compose service.
+
+Examples
+--------
+Run backend tests (recommended):
+
+```bash
+# from repo root
+make test-backend
+```
+
+Run frontend tests:
+
+```bash
+make test-frontend
+```
+
+Run tests for a specific service (generic):
+
+```bash
+make test-service SERVICE=backend
+# or
+make test-service SERVICE=frontend
+```
+
+Notes
+-----
+- These targets use the compose file `compose.yml` by default (adjust if you use a different file). They will use `docker-compose exec` if the container is already running, or `docker-compose run --rm` to start a one-off container if it's not.
+- The command executed inside containers is `cd /app && npm test --silent`. If your service uses a different working directory or test command, adjust the Makefile accordingly.
+- You can pass Jest arguments by setting the `JEST_ARGS` environment variable and updating the Makefile to include it — I can add this if you want.
+
+Troubleshooting
+---------------
+- If you see permission issues when `exec`-ing into containers, check your Docker permissions or run `sudo` where appropriate.
+- To run tests with coverage, modify the inner command to `npm test -- --coverage` or run:
+
+```bash
+# Example (one-off):
+docker-compose -f compose.yml run --rm backend sh -lc 'cd /app && npm test -- --coverage'
+```
+
+---
+
 ## CI/CD Integration
 
 ### Pre-Merge Checks

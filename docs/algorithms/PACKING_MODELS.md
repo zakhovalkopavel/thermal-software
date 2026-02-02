@@ -481,7 +481,299 @@ Furnas: Group modes and apply sequentially
 
 ---
 
-## 8. Troubleshooting
+## 8. Calibration Models (Research-Backed Defaults)
+
+### Overview
+
+The implementation provides research-backed models for key parameters:
+- **β₀ (particle shape):** SPHERICAL, SUB_ANGULAR, ANGULAR, FLAKY
+- **φ_max (maximum packing):** THEORETICAL_FCC, TYPICAL_CONCRETE, DENSE_CASTABLE, HIGH_PERFORMANCE, LEGACY_CONSERVATIVE
+- **denomFloor (stability):** Prevents numerical singularities
+
+### β₀ Models (Particle Shape)
+
+Based on Johansen & Andersen (1991) and de Larrard (1999) Table 2.1:
+
+| Model | β₀ Value | Description | Applications |
+|-------|----------|-------------|--------------|
+| **SPHERICAL** | 0.64 | Random close packing limit | Glass beads, rounded aggregates |
+| **SUB_ANGULAR** | 0.60 | Natural sand | Crushed rounded materials |
+| **ANGULAR** | 0.56 | Crushed rock (**DEFAULT**) | Typical refractory aggregates |
+| **FLAKY** | 0.50 | Elongated particles | Mica, fibrous materials |
+
+**Default:** ANGULAR (β₀ = 0.56) — typical for refractory applications
+
+### φ_max Models (Maximum Packing Fraction)
+
+Based on Studart et al. (2006), Wong & Kwan (2008), Pileggi et al. (2001):
+
+| Model | φ_max Value | Description | Applications |
+|-------|-------------|-------------|--------------|
+| **THEORETICAL_FCC** | 0.7405 | FCC/HCP densest sphere packing | Strict theoretical limit |
+| **TYPICAL_CONCRETE** | 0.72 | Well-graded, no compaction | Standard vibrated concrete |
+| **DENSE_CASTABLE** | 0.76 | Vibrated, optimized PSD (**DEFAULT**) | Self-flowing castables |
+| **HIGH_PERFORMANCE** | 0.80 | Micro-fillers, high compaction | Ultra-high performance systems |
+| **LEGACY_CONSERVATIVE** | 0.85 | Historical cap (above realistic) | Backward compatibility only |
+
+**Default:** DENSE_CASTABLE (φ_max = 0.76) — research-backed for vibrated refractory castables
+
+**Notes:**
+- φ_max = 0.85 (legacy) is **above** all measured/theoretical values
+- Used historically for conservative safety margin
+- New implementations should use DENSE_CASTABLE or HIGH_PERFORMANCE
+
+### Denominator Floor (Stability Constant)
+
+Prevents singularities in CPM formula: β₀/(1 - K×c_i)
+
+**Critical pressure:** P_crit ≈ P_ref × (1/K) / (1 - 1/K)
+- With K=9, P_ref=10 MPa → P_crit ≈ 12.5 MPa
+
+| denomFloor | Allowed P/P_crit | Use Case |
+|------------|------------------|----------|
+| **0.01** | ~99% | Research, high-accuracy calibration |
+| **0.05** | ~95% (**DEFAULT**) | Practical engineering (good balance) |
+| **0.10** | ~90% | Production safety (early saturation) |
+
+**Default:** 0.05 — allows up to 95% of critical pressure
+
+**Research range:** 0.01–0.10 (Fennis 2011, concrete software practice)
+
+### Usage Examples
+
+```typescript
+import { PackingService, Beta0Model, MaxPhiModel } from './packing.service';
+
+// Default (angular particles, dense castable cap)
+const result1 = service.calculateCPM({
+  massFractions: [0.3, 0.4, 0.3],
+  densities_kgm3: [3000, 3500, 2500],
+  diameters_mm: [0.1, 0.5, 1.0],
+});
+// → Uses β₀=0.56 (ANGULAR), φ_max=0.76 (DENSE_CASTABLE)
+
+// Spherical particles, high-performance cap
+const result2 = service.calculateCPM(inputs, {
+  beta0Model: Beta0Model.SPHERICAL,
+  maxPhiModel: MaxPhiModel.HIGH_PERFORMANCE,
+});
+// → Uses β₀=0.64, φ_max=0.80
+
+// Legacy behavior (for backward compatibility)
+const result3 = service.calculateCPM(inputs, {
+  beta0Model: Beta0Model.SPHERICAL,
+  maxPhiModel: MaxPhiModel.LEGACY_CONSERVATIVE,
+});
+// → Uses β₀=0.64, φ_max=0.85 (old default)
+
+// Full custom calibration
+const result4 = service.calculateCPM(inputs, {
+  beta0: 0.58,            // Custom β₀
+  K: 10.5,                // Custom compaction coefficient
+  maxPhi: 0.78,           // Custom cap
+  denomFloor: 0.02,       // Custom stability floor
+});
+
+// Result includes calibration metadata
+console.log(result1.calibration);
+// → { beta0: 0.56, K: 9.0, maxPhi: 0.76, denomFloor: 0.05, compactionIndex: 0.1667 }
+```
+
+### Migration from Legacy Values
+
+**Old hardcoded values:**
+- β₀ = 0.64 (spherical)
+- φ_max = 0.85 (conservative cap)
+- denomFloor = 0.05 (implicit)
+
+**New research-backed defaults:**
+- β₀ = 0.56 (ANGULAR — more realistic for crushed refractories)
+- φ_max = 0.76 (DENSE_CASTABLE — matches literature for vibrated systems)
+- denomFloor = 0.05 (explicit, configurable)
+
+**To preserve old behavior:**
+```typescript
+service.calculateCPM(inputs, {
+  beta0Model: Beta0Model.SPHERICAL,
+  maxPhiModel: MaxPhiModel.LEGACY_CONSERVATIVE,
+});
+```
+
+---
+
+## 9. Adaptive Packing Limits Based on Composition
+
+### Overview
+
+The packing service includes **composition-aware adaptive φ_max selection** that automatically adjusts the maximum packing limit based on:
+
+- **Micro-filler content** (particles < 0.1 mm)
+- **PSD type** (binary, ternary, quaternary, continuous)
+- **Size distribution quality** (poor, fair, good, excellent)
+- **Overall packing capability** of the mix
+
+### Key Principle
+
+**The maximum achievable packing fraction depends on composition characteristics, not just a fixed value.**
+
+- **With micro-fillers** (>5%): Higher limits possible (0.78–0.82)
+- **Without micro-fillers, good PSD**: Standard limit (0.76)
+- **Poor PSD**: Conservative limit (0.68)
+
+### Micro-Filler Detection
+
+**Definition:** Particles < 0.1 mm (threshold configurable in `COMPOSITION_ANALYSIS_CONSTANTS`)
+
+| Micro-Filler % | Category | Recommended φ_max | Rationale |
+|-----------------|----------|------------------|-----------|
+| > 20% | HIGH | 0.82 | Micro-fillers fill all voids (Studart 2006) |
+| 10–20% | SIGNIFICANT | 0.80 | Substantial void reduction |
+| 5–10% | SOME | 0.78 | Noticeable benefit from fillers |
+| < 5% | NONE | Depends on PSD | Minimal filler contribution |
+
+### PSD Quality Assessment
+
+Quality determined by **size ratio spread** and **mass distribution uniformity**:
+
+| Quality | Size Ratio | Distribution | φ_max (no fillers) | Rationale |
+|---------|-----------|--------------|------------------|-----------|
+| **EXCELLENT** | > 50:1 | Uniform | 0.78 | Wide size range, well-distributed |
+| **GOOD** | 5–50:1 | Fair | 0.76 | Adequate size variation |
+| **FAIR** | 2–5:1 | Uneven | 0.72 | Limited size variation |
+| **POOR** | < 2:1 | Very uneven | 0.68 | Similar sizes or imbalanced |
+
+### Combined Decision Matrix
+
+φ_max selected based on **filler category × PSD quality**:
+
+| PSD Quality | No Fillers | Some Fillers | Significant Fillers | High Fillers |
+|------------|-----------|--------------|-------------------|--------------|
+| **EXCELLENT** | 0.78 | 0.80 | 0.82 | 0.82 |
+| **GOOD** | 0.76 | 0.78 | 0.80 | 0.82 |
+| **FAIR** | 0.72 | 0.76 | 0.78 | 0.80 |
+| **POOR** | 0.68 | 0.72 | 0.76 | 0.78 |
+
+### Three Priority Levels for φ_max Selection
+
+1. **Custom Override** (explicit `maxPhi` value) — Highest priority
+   - Use your validated/lab-proven limit
+   
+2. **Auto-Detection** (`autoDetectMaxPhi: true`) — Recommended for production
+   - Analyzes composition characteristics
+   - Selects appropriate φ_max automatically
+   - Provides explanation and confidence score
+   
+3. **Model Selection** (`maxPhiModel`) — Standard approach
+   - DENSE_CASTABLE (0.76) — default
+   - HIGH_PERFORMANCE (0.80) — optimized systems
+   - TYPICAL_CONCRETE (0.72) — standard concrete
+   - THEORETICAL_FCC (0.7405) — theory only
+   - LEGACY_CONSERVATIVE (0.85) — backward compatibility
+   
+4. **Default** (no options specified)
+   - Uses DENSE_CASTABLE (0.76)
+
+### Usage Examples
+
+**Auto-Detection (Recommended):**
+```typescript
+const result = service.calculateCPM(
+  {
+    massFractions: [0.15, 0.35, 0.35, 0.15],  // Ternary
+    densities_kgm3: [3000, 3100, 2500, 2800],
+    diameters_mm: [3.0, 0.5, 0.1, 0.02],       // < 0.1 mm = micro-filler
+    compactionPressure_MPa: 5.0
+  },
+  {
+    autoDetectMaxPhi: true  // ← Analyze and select automatically
+  }
+);
+
+// Returns composition analysis with recommended φ_max
+```
+
+**Manual Model Selection:**
+```typescript
+const result = service.calculateCPM(inputs, {
+  maxPhiModel: MaxPhiModel.HIGH_PERFORMANCE  // Use 0.80
+});
+```
+
+**Custom Override:**
+```typescript
+const result = service.calculateCPM(inputs, {
+  maxPhi: 0.75  // Your lab-validated limit
+});
+```
+
+### Enhanced Result Object
+
+```typescript
+{
+  model: 'CPM',
+  packingFraction_phi: 0.758,
+  porosity_initial: 0.242,
+  
+  calibration: {
+    beta0: 0.56,
+    K: 9.0,
+    maxPhi: 0.80,           // ← Adaptive limit used
+    denomFloor: 0.05,
+    compactionIndex: 0.3333,
+    autoDetected: true      // ← Shows if auto-detected
+  },
+  
+  composition: {              // ← Composition analysis metadata
+    hasMicroFillers: true,
+    microFillerPercent: 15.0,
+    psdType: 'quaternary_plus',
+    packingQuality: 'excellent',
+    recommendedMaxPhi: 0.80,
+    explanation: "Significant micro-fillers (15%): use 0.80..."
+  }
+}
+```
+
+### Constants and Configuration
+
+All composition analysis thresholds defined in `COMPOSITION_ANALYSIS_CONSTANTS` in `packing-constants.ts`:
+
+- `MICRO_FILLER_THRESHOLD_MM`: 0.1 (particles < 0.1 mm detected as micro-fillers)
+- `MICRO_FILLER_SIGNIFICANT_PERCENT`: 5.0 (minimum % to affect limit selection)
+- `MICRO_FILLER_THRESHOLDS`: 3-level mapping (HIGH, SIGNIFICANT, SOME) with φ_max values
+- `PSD_QUALITY_THRESHOLDS`: 4-level quality assessment (POOR, FAIR, GOOD, EXCELLENT)
+- `COMBINATION_ADJUSTMENTS`: 3×4 decision matrix (filler category × PSD quality)
+
+### When to Use Each Approach
+
+**Use Auto-Detection when:**
+- Production environment
+- Testing different blend formulas
+- Want composition-aware safety
+- Need diagnostic information
+
+**Use Model Selection when:**
+- Standard known system type
+- Want consistent predictable limits
+- Prefer not to analyze composition
+
+**Use Custom Override when:**
+- Lab-validated specific limits
+- Research/calibration work
+- Theory-only mode desired
+
+### Research Backing
+
+Auto-detection thresholds validated against literature:
+
+- **Micro-fillers enable higher packing:** Studart et al. (2006)
+- **PSD quality affects packing:** de Larrard (1999)
+- **Size ratio critical:** Furnas (1931)
+- **Confidence assessment:** Wong & Kwan (2008)
+
+---
+
+## 11. Troubleshooting
 
 ### Common Issues
 
@@ -513,17 +805,25 @@ Furnas: Group modes and apply sequentially
 
 ---
 
-## 9. References
+## 12. References
 
 ### Primary Literature
 
 **CPM:**
 - de Larrard, F. (1999) "Concrete Mixture Proportioning: A Scientific Approach"
 - Wong, H.H.C. & Kwan, A.K.H. (2008) "Packing density of cementitious materials"
+- Johansen, V. & Andersen, P.J. (1991) "Particle packing and concrete properties"
 
 **Furnas:**
 - Furnas, C.C. (1931) "Grading Aggregates - Mathematical Relations for Beds of Broken Solids"
 - Westman, A.E.R. & Hugill, H.R. (1930) "The Packing of Particles"
+
+**Refractory Applications:**
+- Studart, A.R. et al. (2006) "Processing Routes to Macroporous Ceramics: A Review"
+- Pileggi, R.G. et al. (2001) "Novel rheometer for refractory castables"
+
+**Numerical Stability:**
+- Fennis, S.A.A.M. (2011) "Design of ecological concrete by particle packing optimization" PhD thesis
 
 ### Application Papers
 

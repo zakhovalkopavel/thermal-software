@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PSDCalculatorService } from './psd-calculator.service';
 import { PackingService } from './packing.service';
 import { ShrinkageService } from './shrinkage.service';
+import { WaterDemandService } from './water-demand.service';
 import {
   DEFAULT_Q_VALUES,
   PSD_METHODS,
@@ -56,6 +57,7 @@ export class BlendOptimizerService {
     private readonly psdCalculator: PSDCalculatorService,
     private readonly packingService: PackingService,
     private readonly shrinkageService: ShrinkageService,
+    private readonly waterDemand: WaterDemandService,
   ) {}
 
   /**
@@ -107,6 +109,14 @@ export class BlendOptimizerService {
             const rhoSkeletal = this.calculateSkeletalDensity(densities, psdResult.massFractions);
             const rhoBulk_green = rhoSkeletal * packingResult.packingFraction_phi;
 
+            // Calculate water demand based on packing result
+            const waterDemandStandard = this.waterDemand.calculateWaterDemand(
+              packingResult.packingFraction_phi
+            );
+            const waterDemandRange = this.waterDemand.calculateWaterDemandRange(
+              packingResult.packingFraction_phi
+            );
+
             const shrinkageResult = this.shrinkageService.calculateCompleteShrinkage({
               materials: [],
               massFractions: psdResult.massFractions,
@@ -126,6 +136,12 @@ export class BlendOptimizerService {
               rhoBulk_gml_green: Number((rhoBulk_green / 1000).toFixed(2)),
               packingEfficiency: packingResult.packingFraction_phi,
               porosity_percent_green: Number(((1 - packingResult.packingFraction_phi) * 100).toFixed(1)),
+              waterDemand_percent: waterDemandStandard,
+              waterDemandRange: {
+                min: waterDemandRange.min,
+                typical: waterDemandRange.typical,
+                max: waterDemandRange.max,
+              },
               shrinkage: shrinkageResult,
             });
           }
@@ -137,8 +153,8 @@ export class BlendOptimizerService {
     return results;
   }
 
+
   private calculateSkeletalDensity(densities: number[], massFractions: number[]): number {
     return densities.reduce((sum, d, i) => sum + d * massFractions[i], 0);
   }
 }
-

@@ -196,13 +196,14 @@ export function isPackingInput(obj: any): obj is PackingInput {
  * Type guard for CPMInput
  */
 export function isCPMInput(obj: any): obj is CPMInput {
+  const o: any = obj;
   return (
     isPackingInput(obj) &&
-    (obj.compactionPressure_MPa === undefined || typeof obj.compactionPressure_MPa === 'number') &&
-    (obj.calibration === undefined ||
-      (typeof obj.calibration === 'object' &&
-        (obj.calibration.beta0 === undefined || typeof obj.calibration.beta0 === 'number') &&
-        (obj.calibration.K === undefined || typeof obj.calibration.K === 'number')))
+    (o.compactionPressure_MPa === undefined || typeof o.compactionPressure_MPa === 'number') &&
+    (o.calibration === undefined ||
+      (typeof o.calibration === 'object' &&
+        (o.calibration.beta0 === undefined || typeof o.calibration.beta0 === 'number') &&
+        (o.calibration.K === undefined || typeof o.calibration.K === 'number')))
   );
 }
 
@@ -210,9 +211,10 @@ export function isCPMInput(obj: any): obj is CPMInput {
  * Type guard for FurnasInput
  */
 export function isFurnasInput(obj: any): obj is FurnasInput {
+  const o: any = obj;
   return (
     isPackingInput(obj) &&
-    (obj.efficiencyFactor === undefined || typeof obj.efficiencyFactor === 'number')
+    (o.efficiencyFactor === undefined || typeof o.efficiencyFactor === 'number')
   );
 }
 
@@ -228,4 +230,3 @@ export function isPackingResult(obj: any): obj is PackingResult {
     typeof obj.effectivePackingDensity === 'number'
   );
 }
-
