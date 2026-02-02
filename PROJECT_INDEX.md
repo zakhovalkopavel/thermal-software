@@ -91,10 +91,20 @@ docker-compose up --build
 - `docs/ENVIRONMENT_MANAGEMENT.md` - .env guide
 - `docs/PARALLEL_DEVELOPMENT_STRATEGY.md` - Dev strategy
 - `docs/REPORTS_MANAGEMENT.md` - Reports guide
+- **`NAMING_CONVENTIONS.md` - Code naming standards (REQUIRED)** ⭐
 - `docker/README.md` - Docker organization
 ---
 ## ⚠️ Important Rules
-### 1. Docker-Only Commands
+### 1. Naming Conventions (MANDATORY)
+**ALL code must follow strict naming conventions:**
+- ✅ **Files:** `kebab-case` - `service-name.service.ts`
+- ✅ **Classes:** `PascalCase` - `PackingService`
+- ✅ **Variables:** `camelCase` - `volumeFractions`
+- ✅ **Constants:** `UPPER_SNAKE_CASE` - `CPM_BETA0`
+
+**READ:** [`NAMING_CONVENTIONS.md`](NAMING_CONVENTIONS.md) **BEFORE ANY CODING**
+
+### 2. Docker-Only Commands
 ❌ **NEVER on host:**
 ```bash
 npx @nestjs/cli new backend        # NO!
@@ -106,7 +116,7 @@ npm create vite                     # NO!
 docker-compose exec backend sh                 # Access container
 docker-compose exec backend npm run test       # Run commands
 ```
-### 2. Reports Location
+### 3. Reports Location
 ⚠️ **ALL reports, logs, and output files MUST go to `tmp/reports/`**
 ✅ Correct:
 ```bash
@@ -117,7 +127,7 @@ npm run migrate > tmp/reports/migrations/migration-20260201.log
 ```bash
 echo "Results" > report.log  # NOT in project root!
 ```
-### 3. Secrets Protection
+### 4. Secrets Protection
 - ❌ NEVER commit: `.env`, `*.key`, `*.pem`, `*.crt`, certificates
 - ✅ ALWAYS use: `.env.example` as template
 ---
@@ -126,6 +136,9 @@ echo "Results" > report.log  # NOT in project root!
 1. **Start:** `docs/migration/DOCKER_FIRST_SETUP.md` ⭐
 2. **Verify:** `tmp/reports/READY_FOR_IMPLEMENTATION.md`
 3. **Reference:** `docs/migration/NESTJS_MIGRATION_SPEC.md`
+### Code Standards
+1. **Naming Conventions:** `NAMING_CONVENTIONS.md` ⭐ **READ THIS**
+2. **Quality Standards:** `docs/CODE_QUALITY_STANDARDS.md`
 ### Configuration
 1. **Environment:** `docs/ENVIRONMENT_MANAGEMENT.md`
 2. **Docker:** `docker/README.md`

@@ -10,6 +10,9 @@
 
 **NO Node.js commands on your host machine!**
 
+**AND: ALL code must follow project naming conventions!**
+👉 Read first: [../../NAMING_CONVENTIONS.md](../../NAMING_CONVENTIONS.md)
+
 ❌ **NEVER run on host:**
 ```bash
 npx @nestjs/cli new backend        # NO!

@@ -8,6 +8,9 @@ This guide helps you start the NestJS migration immediately.
 
 ## ⚠️ IMPORTANT: Read This First!
 
+**ALL code must follow project naming conventions!**
+👉 **BEFORE you start:** Read [../../NAMING_CONVENTIONS.md](../../NAMING_CONVENTIONS.md)
+
 **This guide shows the LEGACY approach (npm commands on host).**
 
 ### For Docker-Only Approach (RECOMMENDED):

@@ -4,6 +4,39 @@ Enterprise-grade thermal engineering software with client-server architecture.
 
 ---
 
+## 📚 **Documentation & Standards**
+
+### Core Documentation
+- 📖 **[START_HERE.md](START_HERE.md)** - Implementation starting point
+- 📖 **[NAMING_CONVENTIONS.md](docs/NAMING_CONVENTIONS.md)** - Code standards
+- 📖 **[CODE_QUALITY_STANDARDS.md](docs/CODE_QUALITY_STANDARDS.md)** - Quality guidelines
+
+### Architecture & Interfaces
+- 🏗️ **[INTERFACES_IMPLEMENTATION_INDEX.md](docs/INTERFACES_IMPLEMENTATION_INDEX.md)** - All interfaces
+- 🔌 **[interfaces/README.md](backend/src/modules/refractory/interfaces/README.md)** - Quick reference
+- ✅ **97+ TypeScript interfaces** for type safety across all calculations
+
+### Algorithms & Calculations
+- 📐 **[Algorithms Index](docs/algorithms/README.md)** - All calculation algorithms
+- **15 documented algorithms** covering all services:
+  - Blend Optimizer
+  - PSD Calculation
+  - Packing Models
+  - Shrinkage Prediction
+  - Phase Equilibrium
+  - Thermal Performance
+  - Refractoriness
+  - Viscosity & Glass Viscosity
+  - Mineral Phase Identification
+  - Component Effects System
+
+### Important Standards
+- 🔐 **[ENV_ONLY_POLICY.md](docs/ENV_ONLY_POLICY.md)** - Environment configuration
+- 🔒 **[PRODUCTION_SECRETS.md](docs/PRODUCTION_SECRETS.md)** - Secret management
+- 📊 **[REPORTS_MANAGEMENT.md](docs/REPORTS_MANAGEMENT.md)** - Reports handling
+
+---
+
 ## 🎯 **WANT TO START IMPLEMENTATION?**
 
 ### → **[START_HERE.md](START_HERE.md)** ⭐ **READ THIS FIRST!**
@@ -97,6 +130,7 @@ docker-compose up
 ### Configuration
 - **Environment:** [docs/ENVIRONMENT_MANAGEMENT.md](docs/ENVIRONMENT_MANAGEMENT.md)
 - **Reports:** [docs/REPORTS_MANAGEMENT.md](docs/REPORTS_MANAGEMENT.md)
+- **Naming Conventions:** [NAMING_CONVENTIONS.md](NAMING_CONVENTIONS.md) ⭐ **Required for all code**
 - **Docker:** [docker/README.md](docker/README.md)
 
 ## 🎯 Current Status
