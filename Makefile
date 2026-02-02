@@ -1,4 +1,4 @@
-.PHONY: help setup setup-secrets generate-jwt up down restart logs clean-reports stop-all build-images push-images deploy-build build-version logs-backend logs-frontend logs-nginx logs-postgres logs-redis logs-python logs-service copy-node-modules copy-node-modules-force test-backend test-frontend test-service check-types check-types-pattern check-types-verbose
+.PHONY: help setup setup-secrets generate-jwt up down restart logs clean-reports stop-all build-images push-images deploy-build build-version logs-backend logs-frontend logs-nginx logs-postgres logs-redis logs-python logs-service copy-node-modules copy-node-modules-force test-backend test-frontend test-service test-blend-demo check-types check-types-pattern check-types-verbose
 
 # Default target
 help:
@@ -38,6 +38,7 @@ help:
 	@echo "  make test-backend   - Run backend tests inside container"
 	@echo "  make test-frontend  - Run frontend tests inside container"
 	@echo "  make test-service SERVICE=myservice - Run tests in specific service"
+	@echo "  make test-blend-demo - Run blend optimizer demo tests"
 	@echo ""
 	@echo "Type Checking:"
 	@echo "  make check-types                    - Check TypeScript types (errors only)"
@@ -270,6 +271,15 @@ test-service:
 		docker-compose -f compose.yml exec -T $(SERVICE) sh -lc 'cd /app && npm test --silent'; \
 	else \
 		docker-compose -f compose.yml run --rm $(SERVICE) sh -lc 'cd /app && npm test --silent'; \
+	fi
+
+# Blend Optimizer Demo Tests (with clean output)
+test-blend-demo:
+	@echo "🎯 Running blend optimizer demo tests..."
+	@if [ -n "$$(docker-compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
+		docker-compose -f compose.yml exec -T backend sh -c "npm test -- blend-optimizer-demo.spec.ts --verbose=false 2>&1 | grep -v -E '(console\\.log$$|at Object\\.<anonymous>|at Array\\.forEach|at TestScheduler|^\\s+at test/)' | sed '/^$$/N;/^\\n$$/D'"; \
+	else \
+		docker-compose -f compose.yml run --rm backend sh -c "npm test -- blend-optimizer-demo.spec.ts --verbose=false 2>&1 | grep -v -E '(console\\.log$$|at Object\\.<anonymous>|at Array\\.forEach|at TestScheduler|^\\s+at test/)' | sed '/^$$/N;/^\\n$$/D'"; \
 	fi
 
 # TypeScript compilation checking

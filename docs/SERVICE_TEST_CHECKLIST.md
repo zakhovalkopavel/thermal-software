@@ -86,19 +86,34 @@ This document lists all public methods in refractory services and tracks test im
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
-| `optimize(request)` | ❌ | ❌ NEEDED | Main optimization method |
-| (Internal methods) | - | - | Private only |
+| `optimize(request)` | ❌ | ❌ NEEDED | Main optimization method with ranking |
+| (Private: applyConstraints) | - | - | Internal filtering |
+| (Private: calculateScoresAndRank) | - | - | Internal scoring |
 
 **Checklist:**
 - [ ] optimize() basic flow
-- [ ] Multiple combinations
+- [ ] Fixed fractions support (isFixed: true)
+- [ ] Optimization goals (maxDensity, minPorosity, minWater, minShrinkage, balanced)
+- [ ] Constraint filtering (minPackingEfficiency, maxWaterDemand, maxPorosity)
+- [ ] Result ranking and scoring
+- [ ] Top N results
+- [ ] Multiple combinations (methods × q × scenarios × packing models)
 - [ ] All scenario types
-- [ ] Output validation
+- [ ] Output validation (optimizationScore, rank fields)
+- [ ] Water demand integration
+- [ ] Edge cases (all fixed, all variable, mixed)
 
-**Priority:** HIGH - Main service
+**Priority:** HIGH - Main service with new features
+
+**New Features (Feb 2026):**
+- ✅ Fixed fractions (isFixed property)
+- ✅ 5 optimization goals
+- ✅ Constraint filtering
+- ✅ Result ranking
+- ✅ Top N selection
+- ✅ Water demand integration
 
 ---
-
 ### 5. WaterDemandService ⭐ NEW
 **File:** `water-demand.service.ts`  
 **Test File:** `test/unit/refractory/services/water-demand.service.spec.ts`

@@ -209,9 +209,89 @@ Material Library (Composition Data)
 
 ---
 
+## 🆕 BLEND OPTIMIZATION & PACKING
+
+### **BLEND_OPTIMIZER_ALGORITHM.md** ⭐ COMPLETE
+**Service:** `BlendOptimizerService`  
+**Integration:** PSD + Packing + Shrinkage + Water Demand  
+
+**Resources:**
+- de Larrard, F. (1999) - CPM Model
+- Funk & Dinger (1994) - PSD Optimization
+- Banerjee, S. (2004) - Refractory Castables
+
+**Key Features:**
+- Andreasen & Funk-Dinger PSD methods
+- CPM & Furnas packing models
+- Multiple compaction scenarios
+- Shrinkage prediction integration
+- Water demand calculation
+- ✅ Production-ready
+
+---
+
+### **BLEND_OPTIMIZER_FIXED_FRACTIONS.md** ⭐ NEW
+**Feature:** Fixed Fractions & Optimization Goals  
+
+**Key Features:**
+- Fixed fraction support (e.g., "exactly 15% CAC")
+- 5 optimization goals (maxDensity, minPorosity, minWater, minShrinkage, balanced)
+- Constraint filtering (min packing, max water, max porosity)
+- Result ranking and scoring
+- Top N results selection
+- Multiple optimal solutions
+- ✅ Production-ready
+
+**Usage Examples:**
+- Fixed cement with max density optimization
+- Minimum water demand with constraints
+- Balanced optimization for general use
+- Solution ranges (top 10-20 results)
+
+---
+
+### **WATER_DEMAND_ALGORITHM.md** ⭐ COMPLETE
+**Service:** `WaterDemandService`  
+
+**Resources:**
+- de Larrard (1999) - Water-void relationship
+- Banerjee (2004) - Refractory workability
+- Pileggi et al. (2001) - Rheology studies
+
+**Key Features:**
+- 3 workability types (FIRM, STANDARD, FLOWABLE)
+- Water demand = 30-50% of porosity (not 100%)
+- Workability factor-based calculation
+- Porosity conversion utilities
+- Validation methods
+- ✅ Production-ready with 35 tests
+
+---
+
+### **PACKING_MODELS.md** ⭐ COMPLETE
+**Service:** `PackingService`  
+
+**Resources:**
+- de Larrard (1999) - CPM Model
+- Furnas (1931) - Sequential filling
+- Fennis (2011) - Calibration parameters
+
+**Key Features:**
+- CPM (Compressible Packing Model)
+- Furnas (Sequential filling)
+- Adaptive β₀ (particle shape models)
+- Adaptive φ_max (composition-based limits)
+- Micro-filler detection
+- Pressure-dependent compaction
+- ✅ Production-ready
+
+---
+
 ## 🎊 STATUS
 
 **All algorithms documented and production-ready!**
 
 For implementation details, see individual algorithm files in this directory.
+
+
 

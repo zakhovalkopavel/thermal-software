@@ -64,6 +64,43 @@ export interface BlendOptimizationOptions {
 
   /** Cement content fraction */
   cementContent?: number;
+
+  /** Optimization goal: what to optimize for */
+  optimizationGoal?: 'maxDensity' | 'minPorosity' | 'minWater' | 'minShrinkage' | 'balanced';
+
+  /** Return only top N results (default: all) */
+  topN?: number;
+
+  /** Minimum acceptable packing efficiency (0-1) */
+  minPackingEfficiency?: number;
+
+  /** Maximum acceptable water demand (%) */
+  maxWaterDemand?: number;
+
+  /** Maximum acceptable porosity (%) */
+  maxPorosity?: number;
+
+  /** Auto-expand search when viable ranges detected (default: false) */
+  autoExpandRanges?: boolean;
+
+  /**
+   * Score similarity threshold for range detection (default: 0.01 = 1%)
+   * Can be:
+   * - Single number: same threshold for all components (e.g., 0.01 = 1%)
+   * - Array: per-component thresholds matching fractions order
+   *   Example: [0.005, 0.01, 0.03] = [0.5% for cement, 1% for fine, 3% for coarse]
+   */
+  rangeSimilarityThreshold?: number | number[];
+
+  /**
+   * Composition similarity threshold for grouping formulations (default: 2%)
+   * Formulations within this % difference in each component are considered "same range"
+   * Can be:
+   * - Single number: same tolerance for all components (e.g., 2 = ±2%)
+   * - Array: per-component tolerances matching fractions order
+   *   Example: [1, 2, 5] = [±1% cement, ±2% fine, ±5% coarse]
+   */
+  compositionSimilarityThreshold?: number | number[];
 }
 
 // ============================================================
@@ -131,6 +168,67 @@ export interface BlendOptimizationResult {
 
   /** Shrinkage prediction results */
   shrinkage: ShrinkageResult;
+
+  /** Optimization score (higher is better, based on optimization goal) */
+  optimizationScore?: number;
+
+  /** Rank among all results (1 = best) */
+  rank?: number;
+}
+
+/**
+ * Viable composition range for a group of similar formulations
+ */
+export interface ViableCompositionRange {
+  /** Average optimization score for this range */
+  score: number;
+
+  /** Number of formulations in this range */
+  count: number;
+
+  /** Formulations in this range */
+  formulations: BlendOptimizationResult[];
+
+  /** Composition ranges for each component */
+  componentRanges: Array<{
+    /** Component index */
+    index: number;
+
+    /** Component material ID if available */
+    materialId?: string;
+
+    /** Minimum mass fraction (%) */
+    min: number;
+
+    /** Maximum mass fraction (%) */
+    max: number;
+
+    /** Average mass fraction (%) */
+    avg: number;
+
+    /** Standard deviation (%) */
+    stdDev: number;
+
+    /** Tolerance applied for this component (%) */
+    tolerance: number;
+
+    /** Human-readable format: "avg±tolerance%" (e.g., "15±1%") */
+    formatted: string;
+  }>;
+
+  /** Property ranges for this composition range */
+  propertyRanges: {
+    density: { min: number; max: number; avg: number };
+    porosity: { min: number; max: number; avg: number };
+    waterDemand: { min: number; max: number; avg: number };
+    packingEfficiency: { min: number; max: number; avg: number };
+  };
+
+  /**
+   * Summary of viable composition in human-readable format
+   * Example: "[15±1% cement, 40±2% fine, 45±5% coarse] is optimal"
+   */
+  summary: string;
 }
 
 /**
@@ -151,6 +249,12 @@ export interface BlendOptimizationResults {
 
   /** Best result by scenario (self-compacting) */
   bestByScenario?: Record<string, BlendOptimizationResult>;
+
+  /** Viable composition ranges detected */
+  viableRanges?: ViableCompositionRange[];
+
+  /** Whether auto-expansion was performed */
+  wasExpanded?: boolean;
 }
 
 // ============================================================
