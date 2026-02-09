@@ -157,7 +157,8 @@ POSTGRES_VERSION=18.1-alpine
 REDIS_VERSION=8.4-alpine
 NODE_VERSION=24.13.0-alpine
 NGINX_VERSION=1.28.1-alpine
-PYTHON_VERSION=3.14.2-alpine
+PYTHON_VERSION=3.14.3-slim
+PYTHON_VERSION_NUMBER=3.14
 ```
 
 **Total:** 23 configuration variables
@@ -382,4 +383,3 @@ grep -E "(secret|password)=.{0,10}$" .env && echo "⚠️  Weak secrets!"
 **This policy is now enforced across the entire project!**
 
 All configuration is transparent, auditable, and centralized in .env files.
-

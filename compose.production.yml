@@ -101,7 +101,7 @@ services:
     restart: unless-stopped
 
   # ==========================================
-  # Python Scripts Runner
+  # Python Scripts & OCR Extraction
   # ==========================================
 
   python:
@@ -110,16 +110,18 @@ services:
     working_dir: /app
     environment:
       PYTHONUNBUFFERED: 1
+      PYTHONPATH: /app/src
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_DATABASE: ${DB_DATABASE}
     volumes:
-      - ./python_scripts:/app/python_scripts
-      - ./legacy/library:/app/library
+      - ./python/src:/app/src
+      - ./python/tests:/app/tests
+      - ./shared:/app/shared
       - ./tmp/reports/python:/app/reports
-      - python_packages:/usr/local/lib/python3.14/site-packages
+      - python_packages:/usr/local/lib/python${PYTHON_VERSION_NUMBER}/site-packages
     depends_on:
       postgres:
         condition: service_healthy

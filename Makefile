@@ -1,4 +1,4 @@
-.PHONY: help setup setup-secrets generate-jwt up down restart logs clean-reports stop-all build-images push-images deploy-build build-version logs-backend logs-frontend logs-nginx logs-postgres logs-redis logs-python logs-service copy-node-modules copy-node-modules-force test-backend test-frontend test-service test-blend-demo check-types check-types-pattern check-types-verbose
+.PHONY: help setup setup-secrets generate-jwt up down restart logs clean-reports stop-all build-images push-images deploy-build build-version logs-backend logs-frontend logs-nginx logs-postgres logs-redis logs-python logs-service copy-node-modules copy-node-modules-force test-backend test-frontend test-service test-blend-demo check-types check-types-pattern check-types-verbose ocr-extract ocr-test python-bash
 
 # Default target
 help:
@@ -44,6 +44,11 @@ help:
 	@echo "  make check-types                    - Check TypeScript types (errors only)"
 	@echo "  make check-types-pattern PATTERN=<pattern> - Check specific service/pattern"
 	@echo "  make check-types-verbose            - Show all TypeScript errors (detailed)"
+	@echo ""
+	@echo "OCR Table Extraction:"
+	@echo "  make ocr-extract    - Run OCR table extraction (interactive)"
+	@echo "  make ocr-test       - Create test data for OCR extraction"
+	@echo "  make python-bash      - Enter Python container shell"
 	@echo ""
 	@echo "  Frontend:           http://localhost:${FRONTEND_PORT}"
 	@echo "  Backend API:        http://localhost:${BACKEND_PORT}/api/v1"
@@ -323,3 +328,23 @@ check-types-verbose:
 		docker-compose -f compose.yml run --rm backend sh -lc 'cd /app && npx tsc --noEmit'; \
 	fi
 
+# OCR Table Extraction
+ocr-extract:
+	@echo "📊 Running OCR table extraction (interactive)..."
+	@docker-compose exec python python /app/src/scripts/extract_tables.py
+
+ocr-test:
+	@echo "🔬 Creating test data for OCR extraction..."
+	@docker-compose run --rm python python /app/tests/create_simple_test_images.py
+	@echo ""
+	@echo "✅ Test data created. You can now run:"
+	@echo "  make ocr-extract"
+
+python-bash:
+	@echo "🐍 Entering Python container shell..."
+	@if [ -z "$$(docker-compose ps -q python 2>/dev/null)" ]; then \
+		echo "⚠️  Python container is not running. Starting it..."; \
+		docker-compose up -d python; \
+		sleep 2; \
+	fi
+	@docker-compose exec python bash

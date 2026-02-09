@@ -117,7 +117,11 @@ services:
   # ==========================================
 
   python:
-    image: python:${PYTHON_VERSION}
+    build:
+      context: ./python
+      dockerfile: ../docker/python/Dockerfile
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION}
     container_name: thermal-python
     working_dir: /app
     environment:
@@ -128,10 +132,11 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_DATABASE: ${DB_DATABASE}
     volumes:
-      - ./python_scripts:/app/python_scripts
-      - ./legacy/library:/app/library
+      - ./python/src:/app/src
+      - ./python/tests:/app/tests
       - ./tmp/reports/python:/app/reports
-      - python_packages:/usr/local/lib/python3.14/site-packages
+      - ./shared:/app/shared
+      - python_packages:/usr/local/lib/python${PYTHON_VERSION_NUMBER}/site-packages
     depends_on:
       postgres:
         condition: service_healthy
