@@ -18,7 +18,6 @@ refractory/
 │   ├── phase-equilibrium.interface.ts
 │   ├── thermal-performance.interface.ts
 │   ├── refractoriness.interface.ts
-│   ├── viscosity.interface.ts
 │   ├── glass-viscosity.interface.ts
 │   └── mineral-phase.interface.ts
 │

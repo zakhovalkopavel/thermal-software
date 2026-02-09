@@ -7,7 +7,6 @@ import { PackingService } from './services/packing.service';
 import { ShrinkageService } from './services/shrinkage.service';
 import { GlassViscosityService } from './services/glass-viscosity.service';
 import { MineralPhaseService } from './services/mineral-phase.service';
-import { ViscosityService } from './services/viscosity.service';
 import { RefractorinessService } from './services/refractoriness.service';
 import { ThermalPerformanceService } from './services/thermal-performance.service';
 import { ParticipationService } from './services/participation.service';
@@ -22,7 +21,6 @@ import { ParticipationService } from './services/participation.service';
     ShrinkageService,
     GlassViscosityService,
     MineralPhaseService,
-    ViscosityService,
     RefractorinessService,
     ThermalPerformanceService,
     ParticipationService,
@@ -35,7 +33,6 @@ import { ParticipationService } from './services/participation.service';
     ShrinkageService,
     GlassViscosityService,
     MineralPhaseService,
-    ViscosityService,
     RefractorinessService,
     ThermalPerformanceService,
     ParticipationService,

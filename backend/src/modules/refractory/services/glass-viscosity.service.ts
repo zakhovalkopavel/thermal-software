@@ -1,35 +1,50 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { getComponentEffect } from '../data/component-properties';
 import {
-  calculateViscosityEffect,
-  getComponentEffect,
-} from '../data/component-properties';
-import {
-  GlassViscosityInput,
   GlassViscosityResult,
-  ASTMFixedPoint,
+  ModelInfo,
+  FixedPoints,
+  ValidationStatus,
+  ComponentBreakdown,
+  ComponentEffect,
+  CompositionIssue,
   GlassViscosityMetadata,
 } from '../interfaces/glass-viscosity.interface';
+import {
+  ViscosityModel,
+  ViscosityModelNames,
+  ViscosityModelType,
+  ConfidenceLevel,
+  ExtrapolationRisk,
+} from '../enums/viscosity-model.enum';
+import { VISCOSITY_PARAMETERS } from '../constants/viscosity-parameters';
+import { ViscosityParameters } from '../interfaces/viscosity-parameters.interface';
 
 /**
  * Glass Viscosity Calculator Service
- * Ported from: legacy/refractory/src/calculators/GlassViscosityCalculator.ts (284 lines)
  *
- * Calculates viscosity and fixed points for amorphous/glassy phases
- * Updated to support ALL 33 components (oxides, fluorides, chlorides)
- * using the same Arrhenius model and component-properties system as ViscosityService
+ * Implements composition-dependent viscosity models for glass and slag systems
+ * with analytical/numerical methods for calculating ASTM C965-96 fixed points.
  *
- * Model: η = A × exp(B/T)
- * where:
- * - η: viscosity (Pa·s)
- * - A: pre-exponential factor (for glass: 0.001)
- * - B: activation energy/R (composition-dependent from component-properties.ts)
- * - T: absolute temperature (K)
+ * **Version 2.0 - Composition-Dependent Models**
+ *
+ * Features:
+ * - Automatic glass system detection (9 system types)
+ * - System-specific VFT and Arrhenius models
+ * - Analytical calculation of fixed points
+ * - Composition validation with confidence levels
+ * - Support for all 33 components
+ *
+ * Models:
+ * - VFT: log₁₀(η) = A + B/(T - T₀)
+ * - Arrhenius: ln(η) = A + B/T
  *
  * References:
  * - ASTM C965-96: Standard Practice for Measuring Viscosity of Glass Above the Softening Point
  * - Lakatos et al. (1972): Viscosity temperature relations in the glass system SiO₂-Al₂O₃-Na₂O-K₂O-CaO-MgO
  * - Giordano et al. (2008): Viscosity of magmatic liquids: A model, Earth Planet. Sci. Lett.
- * - Urbain et al. (1982): Viscosity of silicate melts
+ * - Dingwell et al. (1992): Chemical Geology 95(3-4):229-237
+ * - Mazurin & Gankin (1983): Handbook of Glass Data
  *
  * ASTM C965-96 Fixed Points (Note: ASTM defines in poise. Conversion: 1 Pa·s = 10 poise):
  * - Melting Point: 10 poise = 1 Pa·s - liquid, homogenization
@@ -39,177 +54,476 @@ import {
  * - Annealing Point: 10^13 poise = 10^12 Pa·s - upper glass transition
  * - Strain Point: 10^14.5 poise = 10^13.5 Pa·s - lower glass transition
  *
- * Component Support: All 33 components
- * - 8 Oxide Network Formers
- * - 14 Oxide Network Modifiers
- * - 6 Fluoride components
- * - 6 Chloride components
+ * Date: February 8, 2026
  */
 @Injectable()
 export class GlassViscosityService {
-  // Base parameters for glass systems
-  private readonly A_BASE = 0.001; // Pre-exponential factor
-  private readonly B_BASE = 10000; // Base activation energy/R (K)
+  private readonly VERSION = '2.0.0';
+
   /**
-   * Calculate glass viscosity using Arrhenius model with all 33 components
+   * Calculate glass viscosity using composition-dependent models
    *
-   * Uses the same component-properties system as ViscosityService:
-   * - All 33 components automatically included
-   * - Viscosity effects from component-properties.ts
-   * - Consistent physics across both services
+   * This is the main entry point for the service. It:
+   * 1. Normalizes the composition
+   * 2. Detects the appropriate glass system
+   * 3. Validates composition against model ranges
+   * 4. Calculates viscosity using system-specific parameters
+   * 5. Calculates all ASTM fixed points
+   * 6. Returns comprehensive result with metadata
    *
    * @param composition Record with component formulas as keys and weight percentages as values
    * @param temperature Temperature in °C
-   * @returns Viscosity data including Pa·s, ASTM fixed points, and component breakdown
+   * @returns Complete viscosity result with fixed points and validation
    */
-  calculateViscosity(composition: Record<string, number>, temperature: number) {
+  calculateViscosity(composition: Record<string, number>, temperature: number): GlassViscosityResult {
+    // Step 1: Normalize composition to sum to 100%
+    const normalizedComp = this.normalizeComposition(composition);
+
+    // Step 2: Detect glass system type
+    const modelType = this.detectViscosityModel(normalizedComp);
+
+    // Step 3: Get model parameters
+    const params = VISCOSITY_PARAMETERS[modelType];
+
+    // Step 4: Validate composition against model ranges
+    const validation = this.validateComposition(normalizedComp, modelType, params);
+
+    // Step 5: Calculate B parameter using composition-specific effects
+    const B = this.calculateBParameter(normalizedComp, params);
+
+    // Step 6: Calculate viscosity
     const T_K = temperature + 273.15;
+    let viscosity: number;
+    let logViscosity: number;
 
-    let A = this.A_BASE;
-    let B = this.B_BASE;
+    if (params.modelType === ViscosityModelType.VFT) {
+      // VFT model: log10(η) = A + B/(T - T0)
+      if (!params.T0) {
+        throw new Error(`VFT model requires T0 parameter for ${modelType}`);
+      }
+      logViscosity = params.A + B / (T_K - params.T0);
+      viscosity = Math.pow(10, logViscosity);
+    } else {
+      // Arrhenius model: ln(η) = A + B/T
+      const lnViscosity = params.A + B / T_K;
+      viscosity = Math.exp(lnViscosity);
+      logViscosity = Math.log10(viscosity);
+    }
 
-    // Use helper function to calculate viscosity effect from ALL 33 components at once
-    // This automatically loops through composition and applies viscosity effects
-    const effectFromComponents = calculateViscosityEffect(composition);
-    B += effectFromComponents;
-
-    // Calculate viscosity using Arrhenius equation
-    let viscosity = A * Math.exp(B / T_K);
-
-    // Clamp viscosity to physically meaningful range
+    // Step 7: Clamp to physical range
     viscosity = Math.max(0.001, Math.min(1e15, viscosity));
+    logViscosity = Math.log10(viscosity);
 
-    const logViscosity = Math.log10(viscosity);
+    // Step 8: Calculate fixed points
+    const fixedPoints = this.calculateFixedPoints(params, B);
 
+    // Step 9: Build component breakdown
+    const components = this.buildComponentBreakdown(normalizedComp);
+
+    // Step 10: Create model info
+    const modelInfo: ModelInfo = {
+      type: params.modelType,
+      systemType: modelType,
+      systemName: ViscosityModelNames[modelType],
+      parameters: {
+        A: params.A,
+        B: B,
+        T0: params.T0,
+        temperatureRange: {
+          min_C: params.temperatureRange.min,
+          max_C: params.temperatureRange.max,
+        },
+      },
+    };
+
+    // Step 11: Create metadata
+    const metadata: GlassViscosityMetadata = {
+      calculatedAt: new Date(),
+      modelType: params.modelType,
+      standard: 'ASTM_C965_96',
+      confidence: validation.confidenceLevel,
+      reference: params.reference,
+      version: this.VERSION,
+    };
+
+    // Step 12: Return comprehensive result
     return {
       viscosity_Pas: Number(viscosity.toFixed(3)),
       temperature_C: temperature,
       logViscosity: Number(logViscosity.toFixed(2)),
-      arrhenius_A: A,
-      arrhenius_B: B,
-      // ASTM C965-96 fixed points (in °C)
-      softening_Point_C: this.estimateSofteningPoint(composition),
-      workingPoint_C: this.estimateWorkingPoint(composition),
-      annealing_Point_C: this.estimateAnnealingPoint(composition),
-      strain_Point_C: this.estimateStrainPoint(composition),
-      // Component breakdown for verification
-      components: {
-        networkFormers: this.extractNetworkFormers(composition),
-        networkModifiers: this.extractNetworkModifiers(composition),
-        fluorides: this.extractFluorideComponents(composition),
-        chlorides: this.extractChlorideComponents(composition),
-      },
+      model: modelInfo,
+      fixedPoints,
+      validation,
+      components,
+      composition: normalizedComp,
+      metadata,
+    };
+  }
+
+
+  /**
+   * Normalize composition to sum to 100%
+   */
+  private normalizeComposition(composition: Record<string, number>): Record<string, number> {
+    const total = Object.values(composition).reduce((sum, val) => sum + (val || 0), 0);
+
+    if (total === 0) {
+      throw new BadRequestException('Composition cannot be empty or all zeros');
+    }
+
+    // If already close to 100%, don't normalize
+    if (Math.abs(total - 100) < 0.01) {
+      return composition;
+    }
+
+    // Normalize to 100%
+    const normalized: Record<string, number> = {};
+    for (const [component, value] of Object.entries(composition)) {
+      if (value && value > 0) {
+        normalized[component] = (value / total) * 100;
+      }
+    }
+
+    return normalized;
+  }
+
+  /**
+   * Detect glass system type based on composition
+   *
+   * Detection order (most specific first):
+   * 1. Pure/binary systems
+   * 2. Specialty systems (lead, fluoride)
+   * 3. Commercial systems (borosilicate, aluminosilicate)
+   * 4. Slags
+   * 5. Default (soda-lime-silica or multi-component)
+   */
+  private detectViscosityModel(comp: Record<string, number>): ViscosityModel {
+    // Extract major components
+    const SiO2 = comp.SiO2 || 0;
+    const Al2O3 = comp.Al2O3 || 0;
+    const B2O3 = comp.B2O3 || 0;
+    const Na2O = comp.Na2O || 0;
+    const K2O = comp.K2O || 0;
+    const CaO = comp.CaO || 0;
+    const MgO = comp.MgO || 0;
+    const PbO = comp.PbO || 0;
+    const FeO = (comp.FeO || 0) + (comp.Fe2O3 || 0);
+
+    // Calculate totals
+    const alkali = Na2O + K2O + (comp.Li2O || 0);
+    const alkalineEarth = CaO + MgO + (comp.BaO || 0) + (comp.SrO || 0);
+    const fluorides = (comp.CaF2 || 0) + (comp.NaF || 0) + (comp.KF || 0) +
+                      (comp.MgF2 || 0) + (comp.AlF3 || 0) + (comp.LiF || 0);
+
+    // 1. Pure silica (>99% SiO2)
+    if (SiO2 > 99) {
+      return ViscosityModel.PURE_SILICA;
+    }
+
+    // 2. Lead glass (PbO > 15%)
+    if (PbO > 15) {
+      return ViscosityModel.LEAD_GLASS;
+    }
+
+    // 3. Fluoride glass (fluorides > 20%)
+    if (fluorides > 20) {
+      return ViscosityModel.FLUORIDE_GLASS;
+    }
+
+    // 4. Borosilicate (B2O3 > 7%, SiO2 > 70%, low alkali)
+    if (B2O3 > 7 && SiO2 > 70 && alkali < 10) {
+      return ViscosityModel.BOROSILICATE;
+    }
+
+    // 5. High-alumina (Al2O3 > 12%, SiO2 50-70%)
+    if (Al2O3 > 12 && SiO2 >= 50 && SiO2 <= 70) {
+      return ViscosityModel.ALUMINOSILICATE;
+    }
+
+    // 6. Calcium-aluminate slag (CaO > 30%, SiO2 < 50%)
+    if (CaO > 30 && SiO2 < 50) {
+      return ViscosityModel.SLAG_CAO_AL2O3;
+    }
+
+    // 7. Sodium silicate binary (SiO2 > 60%, Na2O > 18%, minimal other components)
+    if (SiO2 > 60 && Na2O > 18 && (Al2O3 + CaO + MgO + K2O + B2O3) < 5) {
+      return ViscosityModel.SODIUM_SILICATE;
+    }
+
+    // 8. Soda-lime-silica (65-80% SiO2, 8-20% alkali, 3-20% alkaline earth)
+    if (SiO2 >= 65 && SiO2 <= 80 && alkali >= 8 && alkali <= 20 && alkalineEarth >= 3) {
+      return ViscosityModel.SODA_LIME_SILICA;
+    }
+
+    // 9. Multi-component (fallback for complex compositions)
+    return ViscosityModel.MULTI_COMPONENT_MIXING;
+  }
+
+  /**
+   * Validate composition against model ranges
+   */
+  private validateComposition(
+    comp: Record<string, number>,
+    modelType: ViscosityModel,
+    _params: ViscosityParameters
+  ): ValidationStatus {
+    const warnings: string[] = [];
+    const compositionIssues: CompositionIssue[] = [];
+    let confidenceLevel: ConfidenceLevel = ConfidenceLevel.HIGH;
+    let extrapolationRisk: ExtrapolationRisk = ExtrapolationRisk.NONE;
+    let componentsInRange: number;
+    let componentsOutOfRange = 0;
+
+    // Check ranges based on model type
+    switch (modelType) {
+      case ViscosityModel.SODA_LIME_SILICA:
+        this.validateSodaLimeSilica(comp, warnings, compositionIssues);
+        break;
+
+      case ViscosityModel.BOROSILICATE:
+        this.validateBorosilicate(comp, warnings, compositionIssues);
+        break;
+
+      case ViscosityModel.ALUMINOSILICATE:
+        this.validateAluminosilicate(comp, warnings, compositionIssues);
+        break;
+
+      case ViscosityModel.MULTI_COMPONENT_MIXING:
+        warnings.push('Composition does not match any validated system. Using mixing model with low confidence.');
+        confidenceLevel = ConfidenceLevel.LOW;
+        extrapolationRisk = ExtrapolationRisk.SEVERE;
+        break;
+    }
+
+    // Count components in/out of range
+    for (const issue of compositionIssues) {
+      if (issue.severity === 'WARNING') {
+        componentsOutOfRange++;
+      }
+    }
+    componentsInRange = Object.keys(comp).length - componentsOutOfRange;
+
+    // Determine overall confidence level based on issues
+    if (compositionIssues.length > 0) {
+      const hasErrors = compositionIssues.some(i => i.severity === 'ERROR');
+      if (hasErrors) {
+        confidenceLevel = ConfidenceLevel.LOW;
+        extrapolationRisk = ExtrapolationRisk.SEVERE;
+      } else if (compositionIssues.length > 2) {
+        confidenceLevel = ConfidenceLevel.MEDIUM;
+        extrapolationRisk = ExtrapolationRisk.MODERATE;
+      } else {
+        confidenceLevel = ConfidenceLevel.MEDIUM;
+        extrapolationRisk = ExtrapolationRisk.MINOR;
+      }
+    }
+
+    return {
+      systemDetected: ViscosityModelNames[modelType],
+      confidenceLevel,
+      warnings,
+      componentsInRange,
+      componentsOutOfRange,
+      extrapolationRisk,
+      compositionIssues,
     };
   }
 
   /**
-   * Estimate softening point (ASTM C965-96: 10^7.6 poise = 10^6.6 Pa·s)
-   * Temperature at which glass deforms under specified load
+   * Validate soda-lime-silica composition
    */
-  private estimateSofteningPoint(comp: Record<string, number>): number {
+  private validateSodaLimeSilica(
+    comp: Record<string, number>,
+    warnings: string[],
+    issues: CompositionIssue[]
+  ): void {
     const SiO2 = comp.SiO2 || 0;
-    const Al2O3 = comp.Al2O3 || 0;
-    const CaO = comp.CaO || 0;
-    const Na2O = comp.Na2O || 0;
-    const K2O = comp.K2O || 0;
-    const networkFormers = SiO2 + Al2O3;
-    const networkModifiers = CaO + Na2O + K2O;
+    const alkali = (comp.Na2O || 0) + (comp.K2O || 0);
+    const alkalineEarth = (comp.CaO || 0) + (comp.MgO || 0);
 
-    // Base softening point from network formers and modifiers
-    let softeningPoint = 600 + networkFormers * 8 - networkModifiers * 3;
+    if (SiO2 < 65 || SiO2 > 80) {
+      warnings.push(`SiO2 content (${SiO2.toFixed(1)}%) outside validated range (65-80%)`);
+      issues.push({
+        component: 'SiO2',
+        actualValue: SiO2,
+        validRange: { min: 65, max: 80 },
+        severity: 'WARNING',
+        impact: 'Reduced model accuracy',
+      });
+    }
 
-    // Additional effects from other components
+    if (alkali < 10 || alkali > 18) {
+      warnings.push(`Alkali content (${alkali.toFixed(1)}%) outside validated range (10-18%)`);
+      issues.push({
+        component: 'Na2O+K2O',
+        actualValue: alkali,
+        validRange: { min: 10, max: 18 },
+        severity: 'WARNING',
+        impact: 'Reduced model accuracy',
+      });
+    }
+  }
+
+  /**
+   * Validate borosilicate composition
+   */
+  private validateBorosilicate(
+    comp: Record<string, number>,
+    warnings: string[],
+    issues: CompositionIssue[]
+  ): void {
     const B2O3 = comp.B2O3 || 0;
-    const MgO = comp.MgO || 0;
-    const Fe2O3 = comp.Fe2O3 || 0;
-    const Cr2O3 = comp.Cr2O3 || 0;
+    const SiO2 = comp.SiO2 || 0;
+    const alkali = (comp.Na2O || 0) + (comp.K2O || 0);
 
-    softeningPoint -= B2O3 * 5; // Borate glass - lower softening point
-    softeningPoint += MgO * 4; // MgO increases softening point
-    softeningPoint += Fe2O3 * 2; // Fe2O3 slightly increases
-    softeningPoint += Cr2O3 * 3; // Cr2O3 slightly increases
+    if (B2O3 < 8 || B2O3 > 15) {
+      warnings.push(`B2O3 content (${B2O3.toFixed(1)}%) outside validated range (8-15%)`);
+    }
 
-    return Math.max(400, Math.min(1000, softeningPoint));
+    // Check for boron anomaly
+    if (B2O3 > 0) {
+      const R_molar = (alkali / 62) / (B2O3 / 69.6); // Approximate molar ratio
+      if (R_molar > 0.3 && R_molar < 1.2) {
+        warnings.push(`Composition in boron anomaly region (R = ${R_molar.toFixed(2)}). Model accuracy reduced.`);
+        issues.push({
+          component: 'B2O3/Alkali ratio',
+          actualValue: R_molar,
+          validRange: { min: 0, max: 0.3 },
+          severity: 'WARNING',
+          impact: 'Boron anomaly affects viscosity behavior',
+        });
+      }
+    }
   }
 
   /**
-   * Estimate working point (ASTM C965-96: 10⁴ poise = 10³ Pa·s)
-   * Typical working temperature for glass forming
+   * Validate aluminosilicate composition
    */
-  private estimateWorkingPoint(comp: Record<string, number>): number {
-    return this.estimateSofteningPoint(comp) + 100;
+  private validateAluminosilicate(
+    comp: Record<string, number>,
+    warnings: string[],
+    issues: CompositionIssue[]
+  ): void {
+    const Al2O3 = comp.Al2O3 || 0;
+
+    if (Al2O3 < 15 || Al2O3 > 30) {
+      warnings.push(`Al2O3 content (${Al2O3.toFixed(1)}%) outside validated range (15-30%)`);
+    }
   }
 
   /**
-   * Estimate annealing point (ASTM C965-96: 10^13 poise = 10^12 Pa·s)
-   * Upper glass transition region
+   * Calculate B parameter using composition-specific effects
    */
-  private estimateAnnealingPoint(comp: Record<string, number>): number {
-    return this.estimateSofteningPoint(comp) - 150;
+  private calculateBParameter(
+    comp: Record<string, number>,
+    params: ViscosityParameters
+  ): number {
+    let B = params.B;
+
+    // If model has component-specific effects, use them
+    if (params.componentEffects && params.componentEffects.length > 0) {
+      for (const effect of params.componentEffects) {
+        const componentValue = comp[effect.component] || 0;
+        if (componentValue > 0) {
+          // Use average effect for now (could be refined with composition)
+          const avgEffect = (effect.effectMin + effect.effectMax) / 2;
+          B += componentValue * avgEffect;
+        }
+      }
+    }
+
+    return B;
   }
 
   /**
-   * Estimate strain point (ASTM C965-96: 10^14.5 poise = 10^13.5 Pa·s)
-   * Lower glass transition region
+   * Calculate all ASTM C965-96 fixed points analytically
    */
-  private estimateStrainPoint(comp: Record<string, number>): number {
-    return this.estimateAnnealingPoint(comp) - 50;
+  private calculateFixedPoints(params: ViscosityParameters, B: number): FixedPoints {
+    // Target viscosities for each fixed point (Pa·s)
+    const targets = {
+      melting: 1,                    // 10^0 Pa·s
+      flow: 1e4,                     // 10^4 Pa·s
+      working: 1e3,                  // 10^3 Pa·s
+      softening: Math.pow(10, 6.6),  // 10^6.6 Pa·s
+      annealing: 1e12,               // 10^12 Pa·s
+      strain: Math.pow(10, 13.5),    // 10^13.5 Pa·s
+    };
+
+    const points: FixedPoints = {
+      meltingPoint_C: this.calculateTemperatureForViscosity(targets.melting, params, B),
+      flowPoint_C: this.calculateTemperatureForViscosity(targets.flow, params, B),
+      workingPoint_C: this.calculateTemperatureForViscosity(targets.working, params, B),
+      softeningPoint_C: this.calculateTemperatureForViscosity(targets.softening, params, B),
+      annealingPoint_C: this.calculateTemperatureForViscosity(targets.annealing, params, B),
+      strainPoint_C: this.calculateTemperatureForViscosity(targets.strain, params, B),
+    };
+
+    // Calculate spans
+    points.spans = {
+      meltingToStrain_C: points.meltingPoint_C - points.strainPoint_C,
+      workingToSoftening_C: points.workingPoint_C - points.softeningPoint_C,
+      softeningToAnnealing_C: points.softeningPoint_C - points.annealingPoint_C,
+      annealingToStrain_C: points.annealingPoint_C - points.strainPoint_C,
+    };
+
+    return points;
   }
 
   /**
-   * Extract network former components (oxides that increase viscosity)
+   * Calculate temperature for a target viscosity (inverse problem)
    */
-  private extractNetworkFormers(composition: Record<string, number>): Array<{ component: string; percentage: number; effect: number }> {
-    const formers = ['SiO2', 'Al2O3', 'CR2O3', 'ZRO2', 'TIO2', 'B2O3', 'GEO2'];
-    return formers
-      .filter(c => (composition[c] || 0) > 0)
-      .map(c => ({
-        component: c,
-        percentage: composition[c] || 0,
-        effect: getComponentEffect(c)?.viscosityEffect || 0,
-      }));
+  private calculateTemperatureForViscosity(
+    targetViscosity: number,
+    params: ViscosityParameters,
+    B: number
+  ): number {
+    if (params.modelType === ViscosityModelType.VFT) {
+      // VFT: log₁₀(η) = A + B/(T - T₀)
+      // Rearrange: T = T₀ + B/(log₁₀(η) - A)
+      const logEta = Math.log10(targetViscosity);
+      const T_K = params.T0! + B / (logEta - params.A);
+      return T_K - 273.15; // Convert to Celsius
+    } else {
+      // Arrhenius: ln(η) = A + B/T
+      // Rearrange: T = B/(ln(η) - A)
+      const lnEta = Math.log(targetViscosity);
+      const T_K = B / (lnEta - params.A);
+      return T_K - 273.15; // Convert to Celsius
+    }
   }
 
   /**
-   * Extract network modifier components (oxides that decrease viscosity)
+   * Build component breakdown for result
    */
-  private extractNetworkModifiers(composition: Record<string, number>): Array<{ component: string; percentage: number; effect: number }> {
-    const modifiers = ['NA2O', 'K2O', 'LI2O', 'PBO', 'CAO', 'BAO', 'SRO', 'MNO', 'FEO', 'FE2O3', 'COO', 'NIO', 'CUO', 'MGO'];
-    return modifiers
-      .filter(c => (composition[c] || 0) > 0)
-      .map(c => ({
-        component: c,
-        percentage: composition[c] || 0,
-        effect: getComponentEffect(c)?.viscosityEffect || 0,
-      }));
-  }
+  private buildComponentBreakdown(comp: Record<string, number>): ComponentBreakdown {
+    const networkFormers: ComponentEffect[] = [];
+    const networkModifiers: ComponentEffect[] = [];
+    const fluorides: ComponentEffect[] = [];
+    const chlorides: ComponentEffect[] = [];
 
-  /**
-   * Extract fluoride components
-   */
-  private extractFluorideComponents(composition: Record<string, number>): Array<{ component: string; percentage: number; effect: number }> {
-    const fluorides = ['NAF', 'KF', 'LIF', 'CAF2', 'MGF2', 'ALF3'];
-    return fluorides
-      .filter(c => (composition[c] || 0) > 0)
-      .map(c => ({
-        component: c,
-        percentage: composition[c] || 0,
-        effect: getComponentEffect(c)?.viscosityEffect || 0,
-      }));
-  }
+    const formersList = ['SiO2', 'Al2O3', 'Cr2O3', 'ZrO2', 'TiO2', 'B2O3', 'GeO2'];
+    const modifiersList = ['Na2O', 'K2O', 'Li2O', 'PbO', 'CaO', 'BaO', 'SrO', 'MnO', 'FeO', 'Fe2O3', 'CoO', 'NiO', 'CuO', 'MgO'];
+    const fluoridesList = ['NaF', 'KF', 'LiF', 'CaF2', 'MgF2', 'AlF3'];
+    const chloridesList = ['NaCl', 'KCl', 'CaCl2', 'MgCl2', 'FeCl2', 'FeCl3'];
 
-  /**
-   * Extract chloride components
-   */
-  private extractChlorideComponents(composition: Record<string, number>): Array<{ component: string; percentage: number; effect: number }> {
-    const chlorides = ['NACL', 'KCL', 'CACL2', 'MGCL2', 'FECL2', 'FECL3'];
-    return chlorides
-      .filter(c => (composition[c] || 0) > 0)
-      .map(c => ({
-        component: c,
-        percentage: composition[c] || 0,
-        effect: getComponentEffect(c)?.viscosityEffect || 0,
-      }));
+    for (const [component, percentage] of Object.entries(comp)) {
+      if (percentage > 0) {
+        const effect = getComponentEffect(component)?.viscosityEffect || 0;
+        const entry: ComponentEffect = { component, percentage, effect };
+
+        if (formersList.includes(component)) {
+          networkFormers.push(entry);
+        } else if (modifiersList.includes(component)) {
+          networkModifiers.push(entry);
+        } else if (fluoridesList.includes(component)) {
+          fluorides.push(entry);
+        } else if (chloridesList.includes(component)) {
+          chlorides.push(entry);
+        }
+      }
+    }
+
+    return { networkFormers, networkModifiers, fluorides, chlorides };
   }
 }
 

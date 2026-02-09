@@ -2,15 +2,18 @@
  * Glass Viscosity Calculator Interfaces
  *
  * Type definitions for glass viscosity with ASTM C965-96 fixed points
- * Supports 33 components with glass-specific calculations
+ * Supports 33 components with composition-dependent models
  *
  * References:
  * - ASTM C965-96: Measuring Viscosity of Glass Above Softening Point
  * - Lakatos et al. (1972): Viscosity-temperature relations
  * - Giordano et al. (2008): Viscosity of magmatic liquids
  *
- * Date: February 2, 2026
+ * Date: February 8, 2026
+ * Version: 2.0 - Composition-dependent models
  */
+
+import { ViscosityModel, ViscosityModelType, ConfidenceLevel, ExtrapolationRisk } from '../enums/viscosity-model.enum';
 
 // ============================================================
 // INPUT INTERFACES
@@ -52,52 +55,191 @@ export interface ASTMFixedPoint {
 }
 
 // ============================================================
+// MODEL INFORMATION
+// ============================================================
+
+/**
+ * Information about the viscosity model used
+ */
+export interface ModelInfo {
+  /** Equation type used */
+  type: ViscosityModelType;
+
+  /** Glass system detected */
+  systemType: ViscosityModel;
+
+  /** Human-readable system name */
+  systemName: string;
+
+  /** VFT/Arrhenius parameters */
+  parameters: ModelParameters;
+}
+
+/**
+ * Model parameters (VFT or Arrhenius)
+ */
+export interface ModelParameters {
+  /** Pre-exponential constant */
+  A: number;
+
+  /** Activation energy parameter (K) */
+  B: number;
+
+  /** VFT temperature (K), only for VFT model */
+  T0?: number;
+
+  /** Valid temperature range for this model */
+  temperatureRange: {
+    min_C: number;
+    max_C: number;
+  };
+}
+
+// ============================================================
+// FIXED POINTS
+// ============================================================
+
+/**
+ * ASTM C965-96 fixed points
+ */
+export interface FixedPoints {
+  /** Melting point: η = 1 Pa·s */
+  meltingPoint_C: number;
+
+  /** Flow point: η = 10^4 Pa·s */
+  flowPoint_C: number;
+
+  /** Working point: η = 10^3 Pa·s */
+  workingPoint_C: number;
+
+  /** Softening point: η = 10^6.6 Pa·s (ASTM C338) */
+  softeningPoint_C: number;
+
+  /** Annealing point: η = 10^12 Pa·s (ASTM C336) */
+  annealingPoint_C: number;
+
+  /** Strain point: η = 10^13.5 Pa·s (ASTM C336) */
+  strainPoint_C: number;
+
+  /** Temperature spans between key points */
+  spans?: FixedPointSpans;
+}
+
+/**
+ * Temperature spans between fixed points
+ */
+export interface FixedPointSpans {
+  /** Melting to strain point */
+  meltingToStrain_C: number;
+
+  /** Working to softening */
+  workingToSoftening_C: number;
+
+  /** Softening to annealing */
+  softeningToAnnealing_C: number;
+
+  /** Annealing to strain */
+  annealingToStrain_C: number;
+}
+
+// ============================================================
+// VALIDATION STATUS
+// ============================================================
+
+/**
+ * Composition validation status
+ */
+export interface ValidationStatus {
+  /** Detected system description */
+  systemDetected: string;
+
+  /** Overall confidence level */
+  confidenceLevel: ConfidenceLevel;
+
+  /** Warnings about composition */
+  warnings: string[];
+
+  /** Number of components within validated ranges */
+  componentsInRange: number;
+
+  /** Number of components outside validated ranges */
+  componentsOutOfRange: number;
+
+  /** Risk level for extrapolation */
+  extrapolationRisk: ExtrapolationRisk;
+
+  /** Specific composition issues */
+  compositionIssues?: CompositionIssue[];
+}
+
+/**
+ * Specific composition issue
+ */
+export interface CompositionIssue {
+  component: string;
+  actualValue: number;
+  validRange: { min: number; max: number };
+  severity: 'WARNING' | 'ERROR';
+  impact: string;
+}
+
+// ============================================================
+// COMPONENT BREAKDOWN
+// ============================================================
+
+/**
+ * Component breakdown and effects
+ */
+export interface ComponentBreakdown {
+  networkFormers: ComponentEffect[];
+  networkModifiers: ComponentEffect[];
+  fluorides: ComponentEffect[];
+  chlorides: ComponentEffect[];
+}
+
+/**
+ * Individual component effect
+ */
+export interface ComponentEffect {
+  component: string;
+  percentage: number;
+  effect: number;
+}
+
+// ============================================================
 // RESULT INTERFACES
 // ============================================================
 
 /**
- * Glass viscosity calculation result
+ * Complete glass viscosity calculation result
  */
 export interface GlassViscosityResult {
-  /** Viscosity (Pa·s) */
+  /** Calculated viscosity at given temperature */
   viscosity_Pas: number;
 
-  /** Logarithm of viscosity (base 10) */
+  /** Input temperature */
+  temperature_C: number;
+
+  /** Log10 of viscosity for easier comparison */
   logViscosity: number;
 
-  /** Temperature (°C) */
-  temperature: number;
-
-  /** Arrhenius pre-exponential factor */
-  arrhenius_A: number;
-
-  /** Arrhenius activation energy/R (K) */
-  arrhenius_B: number;
+  /** Model information and parameters */
+  model: ModelInfo;
 
   /** ASTM C965-96 fixed points */
-  fixedPoints: {
-    softening_Point_C: number;
-    working_Point_C: number;
-    annealing_Point_C: number;
-    strain_Point_C: number;
-  };
+  fixedPoints: FixedPoints;
 
-  /** Composition used */
+  /** Composition validation and warnings */
+  validation: ValidationStatus;
+
+  /** Component breakdown and effects */
+  components: ComponentBreakdown;
+
+  /** Normalized composition used for calculation */
   composition: Record<string, number>;
-
-  /** Component effects breakdown */
-  components: {
-    networkFormers: Array<{ component: string; percentage: number; effect: number }>;
-    networkModifiers: Array<{ component: string; percentage: number; effect: number }>;
-    fluorides: Array<{ component: string; percentage: number; effect: number }>;
-    chlorides: Array<{ component: string; percentage: number; effect: number }>;
-  };
 
   /** Metadata */
   metadata: GlassViscosityMetadata;
-
-  /** Warnings or notes */
-  warnings: string[];
 }
 
 /**
@@ -107,26 +249,20 @@ export interface GlassViscosityMetadata {
   /** Calculation timestamp */
   calculatedAt: Date;
 
-  /** Calculation method */
-  method: 'Arrhenius';
+  /** Model type used */
+  modelType: ViscosityModelType;
 
   /** ASTM standard */
   standard: 'ASTM_C965_96';
 
-  /** Base parameters used */
-  baseParameters: {
-    A_base: number;
-    B_base: number;
-  };
+  /** Confidence level */
+  confidence: ConfidenceLevel;
 
-  /** Confidence level (0-1) */
-  confidence: number;
+  /** Reference for model parameters */
+  reference: string;
 
-  /** Valid temperature range (°C) */
-  validRange: { min: number; max: number };
-
-  /** Glass type identified (if applicable) */
-  glassType?: 'soda-lime' | 'borosilicate' | 'lead-crystal' | 'aluminosilicate' | 'other';
+  /** Version of algorithm */
+  version: string;
 }
 
 // ============================================================

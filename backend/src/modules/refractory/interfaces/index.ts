@@ -16,7 +16,6 @@ export {
   BlendOptimizationRequest,
   BlendOptimizationResult,
   BlendOptimizationResults,
-  ShrinkagePrediction,
   ValidationResult,
   ValidationError,
   ValidationWarning,
@@ -159,16 +158,7 @@ export {
 // ============================================================
 // VISCOSITY INTERFACES
 // ============================================================
-export {
-  ViscosityInput,
-  ViscosityResult,
-  ViscosityMetadata,
-  ViscosityValidationResult,
-  ViscosityValidationError,
-  ViscosityValidationWarning,
-  isViscosityInput,
-  isViscosityResult,
-} from './viscosity.interface';
+// Viscosity interfaces removed: superseded by glass-viscosity interfaces and new spec.
 
 // ============================================================
 // GLASS VISCOSITY INTERFACES
