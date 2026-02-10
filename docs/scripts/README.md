@@ -1,142 +1,142 @@
-# Python Scripts Documentation
+# Scripts Documentation
 
-This directory contains documentation for Python scripts available in the thermal-software Python container.
+This directory contains documentation for OCR extraction scripts.
 
-## Available Scripts
+---
 
-### OCR Table Extraction
+## 📚 Main Documentation
 
-Extract tables from PDF and image files using OCR and direct extraction methods.
+### [OCR_SCRIPTS_GUIDE.md](OCR_SCRIPTS_GUIDE.md)
+**Complete guide to OCR extraction scripts**
+- Interactive vs Auto modes
+- Usage examples
+- Output format
+- Troubleshooting
 
-📄 **[OCR_TABLE_EXTRACTION.md](OCR_TABLE_EXTRACTION.md)** - Complete guide for table extraction
+**Start here for:** How to use the scripts
 
-**Quick Start:**
+---
+
+### [OCR_COMMANDS_CLEAN.md](OCR_COMMANDS_CLEAN.md)
+**Clean command reference**
+- Main commands (only 2!)
+- Comparison table
+- Quick start guide
+
+**Start here for:** Quick command reference
+
+---
+
+### [OCR_QUICK_REFERENCE.md](OCR_QUICK_REFERENCE.md)
+**Quick reference card**
+- Keyboard shortcuts
+- Mouse controls  
+- Button functions
+- Common workflows
+
+**Start here for:** Interactive mode controls
+
+---
+
+## 🔬 Technical Documentation
+
+### [OCR_SCIENTIFIC_NOTATION_SUPPORT.md](OCR_SCIENTIFIC_NOTATION_SUPPORT.md)
+**Scientific notation processing**
+- Chemical formulas (Na₂O, Al₂O₃)
+- Greek letters (η, σ, Δ)
+- Special characters (°C, ±)
+- How it works
+
+**Start here for:** Understanding scientific text processing
+
+---
+
+### [OCR_TEST_GUIDE.md](OCR_TEST_GUIDE.md)
+**Testing and validation**
+- Available tests
+- How to run tests
+- What to check
+- Troubleshooting
+
+**Start here for:** Running tests
+
+---
+
+### [OCR_AI_MODELS_FOR_LAYOUT.md](OCR_AI_MODELS_FOR_LAYOUT.md)
+**Future: AI-based layout detection**
+- Possible AI models
+- Pros/cons
+- Implementation ideas
+
+**Start here for:** Future improvements
+
+---
+
+## 🗂️ File Organization
+
+```
+docs/scripts/
+├── OCR_SCRIPTS_GUIDE.md              # Main guide (start here!)
+├── OCR_COMMANDS_CLEAN.md             # Command reference
+├── OCR_QUICK_REFERENCE.md            # Controls cheat sheet
+├── OCR_SCIENTIFIC_NOTATION_SUPPORT.md # Technical: notation processing
+├── OCR_TEST_GUIDE.md                 # Technical: testing
+├── OCR_AI_MODELS_FOR_LAYOUT.md       # Future: AI models
+└── README.md                         # This file
+```
+
+**Historical documentation:** `tmp/reports/python/historical_docs/`
+- Implementation details
+- Fix summaries
+- Old specs
+
+---
+
+## 🚀 Quick Start
+
+**1. Interactive extraction (recommended):**
 ```bash
-make ocr-test     # Generate test data
-make ocr-extract  # Run extraction (interactive)
+make ocr-extract-interactive
 ```
 
-## Python Container
-
-The Python container provides a complete environment for data processing, analysis, and utilities related to thermal engineering calculations.
-
-### Features
-
-- **OCR & Table Extraction**: Extract data from PDFs and images
-- **Data Processing**: Thermophysical property calculations
-- **Database Integration**: PostgreSQL connectivity for data storage
-- **Scientific Computing**: NumPy, SciPy, Pandas for analysis
-
-### Container Access
-
+**2. Automatic extraction:**
 ```bash
-# Enter Python container shell
-make python-bash
-
-# Run a script directly
-docker exec -it thermal-python python /app/src/scripts/your_script.py
-
-# View logs
-docker logs thermal-python
+make ocr-extract-auto FILE="document.pdf"
 ```
 
-### Directory Structure
+**3. See guides for details:**
+- [OCR_SCRIPTS_GUIDE.md](OCR_SCRIPTS_GUIDE.md) - Complete usage guide
+- [OCR_QUICK_REFERENCE.md](OCR_QUICK_REFERENCE.md) - Controls reference
 
-```
-python/
-├── src/
-│   ├── ocr/             # OCR table extraction package
-│   └── scripts/         # Production scripts
-├── tests/               # Test files
-└── pyproject.toml       # Python dependencies (Poetry)
+---
 
-shared/
-├── sources/             # Input files
-└── processed/           # Output files and logs
-```
+## 📊 Document Status
 
-## Adding New Scripts
+**Active (Keep Updated):**
+- ✅ OCR_SCRIPTS_GUIDE.md
+- ✅ OCR_COMMANDS_CLEAN.md
+- ✅ OCR_QUICK_REFERENCE.md
+- ✅ OCR_SCIENTIFIC_NOTATION_SUPPORT.md
+- ✅ OCR_TEST_GUIDE.md
+- ✅ OCR_AI_MODELS_FOR_LAYOUT.md
 
-When adding new Python scripts to the container:
+**Historical (Reference Only):**
+- 📁 tmp/reports/python/historical_docs/
+  - Implementation specs (now implemented)
+  - Fix summaries (now complete)
+  - Detailed change logs
 
-1. Place script in `python/scripts/`
-2. Add dependencies to `python/pyproject.toml` if needed
-3. Document in `docs/scripts/`
-4. Add Makefile command if appropriate
-5. Test in container before committing
+---
 
-### Example: Adding a New Script
+## 🔗 Related Documentation
 
-```bash
-# 1. Create script
-cat > python/scripts/my_analysis.py << 'EOF'
-#!/usr/bin/env python3
-"""My analysis script"""
-import pandas as pd
+**Python OCR Modules:**
+- `python/src/ocr/README.md` - Core module documentation
 
-def main():
-    print("Running analysis...")
-    # Your code here
+**Algorithm Details:**
+- `docs/algorithms/` - Detailed algorithm specifications
 
-if __name__ == "__main__":
-    main()
-EOF
-
-# 2. Make executable
-chmod +x python/scripts/my_analysis.py
-
-# 3. Test in container
-docker exec -it thermal-python python /app/scripts/my_analysis.py
-
-# 4. Add Makefile target (optional)
-# Add to Makefile:
-# my-analysis:
-#     docker-compose exec python python /app/scripts/my_analysis.py
-```
-
-## Dependencies
-
-Python dependencies are managed using Poetry. See `python/pyproject.toml` for the current dependency list.
-
-### Installing New Dependencies
-
-```bash
-# Enter container
-make ocr-shell
-
-# Add a package
-cd /app/python
-poetry add package-name
-
-# Or edit pyproject.toml and run:
-poetry install
-```
-
-## Documentation Standards
-
-When documenting scripts:
-
-- ✅ Include purpose and overview
-- ✅ Provide quick start examples
-- ✅ List all command-line options
-- ✅ Show example usage
-- ✅ Document input/output formats
-- ✅ Include troubleshooting section
-- ✅ Keep documentation in `docs/scripts/`
-
-## Related Documentation
-
-- [Python Container Setup](../PYTHON_CONTAINER.md)
-- [OCR Table Extraction](OCR_TABLE_EXTRACTION.md)
-- [Service Test Checklist](../SERVICE_TEST_CHECKLIST.md)
-
-## Support
-
-For issues with Python scripts:
-
-1. Check container logs: `docker logs thermal-python`
-2. Verify dependencies: `docker exec thermal-python pip list`
-3. Check script logs in `shared/processed/`
-4. Restart container: `make restart`
-5. Rebuild if needed: `docker-compose build python`
+**Project Documentation:**
+- `README.md` - Main project README
+- `QUICKSTART.md` - Quick start guide
 

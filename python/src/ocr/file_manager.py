@@ -7,6 +7,8 @@ from pathlib import Path
 from typing import List, Optional
 from datetime import datetime
 import pandas as pd
+from PIL import Image
+from pdf2image import convert_from_path
 
 logger = logging.getLogger(__name__)
 
@@ -14,23 +16,38 @@ logger = logging.getLogger(__name__)
 class FileManager:
     """Manages file operations for extraction"""
 
-    def __init__(self, sources_dir: Path, processed_dir: Path,
-                 supported_extensions: set):
+    def __init__(self, config=None):
+        """Initialize file manager with optional config"""
+        if config:
+            self.sources_dir = Path(config.sources_dir)
+            self.processed_dir = Path(config.processed_dir)
+            self.supported_extensions = {'.pdf', '.png', '.jpg', '.jpeg', '.tif', '.tiff'}
+        else:
+            self.sources_dir = None
+            self.processed_dir = None
+            self.supported_extensions = {'.pdf', '.png', '.jpg', '.jpeg', '.tif', '.tiff'}
+
+    def load_document(self, file_path: Path, dpi: int = 300) -> List[Image.Image]:
         """
-        Initialize file manager
+        Load document and convert to PIL Images
 
         Args:
-            sources_dir: Directory containing source files
-            processed_dir: Directory for processed output
-            supported_extensions: Set of supported file extensions
-        """
-        self.sources_dir = Path(sources_dir)
-        self.processed_dir = Path(processed_dir)
-        self.supported_extensions = supported_extensions
+            file_path: Path to PDF or image file
+            dpi: DPI for PDF conversion
 
-        # Ensure directories exist
-        self.sources_dir.mkdir(parents=True, exist_ok=True)
-        self.processed_dir.mkdir(parents=True, exist_ok=True)
+        Returns:
+            List of PIL Image objects (one per page)
+        """
+        file_path = Path(file_path)
+
+        if file_path.suffix.lower() == '.pdf':
+            logger.info(f"Converting PDF to images at {dpi} DPI...")
+            return convert_from_path(str(file_path), dpi=dpi)
+        elif file_path.suffix.lower() in {'.png', '.jpg', '.jpeg', '.tif', '.tiff'}:
+            logger.info(f"Loading image: {file_path.name}")
+            return [Image.open(str(file_path))]
+        else:
+            raise ValueError(f"Unsupported file type: {file_path.suffix}")
 
     def search_files(self, search_term: str) -> List[Path]:
         """

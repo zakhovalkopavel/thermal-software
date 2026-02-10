@@ -1,4 +1,4 @@
-.PHONY: help setup setup-secrets generate-jwt up down restart logs clean-reports stop-all build-images push-images deploy-build build-version logs-backend logs-frontend logs-nginx logs-postgres logs-redis logs-python logs-service copy-node-modules copy-node-modules-force test-backend test-frontend test-service test-blend-demo check-types check-types-pattern check-types-verbose ocr-extract ocr-test python-bash
+.PHONY: help setup setup-secrets generate-jwt up down restart logs clean-reports stop-all build-images push-images deploy-build build-version logs-backend logs-frontend logs-nginx logs-postgres logs-redis logs-python logs-service copy-node-modules copy-node-modules-force test-backend test-frontend test-service test-blend-demo check-types check-types-pattern check-types-verbose ocr-test python-bash ocr-extract-auto ocr-extract-doc ocr-extract-doc-simple ocr-extract-doc-interactive ocr-extract-doc-help ocr-test-doc ocr-test-scientific ocr-test-chart ocr-test-opencv ocr-test-images ocr-test-all ocr-extract-interactive
 
 # Default target
 help:
@@ -45,10 +45,23 @@ help:
 	@echo "  make check-types-pattern PATTERN=<pattern> - Check specific service/pattern"
 	@echo "  make check-types-verbose            - Show all TypeScript errors (detailed)"
 	@echo ""
-	@echo "OCR Table Extraction:"
-	@echo "  make ocr-extract    - Run OCR table extraction (interactive)"
-	@echo "  make ocr-test       - Create test data for OCR extraction"
-	@echo "  make python-bash      - Enter Python container shell"
+	@echo "OCR Document Extraction:"
+	@echo "  make ocr-extract-interactive        - ⭐ Interactive: Review regions → OCR (RECOMMENDED)"
+	@echo "  make ocr-extract-auto FILE=<file>   - Automatic: Full extraction with all features"
+	@echo ""
+	@echo "OCR Test Suite:"
+	@echo "  make ocr-test-all                   - Run ALL OCR tests (comprehensive)"
+	@echo "  make ocr-test-scientific            - Test scientific notation processing"
+	@echo "  make ocr-test-chart                 - Test chart detection & filtering"
+	@echo "  make ocr-test-opencv                - Verify OpenCV functions"
+	@echo "  make ocr-test-images                - Analyze Lakatos cropped images"
+	@echo ""
+	@echo "  make ocr-review-visual              - Review detections (GUI with mouse) ⭐NEW"
+	@echo ""
+	@echo "OCR Table Extraction (Legacy):"
+	@echo "  make ocr-extract                    - Run OCR table extraction (interactive)"
+	@echo "  make ocr-test                       - Create test data for OCR extraction"
+	@echo "  make python-bash                    - Enter Python container shell"
 	@echo ""
 	@echo "  Frontend:           http://localhost:${FRONTEND_PORT}"
 	@echo "  Backend API:        http://localhost:${BACKEND_PORT}/api/v1"
@@ -138,8 +151,7 @@ up:
 	@echo "✅ Services started!"
 	@echo ""
 	@echo "Access the application:"
-	@echo "  Frontend: http://localhost:\$$(grep FRONTEND_PORT .env | cut -d '=' -f2)"
-	@echo "  Backend:  http://localhost:\$$(grep BACKEND_PORT .env | cut -d '=' -f2)"
+	@awk -F= '/^FRONTEND_PORT=/ {f=$$2} /^BACKEND_PORT=/ {b=$$2} END {printf "  Frontend: http://localhost:%s\n  Backend:  http://localhost:%s\n", f, b}' .env
 
 # Stop services
 down:
@@ -329,9 +341,6 @@ check-types-verbose:
 	fi
 
 # OCR Table Extraction
-ocr-extract:
-	@echo "📊 Running OCR table extraction (interactive)..."
-	@docker-compose exec python python /app/src/scripts/extract_tables.py
 
 ocr-test:
 	@echo "🔬 Creating test data for OCR extraction..."
@@ -339,6 +348,145 @@ ocr-test:
 	@echo ""
 	@echo "✅ Test data created. You can now run:"
 	@echo "  make ocr-extract"
+
+# New OCR Document Extraction with multi-language and graphics support
+ocr-extract-auto:
+	@if [ -z "$(FILE)" ]; then \
+		echo "❌ ERROR: FILE not specified"; \
+		echo ""; \
+		echo "Usage: make ocr-extract-auto FILE=<filename>"; \
+		echo ""; \
+		echo "Examples:"; \
+		echo "  make ocr-extract-auto FILE=document.pdf"; \
+		echo "  make ocr-extract-auto FILE=image.png"; \
+		echo ""; \
+		echo "This runs FULL automatic extraction with:"; \
+		echo "  - Multi-language auto-detection"; \
+		echo "  - Graphics extraction"; \
+		echo "  - Scientific notation processing"; \
+		echo "  - Table detection"; \
+		exit 1; \
+	fi
+	@echo "🤖 Automatic OCR Extraction: $(FILE)"
+	@echo "🔍 Auto-detect: Languages, Graphics, Tables, Scientific notation"
+	@docker-compose exec python python /app/src/scripts/extract_document.py \
+		--auto-detect-lang \
+		--extract-graphics \
+		--scientific \
+		"/app/shared/sources/$(FILE)"
+
+ocr-extract-doc:
+	@if [ -z "$(FILE)" ]; then \
+		echo "❌ ERROR: FILE not specified"; \
+		echo ""; \
+		echo "Usage: make ocr-extract-doc FILE=<filename>"; \
+		echo ""; \
+		echo "Examples:"; \
+		echo "  make ocr-extract-doc FILE=document.pdf"; \
+		echo "  make ocr-extract-doc FILE=report.png"; \
+		echo ""; \
+		echo "The file should be in shared/sources/"; \
+		echo ""; \
+		echo "For more options, use: make ocr-extract-doc-help"; \
+		exit 1; \
+	fi
+	@echo "📄 Extracting document: $(FILE)"
+	@echo "🔍 Features: Multi-language detection, Graphics extraction, Scientific mode"
+	@docker-compose exec python python /app/src/scripts/extract_document.py \
+		--auto-detect-lang \
+		--extract-graphics \
+		--scientific \
+		$(FILE)
+
+ocr-extract-doc-simple:
+	@if [ -z "$(FILE)" ]; then \
+		echo "❌ ERROR: FILE not specified"; \
+		echo ""; \
+		echo "Usage: make ocr-extract-doc-simple FILE=<filename>"; \
+		echo ""; \
+		echo "Example: make ocr-extract-doc-simple FILE=document.pdf"; \
+		exit 1; \
+	fi
+	@echo "📄 Extracting document (simple mode): $(FILE)"
+	@docker-compose exec python python /app/src/scripts/extract_document.py $(FILE)
+
+ocr-extract-interactive:
+	@echo "🎯 Interactive OCR Extraction (Review → OCR)"
+	@echo "Draw regions on page images, then OCR approved regions"
+	@if [ -z "$(FILE)" ]; then \
+		echo "Select file:"; \
+		docker-compose exec python python -c "import os; exts = ('.pdf', '.png', '.jpg', '.jpeg', '.tif', '.tiff'); files = sorted([f for f in os.listdir('/app/shared/sources') if f.lower().endswith(exts)]); [print(f'{i+1}. {f}') for i, f in enumerate(files)]"; \
+		read -p "Enter number: " num; \
+		file=$$(docker-compose exec -T python python -c "import os; exts = ('.pdf', '.png', '.jpg', '.jpeg', '.tif', '.tiff'); files = sorted([f for f in os.listdir('/app/shared/sources') if f.lower().endswith(exts)]); print(files[int($$num)-1] if 0 < int($$num) <= len(files) else '')" | tr -d '\r\n'); \
+		docker-compose exec python python /app/src/scripts/interactive_extraction.py "/app/shared/sources/$$file"; \
+	else \
+		docker-compose exec python python /app/src/scripts/interactive_extraction.py "/app/shared/sources/$(FILE)"; \
+	fi
+
+ocr-extract-doc-interactive:
+	@echo "📄 OCR Document Extraction - Interactive Mode"
+	@echo "🔍 Features: Multi-language detection, Graphics extraction, Scientific mode"
+	@docker-compose exec python python /app/src/scripts/extract_document.py \
+		--auto-detect-lang \
+		--extract-graphics \
+		--scientific
+
+ocr-extract-doc-help:
+	@echo "📚 OCR Document Extraction - Help"
+	@echo "=================================="
+	@echo ""
+	@docker-compose exec python python /app/src/scripts/extract_document.py --help
+
+ocr-test-doc:
+	@echo "🧪 Testing new OCR document extraction..."
+	@docker-compose exec python python /app/tests/test_document_extraction.py
+
+# OCR Test Suite Commands
+ocr-test-scientific:
+	@echo "🧪 Testing Scientific Notation Processing..."
+	@echo "Tests: Greek letters, chemical formulas, subscripts/superscripts"
+	@docker-compose exec python python /app/tests/test_scientific_comprehensive.py
+
+ocr-test-chart:
+	@echo "🧪 Testing Chart Detection..."
+	@echo "Tests: Chart detection, table header filtering"
+	@docker-compose exec python python /app/tests/test_chart_detection.py
+
+ocr-test-opencv:
+	@echo "🧪 Testing OpenCV Functions..."
+	@docker-compose exec python python /app/tests/test_opencv.py
+
+ocr-test-images:
+	@echo "🧪 Analyzing Lakatos Cropped Images..."
+	@docker-compose exec python python /app/tests/analyze_lakatos_images.py
+
+
+ocr-test-all:
+	@echo "🧪 Running ALL OCR Tests..."
+	@echo ""
+	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
+	@echo "Test 1/4: OpenCV Verification"
+	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
+	@docker-compose exec python python /app/tests/test_opencv.py
+	@echo ""
+	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
+	@echo "Test 2/4: Scientific Notation Processing"
+	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
+	@docker-compose exec python python /app/tests/test_scientific_comprehensive.py
+	@echo ""
+	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
+	@echo "Test 3/4: Chart Detection"
+	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
+	@docker-compose exec python python /app/tests/test_chart_detection.py
+	@echo ""
+	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
+	@echo "Test 4/4: Image Analysis"
+	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
+	@docker-compose exec python python /app/tests/analyze_lakatos_images.py
+	@echo ""
+	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
+	@echo "✅ All OCR Tests Complete!"
+	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
 
 python-bash:
 	@echo "🐍 Entering Python container shell..."

@@ -116,12 +116,18 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_DATABASE: ${DB_DATABASE}
+      # Display variables for GUI support
+      DISPLAY: ${DISPLAY}
+      QT_X11_NO_MITSHM: ${QT_X11_NO_MITSHM}
     volumes:
-      - ./python/src:/app/src
-      - ./python/tests:/app/tests
-      - ./shared:/app/shared
-      - ./tmp/reports/python:/app/reports
+      # Only data volumes - no host mounts in production
       - python_packages:/usr/local/lib/python${PYTHON_VERSION_NUMBER}/site-packages
+      - shared_data:/app/shared  # Shared data volume
+      - reports_data:/app/reports  # Reports volume
+      # X11 socket for display (if needed on server with GUI)
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    devices:
+      - /dev/dri:/dev/dri  # GPU access
     depends_on:
       postgres:
         condition: service_healthy
@@ -162,4 +168,6 @@ networks:
 volumes:
   postgres_data:
   python_packages:
+  shared_data:  # Shared data for OCR processing
+  reports_data:  # OCR reports and outputs
 

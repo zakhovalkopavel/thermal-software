@@ -13,8 +13,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     liblapack-dev \
     libgomp1 \
     libgl1 \
+    libgtk2.0-dev \
+    libgtk-3-dev \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
     tesseract-ocr \
     tesseract-ocr-eng \
+    tesseract-ocr-fra \
+    tesseract-ocr-deu \
+    tesseract-ocr-ces \
+    tesseract-ocr-pol \
+    tesseract-ocr-ukr \
+    tesseract-ocr-rus \
+    tesseract-ocr-jpn \
+    tesseract-ocr-chi-sim \
+    tesseract-ocr-chi-tra \
     poppler-utils \
     ghostscript \
     default-jre-headless \
