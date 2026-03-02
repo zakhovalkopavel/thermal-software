@@ -35,9 +35,12 @@ class InteractiveOCRExtractor:
 
         # Initialize ocr modules
         self.file_manager = FileManager(config)
-        self.language_detector = LanguageDetector(
-            ['eng', 'fra', 'deu', 'ces', 'pol', 'ukr', 'rus', 'jpn', 'chi_sim']
-        )
+
+        # Get available Tesseract languages
+        available_langs = self._get_available_tesseract_langs()
+        logger.info(f"Available Tesseract languages: {', '.join(available_langs)}")
+
+        self.language_detector = LanguageDetector(available_langs)
         self.graphics_extractor = GraphicsExtractor(output_dir / 'graphics', min_size_percent=0.1)
         self.layout_analyzer = LayoutAnalyzer()
         self.table_extractor = TableExtractor(config)
@@ -47,6 +50,109 @@ class InteractiveOCRExtractor:
         self.ui = None
         self.page_images = []
         self.page_regions = {}
+
+    def _get_available_tesseract_langs(self):
+        """Get list of actually installed Tesseract language packs"""
+        import pytesseract
+        try:
+            # Get installed languages from Tesseract
+            langs_output = pytesseract.get_languages(config='')
+            # Filter out 'osd' (orientation and script detection)
+            langs = [lang for lang in langs_output if lang != 'osd']
+            logger.info(f"Tesseract reports {len(langs)} languages installed")
+            return langs if langs else ['eng']  # Fallback to English
+        except Exception as e:
+            logger.warning(f"Could not get Tesseract languages: {e}, using default set")
+            # Fallback to known installed languages based on our Dockerfile
+            return ['eng', 'fra', 'deu', 'pol', 'ukr', 'rus', 'jpn', 'chi_tra']
+
+    def _confirm_languages(self, detected_langs):
+        """
+        Ask user to confirm or modify detected languages
+
+        Args:
+            detected_langs: List of auto-detected language codes
+
+        Returns:
+            List of confirmed/selected language codes
+        """
+        print("\n" + "="*80)
+        print("LANGUAGE DETECTION")
+        print("="*80)
+        print(f"Auto-detected languages: {', '.join(detected_langs)}")
+        print("="*80)
+
+        while True:
+            print("\nOptions:")
+            print("  1. Use detected languages (press ENTER)")
+            print("  2. Select languages manually")
+            print("  3. List all available languages")
+
+            choice = input("\nYour choice [1]: ").strip() or "1"
+
+            if choice == "1":
+                # Use detected languages
+                print(f"✓ Using detected languages: {', '.join(detected_langs)}")
+                return detected_langs
+
+            elif choice == "2":
+                # Manual selection
+                print("\n" + "-"*80)
+                print("Available languages:")
+                available_langs = self._get_available_tesseract_langs()
+                for i, lang in enumerate(available_langs, 1):
+                    print(f"  {i}. {lang}")
+                print("-"*80)
+
+                print("\nEnter language codes separated by spaces (e.g., eng fra deu)")
+                print("Or enter numbers separated by spaces (e.g., 1 2 3)")
+                lang_input = input("Languages: ").strip()
+
+                if not lang_input:
+                    print("⚠️ No input, using detected languages")
+                    return detected_langs
+
+                # Parse input (could be codes or numbers)
+                selected = []
+                tokens = lang_input.split()
+
+                for token in tokens:
+                    if token.isdigit():
+                        # Number input
+                        idx = int(token) - 1
+                        if 0 <= idx < len(available_langs):
+                            selected.append(available_langs[idx])
+                        else:
+                            print(f"⚠️ Invalid number: {token}")
+                    else:
+                        # Language code input
+                        if token in available_langs:
+                            selected.append(token)
+                        else:
+                            print(f"⚠️ Language not available: {token}")
+
+                if selected:
+                    print(f"✓ Using selected languages: {', '.join(selected)}")
+                    return selected
+                else:
+                    print("⚠️ No valid languages selected, using detected")
+                    return detected_langs
+
+            elif choice == "3":
+                # List all available languages
+                print("\n" + "-"*80)
+                print("Available Tesseract languages:")
+                available_langs = self._get_available_tesseract_langs()
+                for i, lang in enumerate(available_langs, 1):
+                    is_detected = "✓" if lang in detected_langs else " "
+                    print(f"  {is_detected} {i}. {lang}")
+                print("-"*80)
+                print("(✓ = auto-detected)")
+                # Loop back to show options again
+
+            else:
+                print("⚠️ Invalid choice, please enter 1, 2, or 3")
+                # Loop back to show options again
 
     def extract_with_review(self):
         """Main workflow: Load → Auto-detect → Review → Extract → Save"""
@@ -62,11 +168,18 @@ class InteractiveOCRExtractor:
         total_pages = len(self.page_images)
         logger.info(f"Loaded {total_pages} page(s)")
 
-        # Step 2: Auto-detect languages
-        logger.info("Auto-detecting languages...")
-        detected_langs = self.language_detector.detect_languages(self.page_images[0], max_langs=3)
-        self.config.ocr_lang = self.language_detector.build_lang_string(detected_langs)
-        logger.info(f"Detected languages: {self.config.ocr_lang}")
+        # Step 2: Auto-detect languages (unless manually specified)
+        if self.config.ocr_lang == 'eng':  # Default not changed, so auto-detect
+            logger.info("Auto-detecting languages...")
+            detected_langs = self.language_detector.detect_languages(self.page_images[0], max_langs=3)
+
+            # Ask user to confirm or modify detected languages
+            final_langs = self._confirm_languages(detected_langs)
+
+            self.config.ocr_lang = self.language_detector.build_lang_string(final_langs)
+            logger.info(f"Using languages: {self.config.ocr_lang}")
+        else:
+            logger.info(f"Using pre-configured languages: {self.config.ocr_lang}")
 
         # Step 3: Auto-detect regions for all pages
         logger.info("Auto-detecting regions...")
@@ -203,11 +316,37 @@ class InteractiveOCRExtractor:
 
 def main():
     """Entry point"""
-    if len(sys.argv) < 2:
-        print("Usage: python interactive_extraction.py <file>")
-        return 1
+    import argparse
 
-    file_path = Path(sys.argv[1])
+    parser = argparse.ArgumentParser(description='Interactive OCR Extraction with Visual Review')
+    parser.add_argument('file', type=str, help='Path to PDF or image file')
+    parser.add_argument('--lang', type=str, nargs='+',
+                       help='Specify language(s) manually (e.g., eng fra deu). Use --list-langs to see available.')
+    parser.add_argument('--list-langs', action='store_true',
+                       help='List available Tesseract languages and exit')
+    parser.add_argument('--auto-detect-lang', action='store_true', default=True,
+                       help='Auto-detect languages (default: True)')
+    parser.add_argument('--no-auto-detect-lang', dest='auto_detect_lang', action='store_false',
+                       help='Disable auto-detection, use only --lang or default to eng')
+    parser.add_argument('--dpi', type=int, default=300,
+                       help='DPI for PDF conversion (default: 300)')
+
+    args = parser.parse_args()
+
+    # List available languages and exit
+    if args.list_langs:
+        import pytesseract
+        try:
+            langs = pytesseract.get_languages(config='')
+            print("Available Tesseract languages:")
+            for lang in sorted(langs):
+                print(f"  - {lang}")
+            return 0
+        except Exception as e:
+            print(f"Error getting languages: {e}")
+            return 1
+
+    file_path = Path(args.file)
     if not file_path.exists():
         print(f"Error: File not found: {file_path}")
         return 1
@@ -220,12 +359,28 @@ def main():
     config = ExtractionConfig(
         sources_dir=file_path.parent,
         processed_dir=output_dir,
-        ocr_lang='eng',  # Will be auto-detected
-        dpi=300
+        ocr_lang='eng',  # Will be set below
+        dpi=args.dpi
     )
 
     # Run
     extractor = InteractiveOCRExtractor(file_path, output_dir, config)
+
+    # Handle language selection
+    if args.lang:
+        # Manual language selection
+        manual_langs = args.lang
+        logger.info(f"Using manually specified languages: {', '.join(manual_langs)}")
+        config.ocr_lang = '+'.join(manual_langs)
+        extractor.config.ocr_lang = config.ocr_lang
+    elif args.auto_detect_lang:
+        # Auto-detection will happen in extract_with_review()
+        logger.info("Language auto-detection enabled")
+    else:
+        # No auto-detect, no manual - use default
+        logger.info("Using default language: eng")
+        config.ocr_lang = 'eng'
+
     extractor.extract_with_review()
 
     return 0

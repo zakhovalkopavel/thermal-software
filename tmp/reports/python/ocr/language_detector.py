@@ -46,12 +46,9 @@ class LanguageDetector:
         # Test each available language and measure confidence
         confidences = {}
 
-        logger.info(f"Testing {len(self.available_langs)} languages for detection...")
-
         for lang in self.available_langs:
             try:
                 # Run OCR with this language
-                logger.debug(f"Testing language: {lang}")
                 data = pytesseract.image_to_data(
                     image,
                     lang=lang,
@@ -95,9 +92,9 @@ class LanguageDetector:
         Returns:
             Combined language string (e.g., 'eng+fra+deu')
         """
-        lang_string = '+'.join(detected_langs)
-        logger.info(f"Built language string: {lang_string}")
-        return lang_string
+        lang_str = '+'.join(detected_langs)
+        logger.debug(f"Built language string: {lang_str}")
+        return lang_str
 
     def detect_and_build(self, image: Image.Image, max_langs: int = 3) -> str:
         """
