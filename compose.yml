@@ -133,6 +133,7 @@ services:
       DB_DATABASE: ${DB_DATABASE}
       DISPLAY: ${DISPLAY}
       QT_X11_NO_MITSHM: ${QT_X11_NO_MITSHM}
+      XAUTHORITY: /root/.Xauthority
     volumes:
       - ./python/src:/app/src
       - ./python/tests:/app/tests
@@ -140,7 +141,7 @@ services:
       - ./shared:/app/shared
       - python_packages:/usr/local/lib/python${PYTHON_VERSION_NUMBER}/site-packages
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - ${HOME}/.Xauthority:/root/.Xauthority:ro  # X11 authentication
+      - ${XAUTHORITY}:/root/.Xauthority:ro  # X11 authentication (host path from XAUTHORITY env var)
     devices:
       - /dev/dri:/dev/dri  # GPU access for better rendering
     depends_on:
