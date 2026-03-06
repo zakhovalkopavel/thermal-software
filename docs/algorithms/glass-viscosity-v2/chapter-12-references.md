@@ -94,7 +94,7 @@ The Fluegel 2007 model was calibrated on data from:
 | `lakatos_ocr/page_002_table_007.csv` | Ch. 3, 9 | Standard deviations σ | Confidence estimation |
 | `lakatos_ocr/page_003_table_001.csv` | Ch. 10, 11 | 30-glass validation dataset | Test cases |
 | `lakatos_ocr/page_004_table_002.csv` | Ch. 10, 11 | 14-glass validation dataset | Test cases |
-| `fluegel_2007/fluegel_2006.txt` | Ch. 2, 5 | Original paper OCR | Source text, model description |
+| `fluegel_2007/fluegel_2007.txt` | Ch. 2, 5 | Original paper OCR | Source text, model description |
 | `fluegel_2007/Fluegel_table1.csv` | Ch. 10, 11 | 7 reference glass compositions | Test inputs |
 | `fluegel_2007/Fluegel_table2.csv` | Ch. 2 | Model comparison table | Context / background |
 | `fluegel_2007/Fluegel_table3.csv` | Ch. 3, 5, 9 | Composition validity bounds | Range validation |

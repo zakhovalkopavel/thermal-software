@@ -1,183 +1,329 @@
-import { ViscosityParameters } from '../interfaces/viscosity-parameters.interface';
-import { ViscosityModel, ViscosityModelType } from '../enums/viscosity-model.enum';
+import { ViscosityModel } from '../enums/viscosity-model.enum';
 
 /**
- * System-specific viscosity model parameters
- * Based on published literature for different glass systems
+ * Glass Viscosity Model Coefficients
+ *
+ * Contains ONLY published, validated regression coefficients.
+ * Previous file had 9 fake/wrong VFT parameter sets — removed 2026-03-06.
+ * See docs/algorithms/glass-viscosity/VISCOSITY_PARAMETERS_AUDIT.md for audit.
+ * See docs/algorithms/glass-viscosity/IMPLEMENTATION_PLAN.md for replacement strategy.
+ *
+ * Implemented models:
+ *   1. Lakatos 1976  — isokom regression for soda-lime-silica (SiO₂ 60–77%, Na₂O 10–17%)
+ *   2. Fluegel 2007  — polynomial regression for broad silicate glass space
+ *   3. Hetherington 1964 — fixed Arrhenius for pure fused silica (SiO₂ > 99%)
  */
-export const VISCOSITY_PARAMETERS: Record<ViscosityModel, ViscosityParameters> = {
-  [ViscosityModel.SODA_LIME_SILICA]: {
-    modelType: ViscosityModelType.VFT,
-    A: -3.2,
-    B: 13250,
-    T0: 320, // K (47°C)
-    componentEffects: [
-      { component: 'SiO2', effectMin: 40, effectMax: 50, validMin: 65, validMax: 80 },
-      { component: 'Al2O3', effectMin: 100, effectMax: 120, validMin: 0, validMax: 5 },
-      { component: 'Na2O', effectMin: -75, effectMax: -85, validMin: 10, validMax: 18 },
-      { component: 'K2O', effectMin: -65, effectMax: -75, validMin: 0, validMax: 5 },
-      { component: 'CaO', effectMin: -50, effectMax: -60, validMin: 5, validMax: 15 },
-      { component: 'MgO', effectMin: 30, effectMax: 40, validMin: 0, validMax: 6 },
-      { component: 'Fe2O3', effectMin: -35, effectMax: -45, validMin: 0, validMax: 2 },
-    ],
-    temperatureRange: { min: 500, max: 1400 },
-    validCompositionRanges: {
-      SiO2: { min: 65, max: 80 },
-      'Na2O+K2O': { min: 10, max: 18 },
-      'CaO+MgO': { min: 5, max: 15 },
-    },
-    reference: 'Lakatos et al. (1972), Glass Technology 13(3):88-95',
-    notes: 'MgO acts as network former in soda-lime glasses. Most validated model for commercial glass.',
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 1. LAKATOS 1976
+//
+// Source: shared/sources/lakatos_ocr/page_001_table_007.csv
+// Formula: T(v) = C₀(v) + Σ Cᵢ(v)·xᵢ + C_B2O3²(v)·x_B2O3²
+// where xᵢ = parts of component i per 100 parts of SiO₂ by weight
+// Output: temperature in °C at log η = v (poise).
+// Convert poise to Pa·s before VTF fitting: subtract 1 from the exponent.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Lakatos 1976 isokom regression coefficients.
+ *  Rows = components; columns = [constant, logEta2_poise, logEta4_poise, logEta6_poise].
+ *  SiO₂ is the reference component and does NOT appear here.
+ *  B₂O₃ has an additional quadratic term (last row).
+ */
+export const LAKATOS_1976_COEFFICIENTS = {
+  /** Constant term for each viscosity level */
+  constant: { v2: 1847.8, v4: 1249.7, v6: 962.9 },
+
+  /** Per-component linear coefficients (°C per part per 100 parts SiO₂) */
+  components: {
+    Al2O3: { v2: 8.32,   v4: 5.23,   v6: 4.01  },
+    Na2O:  { v2: -12.65, v4: -9.19,  v6: -7.06 },
+    K2O:   { v2: -5.93,  v4: -4.17,  v6: -3.53 },
+    Li2O:  { v2: -35.54, v4: -30.04, v6: -26.45 },
+    CaO:   { v2: -11.27, v4: -3.99,  v6: -0.74 },
+    MgO:   { v2: -5.87,  v4: -0.12,  v6:  0.91 },
+    BaO:   { v2: -5.67,  v4: -3.04,  v6: -1.88 },
+    ZnO:   { v2: -5.37,  v4: -1.88,  v6: -0.71 },
+    PbO:   { v2: -4.85,  v4: -3.17,  v6: -2.24 },
+    B2O3:  { v2: -21.62, v4: -11.97, v6: -6.42 }, // linear term
+  } as const,
+
+  /** B₂O₃ quadratic self-interaction (°C per (parts/100 SiO₂)²) */
+  B2O3_quadratic: { v2: 0.5122, v4: 0.3182, v6: 0.19 },
+
+  /** Lakatos outputs are in LOG POISE.  Subtract 1 to convert to log Pa·s. */
+  outputUnit: 'log_poise' as const,
+
+  /** Valid composition range for Lakatos model (wt%) */
+  validityBounds: {
+    SiO2:  { min: 50,  max: 77  }, // SiO₂ must be present as reference
+    Na2O:  { min: 10,  max: 17  }, // Na₂O always present in training data
+    Al2O3: { min: 0,   max: 8.26 },
+    K2O:   { min: 0,   max: 8.70 },
+    Li2O:  { min: 0,   max: 3.00 },
+    CaO:   { min: 4.48,max: 13.32 },
+    MgO:   { min: 0,   max: 6.00 },
+    BaO:   { min: 0,   max: 16.54 },
+    ZnO:   { min: 0,   max: 9.39 },
+    PbO:   { min: 0,   max: 12.22 },
+    B2O3:  { min: 0,   max: 14.37 },
   },
 
-  [ViscosityModel.BOROSILICATE]: {
-    modelType: ViscosityModelType.VFT,
-    A: -3.8,
-    B: 16200,
-    T0: 245, // K (-28°C)
-    componentEffects: [
-      { component: 'SiO2', effectMin: 45, effectMax: 55, validMin: 70, validMax: 85 },
-      { component: 'B2O3', effectMin: -30, effectMax: -20, validMin: 8, validMax: 15 },
-      { component: 'Al2O3', effectMin: 90, effectMax: 110, validMin: 0, validMax: 5 },
-      { component: 'Na2O', effectMin: -80, effectMax: -90, validMin: 2, validMax: 8 },
-      { component: 'K2O', effectMin: -70, effectMax: -80, validMin: 0, validMax: 3 },
-    ],
-    temperatureRange: { min: 400, max: 1400 },
-    validCompositionRanges: {
-      SiO2: { min: 70, max: 85 },
-      B2O3: { min: 8, max: 15 },
-      'Na2O+K2O': { min: 2, max: 10 },
-    },
-    reference: 'Dingwell et al. (1992), Chemical Geology 95(3-4):229-237',
-    notes: 'Boron anomaly occurs at 15-20 mol% B2O3. Model less accurate in anomaly region.',
-  },
+  reference: 'Lakatos, T.; Johansson, L-G.; Simmingskőld, B. (1976). "Viscosity-temperature relations in glasses composed of SiO₂-Al₂O₃-Na₂O-K₂O-Li₂O-CaO-MgO-BaO-ZnO-PbO-B₂O₃." August 1976 supplement.',
+  accuracy: 'σ = 4.63°C at log η 1 Pa·s, 3.34°C at log η 3 Pa·s, 3.14°C at log η 5 Pa·s',
+} as const;
 
-  [ViscosityModel.ALUMINOSILICATE]: {
-    modelType: ViscosityModelType.VFT,
-    A: -4.5,
-    B: 19000,
-    T0: 350, // K (77°C)
-    componentEffects: [
-      { component: 'SiO2', effectMin: 50, effectMax: 65, validMin: 50, validMax: 70 },
-      { component: 'Al2O3', effectMin: 65, effectMax: 85, validMin: 15, validMax: 30 },
-      { component: 'CaO', effectMin: -55, effectMax: -70, validMin: 5, validMax: 15 },
-      { component: 'MgO', effectMin: -45, effectMax: -60, validMin: 0, validMax: 10 },
-      { component: 'Na2O', effectMin: -85, effectMax: -100, validMin: 0, validMax: 5 },
-      { component: 'K2O', effectMin: -75, effectMax: -90, validMin: 0, validMax: 3 },
-      { component: 'FeO', effectMin: -50, effectMax: -65, validMin: 0, validMax: 15 },
-      { component: 'Fe2O3', effectMin: -45, effectMax: -60, validMin: 0, validMax: 10 },
-    ],
-    temperatureRange: { min: 900, max: 1600 },
-    validCompositionRanges: {
-      SiO2: { min: 50, max: 70 },
-      Al2O3: { min: 15, max: 30 },
-    },
-    reference: 'Giordano et al. (2008), EPSL 271:123-134',
-    notes: 'Al coordination depends on alkali/Al2O3 ratio. MgO acts as modifier (unlike in SLS).',
-  },
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. FLUEGEL 2007
+//
+// Source: shared/sources/fluegel_2007/Fluegel_table4.csv  (log η 1.5 Pa·s)
+//         shared/sources/fluegel_2007/Fluegel_table5.csv  (log η 6.6 Pa·s)
+//         shared/sources/fluegel_2007/Fluegel_table6.csv  (log η 12.0 Pa·s)
+//         shared/sources/fluegel_2007/Fluegel_table3.csv  (per-component max bounds)
+// Formula (Eq. 2 in paper):
+//   T(v) = b₀ + Σᵢ bᵢ·Cᵢ + Σᵢ bᵢᵢ·Cᵢ² + Σᵢ bᵢᵢᵢ·Cᵢ³ + Σᵢ<ⱼ bᵢⱼ·CᵢCⱼ + ...
+// where Cᵢ = mol% of component i in the full glass (SiO₂ included in denominator)
+// SiO₂ is NOT a regression variable (it is the balance); set C_SiO₂ = 0.
+// Outputs are already in log Pa·s — no unit conversion needed.
+// ─────────────────────────────────────────────────────────────────────────────
 
-  [ViscosityModel.LEAD_GLASS]: {
-    modelType: ViscosityModelType.ARRHENIUS,
-    A: -7.2,
-    B: 11800,
-    T0: undefined,
-    componentEffects: [
-      { component: 'SiO2', effectMin: 42, effectMax: 52, validMin: 50, validMax: 70 },
-      { component: 'PbO', effectMin: -75, effectMax: -95, validMin: 20, validMax: 40 },
-      { component: 'K2O', effectMin: -80, effectMax: -95, validMin: 5, validMax: 15 },
-      { component: 'Na2O', effectMin: -85, effectMax: -100, validMin: 0, validMax: 10 },
-      { component: 'Al2O3', effectMin: 95, effectMax: 115, validMin: 0, validMax: 5 },
-    ],
-    temperatureRange: { min: 400, max: 1100 },
-    validCompositionRanges: {
-      SiO2: { min: 50, max: 70 },
-      PbO: { min: 20, max: 40 },
-    },
-    reference: 'Mazurin & Gankin (1983), Handbook of Glass Data',
-    notes: 'PbO very strong flux. Arrhenius fits better than VFT for lead glasses.',
+/** Fluegel 2007 regression coefficients for log η = 1.5 Pa·s (Table 4).
+ *  All Cᵢ are in mol% (full denominator including SiO₂). */
+export const FLUEGEL_2007_T1_5 = {
+  constant: 1824.497,
+  linear: {
+    Al2O3: 19.341,
+    B2O3: -22.347,
+    BaO: -18.931,
+    Bi2O3: -42.416,
+    CaO: -17.453,
+    CeO2: -22.418,
+    Cl: -8.563,
+    CuO: -30.913,
+    F: -11.739,
+    Fe2O3: -13.611,
+    K2O: -31.907,
+    Li2O: -30.336,
+    MgO: -5.038,
+    MnO2: -17.050,
+    Na2O: -30.610,
+    Nd2O3: -39.662,
+    PbO: -21.349,
+    SO3: -13.908,
+    SrO: -17.292,
+    ThO2: -17.185,
+    TiO2: -10.323,
+    UO2: -17.672,
+    V2O5: -21.727,
+    ZnO: -6.280,
+    ZrO2:  0.173,
   },
+  quadratic: {
+    B2O3:  0.60376,
+    CaO:   0.12038,
+    K2O:   0.61234,
+    Li2O:  0.22499,
+    Na2O:  0.27887,
+  },
+  cubic: {
+    K2O:  -0.006662,
+  },
+  cross: {
+    'K2O*MgO':          0.59449,
+    'B2O3*Na2O':        0.28237,
+    'B2O3*K2O':         0.2789,
+    'B2O3*Li2O':        0.16843,
+    'Al2O3*Na2O':       0.23085,
+    'Al2O3*Li2O':       0.38421,
+    'Al2O3*MgO':        0.44589,
+    'Al2O3*CaO':        0.93909,
+    'Na2O*K2O':         0.58773,
+    'Na2O*Li2O':        0.20691,
+    'Na2O*CaO':         0.19254,
+    'K2O*Li2O':         0.24924,
+    'K2O*CaO':          0.29628,
+    'MgO*CaO':          0.17394,
+  },
+  cross3: {
+    'Al2O3*Na2O*CaO':   0.03362,
+  },
+} as const;
 
-  [ViscosityModel.PURE_SILICA]: {
-    modelType: ViscosityModelType.VFT,
-    A: -2.8,
-    B: 13500,
-    T0: 475, // K (202°C)
-    componentEffects: [
-      { component: 'SiO2', effectMin: 55, effectMax: 65, validMin: 99, validMax: 100 },
-    ],
-    temperatureRange: { min: 1100, max: 2300 },
-    validCompositionRanges: {
-      SiO2: { min: 99, max: 100 },
-    },
-    reference: 'Urbain et al. (1982), Hetherington et al. (1964)',
-    notes: 'Very high T0. Reference standard for pure network former behavior.',
+/** Fluegel 2007 regression coefficients for log η = 6.6 Pa·s (Table 5). */
+export const FLUEGEL_2007_T6_6 = {
+  constant: 939.479,
+  linear: {
+    Al2O3:  5.812,
+    B2O3:  -4.366,
+    BaO:   -3.385,
+    CaO:   -1.791,
+    F:     -9.328,
+    Fe2O3: -11.013,
+    K2O:   -20.659,
+    Li2O:  -25.075,
+    MgO:    0.93,
+    Na2O:  -19.051,
+    P2O5:  14.857,
+    PbO:   -8.871,
+    SrO:   -2.191,
+    TiO2:  -2.862,
+    ZnO:   -1.065,
+    ZrO2:  12.425,
   },
+  quadratic: {
+    B2O3: -0.17367,
+    K2O:   0.58116,
+    Li2O:  0.46012,
+    Na2O:  0.32209,
+  },
+  cubic: {
+    K2O:  -0.009370,
+    Na2O: -0.002080,
+  },
+  cross: {
+    'B2O3*Na2O':        0.32005,
+    'B2O3*K2O':         0.42514,
+    'B2O3*Li2O':        0.39626,
+    'B2O3*CaO':        -0.24066,
+    'Al2O3*Na2O':       0.08442,
+    'Al2O3*K2O':        0.48055,
+    'Na2O*K2O':         0.15519,
+    'Na2O*Li2O':        0.20781,
+    'Na2O*CaO':         0.09392,
+    'K2O*Li2O':         0.46938,
+    'K2O*MgO':          0.26354,
+    'K2O*CaO':          0.47564,
+    'MgO*CaO':         -0.15553,
+  },
+  cross3: {
+    'B2O3*Al2O3*Na2O': -0.033573,
+    'Al2O3*Na2O*CaO':  -0.006780,
+    'Na2O*MgO*CaO':    -0.012589,
+  },
+} as const;
 
-  [ViscosityModel.SODIUM_SILICATE]: {
-    modelType: ViscosityModelType.VFT,
-    A: -3.5,
-    B: 7000,
-    T0: 225, // K (-48°C)
-    componentEffects: [
-      { component: 'SiO2', effectMin: 35, effectMax: 45, validMin: 60, validMax: 75 },
-      { component: 'Na2O', effectMin: -90, effectMax: -110, validMin: 18, validMax: 35 },
-    ],
-    temperatureRange: { min: 700, max: 1300 },
-    validCompositionRanges: {
-      SiO2: { min: 60, max: 75 },
-      Na2O: { min: 18, max: 35 },
-    },
-    reference: 'Bockris et al. (1955)',
-    notes: 'Binary system. High alkali content leads to low viscosity.',
+/** Fluegel 2007 regression coefficients for log η = 12.0 Pa·s (Table 6). */
+export const FLUEGEL_2007_T12 = {
+  constant: 624.829,
+  linear: {
+    Al2O3:  4.929,
+    B2O3:  -1.121,
+    BaO:   -1.110,
+    CaO:    6.84,
+    F:     -8.123,
+    Fe2O3: -8.453,
+    K2O:   -12.460,
+    Li2O:  -11.571,
+    MgO:    1.141,
+    Na2O:  -12.854,
+    PbO:   -4.349,
+    SrO:    1.388,
+    TiO2:   3.864,
+    ZrO2:   8.927,
   },
+  quadratic: {
+    CaO:  -0.08269,
+    K2O:   0.39706,
+    Li2O:  0.27802,
+    Na2O:  0.35785,
+  },
+  cubic: {
+    K2O:  -0.005382,
+    Li2O: -0.002576,
+    Na2O: -0.004179,
+  },
+  cross: {
+    'B2O3*Na2O':        0.38413,
+    'B2O3*CaO':        -0.20958,
+    'B2O3*Al2O3':      -0.33380,
+    'Al2O3*CaO':       -0.13741,
+    'Na2O*K2O':         0.06169,
+    'Na2O*Li2O':        0.08558,
+    'Na2O*CaO':        -0.10283,
+    'K2O*Li2O':         0.17538,
+    'K2O*MgO':          0.27425,
+    'K2O*CaO':          0.2247,
+    'MgO*CaO':         -0.21563,
+    'CaO*Li2O':        -0.88170,
+  },
+  cross3: {
+    'Al2O3*Na2O*CaO':   0.013868,
+  },
+} as const;
 
-  [ViscosityModel.SLAG_CAO_AL2O3]: {
-    modelType: ViscosityModelType.ARRHENIUS,
-    A: -0.5,
-    B: 3500,
-    T0: undefined,
-    componentEffects: [
-      { component: 'CaO', effectMin: -15, effectMax: -25, validMin: 30, validMax: 50 },
-      { component: 'Al2O3', effectMin: 20, effectMax: 30, validMin: 20, validMax: 40 },
-      { component: 'SiO2', effectMin: 25, effectMax: 35, validMin: 20, validMax: 45 },
-      { component: 'MgO', effectMin: -10, effectMax: -20, validMin: 0, validMax: 15 },
-      { component: 'FeO', effectMin: -20, effectMax: -30, validMin: 0, validMax: 25 },
-      { component: 'Fe2O3', effectMin: -15, effectMax: -25, validMin: 0, validMax: 20 },
-    ],
-    temperatureRange: { min: 1300, max: 1600 },
-    validCompositionRanges: {
-      CaO: { min: 30, max: 50 },
-      Al2O3: { min: 20, max: 40 },
-      SiO2: { min: 20, max: 45 },
-    },
-    reference: 'Mills et al. (1993), Slag Atlas',
-    notes: 'Metallurgical slag. High temperature applications.',
-  },
+/** Maximum allowable component concentrations (mol%) for Fluegel 2007 validity.
+ *  Source: shared/sources/fluegel_2007/Fluegel_table3.csv */
+export const FLUEGEL_2007_BOUNDS = {
+  /** [max at log η 1.5, max at log η 6.6, max at log η 12.0] */
+  Al2O3:  [11.3,  12.7,  10.0  ],
+  B2O3:   [18.15, 16.97, 16.97 ],
+  BaO:    [10.0,   8.0,  19.2  ],
+  CaO:    [33.47, 33.1,  50.14 ],
+  F:      [10.31, 10.31,  4.55 ],
+  Fe2O3:  [ 6.99,  2.15,  0.57 ],
+  K2O:    [41.67, 30.0,  34.05 ],
+  Li2O:   [35.9,  33.3,  45.0  ],
+  MgO:    [16.9,  20.0,  16.61 ],
+  MnO2:   [ 3.43,  0.18,  0.18 ],
+  Na2O:   [44.0,  42.0,  42.0  ],
+  P2O5:   [ 4.64,  0.85,  0.0  ],
+  PbO:    [49.96, 50.0,  56.0  ],
+  SrO:    [ 7.37,  7.37, 18.02 ],
+  TiO2:   [ 9.26,  3.29, 25.0  ],
+  ZnO:    [ 5.19,  8.0,   2.81 ],
+  ZrO2:   [ 9.78,  2.77,  1.76 ],
+  SiO2_min: 42.62,  // mol% SiO₂ minimum
+  SiO2_max: 89.2,   // mol% SiO₂ maximum (for log η 1.5; 87.1 at 6.6; 92.0 at 12.0)
+} as const;
 
-  [ViscosityModel.FLUORIDE_GLASS]: {
-    modelType: ViscosityModelType.VFT,
-    A: -4.0,
-    B: 8000,
-    T0: 150, // K (-123°C)
-    componentEffects: [],
-    temperatureRange: { min: 200, max: 600 },
-    validCompositionRanges: {
-      'Fluorides': { min: 20, max: 100 },
-    },
-    reference: 'Poulain et al. (1977)',
-    notes: 'Specialty optical applications. Limited data available.',
-  },
-
-  [ViscosityModel.MULTI_COMPONENT_MIXING]: {
-    modelType: ViscosityModelType.VFT,
-    A: -3.5,
-    B: 14000,
-    T0: 300,
-    componentEffects: [], // Uses generic effects from component-properties.ts
-    temperatureRange: { min: 300, max: 1600 },
-    validCompositionRanges: {},
-    reference: 'Generic mixing model',
-    notes: 'Low accuracy. Experimental validation recommended.',
-  },
+/** Molar masses (g/mol) for wt% → mol% conversion */
+export const MOLAR_MASSES: Record<string, number> = {
+  SiO2:   60.08,
+  Al2O3: 101.96,
+  Na2O:   61.98,
+  K2O:    94.20,
+  Li2O:   29.88,
+  CaO:    56.08,
+  MgO:    40.30,
+  BaO:   153.33,
+  ZnO:    81.38,
+  PbO:   223.20,
+  B2O3:   69.62,
+  Fe2O3: 159.69,
+  TiO2:   79.87,
+  ZrO2:  123.22,
+  SrO:   103.62,
+  MnO2:   86.94,
+  P2O5:  141.94,
+  F:      19.00,
+  Cl:     35.45,
+  SO3:    80.06,
+  CeO2:  172.11,
+  Nd2O3: 336.48,
+  Bi2O3: 465.96,
+  V2O5:  181.88,
+  CuO:    79.55,
+  ThO2:  264.04,
+  UO2:   270.03,
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 3. HETHERINGTON 1964 — pure fused silica
+//
+// Source: Hetherington, G.; Jack, K.H.; Kennedy, J.C. (1964).
+//   "The Viscosity of Vitreous Silica." Physics and Chemistry of Glasses 5(5):130–136.
+// Formula: log₁₀(η [Pa·s]) = A + B/T  where T is in KELVIN (Arrhenius, not VFT)
+// Valid: SiO₂ > 99 wt%, T = 1100–2300°C
+// Note: T₀ = 0 (simple Arrhenius — no Vogel term).
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const HETHERINGTON_1964 = {
+  /** Pre-exponential constant (dimensionless) */
+  A: -3.905,
+  /** Activation energy / R in Kelvin */
+  B: 31400,
+  /** Minimum SiO₂ content for validity (wt%) */
+  SiO2_min_wt: 99.0,
+  /** Temperature range (°C) */
+  temperatureRange: { min: 1100, max: 2300 },
+  reference: 'Hetherington, G.; Jack, K.H.; Kennedy, J.C. (1964). "The Viscosity of Vitreous Silica." Physics and Chemistry of Glasses 5(5):130–136.',
+} as const;

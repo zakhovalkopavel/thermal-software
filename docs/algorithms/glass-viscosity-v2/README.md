@@ -83,7 +83,7 @@ shared/sources/lakatos_ocr/
   page_004_table_002.csv      ← validation dataset part B (14 glasses in groups F₂, FAL)
 
 shared/sources/fluegel_2007/
-  fluegel_2006.txt            ← original paper OCR text
+  fluegel_2007.txt            ← original paper OCR text
   Fluegel_table1.csv          ← 7 reference glass compositions (mol%)
   Fluegel_table2.csv          ← model comparison at log η 1.5 (melting point)
   Fluegel_table3.csv          ← composition validity ranges per component per viscosity level

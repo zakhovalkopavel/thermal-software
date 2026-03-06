@@ -137,7 +137,7 @@ Same column structure as Part A. Contains groups FAL (fluoroaluminosilicate glas
 
 All files are in `shared/sources/fluegel_2007/`.
 
-#### `fluegel_2006.txt`
+#### `fluegel_2007.txt`
 Full OCR text of the paper. Essential context for understanding the model's statistical methodology, systematic error corrections applied to the SciGlass database, and the mixed alkali model.
 
 #### `Fluegel_table1.csv` — Reference glass compositions (wt%)

@@ -146,9 +146,10 @@ Columns: Nr | SiO₂ | Al₂O₃ | Na₂O | K₂O | Li₂O | CaO | MgO | BaO | Z
 
 Source: `Fluegel_table1.csv` (compositions) and `Fluegel_table12.csv` (expected isokom temperatures)
 
-### Reference Glass Compositions (wt%)
+### Reference Glass Compositions — **mol%** (primary source)
 
-From `Fluegel_table1.csv`:
+From `Fluegel_table1.csv`. **Table 1 header: "Compositions in mol% of glasses
+for melting point predictions in Table 2."** All values are mol%, not wt%.
 
 | Component | CO | NIST 710A | NIST 717A | 711 | 710 | DGG I | WGS |
 |---|---|---|---|---|---|---|---|
@@ -171,6 +172,35 @@ From `Fluegel_table1.csv`:
 | ZrO₂ | 0 | 0 | 0 | 0 | 0 | 0 | 0.06 |
 | BaO | 0 | 0 | 0 | 0 | 0 | 0 | 0.04 |
 | NiO | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
+
+### Derived wt% (for service input)
+
+The service `calculateViscosity` accepts **wt%** and converts internally to mol%.
+The wt% values below are derived from the mol% above using:
+`wt_i = mol_i × M_i`, then normalised to 100%. Molar masses from `viscosity-parameters.ts`.
+
+| Component | CO | NIST 710A | NIST 717A | 711 | 710 | DGG I |
+|---|---|---|---|---|---|---|
+| SiO₂ | 74.215 | 67.895 | 67.996 | 46.005 | 71.423 | 71.789 |
+| Al₂O₃ | 1.269 | 2.113 | 3.498 | 0.559 | 0.183 | 1.237 |
+| Na₂O | 13.273 | 8.090 | 1.000 | 2.503 | 8.813 | 14.971 |
+| K₂O | 0.297 | 9.344 | 7.998 | 5.616 | 7.805 | 0.333 |
+| MgO | 0.201 | — | — | — | — | 4.181 |
+| CaO | 10.492 | 8.535 | — | — | 11.750 | 6.735 |
+| SO₃ | 0.213 | — | — | — | — | 0.432 |
+| Fe₂O₃ | 0.027 | — | — | — | 0.026 | 0.188 |
+| TiO₂ | 0.013 | 0.404 | — | — | — | 0.135 |
+| ZnO | — | 3.618 | — | — | — | — |
+| B₂O₃ | — | — | 18.507 | — | — | — |
+| Li₂O | — | — | 1.002 | — | — | — |
+| PbO | — | — | — | 45.317 | — | — |
+
+**Note:** Glass 711 wt% is dominated by PbO (45.3%) because PbO molar mass = 223.20 g/mol
+is much heavier than SiO₂ (60.08 g/mol). The mol% composition (18.9% PbO) looks very
+different from wt% — this is expected and correct.
+
+These derived wt% values are the canonical test inputs stored in
+`src/modules/refractory/data/glass-viscosity-validation.data.ts`.
 
 ### Expected Isokom Temperatures
 
