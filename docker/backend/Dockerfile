@@ -1,6 +1,4 @@
 # Docker Backend - NestJS API
-# Development-friendly build for initial setup
-
 ARG NODE_VERSION
 FROM node:${NODE_VERSION}
 
@@ -10,30 +8,21 @@ LABEL description="NestJS Backend API for Thermal Software - Development"
 
 WORKDIR /app
 
-# Copy package files (if they exist)
+# Copy package files first for better layer caching
 COPY package*.json ./
+
+# Install all dependencies (including devDependencies needed for ts build)
+RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY . .
 
-# Install dependencies if package-lock.json exists, otherwise skip
-# We'll install interactively inside the container first time
-RUN if [ -f package-lock.json ]; then \
-      if [! -d node_modules ]; then \
-        npm install && npm cache clean --force; \
-      else \
-        npm ci && npm cache clean --force; \
-      fi; \
-    elif [ -s package.json ] && [ "$(cat package.json | grep -c '\"dependencies\":{}')" -eq 0 ]; then \
-      npm install && npm cache clean --force; \
-    else \
-      echo "Skipping npm install - run manually inside container"; \
-    fi
+# Build the application
+RUN npm run build
 
 # Expose port
 ARG BACKEND_PORT
 EXPOSE ${BACKEND_PORT:-4000}
 
-# For development: keep container alive for manual commands
-CMD ["sh", "-c", "if [ -d node_modules ] && [ -f dist/main.js ]; then npm run start:dev; else echo 'Run: npm install && npm run build && npm run start:dev'; tail -f /dev/null; fi"]
-
+# Always start the app
+CMD ["npm", "run", "start:dev"]
