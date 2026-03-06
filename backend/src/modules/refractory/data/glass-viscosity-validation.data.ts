@@ -23,37 +23,8 @@
  *   isokom T at log η = 1, 3, 5 Pa·s (= log poise 2, 4, 6) — model regression output
  */
 
-// ─── Shared types ──────────────────────────────────────────────────────────────
-
-export interface GlassIsokomPoint {
-  /** log₁₀(η / Pa·s) */
-  logEta: number;
-  /** Temperature in °C at this viscosity level — model regression output */
-  T_model_C: number;
-  /** Temperature in °C — measured (where available) */
-  T_measured_C?: number;
-}
-
-export interface GlassValidationEntry {
-  id: string;
-  description: string;
-  source: string;
-  /** Composition in wt% — the input format accepted by the service */
-  composition_wt_pct: Record<string, number>;
-  /** Composition in mol% — as published in the primary source (where mol% is primary) */
-  composition_mol_pct?: Record<string, number>;
-  /** Isokom temperatures from model regression */
-  isokoms: GlassIsokomPoint[];
-  /** Expected model enum key */
-  expectedModel: string;
-  /**
-   * Tolerance in °C for implementation vs paper-model comparison.
-   * The implementation must reproduce the paper regression output to within
-   * this tolerance (NOT the experimental measurement — that tests the model,
-   * not the implementation).
-   */
-  tolerance_model_C: number;
-}
+import type { GlassIsokomPoint, GlassValidationEntry } from './interfaces/glass-viscosity-validation.interface';
+export type { GlassIsokomPoint, GlassValidationEntry };
 
 // ─── LAKATOS 1976 — wt% compositions (primary source) ─────────────────────────
 // Isokom levels: log η = 1, 3, 5 Pa·s  (= log poise 2, 4, 6)

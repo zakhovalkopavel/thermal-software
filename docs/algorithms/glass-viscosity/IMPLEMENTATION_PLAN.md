@@ -1,12 +1,74 @@
 # Glass Viscosity — Implementation Plan
 
 **Date:** 2026-03-06  
-**Status:** ACTIVE — implementation in progress  
+**Status:** ACTIVE — refactored to split-file architecture  
 **Supersedes:** The fake/wrong models in `viscosity-parameters.ts` and `glass-viscosity.service.ts`
 
 ---
 
-## What Must Be Corrected
+## File Architecture
+
+The service is split into focused files with single responsibilities:
+
+```
+backend/src/modules/refractory/
+│
+├── services/
+│   └── glass-viscosity.service.ts          ← NestJS @Injectable orchestrator only
+│                                              Model selection + result assembly
+│                                              Delegates ALL calculations to utils
+│
+├── utils/
+│   ├── glass-composition.util.ts           ← Pure composition functions (no NestJS)
+│   │     normalizeComposition()            ← scale wt% to sum 100
+│   │     wtPctToMolPct()                   ← wt% → mol% (full denominator)
+│   │     molPctToWtPct()                   ← mol% → wt% (inverse)
+│   │
+│   └── glass-viscosity-models.util.ts      ← Pure model calculations (no NestJS)
+│         predictIsokomsLakatos()           ← Lakatos 1976 isokom regression
+│         predictIsokomsFluegel()           ← Fluegel 2007 isokom regression
+│         calcHetheringtonLogEta()          ← Hetherington 1964 Arrhenius
+│         hetheringtonTemperatureAtLogEta() ← Hetherington inverse
+│         fitVtfThreePoints()              ← Analytical 3-point VTF fit
+│         evalVtf()                         ← Forward VTF
+│         temperatureAtLogViscosity()       ← Inverse VTF
+│         calculateFixedPointsFromVtf()     ← All ASTM C965-96 fixed points
+│
+├── data/
+│   ├── glass-viscosity-validation.data.ts  ← Reference glass dataset (test data)
+│   └── interfaces/
+│       └── glass-viscosity-validation.interface.ts  ← GlassIsokomPoint, GlassValidationEntry
+│
+├── interfaces/
+│   ├── glass-viscosity.interface.ts        ← Service result shapes
+│   └── viscosity-parameters.interface.ts   ← VtfPoint, VtfParameters, isokoms, ModelSelectionResult
+│
+├── constants/
+│   └── viscosity-parameters.ts             ← LAKATOS_1976_COEFFICIENTS, FLUEGEL_2007_*, HETHERINGTON_1964, MOLAR_MASSES
+│
+└── enums/
+    └── viscosity-model.enum.ts             ← ViscosityModel, ViscosityModelType, ConfidenceLevel
+```
+
+### Design rules
+
+1. **`glass-viscosity.service.ts`** — NestJS concerns only: DI, routing, result assembly.  
+   No raw arithmetic, no regression formulas, no mol% conversions.
+
+2. **`utils/glass-composition.util.ts`** — composition math only, no model logic.  
+   Exports plain functions, zero NestJS imports (except `BadRequestException` for guards).
+
+3. **`utils/glass-viscosity-models.util.ts`** — model math only, no composition logic beyond  
+   calling `wtPctToMolPct`. Exports plain functions, zero NestJS imports.
+
+4. **`data/interfaces/`** — all data-layer interface types.  
+   Test/validation dataset interfaces must not live in `.data.ts` files.
+
+5. **Public delegates** — the service exposes thin wrapper methods (`predictIsokomsLakatos`,  
+   `fitVtfThreePoints`, etc.) so tests can call them via the injected service instance  
+   without importing utils directly.
+
+---
 
 This plan is informed by:
 - [VISCOSITY_PARAMETERS_AUDIT.md](./VISCOSITY_PARAMETERS_AUDIT.md) — every model in
