@@ -1,0 +1,1434 @@
+Glass viscosity calculation based on a global
+statistical modelling approach
+Alexander Fluegel1
+Pacific Northwest National Laboratory, Richland, Washington, USA
+Date received 17 July 2006
+Revision received 14 February 2007
+Accepted 17 February 2007
+A viscosity model for predicting the complete viscosity curve of glass was developed using a global statistical approach
+and more than 2200 composition–viscosity data for silicate glasses collected from over 50 years of scientific literature,
+including soda–lime–silica container and float glasses, TV panel glasses, borosilicate fibre wool and E type glasses, low
+expansion borosilicate glasses, glasses for nuclear waste vitrification, lead crystal glasses, binary alkali silicates, and
+various other compositions. It is shown that, within a measurement series from a specific laboratory, the reported viscosity
+values are commonly overestimated at higher temperatures due to evaporation losses during the measurement and glass
+preparation; this includes data presented by Lakatos et al (1972) and the recent ‘High temperature glass melt property
+database for process modelling’ by published by Seward et al (2005). Similarly, in the glass transition range many ex-
+perimental data reported for borosilicate glasses are too high due to phase separation effects. The global model developed
+here corrects those errors. The model standard error was 9–17°C, with R2=0·985–0·989. The prediction confidence interval
+in mass production largely depends on the glass composition of interest, the composition uncertainty, and the viscosity
+level. The mixed alkali effect for the viscosity is derived from nonlinear alkali–silica interactions in binary systems.
+
+
+1. Introduction
+The objective of this paper is to develop an accurate
+glass viscosity model relevant to commercial appli-
+cation through statistical analysis and based on all
+composition–property data available in SciGlass.(1)
+The source data in SciGlass originate from numerous
+scientific and technical publications from several
+decades of research that do not always agree. The
+goal in this study is to evaluate and correct systematic
+differences between data from specific investiga-
+tors, thereby making comparable a large number of
+data series and previous viscosity models, creating
+a broadly founded accuracy, and increasing the
+reliability of viscosity predictions. A detailed error
+calculation, sensitive to the glass composition of
+interest, is intended to provide a dependable viscosity
+prediction confidence interval for estimating process
+tolerances in the industry.
+Viscosity, η, is probably the most important
+property in glass making; it strongly influences the
+melting and fining conditions in glass furnaces, which
+are correlated with the furnace energy consumption.
+During glass forming processes the viscosity must be
+tightly controlled to maintain a high product qual-
+ity. The tempera­tures throughout the glass cooling
+schedule are dictated by the viscosity.
+
+Systematic studies of the viscosity–temperature
+relation in glasses were initiated by Vogel,(2) Fulcher(3)
+and Tammann et al,(4) and resulted in the now widely
+accepted Vogel–Fulcher–Tammann (VFT) Equation:
+log(η)=A+B/(T−To)
+(1)
+The viscosity depends on the chemical glass com-
+position as well as temperature. As early as the 1920s,
+English(5) and Gehlhoff et al(6) were engaged in studies
+of soda–lime–silica glasses to establish the sensitivity
+of viscosity to compositional changes.
+It would be very convenient to be able to calculate
+viscosity and its variation with temperature from the
+chemical composition of a glass. Numerous publica-
+tions are devoted to this topic,(7–33) and have been
+summarised by Scholze,(34) Volf(35) and Martlew;(36) the
+data from such publications have recently been in-
+corporated in the SciGlass information system.(1) The
+programs SciGlass(1) and Interglad(37) are equipped
+with an automated simple linear multiple regression
+feature for the glass properties they contain. Among
+the mentioned models, probably most widely used
+at present are the empirical approaches of Lakatos
+et al(7) (soda–lime–silica, borosilicate fibre, lead crys-
+tal), and Fluegel et al(32) (soda–lime–silica, TV panel,
+borosilicate fibre wool and E type, low expansion
+borosilicate).
+Viscosity models that are not based on the directly
+empirical method,2 such as the thermodynamic approach of Conradt,(22) are not intended to provide
+accurate predictions in the first place, but to dem-
+onstrate property relations. Therefore, the accuracy
+of the directly empirical viscosity models described
+in this paper cannot be compared to non-empirical
+models. The directly empirical method allows the
+highest accuracy, considering the limits of validity
+for the model.
+For direct empirical modelling most investigators
+use their own viscosity measurements as the sole data
+source; sometimes findings from another investigator
+who is in good agreement are also considered, such
+as in the models by Öksoy et al(23) and Fluegel et al(32)
+This approach has the advantage that the models
+obtained describe the source data very well. However,
+important issues remain unresolved.
+Experimental viscosity data from various labora-
+tories can differ by 50°C or more, even within simple
+glass systems as shown in Figure 1. (Figure 1 also
+shows model predictions based on the present work
+for later discussion.) Naturally, disagreements in the
+data for commercial multicomponent glasses may be
+substantially larger than for simple binary glasses;
+however, most experimental data for multicompo-
+nent glasses are not directly comparable because of
+differences in the compositions studied.
+As a result of the disagreements between experi-
+mental data from different labora­tories, the models
+derived from those data are also in conflict.(34) For
+example, predictions from several models of the
+
+
+glass melting point in °C at a viscosity of 10 Pa s (100
+Poise) for the compositions given in Table 1 are listed
+in Table 2. All glasses in Table 1 are standards, where
+the viscosity (but not the composition except for DGG
+I) has been verified by several laboratories, excluding
+the soda–lime–silica container glass ‘CO.’ CO is listed
+because of its simple composition, which is covered
+by most viscosity models. The experimental results
+are also shown in Table 2 for comparison.
+The few direct empirical viscosity models, that
+consider papers by several investigators as data
+sources, were published by Bottinga et al,(15) Lyon(14)
+and Fluegel et al.(31) However, in these three papers
+only a small fraction of the available viscosity data
+currently available are considered, and the statistical
+modelling procedure used is not developed in detail.
+The viscosity model of Priven(1,28) is derived from all
+data available in the literature for unary, binary, and
+ternary glass systems, and uses multicomponent
+glasses for verification purposes only. The advantage
+of Priven’s model lies in its practically unlimited ap-
+plication;3 however, it sacrifices accuracy in detail.
+The automated simple linear multiple regression
+features in the databases SciGlass(1) and Interglad(37)
+are not comparable to a careful statistical analysis
+carried out by an expert.
+No viscosity model known to the author quanti-
+fies precisely the error in the predictions for the glass
+composition of interest, considering the results of
+many investigators. The prediction errors of models
+based on data from one single laboratory are not neces-
+sarily valid for other laboratories.(32) In the models of
+Bottinga et al,(15) Lyon,(14) Priven(28) and Fluegel et al(31)
+some overall errors are reported, but prediction errors
+valid for a specific composition are not given.
+Systematic differences between viscosity data from
+different publications have not been investigated,
+except in earlier papers by the author.(31,32)
+Most viscosity models use the additivity method
+wherein the predictions change linearly with the
+concentrations of the glass components. While this is
+a good approach within limited composition ranges,
+it cannot be applied to different glass families simul-
+taneously (such as soda–lime–silica and borosilicate),
+and therefore, data based on this approach are not
+comparable over wide composition areas.
+2. Statistical data analysis
+The source data and all references used in this work
+are given in the SciGlass database.(1) References for
+the larger or otherwise important data series are
+displayed in Tables 1 and 8–11. All glass compositions
+were converted to mol%. The concentrations of some
+transition metals in varying oxidation states were
+added up to the most common oxidation state. Table
+3 lists some constraints imposed during modelling,
+although the large number of component combina-
+tion constraints cannot be listed here due to space
+limitations. All limits are given in detail in Ref. 45.
+The glass water content varied between 80–642 ppm
+by weight.(46) The original viscosity data were used
+to interpolate temperatures of constant viscosity
+(isokom) at log10(η/(Pa s))=1·5, 6·6 (~Littleton Soften-
+ing Point for soda–lime–silica glasses), and 12·0
+(close to Tg). The glass compositions in mol% were
+employed as independent variables for modelling,
+while the isokom temperatures were chosen as model
+responses. This approach has the advantage that no
+assumption is made about the temperature–viscosity
+curve, as opposed to models describing the VFT(7,23)
+or Arrhenius parameters.(25,33)
+Ideally, it would be desirable not to limit the analy-
+sis to only three viscosity levels, as has been done
+here following the tradition by Lakatos et al (Glass
+Technol., 1972),(7) but to include several more with one
+for each decimal power, e.g. log10(η/(Pa s))=0, 1, 2, 3, …
+12. This would provide a very valuable insight about
+the validity of common temperature–viscosity equa-
+tions, such as Equation (1), over wide temperature
+ranges. It is planned to perform this analysis in a
+forthcoming publication however, because the study
+of three viscosity levels already gives much material
+for discussion, it is worthwhile to publish it now. For
+now, the reader is advised to estimate the viscosity
+levels not discussed here by application of Equation
+(1). Such estimation is very applicable to commercial
+glasses (based on earlier studies by the author,(32) and
+on the work of Lakatos et al (Glass Technol., 1972),(7)
+who centred his model on log10(η/(Pa s))=1·5, 6·5, and
+11·5). However, very precise measurements below
+common error limits reveal that the VFT Equation (1)
+may not be followed exactly; deviations of up to 4°C
+have been observed for the glass DGG I.(43)
+Details of the statistical data analysis procedure are
+described elsewhere.(32,47–48) The equation for viscosity
+predictions is
+Isokom temperature = b_0 + \sum_{i=1}^{n} \left[ b_i C_i + \sum_{k=i}^{n} \left( b_{ik} C_i C_k + \sum_{m=k}^{n} b_{ikm} C_i C_k C_m \right) \right]    (2)
+
+
+where the isokom temperatures are expressed in °C,
+the b-values are the model coefficients in Tables 4–6,
+the C-values are the glass component concentrations
+in mol% excluding silica, and n is the total number
+of glass components excluding silica.
+The equations for calculating the confidence inter-
+val of the viscosity isokom predictions, considering
+the uncertainty of the glass composition of interest,
+have been described in earlier publications.(32,47–48) It
+must be noted, that all viscosity and error calculations
+in this work can be performed conveniently using a
+computer program connected to this study.(45)
+3. The global viscosity model
+Tables 4–6 list all coefficients and corresponding t-
+values for the global viscosity model. The standard
+error in a coefficient is given by the coefficient divided
+by its t-value. Coefficients not shown in Tables 4–6
+have an insignificant influence(32,47–48) on the viscosity.
+In Table 7 goodness-of-fit and other related indica-
+tors(32,47–48) are displayed, and Tables 8–10 show the
+data-series that were systematically corrected in the
+model by constant offsets. The properties of large
+data-series are provided in Table 11. The correlation
+and inverse information matrices are given in Ref. 45.
+Residuals, e.g. in Table 7, are defined as the differ-
+ences between observed and calculated values.
+4. Discussion
+4.1. Phase separation in the glass softening
+range
+Multiple regression modelling using polynomial
+functions (Equation (2)) described the viscosity data
+well for most silicate glasses studied. At the vis-
+cosity level log(η/(Pa s))=6·6 (~Littleton Softening
+Point), however, the borosilicate standard 717A(40)
+appeared as an outlier in the initial modelling stud-
+ies. Initially, the predicted Littleton Softening Point
+was significantly higher than the value of 719°C
+given in the certificate.(40) Such unusual behaviour
+was not observed for any other of the six standards
+listed in Tables 1 and 12 at any viscosity level. It was
+concluded that either the standard or the mean of
+all other borosilicate data must be questionable. In
+this work it was decided to rely on the borosilicate
+standard 717A because it was carefully prepared and
+measured in several laboratories as described in the
+certificate;(40) phase separation was assumed to be
+absent. Concerning other glasses phase separation
+effects were considered as explained below. In addi-
+tion, it was observed that some experimental data in
+the literature do not appear to be reliable. For exam-
+ple, rather doubtful borosilicate viscosity curves are
+reported by Akimov,(73) such as the one depicted in
+Figure 2. All data reported by Akimov were excluded
+from the calculations in this study.
+The main reason why the standard 717A did not
+fit into initial models at log(η/(Pa s))=6·6 is the influ-
+ence of phase separation(74) on the viscosity. Figure 3
+shows a viscosity curve of a borosilicate glass that has
+a strong tendency to phase separate below 753·5°C. At
+low temperatures the viscosity is much higher than it
+would be expected from high temperature data due
+to the formation of a continuous silica-rich phase(75)
+during cooling. Many common borosilicate glasses
+have a tendency towards phase separation with a
+continuous silica-rich phase. This tendency is not as
+strong as the example in Figure 3, however, because
+of inhibition by Al2O3, K2O, and other components
+such as those found in standard 717A. In commercial
+glasses, phase separation is also prevented kinetically
+through sufficiently high cooling rates.(76, p 92) Figure
+4 depicts the metastable immiscibility curve in the
+system SiO2–Na2O–B2O3.
+Phase separation in common borosilicates occurs
+in the glass softening range,(74–76) while at high tem-
+peratures the separated phases dissolve mutually,
+and at low temperatures in the glass annealing range
+it is inhibited kinetically or thermo­dynamically.(78)
+Borosilicate glasses that are cooled sufficiently quick-
+ly are homogeneous at low and high temperatures,
+while during viscosity measurement in the softening
+range, phase separation takes place and the viscosity
+increases.
+Hence, in this work the borosilicate standard
+717A was introduced in the model at log(η/(Pa s))=6·6
+with a tenfold weight compared to all other glasses,
+thereby mitigating the influence of phase separation
+in other borosilicates. It can be concluded that soften-
+ing range viscosity data of borosilicate glasses should
+be published carefully, only after examining the phase
+separation tendency through prolonged viscosity
+measurements under isothermal conditions, light
+scattering experiments, or similar measures.
+4.2. Evaporation loss during melting
+It is a curious property of the viscosity models in this
+study that most data series show a trend, as depicted
+in Figure 5, that to the best of the author’s knowledge
+cannot simply be traced back to a linear influence
+of any published glass component or component
+combination. The data series in Figure 5 from Lakatos
+et al,(7) Hrma et al,(38) and the Owens-Illinois Com-
+pany(67) are important because glass engineers and
+scientist frequently use them for viscosity modelling.
+Trends similar to those in Figure 5 are not limited to
+soda–lime–silica glasses, but also can be observed in
+other glass families such as most borosilicates, TV
+panel compositions, and lead silicates. The average
+of all residual trends of individual data series in this
+work is 0·09, i.e. in a series spanning over 200°C the
+residuals increase 18°C in going from low to high
+temperature isokoms. The residual trend of all data
+series combined in the three models of this study
+is insignificant, the trends apply to the individual
+series only.
+Residual trends, as seen in Figure 5, also appear if
+all coefficients representing component interactions
+and offsets in the tables are excluded, according
+to the well known linear additivity principle,(1,34–37)
+The trends are also present in very simple viscosity
+models, such as that given by considering all binary
+SiO2–Na2O glasses in SciGlass,(1) or sometimes even in
+viscosity additivity models for one single series, e.g.
+the soda–lime–silica container glasses in the ‘High
+temperature glass melt property database’.(38,65–66)
+It can be stated that residual trends as observed in
+Figure 5 are not caused by the statistical analysis.
+Naturally, residual trends in models developed from
+only one data series are often relatively insignificant
+because the trends are interpreted as compositional
+effects. Therefore, the errors of such local models
+sometimes appear small, which may not necessarily
+reflect the reality.
+The residual trends cannot be reduced to a viscos-
+ity curve that does not follow the VFT Equation (1) or
+non-Newtonian viscous flow because the calculations
+in this work are not based on any such assumptions.
+It also cannot be concluded that thermocouple or
+viscometer calibrations are systematically incorrect,
+as such influences cannot be detected in the viscosity
+models presented here. Furthermore, it is not pos-
+sible to link the trends to changing glass chemistry
+with increasing temperature because this effect is
+accounted for already, evidenced by the fact that no
+overall trends can be observed in the models; the
+trends appear only in individual series. Instead, an
+attempt was made to investigate the relation between
+alkali and boron oxide evaporation and the residual
+trends. To achieve this an additional variable was
+introduced into the models representing the product
+of the isokom temperature in °C and the sum of the
+volatile oxide concentrations in mol% of Na2O, K2O
+and B2O3. If the product is high, alkali and boron
+oxide evaporation can be expected to be more signifi-
+cant. Possible evaporation losses of SO3, F, NaCl, H2O,
+ZnO, and PbO were not taken into account.
+It turned out that through consideration of
+evaporation with a single variable the standard
+model errors as seen in Table 7 can be reduced by
+about 15%. The fact that the evaporation variable
+is so significant at all of the three viscosity levels
+shows that evaporation mainly takes place during
+the glass melting process. Also quenching of the melt
+in water as practiced by Lakatos et al(7) reduces the
+alkali and boron oxide content. Meerlender(43) reports
+a relatively insignificant viscosity isokom increase
+of 1°C at 700°C if the completely melted standard
+DGG I (soda–lime–silica glass) is heat treated for 15
+h at 1300–1400°C or for 20 h at 1200–1300°C under
+otherwise unknown conditions. The evaporation
+loss during glass melting is more significant than
+after completion of the melting process because of
+the high surface area of the batch and gas and water
+evolution. Boron oxide readily evaporates in wet
+furnace atmospheres.(79) In addition, the ‘loss on igni-
+tion,’ used to quantify surface adsorbed water in the
+batch materials, is not always evaluated in literature
+data. However, the reported chemical analysis of the
+glass compositions in some large data series(7,38,49,65–67)
+theoretically should account for evaporation losses,
+especially if the chemical analysis was performed
+not before(38,65–66) but after high-temperature viscosity
+measurements.(7) This work did not detect that the
+chemical analysis has an influence on the composi-
+tion–viscosity relation because an accurate chemical
+analysis of multicomponent silicate glasses is more
+difficult than viscosity measurements. For verifica-
+tion, the batched and analysed compositions of
+hundreds of borosilicate glasses for nuclear waste
+vitrification.(25,71) were compared. It turned out that
+the average error (standard deviation of differences
+between batched and analysed concentrations) of the
+Na2O concentrations for 687 waste glasses containing
+an average of 13·4 wt% Na2O was 10·2% of the total
+Na2O content, with an evaporation loss of 3·2% of the
+total Na2O content. Concerning B2O3 the error was
+8·0% of the total B2O3 content of 9·6 wt%, with an
+evaporation loss of 0·7% of the total B2O3 content.
+As seen in the aforementioned example, evapora-
+tion losses during glass melting are difficult to detect
+by chemical analysis. According to gravimetric inves-
+tigations by the author on simplified compositions an
+evaporative loss of about 3% of the total Na2O content
+is reasonable in laboratory experiments. Assuming
+evaporative losses similar to those seen with waste
+glasses, viscosity isokom temperatures for an average
+composition in this work would increase by about 9°C
+at log(η/(Pa s))=1·5, 4°C at log(η/(Pa s))=6·6, and 2°C
+at log(η/(Pa s))=12·0, which is not sufficient to fully
+account for the observed residual trends.
+The introduction of an evaporation variable for
+Na2O, K2O, and B2O3 reduces the residual trends
+such as those seen in Figure 5, but it does not remove
+them. Either there exist other factors that influence the
+composition–viscosity relation at high temperatures
+within the measure­ment series, or the evaporative
+loss was not represented correctly by the simple
+variable employed in this study. Evaporation does
+not increase linearly with temperature as assumed
+for simplicity here, but exponentially. Furthermore,
+it is possible that the different batch materials used
+in each of the various studies have slightly different
+compositions which are difficult to analyse in the re-
+sulting glass, for example they may contain differing
+amounts of physically adsorbed water. In laboratory
+experiments of the author often the melted glass is
+about 1 wt% lighter than the batch composition sug-
+gests, even considering Na2O and B2O3 evaporation.
+Varying water content in the batch materials would
+result in a different water contents in the resulting
+glasses; the water content would be expected to
+decrease with increasing melting temperature and
+time. Also the melting conditions, for example is
+the melting atmosphere wet or dry, can have similar
+influences on the glass composition.
+In this paper, variables taking into account evapo-
+ration and the water content were not introduced in
+the final model versions presented in Tables 4–6 be-
+cause further experimental investigations and mod-
+elling work are recommended first. It is suggested
+that glasses with high viscosity, high concentrations
+of volatile com­pounds, and based on this work high
+residuals, should be studied. In addition, a statistical
+analysis dedicated to the glass water content should
+be performed, if possible, augmented by selected
+experiments. Through a few verification experiments
+the prediction errors of the model could be reduced
+significantly.
+The residual trends are part of the cause (besides
+component interactions) of viscosity models based
+on a single data series being poor at predicting the
+viscosities for other data series, especially if the
+glasses in the other series include another area of
+temperature-viscosity behaviour.
+4.3. Model accuracy
+Besides the phase separation effects mentioned
+above, glasses within specific composition areas
+were not identified as outlier suspects; i.e. sharp
+composition–viscosity trends did not seem to exist
+that could not be described through polynomial
+functions. The glass composition–viscosity relation
+appears to show a smooth behaviour. Further phase
+separation or crystallisation effects did not occur. It
+is possible that sharp composition–viscosity trends
+within the limits of validity of the model described
+in this work(45) might be discovered in future.
+This study enables predictions of the viscosity iso-
+koms temperatures of silicate glasses with a standard
+error of 9–17°C based on over 100 references given
+in SciGlass(1) and the Tables 1, and 8–11. The degrees
+of freedom(32,47–48) in Table 7 are very close to the total
+number of the analysed data. There are about 15 times
+more data in the models than variables, which makes
+them equivalent to a one-variable linear regression
+using 15 data points. With one exception the models
+do not contain data points with high leverage(32,47–48)
+as demonstrated by R2 (predicted) and R2 (valida-
+tion) in Table 7. One experimental value of a binary
+potassium silicate glass (30 mol% K2O(80)) with high
+leverage and large residual was force fitted into the
+model at log(η/(Pa s))=6·6 because the data point
+appeared reasonable compared to other data in the
+composition area based on knowledge of the subject
+matter.
+The similarity between R2 and R2(adjusted) in Table
+8 shows that the models are not over-fitted with too
+many variables.
+The experimental errors derived from fitting all
+the data for binary alkali silicate glasses listed in
+SciGlass(1) are close to the standard model errors in
+Table 7, which is an indicator that the model is not
+over- or under-fitted. The model appears to have the
+same accuracy as the experimental measurements.
+A comparison of hundreds of experimental data
+with the model predictions from this work is given
+in Table 11. It is not surprising that the majority of
+the experimental data agree well with the model be-
+cause the model is based directly on the experimental
+findings, without intermediate assumptions about
+the glass structure (formation of chemical equilibria
+between structural groups) or property relations (be-
+tween viscosity and heat capacity, Gibbs free energy
+difference of devitrification, enthalpy of melting, ther-
+mal expansion, liquidus temperature, surface tension,
+molar volume, shear modulus, cooling rate), such
+as in the models by Conradt(22) or Priven.(28) On the
+contrary, structural group formations and property
+relations can be recognised to their full extent only
+after a statistical analysis of the available data, such
+an analysis has been initiated in this study.
+The advantage of the empirical modelling ap-
+proach is its high accuracy, when the limits of validity
+of the model are considered.
+Numerous viscosity models due to other authors
+exist.(7–33) The global model developed in this study
+is more versatile and accurate than previous works,
+as demonstrated in Table 2. This is caused by the fact
+that the source data of most previous models plus
+additional published values were combined in this
+paper through advanced statistical analysis. Outside
+the limits of validity of this study,(45) other models can
+be used.(22,28–29)
+An experimental model validation would be supe-
+rior to the data splitting and R2 (predicted) calculation
+procedures used in this work. At present, it is not
+possible to compare model predictions to findings
+of other investigators because the model includes
+all of them. Further experimental investigations are
+required.
+The data series in Tables 8–10 do not compare well
+to findings of other investigators. The offsets of those
+series are assumed to indicate systematic measure-
+ment errors that had to be corrected mathematically
+in this work. The error in the series by Allison et al(49)
+has been reported previously.(31) Some systematic
+errors such as those in the work of Eipeltauer et al(51)
+can be confirmed by analysing data in binary glass
+systems only. The correlation matrices(45) indicate that
+the systematic offsets of the series in Tables 8–10 are
+not strongly correlated with other model variables,
+which means that the offsets cannot be explained
+by unique glass composition regions investigated
+in those series. However, weak correlations remain.
+Further experimental investigations can help improv-
+ing the accuracy of the systematic offsets.
+Data series without systematic offsets in Tables
+8–10 and with a low standard deviation, σ, of the
+residuals in Table 11 were regarded as being of high
+quality (high precision), for example the series re-
+ported by the Owens-Illinois Company(67) or Lakatos
+et al.(7) The incorporation of those data series in this
+study decreases the error of the model and makes
+high accuracy predictions possible. In contrast, series
+with high σ of the residuals increase the error.
+It cannot be claimed that all the composition-
+viscosity trends found in Tables 4–6 or rejected as
+insignificant are of the same accuracy. However,
+within the limits of validity of the model(45) all com-
+position–viscosity trends fall within the confidence
+interval for the predictions.(45)
+The certified values of six viscosity standards agree
+well with the predictions of the model listed in Table
+12. It needs to be considered that not all viscosity
+levels and chemical compositions of the standards
+are certified.
+Based on all of the statements above it is claimed
+that the viscosity models in Table 4–6 are accurate,
+including error calculations derived from the inverse
+information matrix(48) in Ref. 45. Viscosity isokom
+temperatures values of glasses that fall into the ap-
+plication ranges of this work given in Ref. 45, and
+with a residual larger than three times the model
+standard errors in Table 7 might be questionable.
+Previously published viscosity models cannot claim
+the same level of accuracy as this study because
+they are based on experimental data from only one
+or a few selected laboratories as explained in the
+introduction, and therefore are missing systematic
+inter-laboratory comparison.
+4.4.Influence of the glass composition on the
+viscosity
+All single component coefficients bi from Equation
+(2) in the Tables 4–6 have the unit °C/mol%, and they
+quantify the viscosity isokom variation caused by the
+exchange of 1 mol% SiO2 by 1 mol% of the considered
+component. For example, if 1 mol% fluoride ions are
+introduced into a silicate glass in exchange for 1 mol%
+SiO2, the temperature of constant viscosity (isokom)
+at log(η/(Pa s))=1·5 decreases by 11·7°C, while at
+higher viscosities the isokom temperature decreases
+by 9·3 and 8·1°C, respectively.
+Because the main component SiO2 was excluded
+from the calculation following the slack variable
+modelling approach,(32,47–48) all coefficients represent
+interactions with SiO2.
+For an accurate interpretation of model coeffi-
+cients, the correlation matrices given in Ref. 45 must
+be considered. Unfortunately, none of the variables
+are absolutely statistically independent; i.e. all vari-
+ables interfere more or less mutually. It is believed
+that in the immediate future, it will not be possible
+to decorrelate all variables completely because this
+would require a high number of well planned and
+very accurate measurements. Therefore, it is recom-
+mended to consider the model coefficients in this pa-
+per as preliminary findings until further experimental
+data become available. Nevertheless, as long as all
+validity limits summarised in Ref. 45 are followed,
+accurate predictions are possible.
+Because of mutual correlations, it is suggested that
+the predictions of the model are compared rather
+than coefficient values to evaluate the influences
+of various glass components on the viscosity for a
+specific practical application, such as in the examples
+in Figures 1, 6 to 14, and 16.
+The model constants bo in Tables 4–6 theoretically
+are supposed to represent the viscosity isokom tem-
+peratures of glasses comprising mainly SiO2, and all
+components with insignificant influence on the vis-
+cosity such as H2O, some fining and colouring agents,
+and impurities. However, few experimental data exist
+for high silica glasses, and the models in this paper
+are not applicable to those composition areas.
+Influences of the glass composition on the viscosity
+can be extracted from Tables 4–6. General trends are
+discussed in other publications.(31–32,34 (p 128,156)) Figures
+6 to 12 display spider graphs calculated using the
+model for approximate average compositions at
+the investigated viscosity levels. In Figure 6 at high
+temperature the composition–viscosity functions
+(excluding the one for B2O3) appear to be rather
+linear, while at lower temperatures in Figures 9 and
+11 more curvature is observed. It can be concluded
+that the component interactions, which cause de-
+viations from additive linear composition–property
+relations, are especially strong at low temperatures.
+At high temperatures thermal dissociation reduces
+many interactions. Another common tendency is that
+most glass components decrease the viscosity at high
+temperatures, while at low temperatures significantly
+fewer components have a viscosity lowering effect.
+4.4.1. Silica
+SiO2 always increases the viscosity in common silicate
+glasses, especially at high temperatures. At low tem-
+peratures other components can increase the viscosity
+more than silica as seen in Figures 11 and 12.
+4.4.2. Boron oxide
+B2O3 strongly decreases the viscosity at high tem-
+peratures, while at low temperatures this influence
+is reversed. The coefficients in Tables 4–6 assume that
+boron oxide on its own always decreases the viscosity,
+however, in interaction with sodium oxide a strong
+viscosity increase occurs, which is a manifestation of
+the boron oxide anomaly.(34(p138),76(p138)) In Figure 13 it is
+demonstrated how the viscosity isokom temperatures
+in ternary sodium borosilicate glasses increase upon
+replacement of silica by boron oxide. The boron oxide
+anomaly involving Li2O and K2O is not represented in
+the model in Table 6 at log(η/(Pa s))=12·0 because lim-
+ited experimental data for common potassium and
+lithium borosilicate glasses are available. However,
+from the model at the viscosity level log(η/(Pa s))=6·6
+(Table 5) it can be concluded that Li2O, Na2O, and
+K2O show comparable influences of the boron oxide
+anomaly.
+With increasing temperature the boron oxide
+anomaly decreases as reported in the literature(81) and
+comprehensible through application of the model
+considered in this study. Therefore, boron oxide
+tends to shorten the temperature–viscosity curve of
+soda–lime–silica glasses.
+4.4.3. Phosphorus oxide
+P2O5 increases the viscosity of silicate glasses as
+shown in Figure 7, and the coefficients in Table 5.
+The not-mentioned (insignificant) coefficient in Ta-
+ble 4 shows that P2O5 does not change the viscosity
+isokom at log(η/(Pa s))=1·5 if introduced into a glass
+in exchange for silica; i.e. it increases the viscosity
+isokom to a similar extent to silica. Especially at low
+temperatures P2O5 can cause phase separation and
+crystallisation(76 (p 92)) that may significantly alter the
+viscosity.
+4.4.4. Alumina and other intermediate glass
+oxides
+Al2O3 strongly increases the viscosity of commercial
+glasses, most significantly at low temperatures,
+caused by the elimination of nonbridging oxygen
+sites. ZrO2 shows a very similar influence on the
+viscosity. Other intermediate glass oxides like TiO2
+or ZnO increase the viscosity at low temperatures
+or have no influence respectively, while at high
+temperatures the viscosity is decreased. Some heavy
+oxides such as PbO or Bi2O3 have a strong viscos-
+ity lowering effect over the full temperature range
+because of their high cation polarisability. Further
+intermediate oxide influences can be derived from
+the coefficients in Tables 4–6. In particular the model
+at log(η/(Pa s))=1·5 given in Table 4 contains a large
+number of intermediate glass oxides as the source
+data including multicomponent glasses for nuclear
+waste immobilisation.(25,71)
+4.4.5. Alkali and alkaline earth oxides
+Alkali and alkaline earth oxides are traditional glass
+network modifiers that lead to the formation of non-
+bridging oxygen sites. They all decrease the viscosity
+in the glass melting range approximately in the order
+MgO<CaO<SrO<BaO<K 2O<Na2O<Li2O (strongest
+effect). The order may slightly change depending
+on the glass composition. Various effects seem to
+interfere because, interestingly, alkaline earth oxides
+with high atomic weight often decrease the viscos-
+ity more than alkaline earth oxides with low atomic
+weight, but for alkali oxides this trend is reversed. The
+alkaline earth oxides possess the ability to bridge over
+two non-bridging oxygen sites at low temperature,
+thereby strengthening the network and increasing the
+viscosity. MgO can show special properties because
+of its partial glass forming abilities at high alkali
+concentrations.(34(p134))
+It is interesting to note that in binary alkali silicates,
+according to the original data(1) and the model in
+Table 6 at the viscosity level log(η/(Pa s))=12·0, Li2O
+surprisingly does not decrease the viscosity isokoms
+as much as Na2O. However, in multicomponent
+glasses Li2O has the stronger effect (see Figure 12),
+again in agreement with the experimental data in
+SciGlass.(1) It is possible that phase separation and
+crystallisation in binary lithium silicates(82–83) are the
+cause of this behaviour.
+One of the most widely studied component inter-
+actions in glasses is the mixed alkali effect,(84–86,34 (p 132))
+especially for properties based on diffusivity such as
+the electrical conductivity. Controversy exists to the
+present day about the origin of this effect. The mixed
+alkali effect also influences the viscosity. Figure 14 il-
+lustrates the observation that at a constant total alkali
+concentration ternary mixed alkali silicate glasses
+have a lower viscosity than either of the two cor-
+responding binary alkali silicates. This effect can be
+observed most distinctly at low temperatures, while
+in the glass melting range its influence is significantly
+reduced. The mixed alkali effect is the cause of the
+stronger influence of K2O as compared to Na2O on the
+viscosity isokom temperatures in Figures 11 and 12.
+As the viscosity at low temperatures is significantly
+reduced, and at the same time at high temperatures
+not much change occurs, the mixed alkali effect
+extends the glass working range. The mixed alkali
+effect for viscosity may also be observed at low total
+alkali concentrations, as opposed to that for the
+electrical conductivity. For example, Leko(87) found a
+deep minimum of the viscosity isokom temperatures
+at log(η/(Pa s))=10 in ternary mixed alkali glasses
+containing 5 mol% Na2O+K2O total, when there was
+no mixed alkali effect for the electrical conductivity.
+In contrast, Nemilov(88) did not observe a mixed alkali
+effect for the viscosity in ternary sodium potassium
+silicates below 10 mol% total alkali content.
+The mixed alkali effect has a negative (decreasing)
+effect on viscosity isokom temperatures. The model
+predictions in this study describe this behaviour well,
+as demonstrated by Figures 14, 11, and 12. Therefore,
+it is all the more surprising that all mixed alkali
+coefficients Na2O×K2O, Na2O×Li2O, and K2O×Li2O
+in Tables 4–6 are not negative, but positive. This
+cannot be explained by linear variable correlation
+effects,(32,47–48) because the correlation matrix(45) shows
+that all noteworthy correlations are positive and
+reduce the values of the mixed alkali coefficients
+Na2O×K2O, Na2O×Li2O, and K2O×Li2O.
+During the common model fitting technique ap-
+plied here(32,47–48) all coefficients are optimised to yield
+the simplest result with the maximum R2 value. An
+examination of the coefficients in Tables 4–6 shows
+that the mixed alkali effect is not obtained through the
+coefficients Na2O×K2O, Na2O×Li2O, and K2O×Li2O,
+but rather through the coefficients Na2O, (Na2O)2,
+(Na2O)3, K2O, (K2O)2, (K2O)3, Li2O, (Li2O)2, and (Li2O)3,
+based largely on experimental data from independent
+binary alkali silicate systems. The model describes
+the viscosity behaviour in binary alkali silicates and
+ternary mixed alkali silicates equally well, using
+mainly the coefficients for binary alkali silicates.
+Therefore, following the logic of the model the
+mixed alkali effect for the viscosity is not caused by
+alkali–alkali interactions in the first place but mainly
+by independent alkali–silica interactions. Alkali–silica
+interactions cause small additions of alkali oxide to
+pure silica glass to have a relative stronger influence
+on the viscosity than large additions. In other words,
+the mixed alkali effect is a manifestation of a general
+nonlinear composition–viscosity behaviour, well
+known in binary alkali silicate glasses.
+For additional confirmation of this statement a
+simple model was developed, based exclusively
+on all available composition–viscosity data for the
+binary systems SiO2–Na2O and SiO2–K2O given in the
+SciGlass databases(1) listed in Tables 13 and 14. The
+derived model is given in Table 15, and the dotted
+line in Figure 14 shows its application to the mixed-
+alkali system studied by Poole.(72) It is obvious in
+Figure 14 that a mixed alkali effect for the viscosity
+derives directly from nonlinear composition–viscos-
+ity behaviour of independent binary systems, without
+alkali–alkali interaction.
+Figure 15 shows the nonlinear composition–vis-
+cosity behaviour in binary glasses in one of its ex-
+treme cases. The experimental data in Figure 15 were
+published by Leko et al,(1,89) and they are well accepted
+based on comparable values(34 (p 165)) and the structural
+model by Avramov et al.(90) The models in this paper
+cannot be applied to the high silica glasses shown in
+Figure 15; however, in Figure 1 and Tables 13 and 14 it
+is also shown that at higher alkali concentrations the
+composition–viscosity curves in the binary systems
+SiO2–Na2O and SiO2–K2O are nonlinear. Additional
+examples of nonlinear composition–property behav-
+iour have been provided by Mazurin et al(91) using the
+SciGlass database.(1)
+The positive coefficients for Na2O×K2O, Na2O×Li2O,
+and K2O×Li2O could be caused by interactions be-
+tween two different alkali oxide–silica bonding struc-
+tures, which have a comparatively weak influence
+on the viscosity. On the other hand, the mixed alkali
+effect for viscosity is largely based on interactions be-
+tween alkali oxides and silica, which have a compara-
+tively strong influence on the viscosity, without direct
+alkali–alkali interference. Alkali ion interactions in
+mixed alkali glasses through ion pair formation can-
+not be conclusively verified experi­mentally,(109) which
+means the modelling efforts of Lyon, which assume a
+theoretical mixed alkali compound Na2K2O2 in glass,
+appear unreliable.(14) The fact that mixed alkali glasses
+produced at temperatures below Tg by ion exchange
+sometimes show a mixed alkali effect for the electrical
+conductivity(110) and sometimes do not(111) underscores
+the importance of interaction with the major network
+former that mainly occurs during heating of those ion
+exchanged glasses above Tg.
+According to the model, the mixed alkali effect for
+viscosity is not a special case that occurs exclusively in
+mixed alkali silicate glasses. Many glass components
+show nonlinear composition–viscosity trends. The
+literature reports mixed alkaline earth(112) (see also
+Figure 16), mixed oxide,(110,113) mixed anion,(114) mixed
+alkali–water,(115) and mixed glass former(116) effects
+that even occur in glasses where nonbridging oxygen
+sites are absent.(117) In addition, mixed mobile ion,(118)
+and similar effects(86,119) are known for other properties
+and quite possibly also occur for viscosity. Naturally,
+the mixing effects can only be observed as viscosity
+minima or maxima as long as the influences of the
+considered components are similar; otherwise, the
+strong difference between both influences leads to a
+more or less nonlinear composition–viscosity func-
+tion without extrema if mixing effects are present.
+From the MgO×CaO coefficients in Tables 4–6
+it appears that the simultaneous presence of MgO
+and CaO in a glass decreases viscosity isokoms,
+especially at low temperatures. It is likely that the
+negative MgO×CaO coefficients are a manifestation
+of a mixed alkaline earth effect that could not be
+reduced otherwise to MgO and CaO squared and
+cubic terms, based mainly on binary alkaline earth
+silicates, because those glasses are difficult or impos-
+sible to prepare.
+The models in this study do not explain the
+cause of the mixed alkali effect for the viscosity and
+similar composition–viscosity trends, but they show
+that the mixed alkali effect and nonlinear composi-
+tion–viscosity trends in binary glasses largely have
+the same origin, namely interactions of individual
+alkali oxides with glass network formers rather than
+interactions between alkali oxides. Details of those
+network former–alkali interactions remain the topic
+for other research such as that of Avramov et al,(90)
+especially with regards to such extreme behaviour
+as that seen in Figure 15.
+If this hypothesis concerning the mixed alkali ef-
+fect for the viscosity holds true, it should not vanish
+at low alkali concentrations because at low alkali
+concentrations the composition–viscosity behaviour
+becomes strongly nonlinear as seen in Figure 15. This
+is in agreement with experimental observations on
+silicate glasses made by Leko(87) who observed the
+mixed alkali effect at 5 mol% total alkali content, and
+in disagreement with observations by Nemilov(88) who
+did not observe it at 10 mol% total alkali content.
+It would be interesting to apply the approach
+presented here to the mixed alkali effects of other
+properties, especially the electrical conductivity.
+For this purpose it needs to be considered that the
+mixed alkali effect must have at least two causes with
+opposite influence. If only one cause existed (glass
+network weakening) then with decreasing viscosity
+the conductivity would increase when alkalis are
+mixed. However, the mixed alkali effect leads to a
+decrease of the electrical conductivity (ion mobility
+reduction). Glass network weakening by itself leads
+to an improved ion mobility. This contradiction is
+recognised but not often discussed or even under-
+stood in the literature(84,p260) because the main focus
+of mixed alkali research is centred on the electrical
+conductivity, i.e. the reduction in ion mobility. With
+respect to viscosity the mixed alkali effect appears
+to be mainly due to the mixing of two independent
+binary systems, in the case of the electrical conductiv-
+ity strong alkali–alkali interactions need to be taken
+into account. This agrees in principle with Kim et
+al,(120) who conclude from their experiments that
+the mixed alkali effects for viscosity and electrical
+conductivity must be considered separately. It is pos-
+sible that the Na2O×K2O, Na2O×Li2O, and K2O×Li2O
+interactions in Tables 4–6, that moderately increase
+the viscosity, have a strong impeding effect on the
+alkali ion mobility. If proven correct, those opposing
+causes might be the reason why the mixed alkali
+effect for the electrical conductivity is not observed
+at low alkali concentrations; i.e. network weakening
+and reduction in ion mobility due to alkali–alkali
+interactions cancel each other as far as ion mobility
+is concerned. In this respect it is beneficial to evaluate
+the experimental findings of Ivanov,(121) according to
+which the conductivity minimum in mixed alkali
+germanate glasses not only disappears at low alkali
+concentrations into a linear function, but beyond
+this, the curvature slightly reverses from concave to
+convex. Accordingly, at very low alkali concentrations
+it could be speculated that the mixed alkali effect for
+electrical conductivity may reverse if the influence
+of the network weakening on the ion mobility is
+stronger than the reduction in ion mobility caused
+by alkali–alkali interactions.
+4.4.6. Anions and water
+Fluoride and chloride ions in glass lower the vis-
+cosity because of the creation of terminal Si–F and
+Si–Cl bonds. Polar molecules such as H2O lower the
+viscosity as well, based on dissociation and reaction
+with Si–O bonds. The influence of water could not
+be detected in this work because of the few available
+data and the difficulty of H2O analysis in glass.(122)
+However, the viscosity lowering effect of H2O is well
+known in the literature.(34(p145),115,123) Also sulfur oxides
+and associated anions, expressed commonly as SO3,
+decrease the viscosity of glass melts, while in the glass
+transition and softening range no influence could be
+detected because of the few available data.
+5. Conclusions
+Models based on multiple regression using poly-
+nomial functions for estimating the temperature-
+viscosity behaviour of silicate glasses from their
+chemical composition have been developed. The
+models combine the majority of the published data
+relevant to commercial glass production and the
+previous models derived from them in unified equa-
+tions. The accuracy of prediction could be improved
+through an advanced statistical analysis approach,
+for example by analysing systematic differences be-
+tween laboratories. Detailed error calculations for the
+predictions are possible, considering the uncertainty
+of the chemical glass composition of interest.(45) The
+accuracy of prediction is comparable to measurement
+series performed in several laboratories, and it is
+superior to the accuracy of a single measurement.
+The presented models provide a new approach
+to the mixed alkali effect. It has been shown that the
+mixed alkali effect for viscosity is largely not caused
+by alkali–alkali interactions, but rather by nonlinear
+alkali–silica interactions. The mixed alkali effect for
+viscosity is not limited to mixed alkali glasses or
+alkali oxides, but can occur in any other system
+where nonlinear composition–viscosity behaviour
+is observed.
+Evaporation losses during glass melting have
+been demonstrated to influence the viscosity sig-
+nificantly.
+Acknowledgements
+I would like to thank Oleg V. Mazurin, St. Petersburg,
+Russia, for providing a large number of viscosity data
+from the SciGlass information system.
+References
+1. SciGlass 6.5 Database and Information System, 2005. www.sciglass.info
+2. Vogel, H. Temperaturabhängigkeitsgesetz der Viskosität von Flüssig-
+keiten (Law of Temperature Dependence of Liquids). Phys. Zeitschrift,
+1921, 22, 645–6. (In German.)
+3. Fulcher, G. S. Analysis of recent measurements of the viscosity of
+glasses. J. Am. Ceram. Soc., 1925, 8 (6), 339–55.
+4. Tammann, G. & Hesse, W. Die abhängigkeit der viskosität von der
+temperatur bei unterkühlten flüssigkeiten (Dependence of the vis-
+cosity from the temperature in undercooled liquids). Zeitschrift für
+Anorganische und Allgemeine Chemie, 1926, 156, 245–57.
+5. English, S. The effect of composition on the viscosity of glass. J. Soc.
+Glass Technol., 1924, 8, 205–48; 1925, 9, 83–98; 1926, 10, 52–66.
+6. Gehlhoff, G. & Thomas, M. Thomas; Zeit. Techn. Phys., 1925, 6, 544;
+1926, 7, 105; 1926, 7, 260–78. (In German.)
+7. Lakatos, T., Johansson, L.-G. & Simmingsköld, B. Glass Technol. 1972,
+13 (3), 88–95; Glastekn. Tidskr., 1972, 27 (2), 25–8; Glastekn. Tidskr., 1973,
+28, 75–9; Glastekn. Tidskr., 1975, 30 (1), 7–8; Glastekn. Tidskr., 1976, 31,
+31–5; Glastekn. Tidskr., 1976, 31, 51–4; Glastekn. Tidskr., 1977, 32 (2), 31–5;
+Glastekn. Tidskr., 1978, 33 (3), 55–9; Glastekn. Tidskr., 1979, 34, 61–5.
+8. Okhotin, M. V. Stek. Keram. Promyshlennost, 1947, 3, 12; Steklo Keram.,
+1954, 1, 7.
+9. Mazurin, O. V., Tretiakova, N. I. & Shvaiko-Shvaikovskaya, T. P. Metod
+rascheta viazkosti silikatnykh stekol. Deposited in VINITI, 1969, no.
+DEP1091-69.
+10. Sasek, L., Meissnerova, H. & Kovandova, J. Application of mathemati-
+cal-statistical methods in silicate research. Part 6. Determinations of
+mathematical relations for the calculation of the temperature depend-
+ence of viscosity in the range of η=107·65–1014 and η=102–1014 d(Pa s)
+from chemical composition of the glass. (Orig. Czech); Sb. Vys. Sk.
+Chem.-Technol. Praze, Chem. Technol. Silik. 1977, L7, 149–218.
+11. Braginskii, K. I. Calculation of the viscosity of glass as a function of
+temperature. Glass Ceram., 1973, 30, 451–4.
+12. Rodriguez Cuartas, R. Calculo teorico de propriedades del vidro:
+viscosidad, parametros termicos y parametros de desvitrification.
+(Theoretical calculation of glass properties: viscosity, thermic parame-
+ters and parameters of devitrification. Ceram. Vidr., 1984, 23, 105–11.
+13. Ledererova, V., Smrcek, A. & Rysavy, J. Faktoren zur berechnung von
+eigenschaften von kalk-natrongläsern. (Factors for the calculation of
+properties of soda-lime glasses. (Orig. Czech); Sklar Keram., 1986, 36,
+304–8.
+14. Lyon, K. C. Prediction of the viscosities of soda-lime-silica glasses. J.
+Res. Nat. Bur. Standards A, 1974, 78A (4), 497–504.
+15. Bottinga, Y. & Weill, D. F. The viscosity of magmatic silicate liquids:
+a model for calculation. Am. J. Sci., 1972, 272, 438–75.
+16. Herbert, J., Prod’homme, M. & Derobert, M. Viscosity-temperature
+relations in the SiO2–Na2O–K2O–Al2O3–B2O3–PbO system in the
+composition range of lead crystal glass. Verres Refract., 1976, 30 (2),
+219–21.
+17. Leko, V. K. Fiz. Khim. Stekla, 1980, 6 (5), 553; Fiz. Khim. Stekla, 1982, 8
+(2); Leko, V. K . & Mazurin, O. V. Svoistva Kvartsevogo Stekla. Leningrad,
+1985.
+18. Urbain, G., Cambier, F., Deletter, M. & Anseau, M. R. Viscosity of
+silicate melts. Trans. J. Br. Ceram. Soc., 1981, 80 (4), 139–41.
+19. Belousov, Yu. L. & Firsov, V. A. Fiz. Khim. Stekla, 1991, 17 (3), 411.
+20. Belousov, Yu. L. & Akulova, M. V. Fiz. Khim. Stekla, 1992, 18 (4), 94;
+Pushkareva, M. V. Printsipy i metod rascheta vyazkosti stekol v
+shirokom intervale sostavov i temperatur. Thesis, Belgorod, 1993.
+21. Kozyukov, V. M. & Mazurin, O. V. Fiz. Khim. Stekla, 1994, 20 (4), 449.
+22. Conradt, R. Thermodynamic approach to viscosity in the glass transi-
+tion. Glastech. Ber., Glass Sci. Technol., 1994, 67 (11), 304–11.
+23. Öksoy, D., Pye, D. L. & Boulos, E. N. Statistical analysis of viscosity-
+composition data in glassmaking. Glastech. Ber., Glass Sci. Technol.,
+1994, 67 (7), 189–95.
+24. Kozyukov,V. M. & Mazurin, O. V. Calculation of viscosity of sodium-
+calcium silicate melts. Fiz. Khim. Stekla, 1994, 20 (4), 449–60. (In Rus-
+sian.)
+25. Hrma, P. R., Piepel, G. F. et al. Property/composition relationships for
+Hanford high-level waste glasses melting at 1150°C. PNL Report 10359 to
+the US Department of Energy, 1994, 1–2; Vienna, J. D. & Hrma, P. R.
+et al. Effect of composition and temperature on the properties of high
+level waste (HLW) glass melting above 1200°C (Draft); PNNL Report
+10987 to the US Department of Energy, 1996. Hrma, P. & Robertus,
+R. J. Waste glass design based on property composition functions.
+Ceram. Eng. Sci. Proc., 1993, 14 (11/12), 187–203; Hrma, P., Piepel, G.
+F., Redgate, P. E., Smith, D. E., Schweiger, M. J., Vienna, J. D. & Kim,
+D. S. Prediction of processing properties for nuclear waste glasses.
+Ceram. Trans., 61, 505–13.
+26. Björkvall, J., Du Sichen, Stolyarova, V. & Seetharaman, S. A model
+description of the thermochemical properties of multicomponent slags
+and its application to slag viscosities. Glass Phys. Chem., 2001, 27 (2),
+132–47.
+27. Korsgaard, M., Pind, M., Moller, P., Sorensen, S. & Woldum, H. S.
+Derivation of the temperature dependent constants for KAlO2 and
+NaAlO2 in a viscosity predictive model for high aluminosilicate melts.
+Glass Sci. Technol., 2003, 76 (6), 270–4.
+28. Priven, A. I. General method for calculating the properties of oxide
+glasses and glass-forming melts from their composition and tempera-
+ture. Glass Technol., 2004, 45 (6), 244–54. Priven, A. I. Calculation of
+the viscosity of glass-forming melts. Part 1. The Li2O–Na2O–K2O–SiO2
+system. Glass Phys. Chem., 1997, 23 (5), 344–53. Priven, A. I. Calculation
+of the viscosity of glass-forming melts. Part 2. The MgO–CaO–SrO–
+BaO–Al2O3–SiO2 system.Glass Phys. Chem., 1997, 23 (6), 416–28. Priven,
+A. I. Calculation of the viscosity of glass-forming melts. Part 3. The
+Alk2O–RO–Al2O3–SiO2 system. Glass Phys. Chem., 1998, 24 (1), 19–30.
+Priven, A. I. Calculation of the viscosity of glass-forming melts. Part 4.
+A unified method for calculating the viscosity of silicate and aluminate
+melts. Glass Phys. Chem., 1998, 24 (1), 31–40. Priven, A. I. Calculation
+of the viscosity of glass-forming melts. Part 5. Binary borate Systems.
+Glass Phys. Chem., 2000, 26 (6), 541–58. Priven, A. I. Calculation of
+the viscosity of glass-forming Melts. Part 6. The R2O–B2O3–SiO2 and
+RO–B2O3–SiO2 ternary borosilicate systems. Glass Phys. Chem., 2001, 27
+(4), 360–70. Priven, A. I. Calculation of the temperature coefficient of
+viscosity logarithm ∂logη/∂logT for oxide melts in the glass transition
+range from their composition. Glass Phys. Chem., 2000, 26 (5), 455–69.
+Priven, A. I. Comparative characterisation of methods for calculat-
+ing the viscosity of silicate glass-forming melts. Glass Phys. Chem.,
+1997, 23 (5), 333–43. Priven, A. I. A new equation for describing the
+temperature dependence of the viscosity of glass-forming melts. Glass
+Phys. Chem., 1999, 25 (6), 491–7. Priven, A. I. Calculation of temperature
+dependences of the viscosity and volume relaxation time for oxide
+glass-forming melts from chemical composition and dilatometric glass
+transition temperature. Glass Phys. Chem., 2001, 27 (6), 527–42.
+29. Russell, J. K. & Giordano, D. A model for silicate melt viscosity in the
+system CaMgSi2O6–CaAl2Si2O8–NaAlSi3O8. Geochim. Cosmochim. Acta,
+2005, 69 (22), 5333–49.
+30. Fluegel, A., Varshneya, A. K., Seward, T. P. & Earl, D. A. Viscosity of
+commercial glasses in the softening range. Proc. Seventh Int. Conf. on
+Advances in Fusion and Processing of Glass III. Edited by J. R. Varner, T.
+P. Seward, H. Schaeffer, The American Ceramic Society, Westerville,
+Ohio, USA. Ceram. Trans., 2004, 141, 379–86.
+31. Fluegel, A., Varshneya, A. K., Earl, D. A., Seward, T. P. & Oksoy, D.
+Improved composition-oroperty relations in silicate glasses. Part 1.
+Viscosity. Ceram. Trans., 2005, 170, 129–43.
+32. Fluegel, A.,Earl, D. A., Varshneya, A. K. & Öksoy, D. Statistical analysis
+of viscosity, electrical resistivity, and further glass melt properties. High
+temperature glass melt property database for process modelling. Edited by T.
+P. Seward III & T. Vascott; The American Ceramic Society, Westerville,
+Ohio, 2005, Chapter 9.
+33. Hrma, P. High-temperature viscosity of commercial glasse. Ceram.
+Silikaty, 2006, 50 (2), 57–66.
+34. Scholze, H. Glass - nature, structure and properties. Springer-Verlag,
+1991, ISBN 0-387-97396-6.
+35. Volf, M. B. Mathematical approach to glass. Glass Sci. Technol., 1988,
+9.
+36. Martlew, D. Viscosity of molten glasses. Properties of Glass-Forming
+Melts. Edited by L. D. Pye, A. Montenaro, I. Joseph, CRC Press, Boca
+Raton, Florida, 2005, Chapter 5.
+37. International Glass Database System INTERGLAD Ver.6; New Glass
+Forum, Tokyo, Japan.
+38. Hrma, P., See, C. A., Lam, O. P. & Minister, K. B. C. High-temperature
+viscosity of commercial glasses. High temperature glass melt property
+database for process modelling. Edited by T. P. Seward III & T. Vascott;
+The American Ceramic Society, Westerville, Ohio, 2005, Chapter 7.
+39. Standard Reference Material 710A, Soda-Lime-Silica Glass. National
+Institute of Standards & Technology (NIST), Gaithersburg, MD, 20899,
+USA, March 20, 1991.
+40. Standard Reference Material 717A, Borosilicate Glass. National Institute
+of Standards & Technology (NIST), Gaithersburg, MD, 20899, USA;
+September 18, 1996.
+41. Standard Sample No. 711, Certificate of Viscosity Values, Lead-Silica
+Glass. National Bureau of Standards, U.S. Department of Commerce,
+Washington, D.C., 20235, USA; July 1, 1964.
+42. Napolitano, A. & Hawkins, E. G. Viscosity of a standard soda-lime-
+silica glass. J. Res. Nat. Bur Stand. A., 1964, 68A (5), 439–48.
+43. Meerlender, G. Viskositäts-Temperaturverhalten des Standardglases
+I der DGG (DGG - Deutsche Glastechnische Gesellschaft, German
+Society of Glass Technology). Glastechn. Ber., 1974, 47 (1), 1–3.
+44. Waste Glass Standard, personal communication, publication in prepa-
+ration. The Waste Glass Standard was established in Round-Robin
+tests with several participating laboratories.
+45. Viscosity calculation program, model validity limits, inverse information
+and correlation matrices available at http://glassproperties.com/viscosity/
+46. Shelby, J. E. High temperature glass melt property database for process
+modelling. Edited by T. P. Seward III and T. Vascott, The American
+Ceramic Society, Westerville, Ohio, 2005, Appendix I.
+47. Fluegel, A., Earl, D. A., Varshneya, A. K. & Seward, T. P. Density and
+thermal expansion calculation of silicate glass melts. Proc. CD 79th
+Glastechnische Tagung, Wuerzburg, Germany, 23–25 May 2005.
+48. Fluegel, A. Statistical regression modelling of glass properties - a
+tutorial. Glass Technol., Eur. J. Glass Sci. Technol. A, in press.
+49. Allison, R. S. & Turner, W. E. S. Further investigations upon the influ-
+ence of boric oxide on the rate of melting of the batch, and on the rate
+of refining and of setting of commercial glasses of the soda-lime-silica
+type. J. Soc. Glass Technol., 1954, 38, 297–364.
+50. Eipeltauer, E. & More, A. Radex-Rundsch., 1960, 4, 230.
+51. Eipeltauer, E. & Jangg, G. Kolloid Zh., 1955, 142 (2–3), 77.
+52. English, S. & Turner, W. E. S. J. Soc. Glass Technol., 1921, 5, 121–3; J.
+Soc. Glass Technol., 1928, 12, 75–81; Turner, W. E. S. & Winks, F. J. Soc.
+Glass Technol., 1928, 12, 57–74.
+53. Data by J. Kurachi (2003) from the SciGlass Database. Private communi­
+cation, O. V. Mazurin.
+54. Ota, R. & Fukunaga, J. Advances in Fusion of Glass. American Ceramic
+Society, Westerville, Ohio, 1988, 31; Ota, R. & Fukunaga, J. Proc. XVth
+Int. Congr. on Glass. Leningrad, 1989, 1a, 162; Ota, R., Tsuchiya, F,
+Kawamura, K., Nakanishi, Sh. & Fukunaga, J. J. Ceram. Soc. Jpn., 1991,
+99 (2), 168.
+55. Evstropiev, K. S. & Pospelov, B. A. Fiziko-Khimicheskie Svoistva Troinoi
+Sistemy Na2O–PbO–SiO2. Moskva, 1949, 70. (In Russian.)
+56. Preston, E. Viscosity of soda-silica glasses at high temperatures and its
+bearing on their constitution. J. Soc. Glass Technol., 1938, 22, 45–81.
+57. Sasek, L., Meissnerova, H. & Hoffmann, O. Sb. Vys. Sk. Chem. Technol.
+Praze, Chem. Technol. Silik., 1975, L6, 153; Sasek, L., Meissnerova, H.
+& Persin, J. Sb. Vys. Sk. Chem. Technol. Praze, Chem. Technol. Silik., 1973,
+L4, 87; Sasek, L., Meissnerova, H. & Hoskova, V. Sb. Vys. Sk. Chem.
+Technol. Praze, Chem. Technol. Silik., 1975, L6, 131; Sasek, L., Mika, M.
+& Rada, M. Silikaty, 1988, 32 (3), 209; Mika, M. & Piepel, G. F. Ceram.
+Silikaty, 1997, 41 (4), 141; Sasek, L. Silikaty, 1963, 7 (4), 270.
+58. Shvaiko-Shvaikovskaya, T. P., Mazurin, O. V. & Bashun, Z. S. Neorg.
+Mater., 1971, 7 (1), 143; Shvaiko-Shvaikovskaya, T. P., Steklo, 1968, 3, 93;
+Shvaiko-Shvaikovskaya, T. P., Gusakova, N. K. & Mazurin, O. V. Neorg.
+Mater., 1971, 7 (4), 713., Shvaiko-Shvaikovskaya, T. P., Gusakova, N. K.
+& Mazurin, O. V. Vyazkost Stekol Sistemy Na2O–CaO–SiO2 v Shyrokom
+Intervale Temperatur. Deposited in VINITI, Moscow, No. 483–71 Dep.,
+1971.
+59. Tang, Y. & Frischat, G. H. Glastech. Ber., 1990, 63K, 410.; Tang, Y. &
+Frischat, G. H. Influence of small additions of Li2O raw materials on
+glass melting. Glastechn. Ber., Glass Sci. Technol., 1995, 68 (7), 213.
+60. Washburn, E. W., Shelton, G. R. & Libman, E. E. Univ. Ill. Bull., 1924,
+21 (S140), 33.
+61. Flannery, J. E., Morgan, D. W., Rosplock, S. E. & Sczerbaniewicz, S. A.
+US Patent No. 4273586 Cl 3 C 03 C 3/04, Off. Gazette, 1981, 1007 (3).
+62. Robinson, H. A. & Peterson, C. A. Viscosity of recent container glass.
+J. Am. Ceram. Soc., 1944, 27 (5), 129–38.
+63. Yue Y. & Brueckner, R. Influence of homologous substitutions of
+chemical components on the rheological properties and on isochomal
+workability of silicate glass melts. Glastech. Ber., Glass Sci. Technol.,
+1996, 69 (7), 204–15; Yue, Y. & Bruckner, R. Glastech. Ber., Glass Sci.
+Technol.,1996, 69 (10), 311.
+64. Nemilov, S. V. & Ignatjev, A. I. Fiz. Khim. Stekla, 1990, 16 (1), 85; Nemilov,
+S. V. Neorg. Mater., 1968, 4 (6), 952; Nemilov, S. V. Zh. Prikl. Khim., 1969,
+42 (1), 55.
+65. Shelby, J. E. Transformation range viscosity measurements. High
+temperature glass melt property database for process modelling. Edited by T.
+P. Seward III & T. Vascott, The American Ceramic Society, Westerville,
+Ohio (2005), Chapter 7.
+66. Fluegel, A. & Varshneya, A. K. Parallel plate viscometry. High tem-
+perature glass melt property database for process modelling. Edited by T.
+P. Seward III & T. Vascott, The American Ceramic Society, Westerville,
+Ohio (2005), Chapter 7.
+67. Owens-Illinois Glass Company, General Research Laboratory. Effect
+of barium oxide and zinc oxide on the properties of soda-dolomite
+lime-silica glass. J. Am. Ceram. Soc., 1942, 25 (3), 61–9; Effect of iron
+oxide on the properties of soda-dolomite lime-silica glass. J. Am.
+Ceram. Soc., 1942, 25 (14), 401–8; Effect of substituting MgO for CaO
+on properties of typical soda-lime glasses. J. Am. Ceram. Soc., 1944, 27
+(8), 221–5; Effect of fluorine and phosphorus pentoxide on properties
+of soda-dolomite lime-silica glass. J. Am. Ceram. Soc., 1944, 27 (12),
+369–72; Properties of soda-strontium oxide-alumina-silica glasses. J.
+Am. Ceram. Soc., 1948, 31 (1), 1–8; Effect of boric oxide on properties
+of soda-dolomite lime-silica glass. J. Am. Ceram. Soc., 1948, 31 (1), p
+8–14; Effect of K2O and Li2O on properties of soda-dolomite lime-silica
+glasses. J. Am. Ceram. Soc., 1950, 33, 181–6.
+68. M. Liska, P. Simurka: “Viscosity of the glass forming melts in the
+15Na2O, 10(MgO, CaO, TiO2, ZrO2), 75SiO2 system. Phys. Chem.
+Glasses, 1995, 36 (1), 6–11; Liska, M., Klyuek, V. P., Antalik, J. & Stubna,
+I. Thermodilatometry and structural relaxation of Na2O*2SiO2–
+Na2O*2TiO2 glasses, Ceram. Silikaty, 1996, 40 (3), 85–91; Liska, M.,
+Klyuev, V. P., Antalik, J. & Stubna, I. Viscosity of Na2O*2(TiO2,SiO2)
+glasses. Phys. Chem. Glasses, 1997, 38 (1), 6–10.
+69. Skornyakov, M. M. Fiziko-Khimicheskie Svoistva Troinoi Sistemy
+Na2O–PbO–SiO2. Moskva, 1949, 39.
+70. Erickson, T. D. & Wolf, W. W. US Patent No. 3847626 Cl C 03 C 13/00,
+Off.Gazette, 1974, 928 (2). Owens-Corning Fiberglas Corp., GB Patent
+No.1391384 Cl 2 C 03 C 13/00, 3/04, Abridg.Specif., 1975, No. 4491.
+71. Bulkley & Vienna; Plutonium Vitrification, 1997, personal communica-
+tion; Feng et al., 1996, Hanford LLW Glass Formulation, personal
+communication; McPherson, D. et al. The influence of waste variability
+on the properties and phase stability of the West Valley reference glass.
+September 1986; Muller, I. S., Buechele, A. C. & Pegg, I. L. Glass
+formulation and testing with RPP-WTP LAW simulants. VSL-01R3560-2,
+2001; Muller, I. S. & Pegg, I. L. Glass formulation and testing with
+TWRS LAW simulants. January 1998; Olson, K. M. Fabrication and
+leaching of West Valley demonstration project glasses: ten quarter 2 and
+ten quarter 3 glasses. October 1993; Olson, K. M. Viscosity testing of 30
+WVDP glasses. February 1994; Staples, B. A., Scholes, B. A., Peeler, D. K.,
+Torres, L. L., Vienna, J. D., Musick, C. A. & Boyle, B. R. The preparation
+and characterisation of INTEC HAW phase 1 composition variation study
+glasses. INEEL/EXT-98-00970, March 1999; Staples, B. A., Scholes, B.
+A., Peeler, D. K., Torres, L. L., Vienna, J. D., Musick, C. A. & Boyle,
+B. R. The preparation and characterisation of INTEC phase 2b composition
+variation study glasses. INEEL/EXT-99-01322, February 2000. Vienna,
+J. D. et al. 2002, SBW Melter Glass Formulation, personal communica-
+tion.
+Poole, J. P. & Gensamer, M. Systematic study of effect of oxide constitu-
+ents on viscosity of silicate glasses at annealing temperatures. J. Am.
+Ceram. Soc., 1949, 32 (7), 220–9; Poole, J. P. Low-temperature viscosity
+of alkali silicate glasses. J. Am. Ceram. Soc., 1949, 32 (7), 230–3.
+Akimov, V. V. Viscosity of sodium borosilicate glasses in the glass
+transition range.The Sov. J. Glass Phys. Chem., (Fiz. Khim. Stekla,) 1991,
+17 (4), 348; (5), 425.
+Phase separation in glass. Edited by O. V. Mazurin & E. A. Porai-Koshits,
+Elsevier Science Publishers B. V., North-Holland; Amsterdam, New
+York, 1984.
+Fluegel, A. Untersuchungen zur Herstellung von Porengröße-Gradienten
+in Kieselglas auf der Grundlage entmischter Natriumborosilicat-Gläser (Pore
+Size Gradients in Silica Glass based on Phase-Separated Sodium Borosilicate
+Glasses). Dissertation, Jena, Germany, 1999. (In German.); Fluegel, A. &
+Ruessel, C. Kinetics of phase separation in a 6·5Na2O–33·5B2O3–60SiO2
+glass. Glass Sci. Technol., 2000, 73 (3), 73–8.
+Vogel, W. Glass Chemistry. Springer-Verlag, 1994, Second Edition.
+Haller, W., Blackburn, D. H., Wagstaff, F. E. & Charles, R. J. Metastable
+immiscibility surface in the system Na2O–B2O3–SiO2. J. Am. Ceram.
+Soc., 1970, 53, 34–9.
+Polyakova, I. G. The regularities of the metastable immiscibility in the
+Na2O–B2O3–SiO2 system: lower and upper temperature boundaries.
+Glass Phys. Chem., 1997, 23, 45–57.
+Fernandes, M. H. V. & Cable, M. Reactive vaporisation of sodium
+tetraborate with water vapour. Glass Technol., 1993, 34 (1), 26–32.
+Saringyulyan, R. S. Value reported in the SciGlass database, code 3561,
+GNo. 22935, 1970.
+Shartsis, L., Capps, W. & Spinner, S. Viscosity and electrical resistivity
+of molten alkali borates. J. Am. Ceram. Soc., 1953, 36, 319–26.
+Gruner, K., Koltermann, M. & Mueller, K. P. Quarzbildung und
+Kristallisation aus binaeren Lithiumsilicatschmelzen und -glaesern”
+(Quartz formation and crystallisation of binary lithium silicate melts
+and glasses); Glastech. Ber., 1967, 40 (5), 185–94. (In German.)
+Ahmed, A. A., El-Batal, H. A., Ghoneim, N. A. & Khalifa, F. A. Leach-
+ing of some lithium silicate glasses and glass-ceramics by HCl. J.
+Non-Cryst. Solids, 1980, 41 (1), 57–70.
+Isard, J. O. The mixed alkali effect in glass. J. Non-Cryst. Solids, 1969,
+1 (3), 235–61.
+Day, D. E. Mixed alkali glasses - their properties and uses. J. Non-Cryst.
+Solids, 1976, 21 (3), 343–72.
+LaCourse, W. C. & Cormack, A. N. Structural influences on the mixed
+alkali effect in glasses. Trans. Am. Crystallogr. Assoc., 1991, 27, 211–24
+(Proc. Symp. The Structural Chemistry of Silicates, 22–24 Jul. 1991, Toledo,
+OH, USA).
+Leko, V. K. Inorg. Mater., 1967, 3, 1645.
+Nemilov, S. U. Zh. Prikl. Kim. (Leningrad), 1969, 42, 55.
+Leko, V. K., Gusakova, N. K., Meshcheryakova, E. V. & Prokhorova,
+T. I. The effect of impurity alkali oxides, hydroxyl groups, Al2O3, and
+Ga2O3 on the viscosity of vitreous silica. Glass Phys. Chem., 1977, 3
+(3), 204–19; Leko, V. K., Meshcheryakova, E. V., Gusakova, N. K. &
+Lebedeva, R. B. Opt. Mekh. Prom., 1974, 12, 42.
+Avramov, I., Rüssel, C. & Keding, R. Effect of chemical composition
+on viscosity of oxide glasses. J. Non-Cryst. Solids, 2003, 324, 29–35.
+Mazurin, O. V. & Gankin, Yu. About testing the reliability of glass
+property data in binary systems. J. Non-Cryst. Solids, 2004, 342, 166–9.
+Mazurin, O. V. & Gankin, Yu. Determination of the most reliable glass
+property values by the SciGlass information system. Proc. CD XX Int.
+Congr. on Glass, Kyoto, Japan, 27 Sept.–1 Oct. 2004. Mazurin, O. V.
+Glass properties: compilation, evaluation, and prediction. J. Non-Cryst.
+Solids, 2005, 351, 12–13, 1103–12.
+Data by M. Liska and V. P. Klyuev from the SciGlass Database, private
+communication, O. V. Mazurin.
+Data by O. V. Mazurin from the SciGlass Database, private communica-
+tion.
+Taylor, N. W. & Dear, P. S. J. Am. Ceram. Soc., 1937, 20 (9), 296.
+Lee, S.-K., Tatsumisago, M. & Minami, T. J. Ceram. Soc. Jpn., 1993, 101
+(9), 1018.
+96. Schnaus, U. E., Schroeder, J. & Haus, J. W. Phys. Lett. A, 1976, 57 (1), 92.
+97. El-Badry, Kh. & Ghoneim, N. A. Glastechn. Ber., 1983, 56K (2), 975;
+El-Badry, Kh. & Ghoneim, N. A. Cent. Glass Ceram. Res. Inst. Bull.,
+1982, 29 (3), 72.
+98. Jenckel, E. & Schwittman, A. Glastechn. Ber., 1938, 16 (5), 163.
+99. Stolyar, S. V. & Besedina, S. A. Fiz.Khim. Stekla, 1992, 18 (3), 88.
+100. Ehrt, D., Leister, M., Matthai, A., Ruessel, C. & Breitbarth, F. Proc.
+Fourth Int. Conf. Fundamentals of Glass Science and Technology, Sweden,
+1997, 204.
+101. Ammar, M. M., El-Badry, Kh. & Gharib, S. Egypt. J. Phys., 1977, 8 (1),
+1.
+102. Data by Kanchieva from the SciGlass Database. private communica-
+tion, O. V. Mazurin.
+103. Evstropiev, K. S. Izv. Akad. Nauk SSSR, 1940, 4 (4), 616.
+104. Plumat, E. Silicates Ind., 1956, 21 ( 10), 391.
+105. Ivanov, O. G., Tretjakova, N. I. & Mazurin, O. V. Steklo Keram., 1969, 7,
+42; Tretjakova, N. I. & Mazurin, O. V. Vliyanie Okislov Dvukhvalentnykh
+Metallov na Vyzakost Prostykh Silikatnykh Stekol. Deposited in VINITI,
+moscow, No. 995-69 Dep., 1969.
+106. Data by P. Jarry from the SciGlass Database, private communication,
+O. V. Mazurin.
+107. Taylor, T. D. & Rindone, G. E. J. Am. Ceram. Soc., 1970, 53 (12), 692.
+108. Hoffmann, L. C., Kupinski, T. A., Thakur, R. L. & Weyl, W. A. J. Soc.
+Glass Technol., 1952, 36, 196–216.
+109. Hanson, C. D. & Egami, T. Distribution of Cs+ ions in single and
+mixed alkali silicate glasses from energy dispersive x-ray diffraction.
+J. Non-Cryst. Solids, 1986, 87 (1–2), 171–84.
+110. Berg, G. & Ludwig, A. Mixed oxide effect in an ion-exchanged glass.
+J. Non-Cryst. Solids, 1994, 170 (1), 109–11.
+111. Tomandl, G. & Schaeffer, H. A. The mixed-alkali effect - a permanent
+challenge. J. Non-Cryst. Solids, 1985, 73, 179–96. Tomandl, G. & Schaef-
+fer, H. A. Non-Crystalline Solids. Edited by G. H. Frischat, Trans Tech
+Publications, Bay Village, Ohio, 1977, 480.
+112. Kim, K.-D. & Hwang, J.-H. Influence of BaO/(SrO+BaO) on some
+thermal properties of R2O–RO–SiO2 glasses for plasma display panel
+substrate. Glastech. Ber., Glass Sci. Technol, 1999, 72 (12), 393–7.
+113. Waesche, R. & Brueckner, R. Tg, ultraviolet-transparency and mixed
+oxide effect of ultrapure ternary alkaline earth-metaphosphate glasses.
+J. Non-Cryst. Solids, 1989, 107 (2–3), 309–15.
+114. Shelby, J. E. & Ortolano, R. L. Properties and structure of NaF–Na2O–
+B2O3 glasses. Phys. Chem. Glasses, 1990, 31 (1), 25–9.
+115. Shelby, J. E. & McVay, G. L. Influence of water on the viscosity and
+thermal expansion of sodium trisilicate glasses. J. Non-Cryst. Solids,
+1976, 20 (3), 439–49.
+116. Prasad, P. S. S., Rani, A. N. D. & Radhakrishna, S. Mixed glass former
+effect in AgI–Ag2O–V2O5–P2O5 quaternary amorphous solid electro-
+lytes. Mater. Chem. Phys., 1990, 25 (5), 487–99.
+117. Lapp, J. C. & Shelby, J. E. The mixed alkali effect in sodium and potas-
+sium galliosilicate glasses. Part 1. Glass transformation temperatures.
+J. Non-Cryst. Solids, 1986, 84 (1–3), 463–7. Lapp, J. C. & Shelby, J. E.
+The mixed alkali effect in sodium and potassium galliosilicate glasses.
+Part 2. DC electrical conductivity. J. Non-Cryst. Solids, 1986, 86 (3),
+350–60.
+118. Ghosh, S. & Ghosh, A. Ion dynamics and mixed mobile ion effect in
+fluoride glasses. J. Appl. Phys., 2005, 97 (12), 123525.
+119. Brook, H. C., Chadwick, A. V., Mosslemans, J. F. W. & Greaves, G.
+N. EXAFS study of a ‘mixed-alkali’ type effect in sodium-calcium
+borate glass. Rad. Effects Defects Solids, 1999,150 (1–4 pt. 2), 795/403–
+799/407.
+120. Kim, K.-D. & Lee, S.-H. Viscosity behaviour and mixed alkali effect of
+alkali aluminosilicate glass melts. J. Ceram. Soc. Jpn., 1997, 105 (1226),
+827–32.
+121. Ivanov, A. O. Sov. Phys.-Solid State, 1964, 5, 1933. Data also reported
+by Isard.
+122. Shelby, J. E. Handbook of Gas Diffusion in Solids and Melts. ASM
+International, ISBN: 0871705664, 1996.
+123. Gonzalez-Oliver, C. J. R., Johnson, P. S. & James, P. F. Influence of water
+content on the rates of crystal nucleation and growth in lithia-silica
+and soda-lime-silica glasses. J. Mater. Sci., 1979, 14 (5), 1159.
+
+------------------
+
+Tables:
+
+Table 1. Compositions in mol% of glasses for melting point predictions in Table 2
+
+take data from file ./Fluegel_table1.csv
+
+Table 2. Predictions from several models of glass melting point and experimental results; the values in parentheses were
+calculated by slightly exceeding the model validity limits, as is often practiced
+take data from file ./Fluegel_table2.csv
+
+
+(a) unusual predictions caused by the unrealistic coefficients for Fe2O3, TiO2, and SO3
+(b) neglecting Fe2O3, TiO2, and SO3
+(c) counting K2O as Na2O because the model is not valid for glasses containing K2O
+(d) local model for soda–lime container glasses
+(e) global model for various commercial glasses
+
+
+
+Table 3. Concentration maxima (mol%) for the source data used in modelling
+take data from file ./Fluegel_table3.csv
+
+
+Table 4. Coefficients and t-values at log(η/(Pa s))=1.5
+take data from file ./Fluegel_table4.csv
+
+
+Table 5. Coefficients and t-values at log(η/(Pa s))=6.6
+take data from file ./Fluegel_table5.csv
+
+Table 6. Coefficients and t-values at log(η/(Pa s))=12
+take data from file ./Fluegel_table6.csv
+
+Table 12. Agreement between viscosity standards and model predictions
+take data from file ./Fluegel_table12.csv
+* The glass composition is outside the model validity limits.
+
