@@ -234,9 +234,9 @@ describe('GlassViscosityService - Composition-Dependent Models', () => {
       const result = service.calculateViscosity(composition, 1100);
       const fp = result.fixedPoints;
 
-      expect(fp.meltingPoint_C).toBeGreaterThan(fp.flowPoint_C);
-      expect(fp.flowPoint_C).toBeGreaterThan(fp.workingPoint_C);
-      expect(fp.workingPoint_C).toBeGreaterThan(fp.softeningPoint_C);
+      expect(fp.meltingPoint_C).toBeGreaterThan(fp.workingPoint_C);
+      expect(fp.workingPoint_C).toBeGreaterThan(fp.flowPoint_C);
+      expect(fp.flowPoint_C).toBeGreaterThan(fp.softeningPoint_C);
       expect(fp.softeningPoint_C).toBeGreaterThan(fp.annealingPoint_C);
       expect(fp.annealingPoint_C).toBeGreaterThan(fp.strainPoint_C);
     });

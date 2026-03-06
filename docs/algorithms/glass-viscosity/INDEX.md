@@ -6,6 +6,17 @@
 
 This specification has been divided into focused chapters for easier implementation and reference.
 
+> ⚠️ **IMPORTANT — READ BEFORE IMPLEMENTING:**
+> An audit of `viscosity-parameters.ts` (2026-03-06) found that **every single
+> model in the file has wrong parameters, a wrong model architecture, or a wrong
+> formula convention.** None of them reproduce the measured data cited in the
+> chapters below. See [VISCOSITY_PARAMETERS_AUDIT.md](./VISCOSITY_PARAMETERS_AUDIT.md)
+> for the full analysis and recommended replacement strategy.
+>
+> See also [COVERAGE_GAP_ANALYSIS.md](./COVERAGE_GAP_ANALYSIS.md) for which
+> glass systems are covered by Lakatos 1976 and Fluegel 2007, which fall outside
+> both, and which additional published models fill those gaps.
+
 ---
 
 ## All Chapters
