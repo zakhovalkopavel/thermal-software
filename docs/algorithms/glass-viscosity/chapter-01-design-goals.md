@@ -86,12 +86,10 @@ When consuming Lakatos isokom temperatures, the viscosity values must be convert
 
 ### Out of Scope
 - Pure oxide systems (binary or ternary phase diagrams)
-- Slag systems (high FeO, high CaO without SiO₂ network)
+- Slag systems (high FeO, high CaO without SiO₂ network) — see [Chapter 13](./chapter-13-slags-fluoride.md) for the Iida and Nakamoto 2007 models
 - Phosphate glasses (PO₄ network)
 - Metallic glasses
-- Temperatures above 1600°C or below 400°C
-
-For slag and extreme compositions, refer to [v1 chapters 8–9](../glass-viscosity/chapter-08-slags.md) which describe the general modelling approach (though without validated coefficients).
+- Temperatures above 1600°C or below 400°C for silicate glasses
 
 ---
 

@@ -1,9 +1,5 @@
 /**
- * Viscosity calculation type interfaces — v2 architecture.
- *
- * Removed 2026-03-06:
- *   ComponentEffectRange, ViscosityParameters — the component-effect-on-B architecture
- *   has no published basis. See VISCOSITY_PARAMETERS_AUDIT.md §1–§9.
+ * Viscosity calculation type interfaces
  */
 
 // ─── VTF fitting layer ────────────────────────────────────────────────────────
@@ -56,20 +52,40 @@ export interface FluegelIsokoms {
   warnings: string[];
 }
 
-// ─── Slag models (Urbain 1981 / Riboud 1981) ──────────────────────────────────
+// ─── Slag models (Iida 1988 / Nakamoto 2007) ──────────────────────────────────
 
 /** Result of a slag viscosity calculation (no VTF, no glass fixed points). */
 export interface SlagViscosityResult {
-  /** Calculated viscosity in Pa·s */
+  /** Calculated viscosity in Pa·s (NaN if below liquidus) */
   viscosity_Pas: number;
-  /** log₁₀ of viscosity */
+  /** log₁₀ of viscosity (NaN if below liquidus) */
   logViscosity_Pas: number;
   /** Temperature at which it was calculated (°C) */
   temperature_C: number;
+  /** Estimated liquidus temperature from Mills/NPL regression (°C) */
+  liquidusTemperature_C: number;
+  /** Whether temperature is above / near / below liquidus */
+  thermalState: 'ABOVE_LIQUIDUS' | 'NEAR_LIQUIDUS' | 'BELOW_LIQUIDUS';
   /** Model used */
-  model: 'URBAIN_1981' | 'RIBOUD_1981';
+  model: 'IIDA' | 'NAKAMOTO_2007';
   /** Warnings */
   warnings: string[];
+  // ─── Iida-specific ───────────────────────────────────────────────────────
+  /** Simple basicity index B_i (Iida) */
+  B_i_simple?: number;
+  /** Modified basicity index B_i* with dynamic Al₂O₃ treatment (Iida) */
+  B_i_star?: number;
+  /** Dynamic Al₂O₃ interaction coefficient α used in B_i* (Iida) */
+  alpha_Al2O3?: number;
+  /** Activation energy factor E (Iida) */
+  E_activation?: number;
+  // ─── Nakamoto-specific ───────────────────────────────────────────────────
+  /** Total activation energy E = Σ(eᵢ·Xᵢ) in J/mol (Nakamoto) */
+  E_total_J_mol?: number;
+  /** ln(A) pre-exponential (Nakamoto) */
+  lnA?: number;
+  /** Average molar mass M_avg (Nakamoto) */
+  M_avg?: number;
 }
 
 // ─── Model selection result ───────────────────────────────────────────────────

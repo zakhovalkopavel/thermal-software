@@ -10,7 +10,7 @@ Following project conventions (`docs/SERVICE_TEST_SPEC.md`):
 
 ```
 backend/test/unit/modules/refractory/
-  glass-viscosity-v2/
+  glass-viscosity/
     composition-encoding.spec.ts
     lakatos-model.spec.ts
     fluegel-model.spec.ts

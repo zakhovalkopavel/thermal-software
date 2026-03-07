@@ -6,7 +6,7 @@
 
 ## Overview
 
-This chapter defines the TypeScript interfaces for all outputs of the glass viscosity v2 service. These interfaces are the contract between the computation layer and the API/frontend.
+This chapter defines the TypeScript interfaces for all outputs of the glass viscosity  service. These interfaces are the contract between the computation layer and the API/frontend.
 
 ---
 
@@ -192,12 +192,12 @@ interface FluegelResult {
 
 ## Combined Result
 
-### `GlassViscosityV2Result`
+### `GlassViscosityResult`
 
 The top-level output of the service. Contains whichever models were applicable.
 
 ```typescript
-interface GlassViscosityV2Result {
+interface GlassViscosityResult {
   /** Input composition as received (wt%), normalized to 100% */
   inputComposition: Record<string, number>;
 

@@ -119,7 +119,55 @@ The Fluegel 2007 model was calibrated on data from:
 
 ---
 
-**End of Glass Viscosity V2 Specification**
+## Slag and Fluoride Melt References
 
-Return to: [README / Chapter Index](./README.md)
+### Iida & Guthrie 1988
+
+> **Iida, T., & Guthrie, R. I. L.**
+> *The Physical Properties of Liquid Metals.*
+> Oxford University Press, 1988.
+
+Provides the foundational derivation of the ideal viscosity η₀ᵢ and pure-component constants (Mᵢ, Tmᵢ, Vmᵢ, Hᵢ) used in the Iida model.
+
+### Nakamoto 2007
+
+> **Nakamoto, H., Kiyose, A., & Tanaka, T.**
+> *"A model for estimating the viscosity of multi-component slags containing alkali oxide and calcium fluoride."*
+> *ISIJ International*, 47(11):1583–1590, 2007.
+
+Provides the activation energy coefficients eᵢ including the revised CaF₂ value of −108 200 J/mol. Table "Parameters eᵢ for activation energy" is the primary source for the Nakamoto implementation.
+
+### Tanaka 2004
+
+> **Tanaka, T., et al.**
+> *"Evaluation of Viscosity of Molten Slag with the Concept of Optical Basicity."*
+> *Steel Research International*, 75:238–243, 2004.
+
+Supporting reference for the Nakamoto-Tanaka framework, optical basicity approach.
+
+### Mills / NPL 2011
+
+> **Mills, K. C.**
+> *Estimating the Physical Properties of Slags.*
+> Southern African Institute of Mining and Metallurgy (SAIMM), 2011.
+
+Provides the Basicity Index α coefficients for the Iida model, the dynamic alumina formula, and the multi-linear liquidus regression (intercept 1225°C, component coefficients).
+
+> **Mills, K. C., Yuan, L., & Li, Z.**
+> *"The estimation of the physical properties of slags."*
+> *J. Southern African Institute of Mining and Metallurgy*, 111(10):649–658, 2011.
+
+### Slag Atlas
+
+> **Allibert, M., & Verein Deutscher Eisenhüttenleute.**
+> *Slag Atlas* (2nd Edition).
+> Verlag Stahleisen GmbH, 1995.
+
+Industry standard reference. Chapter 2 compares the Iida, Urbain, and Riboud models with verified constants. Used for cross-checking pure-component data (Mᵢ, Tmᵢ, Vmᵢ, Hᵢ) in the Iida model.
+
+---
+
+**End of Glass Viscosity  Specification**
+
+Return to: [Index](./INDEX.md)
 

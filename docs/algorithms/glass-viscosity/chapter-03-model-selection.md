@@ -1,357 +1,155 @@
-# Chapter 3: Model Selection Framework
+# Chapter 3: Model Applicability and Selection
 
-**Part II: Composition-Dependent Models**
-
----
-
-## Overview
-
-Different glass systems require different viscosity models because:
-1. **Structural differences:** Silicate vs borate vs aluminate vs phosphate networks
-2. **Modifier interactions:** Alkali vs alkaline earth vs heavy metal oxides
-3. **Temperature dependencies:** Arrhenius vs VFT behavior
-4. **Valid composition ranges:** Each model validated only for specific ranges
-
-**Solution:** Automatic system detection based on composition
+**Part I: Background and Approach**
 
 ---
 
-## System Classification
+## Side-by-Side Comparison
 
-### 8 Glass System Types
-
-```
-1. Soda-Lime-Silica (SLS)     → 70% of commercial glass production
-2. Borosilicate                → Laboratory glass, Pyrex
-3. Aluminosilicate             → High-temperature resistant glass
-4. Lead Glass                  → Crystal, optical applications
-5. Pure Silica                 → Optical fibers, reference material
-6. Sodium Silicate             → Binary system, high alkali
-7. Calcium-Aluminate Slags     → Metallurgical applications
-8. Multi-Component Mixing      → Fallback for complex compositions
-```
-
----
-
-## Detection Algorithm
-
-### Decision Tree
-
-```
-Composition Analysis
-    ↓
-Is SiO2 > 99%? 
-    YES → Pure Silica
-    NO ↓
-Is PbO > 15%?
-    YES → Lead Glass
-    NO ↓
-Is B2O3 > 7% AND SiO2 > 70% AND alkali < 10%?
-    YES → Borosilicate
-    NO ↓
-Is Al2O3 > 12% AND SiO2 50-70%?
-    YES → Aluminosilicate
-    NO ↓
-Is CaO > 30% AND SiO2 < 50%?
-    YES → Calcium-Aluminate Slag
-    NO ↓
-Is SiO2 > 60% AND Na2O > 18% AND others < 5%?
-    YES → Sodium Silicate (binary)
-    NO ↓
-Is SiO2 65-80% AND alkali 8-20% AND alkaline earth 3-20%?
-    YES → Soda-Lime-Silica (default commercial)
-    NO ↓
-    → Multi-Component Mixing (low confidence)
-```
-
-### Implementation
-
-**See Chapter 12, Phase 1** for complete TypeScript implementation
+| Property | Lakatos 1976 | Fluegel 2007 |
+|---|---|---|
+| **Viscosity levels** | log η 2, 4, 6 poise (= 1, 3, 5 Pa·s) | log η 1.5, 6.6, 12 Pa·s |
+| **Component set** | 11 components + SiO₂ reference | ~56 components (full tables 4–6) |
+| **Composition encoding** | Parts per 100 parts SiO₂ by weight | Mol% excluding SiO₂ |
+| **ASTM softening point coverage** | Extrapolated via VTF from log η 5 | Directly at log η 6.6 Pa·s |
+| **ASTM annealing point coverage** | Extrapolated via VTF from log η 5 | Directly at log η 12 Pa·s |
+| **Reported σ (training data)** | 3.14–4.63°C | 9–17°C |
+| **Primary glass system** | Soda-lime-silica, narrow SLS range | All commercial glass types |
+| **B₂O₃ handling** | Linear + quadratic term | Linear + quadratic or cubic term |
+| **Interaction terms** | None | Up to cubic cross-products |
+| **Number of training glasses** | ~44 (pooled from 4 papers) | Thousands (from SciGlass database) |
+| **Mixed alkali effect** | Not captured | Captured via cross-product terms |
+| **Data source** | Single laboratory (Lakatos group) | Multi-laboratory (SciGlass, corrected) |
 
 ---
 
-## Model Types
+## Applicability Rules
 
-### Type 1: VFT (Vogel-Fulcher-Tammann)
+### Lakatos 1976 — Use when:
 
-**Equation:**
-```
-log₁₀(η) = A + B/(T - T₀)
-```
+1. The glass is a silicate (SiO₂ ≥ 60 wt%) with components limited to:
+   `SiO₂, Al₂O₃, Na₂O, K₂O, Li₂O, CaO, MgO, BaO, ZnO, PbO, B₂O₃`
+2. No other components are present in amounts > 1 wt%
+3. Composition is within the training range (see Chapter 4, validity table)
+4. High accuracy is required for the melting/working range (log η 1–5 Pa·s)
+5. Only the above 11 components are present — all others are silently ignored
 
-**Where:**
-- A = pre-exponential constant (dimensionless)
-- B = activation energy parameter (K)
-- T₀ = VFT temperature (K), also called T∞
-- T = absolute temperature (K)
+**What to do with components outside the Lakatos set:**
+Components not in the table (e.g., TiO₂, ZrO₂, SrO, Fe₂O₃) are **silently ignored** in Lakatos calculations. Their presence does not cause an error, but:
+- If any ignored component exceeds 2 wt%, emit a `WARNING_COMPONENTS_IGNORED` confidence note
+- If the sum of ignored components exceeds 5 wt%, downgrade the confidence to `LOW`
 
-**Used for:**
-- Soda-Lime-Silica
-- Borosilicate
-- Aluminosilicate
-- Pure Silica
-- Multi-Component Mixing
+### Fluegel 2007 — Use when:
 
-**Characteristics:**
-- **Non-Arrhenius behavior** near glass transition
-- T₀ represents temperature where viscosity → ∞ (theoretical)
-- Better fit than Arrhenius for most glasses
-- 3 parameters to fit
+1. The glass contains components beyond the Lakatos 11-component set
+2. The glass may be borosilicate, lead crystal, or a complex multi-oxide system
+3. The glass has components present in the Fluegel coefficient tables
+4. Moderate accuracy (±17°C at 2σ) is acceptable
+5. The composition is within the bounds in `Fluegel_table3.csv`
 
-### Type 2: Arrhenius
+**What to do with components outside the Fluegel set:**
+Components not present in tables 4–6 are silently ignored. If any such component exceeds 1 wt%, emit a `WARNING_COMPONENTS_IGNORED` note.
 
-**Equation:**
-```
-ln(η) = A + B/T
-```
+### Dual-Model Mode — Use when:
 
-**Where:**
-- A = pre-exponential constant
-- B = activation energy / R (K)
-- T = absolute temperature (K)
+Both conditions are met simultaneously:
+1. The composition falls within Lakatos validity range
+2. All Fluegel components are within `Fluegel_table3.csv` bounds
 
-**Used for:**
-- Lead Glass (PbO-containing)
-- Slags (at high temperature)
-
-**Characteristics:**
-- **Linear** ln(η) vs 1/T plot
-- Simpler than VFT (2 parameters)
-- Works well for lead glasses
-- Less accurate near glass transition
+In dual-model mode:
+- Run both models independently
+- Produce two separate VTF fits
+- Report both sets of fixed-point temperatures
+- Compare: if all fixed points agree within 30°C, report the Lakatos result as primary (tighter σ)
+- If any fixed point disagrees by > 30°C, report both and flag `MODELS_DISAGREE`
 
 ---
 
-## System Comparison Table
+## Validity Ranges Summary
 
-| System | Model Type | Components | A Range | B Range (K) | T₀ Range (K) | Temp Range (°C) |
-|--------|------------|-----------|---------|-------------|--------------|-----------------|
-| Soda-Lime-Silica | VFT | 7 | -3.5 to -2.5 | 12,000-16,000 | 200-400 | 500-1400 |
-| Borosilicate | VFT | 5 | -4.5 to -3.5 | 14,000-18,000 | 100-300 | 400-1400 |
-| Aluminosilicate | VFT | 8 | -5.0 to -4.0 | 16,000-22,000 | 200-500 | 900-1600 |
-| Lead Glass | Arrhenius | 5 | -7.5 to -6.5 | 11,000-14,000 | N/A | 400-1100 |
-| Pure Silica | VFT | 1 | -2.8 | 13,500 | 475 | 1100-2300 |
-| Sodium Silicate | VFT | 2 | varies | 6,200-7,500 | 200-250 | 700-1300 |
-| CaO-Al2O3 Slag | Urbain | 6 | -0.5 to 0.5 | 2,500-4,500 | N/A | 1300-1600 |
-| Multi-Component | VFT | All | -3.5 | 14,000 | 300 | 300-1600 |
+### Lakatos 1976 Composition Range
+
+Derived from the 44 training samples in `page_003_table_001.csv` and `page_004_table_002.csv`:
+
+| Component | Typical range in training data (wt%) | Hard limit used |
+|---|---|---|
+| SiO₂ | 60–80 | Must be > 50 wt% |
+| Al₂O₃ | 0–8 | — |
+| Na₂O | 0–15 | — |
+| K₂O | 0–9 | — |
+| Li₂O | 0–3 | — |
+| CaO | 0–14 | — |
+| MgO | 0–7 | — |
+| BaO | 0–12 | — |
+| ZnO | 0–8 | — |
+| PbO | 0–19 | — |
+| B₂O₃ | 0–17 | Quadratic valid to ~20 wt% |
+
+If SiO₂ < 50 wt%, the Lakatos model cannot be used (the encoding `parts per 100 SiO₂` becomes unreliable).
+
+### Fluegel 2007 Composition Range
+
+See `Fluegel_table3.csv`. The table provides maximum mol% (excl. SiO₂) for each component at each viscosity level. SiO₂ itself has both a minimum (42.62 mol%) and maximum (89.2 mol%) bound.
 
 ---
 
-## Composition Range Validation
+## Decision Flowchart
 
-### Why Ranges Matter
+```
+Input composition (wt%)
+         │
+         ▼
+SiO₂ > 99 wt%?
+    └─ YES ──► HETHERINGTON_1964 (Arrhenius for pure fused silica)
 
-**Example - MgO behavior:**
-- **In Soda-Lime-Silica:** Acts as network former (+30 to +40 K/wt%)
-- **In Aluminosilicate:** Acts as network modifier (-45 to -60 K/wt%)
+         │ NO
+         ▼
+Slag detected?  (CaO > 20% AND SiO₂ < 50%) OR (FeO > 10%) OR (CaO+Al₂O₃ > 60% AND SiO₂ < 45%)
+    └─ YES ──► X_CaF₂ > 0.08 molar or W_CaF₂ > 10 wt%?
+                  ├─ YES ──► NAKAMOTO_2007  (pending — ch. 13)
+                  └─ NO  ──► IIDA           (pending — ch. 13)
 
-**Same component, opposite effect!** This is why composition ranges are critical.
+         │ NO
+         ▼
+Total fluorides > 20 wt% AND SiO₂ < 30 wt%?
+    └─ YES ──► NOT_SUPPORTED (pure fluoride glass — no reliable regression)
 
-### Range Checking
-
-For each detected system, verify ALL components are within validated ranges:
-
-**Example - Soda-Lime-Silica:**
-```typescript
-Valid Ranges:
-  SiO2: 65-80%
-  Na2O+K2O: 10-18%
-  CaO+MgO: 5-15%
-  Al2O3: 0-5%
-  Fe2O3: 0-2%
-
-If any component outside range:
-  → Warning issued
-  → Confidence level降低
-  → Extrapolation risk increased
+         │ NO
+         ▼
+SiO₂ > 50 wt%?
+    ├─ NO ──► NOT_SUPPORTED (neither Lakatos nor Fluegel valid below SiO₂ = 50%)
+    └─ YES
+         │
+         ▼
+All non-zero components in {SiO₂, Al₂O₃, Na₂O, K₂O, Li₂O, CaO, MgO, BaO, ZnO, PbO, B₂O₃}
+AND within Lakatos validity ranges (Na₂O 10–17%, SiO₂ 60–77%)?
+    ├─ YES ──► LAKATOS_1976
+    └─ NO  ──► FLUEGEL_2007
 ```
 
 ---
 
-## Confidence Levels
+## Model Standard Errors
 
-### HIGH Confidence
-- All components within validated ranges
-- System clearly identified
-- Expected accuracy: ±25-35% viscosity, ±40-60°C fixed points
+These are the errors to quote in confidence notes and use for uncertainty propagation (Chapter 9):
 
-**Systems:**
-- Soda-Lime-Silica (most validated)
-- Borosilicate (NIST standard)
+### Lakatos 1976
 
-### MEDIUM Confidence
-- Minor components outside range (<10% deviation)
-- System identified but near boundaries
-- Expected accuracy: ±40-50% viscosity, ±75-100°C fixed points
+| Viscosity level | Standard deviation σ |
+|---|---|
+| log η = 2 poise (1 Pa·s) | 4.63°C |
+| log η = 4 poise (3 Pa·s) | 3.34°C |
+| log η = 6 poise (5 Pa·s) | 3.14°C |
 
-**Systems:**
-- Aluminosilicate
-- Lead Glass
-- Pure Silica
+A 95% confidence interval on any single predicted isokom temperature is approximately **±2σ**, i.e., ±6.3–9.3°C.
 
-### LOW Confidence
-- Composition in anomaly region (boron anomaly, mixed alkali)
-- Binary/specialty systems with limited data
-- Expected accuracy: ±50-70% viscosity, ±100-150°C fixed points
+### Fluegel 2007
 
-**Systems:**
-- Sodium Silicate
-- Calcium-Aluminate Slags
-- Fluoride Glasses
+The paper reports overall model standard errors of **9–17°C** (R² = 0.985–0.989) across all three viscosity levels. The exact per-level values are not separately tabulated; conservatively use **17°C** as σ for all three levels when computing confidence intervals.
 
-### VERY LOW Confidence
-- Multi-component mixing (no specific system match)
-- Significant extrapolation
-- Expected accuracy: ±70-100% viscosity, ±150-200°C fixed points
-- **Experimental validation required**
-
-**Systems:**
-- Multi-Component Mixing
+A 95% confidence interval on any single predicted isokom temperature is approximately **±34°C**.
 
 ---
 
-## Extrapolation Risk Levels
-
-### NONE
-- All components well within validated ranges
-- System standard composition
-- Historical production data available
-
-### MINOR
-- 1-2 components slightly outside range (5-10% deviation)
-- Still within physical bounds
-- Similar to validated compositions
-
-### MODERATE
-- Several components outside range
-- In anomaly region (boron, mixed alkali)
-- Unusual combination of components
-
-### SEVERE
-- No matching system
-- Extreme compositions
-- Multiple components far outside ranges
-- **Do not use for critical applications**
-
----
-
-## Selection Logic Details
-
-### Priority Order (Most Specific First)
-
-1. **Pure Systems** (SiO2 > 99%)
-   - Least ambiguous
-   - Only one possible classification
-
-2. **Heavy Metal Glasses** (PbO > 15%)
-   - Dominant structural modifier
-   - Overrides other classifications
-
-3. **Fluoride Glasses** (fluorides > 20%)
-   - Different network type
-   - Requires special treatment
-
-4. **Borosilicate** (B2O3 > 7%, specific ranges)
-   - Before aluminosilicate (can have some Al2O3)
-   - Boron anomaly region critical
-
-5. **Aluminosilicate** (Al2O3 > 12%, SiO2 50-70%)
-   - High alumina content
-   - Different from soda-lime
-
-6. **Slags** (CaO > 30%, low SiO2)
-   - Non-glass structure
-   - Metallurgical applications only
-
-7. **Binary Sodium Silicate** (high Na2O, minimal others)
-   - Specific binary system
-   - Before soda-lime-silica
-
-8. **Soda-Lime-Silica** (default commercial range)
-   - Most common
-   - Wide acceptance criteria
-
-9. **Multi-Component** (fallback)
-   - Nothing else matches
-   - Lowest confidence
-
-### Handling Edge Cases
-
-**Case 1: Borderline Compositions**
-```
-Example: SiO2 = 70%, B2O3 = 6%, Na2O = 15%
-
-Is this borosilicate or soda-lime-silica?
-→ B2O3 < 7% threshold
-→ Classify as Soda-Lime-Silica
-→ But issue warning: "B2O3 near borosilicate range"
-```
-
-**Case 2: Mixed Systems**
-```
-Example: SiO2 = 68%, Al2O3 = 8%, B2O3 = 10%
-
-Both borosilicate AND alumina characteristics
-→ B2O3 > 7% → Borosilicate wins (checked first)
-→ Issue warning: "High Al2O3 for borosilicate"
-→ Confidence: MEDIUM
-```
-
-**Case 3: Unusual Combinations**
-```
-Example: SiO2 = 55%, Al2O3 = 18%, PbO = 12%
-
-PbO present but < 15% threshold
-→ Not lead glass
-→ Al2O3 > 12% → Aluminosilicate
-→ Issue warning: "Unusual PbO content"
-```
-
----
-
-## Validation Against Standards
-
-Each system must validate against reference compositions:
-
-| System | Reference | Source | Pass Criteria |
-|--------|-----------|--------|---------------|
-| Soda-Lime-Silica | Window glass | Lakatos 1972 | ±0.15 log units |
-| Borosilicate | NIST SRM 717a | NIST + Dingwell | ±0.10 log units |
-| Aluminosilicate | High-alumina | Giordano 2008 | ±0.20 log units |
-| Lead Glass | 24% PbO crystal | Mazurin 1983 | ±0.15 log units |
-| Pure Silica | 99.9% SiO2 | Hetherington 1964 | ±0.20 log units |
-
-**See Chapter 15 for complete reference datasets**
-
----
-
-## Implementation Checklist
-
-### Phase 1: Basic Detection
-- [ ] Implement `detectViscosityModel()` function
-- [ ] Add composition normalization
-- [ ] Test with 8 reference compositions
-- [ ] Verify correct system identification
-
-### Phase 2: Range Validation
-- [ ] Implement `validateComposition()` function
-- [ ] Check each component against ranges
-- [ ] Generate warnings for violations
-- [ ] Assign confidence levels
-
-### Phase 3: Edge Case Handling
-- [ ] Add borderline composition logic
-- [ ] Implement warning system
-- [ ] Test mixed system classifications
-- [ ] Validate against unusual compositions
-
-### Phase 4: Integration
-- [ ] Connect to `calculateViscosity()`
-- [ ] Return system type in output
-- [ ] Include validation status
-- [ ] Document detected system
-
----
-
-**Next:** [Chapter 4 - Soda-Lime-Silica System](./chapter-04-soda-lime-silica.md)
+**Next:** [Chapter 4 — Lakatos 1976 Model](./chapter-04-lakatos-1976.md)
 

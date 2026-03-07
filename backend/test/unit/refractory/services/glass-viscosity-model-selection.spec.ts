@@ -65,10 +65,10 @@ describe('GlassViscosityService — selectModel', () => {
 
   // ─── Not supported ─────────────────────────────────────────────────────────
 
-  it('NOT_SUPPORTED + secondary RIBOUD_1981 for CaO-rich slag (CaO>30%, SiO₂<40%)', () => {
+  it('IIDA primary + NAKAMOTO_2007 secondary for CaO-rich slag (CaO>30%, SiO₂<40%)', () => {
     const s = service.selectModel({ CaO: 45, Al2O3: 35, SiO2: 18, MgO: 2 });
-    expect(s.primary).toBe(ViscosityModel.NOT_SUPPORTED);
-    expect(s.secondary).toBe(ViscosityModel.RIBOUD_1981);
+    expect(s.primary).toBe(ViscosityModel.IIDA);
+    expect(s.secondary).toBe(ViscosityModel.NAKAMOTO_2007);
   });
 
   it('NOT_SUPPORTED for pure fluoride glass', () => {

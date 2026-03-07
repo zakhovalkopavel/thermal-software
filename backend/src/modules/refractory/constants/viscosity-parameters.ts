@@ -327,3 +327,166 @@ export const HETHERINGTON_1964 = {
   temperatureRange: { min: 1100, max: 2300 },
   reference: 'Hetherington, G.; Jack, K.H.; Kennedy, J.C. (1964). "The Viscosity of Vitreous Silica." Physics and Chemistry of Glasses 5(5):130–136.',
 } as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4. MILLS / NPL — Liquidus temperature regression
+//
+// Source: Mills, K.C. (2011). Estimating the Physical Properties of Slags. SAIMM.
+// Formula: T_liq [°C] = 1225 + Σ(k_i · W_i)   (W_i = wt%)
+// Valid: CaO-SiO₂ based slags, Al₂O₃ ≤ 20%, CaF₂ ≤ 15%
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const MILLS_LIQUIDUS = {
+  intercept: 1225,
+  k: {
+    SiO2:  1.85,
+    Al2O3: 0.55,
+    TiO2: -1.10,
+    ZrO2:  2.40,
+    CaO:  -1.15,
+    MgO:  -2.20,
+    FeO:  -1.40,
+    MnO:  -1.25,
+    Na2O: -7.50,
+    K2O:  -6.80,
+    Li2O: -12.40,
+    CaF2: -4.85,
+    B2O3: -3.50,
+  } as Record<string, number>,
+  reference: 'Mills, K.C. (2011). Estimating the Physical Properties of Slags. SAIMM.',
+} as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. IIDA MODEL — Industrial mixed slag viscosity
+//
+// Sources:
+//   Iida, T. & Guthrie, R.I.L. (1988). The Physical Properties of Liquid Metals.
+//     Oxford University Press.  (η₀ᵢ derivation, pure-component constants)
+//   Mills, K.C. (2011). Estimating the Physical Properties of Slags. SAIMM.
+//     (Basicity index α coefficients, dynamic Al₂O₃ formula)
+//   Allibert, M. & VDEh (1995). Slag Atlas (2nd Ed.). Verlag Stahleisen.
+//     (Cross-checked pure-component Mᵢ, Tmᵢ, Vmᵢ, Hᵢ values)
+//
+// Formula: η = A · η₀ · exp(E / B_i*)
+//   A = 1.031 × 10⁻³  (units factor → Pa·s)
+//   η₀ = Σ(η₀ᵢ · Xᵢ)  — ideal additive viscosity
+//   η₀ᵢ = 1.8×10⁻⁷ · √(Mᵢ·Tmᵢ) / Vmᵢ^(2/3) · exp(Hᵢ/RT)
+//   B_i* = modified basicity index with dynamic Al₂O₃ amphoteric term
+//   E = 10.29 / (B_i* + 0.31)² + 1.13
+//
+// Valid: T = 1300–1800 °C, CaF₂ ≤ 8 mol%, above liquidus.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Scale factor converting η₀ units to Pa·s */
+const IIDA_A = 1.031e-3;
+
+export const IIDA_MODEL = {
+  A: IIDA_A,
+  /** Pure-component constants for η₀ᵢ calculation.
+   *  M = molar mass (g/mol), Tm = melting point (K),
+   *  Vm = molar volume at melting point (×10⁻⁶ m³/mol), H = activation enthalpy (J/mol) */
+  components: {
+    SiO2:  { M: 60.08,  Tm: 1996, Vm: 27.2, H: 51100 },
+    Al2O3: { M: 101.96, Tm: 2327, Vm: 28.3, H: 47800 },
+    CaO:   { M: 56.08,  Tm: 2886, Vm: 16.5, H: 33900 },
+    MgO:   { M: 40.30,  Tm: 3105, Vm: 11.5, H: 32200 },
+    FeO:   { M: 71.85,  Tm: 1644, Vm: 14.5, H: 24300 },
+    MnO:   { M: 70.94,  Tm: 2115, Vm: 15.6, H: 30500 },
+    CaF2:  { M: 78.08,  Tm: 1691, Vm: 24.5, H: 29700 },
+    Na2O:  { M: 61.98,  Tm: 1405, Vm: 27.3, H: 19500 },
+    Li2O:  { M: 29.88,  Tm: 1711, Vm: 13.9, H: 25000 },
+  } as Record<string, { M: number; Tm: number; Vm: number; H: number }>,
+  /** Basicity interaction coefficients α (Mills 2011).
+   *  Acidic oxides (network formers) act as denominator; basic as numerator.
+   *  Al₂O₃ is treated separately (dynamic / amphoteric). */
+  alpha: {
+    // Acidic (network-forming)
+    SiO2:  { value: 1.00, type: 'acid'  as const },
+    TiO2:  { value: 0.65, type: 'acid'  as const },
+    ZrO2:  { value: 0.40, type: 'acid'  as const },
+    // Basic (network-modifying)
+    CaO:   { value: 1.53, type: 'basic' as const },
+    MgO:   { value: 1.51, type: 'basic' as const },
+    K2O:   { value: 1.94, type: 'basic' as const },
+    Na2O:  { value: 1.94, type: 'basic' as const },
+    Li2O:  { value: 2.15, type: 'basic' as const },
+    FeO:   { value: 1.00, type: 'basic' as const },
+    MnO:   { value: 1.00, type: 'basic' as const },
+    CaF2:  { value: 1.20, type: 'basic' as const },
+    // Al₂O₃: dynamic — computed at runtime from simple B_i
+  } as Record<string, { value: number; type: 'acid' | 'basic' }>,
+  temperatureRange: { min_C: 1300, max_C: 1800 },
+  CaF2_max_mol: 0.08,
+  reference: 'Iida, T. & Guthrie, R.I.L. (1988). The Physical Properties of Liquid Metals. Oxford. | Mills, K.C. (2011). Estimating the Physical Properties of Slags. SAIMM. | Allibert & VDEh (1995). Slag Atlas (2nd Ed.).',
+} as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 6. NAKAMOTO 2007 — Fluoride-bearing slag viscosity
+//
+// Source: Nakamoto, H., Kiyose, A., & Tanaka, T. (2007).
+//   "A model for estimating the viscosity of multi-component slags containing
+//    alkali oxide and calcium fluoride."
+//   ISIJ International, 47(11):1583–1590.
+//   Table: "Parameters eᵢ for activation energy"
+//
+// Formula: η [Pa·s] = A · T · exp(E / RT)
+//   E = Σ(eᵢ · Xᵢ)         (J/mol, Xᵢ = mole fractions)
+//   ln(A) = −20.5 + 0.025 · M_avg
+//   M_avg = Σ(Xᵢ · Mᵢ)     (g/mol, average molar mass)
+//   R = 8.314 J/(mol·K),  T in Kelvin
+//
+// Note on CaF₂: eᵢ = −108 200 J/mol is the 2007 revision (earlier 2004 = −72 800).
+// Note on Fe₂O₃: valid under oxidising conditions only; use FeO in reducing conditions.
+// Note on Al₂O₃ in acid slags: if X_SiO₂ > 0.55, multiply e_Al₂O₃ by 0.85.
+//
+// Valid: T = 1200–1900 °C, CaF₂ > 5 mol%, above liquidus.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const NAKAMOTO_2007 = {
+  R: 8.314,
+  lnA_intercept: -20.5,
+  lnA_slope:       0.025,
+  /** Activation energy coefficients eᵢ (J/mol) — from ISIJ Int. 47(11) Table */
+  e: {
+    SiO2:  154500,
+    P2O5:  132000,
+    Al2O3: 118400,
+    ZrO2:   92600,
+    TiO2:   84100,
+    B2O3:   68300,
+    Fe2O3:  52000,
+    FeO:   -34200,
+    MnO:   -38600,
+    MgO:   -45300,
+    CaO:   -56200,
+    Na2O:  -75400,
+    K2O:   -88100,
+    Li2O:  -94500,
+    CaF2: -108200,
+  } as Record<string, number>,
+  /** Molar masses for components in this model (g/mol) */
+  molarMass: {
+    SiO2:   60.08,
+    P2O5:  141.94,
+    Al2O3: 101.96,
+    ZrO2:  123.22,
+    TiO2:   79.87,
+    B2O3:   69.62,
+    Fe2O3: 159.69,
+    FeO:    71.85,
+    MnO:    70.94,
+    MgO:    40.30,
+    CaO:    56.08,
+    Na2O:   61.98,
+    K2O:    94.20,
+    Li2O:   29.88,
+    CaF2:   78.08,
+  } as Record<string, number>,
+  /** Al₂O₃ correction factor when SiO₂ mole fraction > 0.55 (highly acidic slag) */
+  Al2O3_acid_correction: 0.85,
+  SiO2_acid_threshold:   0.55,
+  CaF2_min_mol: 0.05,
+  temperatureRange: { min_C: 1200, max_C: 1900 },
+  reference: 'Nakamoto, H., Kiyose, A., & Tanaka, T. (2007). ISIJ International 47(11):1583–1590.',
+} as const;
+

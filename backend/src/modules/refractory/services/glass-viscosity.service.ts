@@ -38,6 +38,9 @@ import {
   calcHetheringtonLogEta,
   hetheringtonTemperatureAtLogEta,
 } from '../utils/glass-viscosity-arrhenius.util';
+import { calcIidaViscosity } from '../utils/glass-viscosity-iida.util';
+import { calcNakamotoViscosity } from '../utils/glass-viscosity-nakamoto.util';
+import { IIDA_MODEL, NAKAMOTO_2007 } from '../constants/viscosity-parameters';
 
 /**
  * Glass Viscosity Calculator Service — v3
@@ -105,7 +108,9 @@ export class GlassViscosityService {
     }
 
     if (requestedModel === ViscosityModel.FLUEGEL_2007) {
-      if (auto.primary === ViscosityModel.NOT_SUPPORTED) {
+      if (auto.primary === ViscosityModel.NOT_SUPPORTED ||
+          auto.primary === ViscosityModel.IIDA ||
+          auto.primary === ViscosityModel.NAKAMOTO_2007) {
         return {
           ...auto,
           warnings: [
@@ -115,6 +120,14 @@ export class GlassViscosityService {
         };
       }
       return { primary: ViscosityModel.FLUEGEL_2007, reason: 'Requested by caller', warnings: auto.warnings };
+    }
+
+    if (requestedModel === ViscosityModel.IIDA) {
+      return { primary: ViscosityModel.IIDA, reason: 'Requested by caller', warnings: auto.warnings };
+    }
+
+    if (requestedModel === ViscosityModel.NAKAMOTO_2007) {
+      return { primary: ViscosityModel.NAKAMOTO_2007, reason: 'Requested by caller', warnings: auto.warnings };
     }
 
     return auto;
@@ -148,11 +161,17 @@ export class GlassViscosityService {
     }
     if (modelType === ViscosityModel.NOT_SUPPORTED) {
       throw new BadRequestException(
-        `Composition is outside all supported viscosity models. ` +
-        `Reason: ${selection.reason}. ` +
-        `For slags use URBAIN_1981 or RIBOUD_1981. ` +
-        `Pure fluoride glass has no reliable published regression.`,
+        `Composition is outside all supported viscosity models. Reason: ${selection.reason}.`,
       );
+    }
+
+    if (modelType === ViscosityModel.IIDA) {
+      const result = calcIidaViscosity(comp, temperature);
+      return { ...result, composition: comp, secondaryModel: selection.secondary } as any;
+    }
+    if (modelType === ViscosityModel.NAKAMOTO_2007) {
+      const result = calcNakamotoViscosity(comp, temperature);
+      return { ...result, composition: comp, secondaryModel: selection.secondary } as any;
     }
 
     const { vtf, modelRef, isokomWarnings } = buildVtf(comp, selection);
@@ -210,6 +229,24 @@ export class GlassViscosityService {
       throw new BadRequestException(
         `Composition is outside all supported viscosity models. Reason: ${selection.reason}.`,
       );
+    }
+
+    if (modelType === ViscosityModel.IIDA || modelType === ViscosityModel.NAKAMOTO_2007) {
+      const calcFn = modelType === ViscosityModel.IIDA ? calcIidaViscosity : calcNakamotoViscosity;
+      const firstWarnings = calcFn(comp, temperatures_C[0]).warnings;
+      const points = temperatures_C.map(T => {
+        const r = calcFn(comp, T);
+        return { temperature_C: T, logViscosity: r.logViscosity_Pas, viscosity_Pas: r.viscosity_Pas, thermalState: r.thermalState };
+      });
+      const allWarnings = [...firstWarnings, ...points.flatMap(p => [] as string[])]
+        .filter((w, i, a) => a.indexOf(w) === i);
+      return {
+        model: ViscosityModelNames[modelType],
+        points,
+        fixedPoints: null,
+        secondaryModel: selection.secondary ? ViscosityModelNames[selection.secondary] : undefined,
+        validation: this.buildValidationStatus(modelType, allWarnings),
+      };
     }
 
     // Hetherington: evaluate each temperature directly (no VTF)
@@ -270,6 +307,22 @@ export class GlassViscosityService {
       );
     }
 
+    if (modelType === ViscosityModel.IIDA || modelType === ViscosityModel.NAKAMOTO_2007) {
+      const calcFn = modelType === ViscosityModel.IIDA ? calcIidaViscosity : calcNakamotoViscosity;
+      const range  = modelType === ViscosityModel.IIDA
+        ? { min: IIDA_MODEL.temperatureRange.min_C, max: IIDA_MODEL.temperatureRange.max_C }
+        : { min: NAKAMOTO_2007.temperatureRange.min_C, max: NAKAMOTO_2007.temperatureRange.max_C };
+      const T_C    = this.bisectTemperature(comp, targetLogEta, range.min, range.max, calcFn);
+      const validation = this.buildValidationStatus(modelType, selection.warnings);
+      return {
+        model:         ViscosityModelNames[modelType],
+        targetLogEta,
+        temperature_C: Number(T_C.toFixed(1)),
+        validation,
+        secondaryModel: selection.secondary ? ViscosityModelNames[selection.secondary] : undefined,
+      };
+    }
+
     if (modelType === ViscosityModel.HETHERINGTON_1964) {
       const temperature_C = hetheringtonTemperatureAtLogEta(targetLogEta);
       const validation    = this.buildValidationStatus(modelType, selection.warnings);
@@ -316,33 +369,113 @@ export class GlassViscosityService {
   // ─── Model selection ─────────────────────────────────────────────────────────
 
   selectModel(comp: Record<string, number>): ModelSelectionResult {
-    const SiO2      = comp['SiO2'] ?? 0;
-    const CaO       = comp['CaO']  ?? 0;
-    const Na2O      = comp['Na2O'] ?? 0;
-    const fluorides =
-      (comp['CaF2'] ?? 0) + (comp['NaF'] ?? 0) + (comp['KF']   ?? 0) +
-      (comp['MgF2'] ?? 0) + (comp['AlF3'] ?? 0) + (comp['LiF'] ?? 0) +
-      (comp['F']    ?? 0);
+    const SiO2  = comp['SiO2']  ?? 0;
+    const CaO   = comp['CaO']   ?? 0;
+    const FeO   = comp['FeO']   ?? 0;
+    const MgO   = comp['MgO']   ?? 0;
+    const Al2O3 = comp['Al2O3'] ?? 0;
+    const Na2O  = comp['Na2O']  ?? 0;
+    const CaF2  = comp['CaF2']  ?? 0;
 
+    const totalFluorides =
+      CaF2 +
+      (comp['NaF']  ?? 0) + (comp['KF']   ?? 0) +
+      (comp['MgF2'] ?? 0) + (comp['AlF3'] ?? 0) +
+      (comp['LiF']  ?? 0) + (comp['F']    ?? 0);
+
+    // ── Pure fused silica ───────────────────────────────────────────────────
     if (SiO2 > 99) {
-      return { primary: ViscosityModel.HETHERINGTON_1964, reason: `SiO₂ = ${SiO2.toFixed(1)} wt% — pure fused silica`, warnings: [] };
-    }
-    if (CaO > 30 && SiO2 < 40) {
-      return { primary: ViscosityModel.NOT_SUPPORTED, secondary: ViscosityModel.RIBOUD_1981, reason: `CaO = ${CaO.toFixed(1)} wt%, SiO₂ = ${SiO2.toFixed(1)} wt% — slag. Use Urbain/Riboud.`, warnings: [] };
-    }
-    if (fluorides > 20) {
-      return { primary: ViscosityModel.NOT_SUPPORTED, reason: `Total fluoride = ${fluorides.toFixed(1)} wt% — no reliable regression for pure fluoride glass.`, warnings: [] };
+      return {
+        primary: ViscosityModel.HETHERINGTON_1964,
+        reason: `SiO₂ = ${SiO2.toFixed(1)} wt% — pure fused silica`,
+        warnings: [],
+      };
     }
 
+    // ── Slag detection ──────────────────────────────────────────────────────
+    const isSlag = (CaO > 20 && SiO2 < 50) || (FeO > 10) || (CaO + Al2O3 > 60 && SiO2 < 45);
+
+    if (isSlag) {
+      // CaF₂ > 8 mol% (rough wt% proxy ~10%) → Nakamoto is preferred
+      // Otherwise Iida handles all industrial slags incl. CaF₂ ≤ 8 mol%
+      const molPct = wtPctToMolPct(comp);
+      const CaF2_mol = (molPct['CaF2'] ?? 0) / 100;
+      if (CaF2_mol > IIDA_MODEL.CaF2_max_mol) {
+        return {
+          primary:   ViscosityModel.NAKAMOTO_2007,
+          secondary: ViscosityModel.IIDA,
+          reason:
+            `Slag detected with CaF₂ = ${(CaF2_mol * 100).toFixed(1)} mol% ` +
+            `> ${IIDA_MODEL.CaF2_max_mol * 100}% — Nakamoto 2007 preferred for high-fluoride slags.`,
+          warnings: [],
+        };
+      }
+      return {
+        primary:   ViscosityModel.IIDA,
+        secondary: ViscosityModel.NAKAMOTO_2007,
+        reason:
+          `Slag detected (CaO=${CaO.toFixed(1)}, SiO₂=${SiO2.toFixed(1)} wt%). ` +
+          `Iida model applied; Nakamoto 2007 also available.`,
+        warnings: [],
+      };
+    }
+
+    // ── Pure fluoride glass (no SiO₂ backbone) — not supported ─────────────
+    if (totalFluorides > 20 && SiO2 < 30) {
+      return {
+        primary: ViscosityModel.NOT_SUPPORTED,
+        reason:
+          `Total fluoride = ${totalFluorides.toFixed(1)} wt%, SiO₂ = ${SiO2.toFixed(1)} wt% ` +
+          `— pure fluoride glass has no reliable published regression.`,
+        warnings: [],
+      };
+    }
+
+    // ── Silicate glass path (Lakatos → Fluegel) ─────────────────────────────
     const lakatosResult = checkLakatosValidity(comp);
     if (lakatosResult.valid) {
-      return { primary: ViscosityModel.LAKATOS_1976, reason: `Within Lakatos 1976 range (SiO₂ ${SiO2.toFixed(1)} wt%, Na₂O ${Na2O.toFixed(1)} wt%)`, warnings: lakatosResult.warnings };
+      return {
+        primary: ViscosityModel.LAKATOS_1976,
+        reason: `Within Lakatos 1976 range (SiO₂ ${SiO2.toFixed(1)} wt%, Na₂O ${Na2O.toFixed(1)} wt%)`,
+        warnings: lakatosResult.warnings,
+      };
     }
-    return { primary: ViscosityModel.FLUEGEL_2007, reason: lakatosResult.reason ?? 'Outside Lakatos range — using Fluegel 2007', warnings: lakatosResult.warnings };
+    return {
+      primary: ViscosityModel.FLUEGEL_2007,
+      reason: lakatosResult.reason ?? 'Outside Lakatos range — using Fluegel 2007',
+      warnings: lakatosResult.warnings,
+    };
   }
 
 
   // ─── Private helpers ─────────────────────────────────────────────────────────
+
+  /**
+   * Bisection solver: find temperature where calcFn(comp, T).logViscosity_Pas == targetLogEta.
+   * Used for slag model inverse lookup (Urbain/Riboud have no closed-form inverse).
+   */
+  private bisectTemperature(
+    comp: Record<string, number>,
+    targetLogEta: number,
+    T_lo: number,
+    T_hi: number,
+    calcFn: (comp: Record<string, number>, T: number) => { logViscosity_Pas: number },
+    maxIter = 60,
+    tol = 0.1,
+  ): number {
+    // Slag viscosity decreases with temperature: logEta decreases as T increases
+    for (let i = 0; i < maxIter; i++) {
+      const T_mid  = (T_lo + T_hi) / 2;
+      const logMid = calcFn(comp, T_mid).logViscosity_Pas;
+      if (Math.abs(T_hi - T_lo) < tol) return T_mid;
+      if (logMid > targetLogEta) {
+        T_lo = T_mid; // need higher T to reduce viscosity
+      } else {
+        T_hi = T_mid;
+      }
+    }
+    return (T_lo + T_hi) / 2;
+  }
 
   private validateFixedPointOrdering(fp: FixedPoints): string[] {
     const w: string[] = [];
@@ -358,11 +491,15 @@ export class GlassViscosityService {
     let extrapolationRisk = ExtrapolationRisk.NONE;
     const compositionIssues: CompositionIssue[] = [];
     const hasOrdering = warnings.some(w => w.startsWith('ORDERING_VIOLATION'));
-    const outOfRange  = warnings.filter(w => w.includes('outside') || w.includes('exceeds') || w.includes('above') || w.includes('below')).length;
-    if      (hasOrdering)    { confidenceLevel = ConfidenceLevel.LOW;    extrapolationRisk = ExtrapolationRisk.SEVERE; }
+    const outOfRange  = warnings.filter(w =>
+      w.includes('outside') || w.includes('exceeds') || w.includes('above') ||
+      w.includes('below')   || w.includes('not modelled'),
+    ).length;
+    if      (hasOrdering)     { confidenceLevel = ConfidenceLevel.LOW;    extrapolationRisk = ExtrapolationRisk.SEVERE; }
     else if (outOfRange >= 3) { confidenceLevel = ConfidenceLevel.LOW;    extrapolationRisk = ExtrapolationRisk.MODERATE; }
     else if (outOfRange >= 1) { confidenceLevel = ConfidenceLevel.MEDIUM; extrapolationRisk = ExtrapolationRisk.MINOR; }
-    return { systemDetected: ViscosityModelNames[modelType], confidenceLevel, warnings, componentsInRange: 0, componentsOutOfRange: outOfRange, extrapolationRisk, compositionIssues };
+    const systemName = ViscosityModelNames[modelType] ?? modelType;
+    return { systemDetected: systemName, confidenceLevel, warnings, componentsInRange: 0, componentsOutOfRange: outOfRange, extrapolationRisk, compositionIssues };
   }
 
   private buildComponentBreakdown(comp: Record<string, number>): ComponentBreakdown {
