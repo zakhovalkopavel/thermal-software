@@ -279,11 +279,18 @@ export function buildVtf(
  *
  * Formula:  log₁₀(η [Pa·s]) = A + B / (T [°C] − T₀)
  *
- * Derivation (eliminating A and B):
- *   Define R = (y₂−y₁)/(y₃−y₁)
- *   T₀ = [(T₁−T₂)·T₃ − R·(T₁−T₃)·T₂] / [(T₁−T₂) − R·(T₁−T₃)]
- *   B  = (y₂−y₁) · (T₂−T₀) · (T₁−T₀) / (T₁−T₂)
+ * Derivation — determinant (cross-ratio) form (Ch. 7):
+ *   T₀ = [T₂·T₃·(y₂−y₃) + T₁·T₃·(y₃−y₁) + T₁·T₂·(y₁−y₂)]
+ *        / [T₃·(y₂−y₃)   + T₁·(y₃−y₁)   + T₂·(y₁−y₂)]
+ *   B  = (y₂−y₁) · (T₁−T₀) · (T₂−T₀) / (T₁−T₂)
  *   A  = y₁ − B / (T₁−T₀)
+ *
+ * This determinant form is more numerically stable than the R-ratio form
+ * because its denominator scales with temperature differences, not viscosity
+ * differences alone.
+ *
+ * With exactly 3 points and 3 unknowns the system is exactly determined —
+ * no iterative regression is needed or appropriate here.
  *
  * Throws VTF_FIT_SINGULAR if the three points are collinear (Arrhenius-like).
  * Throws VTF_FIT_INVALID_T0 / VTF_FIT_INVALID_B if result is non-physical.
@@ -300,13 +307,13 @@ export function fitVtfThreePoints(
   const T2 = q2.T_celsius, y2 = q2.logEtaPaS;
   const T3 = q3.T_celsius, y3 = q3.logEtaPaS;
 
-  const R   = (y2 - y1) / (y3 - y1);
-  const num = (T1 - T2) * T3 - R * (T1 - T3) * T2;
-  const den = (T1 - T2)       - R * (T1 - T3);
+  // Determinant form — numerically superior to R-ratio (Ch. 7 §Stable Three-Point Algorithm)
+  const num = T2 * T3 * (y2 - y3) + T1 * T3 * (y3 - y1) + T1 * T2 * (y1 - y2);
+  const den = T3 * (y2 - y3)      + T1 * (y3 - y1)      + T2 * (y1 - y2);
 
-  if (Math.abs(den) < 1e-10) {
+  if (Math.abs(den) < 1e-12) {
     throw new Error(
-      'VTF_FIT_SINGULAR: three isokom points are collinear — ' +
+      'VTF_FIT_SINGULAR: three isokom points are collinear in (T, log η) space — ' +
       'composition may be outside model range',
     );
   }

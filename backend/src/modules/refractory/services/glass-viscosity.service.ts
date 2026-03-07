@@ -11,7 +11,6 @@ import {
   GlassViscosityMetadata,
 } from '../interfaces/glass-viscosity.interface';
 import {
-  VtfParameters,
   ModelSelectionResult,
 } from '../interfaces/viscosity-parameters.interface';
 import {
@@ -41,6 +40,7 @@ import {
 import { calcIidaViscosity } from '../utils/glass-viscosity-iida.util';
 import { calcNakamotoViscosity } from '../utils/glass-viscosity-nakamoto.util';
 import { IIDA_MODEL, NAKAMOTO_2007 } from '../constants/viscosity-parameters';
+import { brentq } from '../../../common/utils/numeric.util';
 
 /**
  * Glass Viscosity Calculator Service — v3
@@ -238,7 +238,7 @@ export class GlassViscosityService {
         const r = calcFn(comp, T);
         return { temperature_C: T, logViscosity: r.logViscosity_Pas, viscosity_Pas: r.viscosity_Pas, thermalState: r.thermalState };
       });
-      const allWarnings = [...firstWarnings, ...points.flatMap(p => [] as string[])]
+      const allWarnings = [...firstWarnings, ...points.flatMap(() => [] as string[])]
         .filter((w, i, a) => a.indexOf(w) === i);
       return {
         model: ViscosityModelNames[modelType],
@@ -312,7 +312,8 @@ export class GlassViscosityService {
       const range  = modelType === ViscosityModel.IIDA
         ? { min: IIDA_MODEL.temperatureRange.min_C, max: IIDA_MODEL.temperatureRange.max_C }
         : { min: NAKAMOTO_2007.temperatureRange.min_C, max: NAKAMOTO_2007.temperatureRange.max_C };
-      const T_C    = this.bisectTemperature(comp, targetLogEta, range.min, range.max, calcFn);
+      const f = (T: number) => calcFn(comp, T).logViscosity_Pas - targetLogEta;
+      const { root: T_C } = brentq(f, range.min, range.max, 1e-4);
       const validation = this.buildValidationStatus(modelType, selection.warnings);
       return {
         model:         ViscosityModelNames[modelType],
@@ -372,7 +373,6 @@ export class GlassViscosityService {
     const SiO2  = comp['SiO2']  ?? 0;
     const CaO   = comp['CaO']   ?? 0;
     const FeO   = comp['FeO']   ?? 0;
-    const MgO   = comp['MgO']   ?? 0;
     const Al2O3 = comp['Al2O3'] ?? 0;
     const Na2O  = comp['Na2O']  ?? 0;
     const CaF2  = comp['CaF2']  ?? 0;
@@ -449,33 +449,6 @@ export class GlassViscosityService {
 
 
   // ─── Private helpers ─────────────────────────────────────────────────────────
-
-  /**
-   * Bisection solver: find temperature where calcFn(comp, T).logViscosity_Pas == targetLogEta.
-   * Used for slag model inverse lookup (Urbain/Riboud have no closed-form inverse).
-   */
-  private bisectTemperature(
-    comp: Record<string, number>,
-    targetLogEta: number,
-    T_lo: number,
-    T_hi: number,
-    calcFn: (comp: Record<string, number>, T: number) => { logViscosity_Pas: number },
-    maxIter = 60,
-    tol = 0.1,
-  ): number {
-    // Slag viscosity decreases with temperature: logEta decreases as T increases
-    for (let i = 0; i < maxIter; i++) {
-      const T_mid  = (T_lo + T_hi) / 2;
-      const logMid = calcFn(comp, T_mid).logViscosity_Pas;
-      if (Math.abs(T_hi - T_lo) < tol) return T_mid;
-      if (logMid > targetLogEta) {
-        T_lo = T_mid; // need higher T to reduce viscosity
-      } else {
-        T_hi = T_mid;
-      }
-    }
-    return (T_lo + T_hi) / 2;
-  }
 
   private validateFixedPointOrdering(fp: FixedPoints): string[] {
     const w: string[] = [];
