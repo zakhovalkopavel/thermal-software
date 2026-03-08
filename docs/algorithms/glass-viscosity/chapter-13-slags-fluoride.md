@@ -16,23 +16,56 @@ This chapter covers viscosity calculation for **molten slags and fluoride-bearin
 
 ---
 
-## Model Selection Logic
+## Model Selection Logic (implementation notes)
+
+The implemented service applies a conservative ordering to model selection so that compositions that are fluoride-dominant are rejected before any slag model is attempted. The rationale and routing are:
+
+1. If the composition is `total fluorides > 20 wt%` AND `SiO₂ < 30 wt%` the composition is **fluoride-dominant** (ZBLAN-like), and **no published regression applicable** — return `NOT_SUPPORTED`.
+2. Otherwise check for slag signatures (high CaO/low SiO₂, high FeO, or CaO+Al₂O₃ high with low SiO₂). If a slag is detected, choose between Iida and Nakamoto according to CaF₂ mole fraction.
 
 ```
 Input composition
         │
         ▼
-Is X_CaF₂ > 0.08 (molar) or W_CaF₂ > 10 wt%?
-    ├─ YES ──► Nakamoto 2007 (chain-breaker specialisation)
-    └─ NO
-        │
-        ▼
-Is Al₂O₃ > 15 wt% OR is it a standard industrial slag (BF / BOF / LF)?
-    ├─ YES ──► Iida model (dynamic amphoteric Al₂O₃ treatment)
-    └─ NO  ──► Either model acceptable; Iida preferred
+Total fluorides > 20 wt% AND SiO₂ < 30 wt%?
+  └─ YES ──► NOT_SUPPORTED (fluoride-dominant; no reliable regression)
+  └─ NO  ──► Slag detection? (CaO > 20 & SiO₂ < 50) OR (FeO > 10) OR (CaO+Al₂O₃ > 60 & SiO₂ < 45)
+             ├─ YES ──► Compute CaF₂ (mole%) and route:
+             │          • CaF₂ > 8 mol% → NAKAMOTO_2007 (preferred for high-fluoride slags)
+             │          • CaF₂ ≥ 5 mol% → IIDA primary + NAKAMOTO_2007 available as secondary
+             │          • CaF₂ < 5 mol% → IIDA primary (Nakamoto not applicable)
+             └─ NO  ──► Not a slag — follow silicate glass path (Fluegel/Lakatos)
 ```
 
-Both models are available simultaneously. The result object always reports which model was applied and why.
+### Rationale and numeric thresholds
+
+- `IIDA` (Iida & Guthrie 1988) is targeted at industrial CaO–SiO₂–Al₂O₃ slags. In our implementation we treat CaF₂ up to **8 mol%** (IIDA_MODEL.CaF2_max_mol = 0.08) as within Iida range.
+- `NAKAMOTO_2007` is a fluoride-specialised slag model. Nakamoto is most appropriate when CaF₂ is substantial: we only consider Nakamoto as available when CaF₂ ≥ **5 mol%** (NAKAMOTO_2007.CaF2_min_mol = 0.05). When CaF₂ exceeds Iida's upper bound (≈8 mol%) Nakamoto is preferred.
+- The `pure-fluoride` test is intentionally executed before slag detection so that fluoride-dominant melts (no SiO₂ backbone) are rejected regardless of the presence of CaO.
+
+### Liquidus and safety
+
+Before any slag viscosity calculation the liquidus temperature must be estimated (Mills/NPL). If the requested temperature is below the liquidus the result is `UNDEFINED — BELOW_LIQUIDUS` and no viscosity is returned. See the `MILLS_LIQUIDUS` coefficients and the implementation in `viscosity-parameters.ts` for details.
+
+---
+
+## Implementation notes (where to look in code)
+
+- Slag detection & routing: `backend/src/modules/refractory/services/glass-viscosity.service.ts`
+- Iida implementation: `backend/src/modules/refractory/utils/glass-viscosity-iida.util.ts` (planned / partial)
+- Nakamoto implementation: `backend/src/modules/refractory/constants/viscosity-parameters.ts` (coefficients present) and `utils/glass-viscosity-nakamoto.util.ts` (planned)
+- Liquidus estimation (Mills): `MILLS_LIQUIDUS` in `viscosity-parameters.ts`
+
+---
+
+## Known limitations
+
+- Nakamoto and Iida cover slags above the liquidus only; they are not designed for glassy states.
+- Fluoride volatilisation at T > ~1700°C can change composition in real furnaces; apply caution when using high-T predictions.
+
+---
+
+Return to: [Index](./INDEX.md)
 
 ---
 

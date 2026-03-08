@@ -27,6 +27,7 @@ import {
   FluegelIsokoms,
   ModelSelectionResult,
 } from '../interfaces/viscosity-parameters.interface';
+import { levenbergMarquardt } from '../../../common/utils/numeric.util';
 import { FixedPoints } from '../interfaces/glass-viscosity.interface';
 import {
   LAKATOS_1976_COEFFICIENTS,
@@ -203,15 +204,20 @@ export function predictIsokomsFluegel(
   const warnings: string[] = [];
   const SiO2Mol = molPct['SiO2'] ?? 0;
 
-  if (SiO2Mol < FLUEGEL_2007_BOUNDS.SiO2_min) {
-    warnings.push(
-      `SiO₂ = ${SiO2Mol.toFixed(1)} mol% < Fluegel minimum (${FLUEGEL_2007_BOUNDS.SiO2_min})`,
-    );
-  }
-  if (SiO2Mol > FLUEGEL_2007_BOUNDS.SiO2_max) {
-    warnings.push(
-      `SiO₂ = ${SiO2Mol.toFixed(1)} mol% > Fluegel maximum (${FLUEGEL_2007_BOUNDS.SiO2_max})`,
-    );
+  const LOG_ETA_LABELS = ['log η 1.5', 'log η 6.6', 'log η 12'] as const;
+  for (let i = 0; i < 3; i++) {
+    const min = FLUEGEL_2007_BOUNDS.SiO2_min[i];
+    const max = FLUEGEL_2007_BOUNDS.SiO2_max[i];
+    if (SiO2Mol < min) {
+      warnings.push(
+        `SiO₂ = ${SiO2Mol.toFixed(1)} mol% < Fluegel minimum at ${LOG_ETA_LABELS[i]} (${min} mol%)`,
+      );
+    }
+    if (SiO2Mol > max) {
+      warnings.push(
+        `SiO₂ = ${SiO2Mol.toFixed(1)} mol% > Fluegel maximum at ${LOG_ETA_LABELS[i]} (${max} mol%)`,
+      );
+    }
   }
 
   const boundKeys = Object.keys(FLUEGEL_2007_BOUNDS).filter(
@@ -275,25 +281,26 @@ export function buildVtf(
 // ─── VTF three-point fit ──────────────────────────────────────────────────────
 
 /**
- * Fit VTF parameters analytically from exactly three (T, log η) pairs.
+ * Fit VTF parameters from exactly three (T, log η) pairs using the
+ * Levenberg-Marquardt nonlinear least-squares algorithm.
  *
  * Formula:  log₁₀(η [Pa·s]) = A + B / (T [°C] − T₀)
  *
- * Derivation — determinant (cross-ratio) form (Ch. 7):
- *   T₀ = [T₂·T₃·(y₂−y₃) + T₁·T₃·(y₃−y₁) + T₁·T₂·(y₁−y₂)]
- *        / [T₃·(y₂−y₃)   + T₁·(y₃−y₁)   + T₂·(y₁−y₂)]
- *   B  = (y₂−y₁) · (T₁−T₀) · (T₂−T₀) / (T₁−T₂)
- *   A  = y₁ − B / (T₁−T₀)
+ * Although the system is exactly determined (3 equations, 3 unknowns), the
+ * analytical determinant form suffers from catastrophic cancellation when
+ * temperatures are large (~1000 °C) and viscosity differences are small,
+ * because intermediate products reach ~10⁹ before subtracting. LM works
+ * directly on the residuals in the original scale, avoiding this issue.
  *
- * This determinant form is more numerically stable than the R-ratio form
- * because its denominator scales with temperature differences, not viscosity
- * differences alone.
- *
- * With exactly 3 points and 3 unknowns the system is exactly determined —
- * no iterative regression is needed or appropriate here.
+ * Initial guess strategy:
+ *   - T₀ is seeded at 50°C below the lowest input temperature (physical lower bound)
+ *   - B  is seeded from the Arrhenius slope between the two extreme points
+ *   - A  is seeded from the VTF equation using T₀ and B
  *
  * Throws VTF_FIT_SINGULAR if the three points are collinear (Arrhenius-like).
  * Throws VTF_FIT_INVALID_T0 / VTF_FIT_INVALID_B if result is non-physical.
+ *
+ * SciPy equivalent: scipy.optimize.curve_fit(lambda T,(A,B,T0): A+B/(T-T0), ...)
  */
 export function fitVtfThreePoints(
   p1: VtfPoint,
@@ -304,21 +311,35 @@ export function fitVtfThreePoints(
   const pts = [p1, p2, p3].sort((a, b) => b.T_celsius - a.T_celsius);
   const [q1, q2, q3] = pts;
   const T1 = q1.T_celsius, y1 = q1.logEtaPaS;
-  const T2 = q2.T_celsius, y2 = q2.logEtaPaS;
+  const T2 = q2.T_celsius;
   const T3 = q3.T_celsius, y3 = q3.logEtaPaS;
 
-  // Determinant form — numerically superior to R-ratio (Ch. 7 §Stable Three-Point Algorithm)
-  const num = T2 * T3 * (y2 - y3) + T1 * T3 * (y3 - y1) + T1 * T2 * (y1 - y2);
-  const den = T3 * (y2 - y3)      + T1 * (y3 - y1)      + T2 * (y1 - y2);
+  // Seed T₀ well below the lowest measured temperature
+  const T0_seed = Math.max(1, T3 * 0.4);
 
-  if (Math.abs(den) < 1e-12) {
-    throw new Error(
-      'VTF_FIT_SINGULAR: three isokom points are collinear in (T, log η) space — ' +
-      'composition may be outside model range',
-    );
-  }
+  // Seed B from Arrhenius slope between the two extreme points (approximation)
+  const dY = y3 - y1;
+  const dInvT = 1 / (T3 - T0_seed) - 1 / (T1 - T0_seed);
+  const B_seed = Math.abs(dInvT) > 1e-12 ? dY / dInvT : 5000;
 
-  const T0 = num / den;
+  // Seed A from the VTF equation at point 1
+  const A_seed = y1 - B_seed / (T1 - T0_seed);
+
+  const xData = [T1, T2, T3];
+  const yData = [q1.logEtaPaS, q2.logEtaPaS, q3.logEtaPaS];
+
+  // VTF model factory: ([A, B, T0]) => (T) => A + B / (T - T0)
+  const vtfModel = ([A, B, T0]: number[]) => (T: number) => A + B / (T - T0);
+
+  const fit = levenbergMarquardt(
+    xData,
+    yData,
+    vtfModel,
+    [A_seed, B_seed, T0_seed],
+    { maxIterations: 1000, damping: 1e-3, gradientDifference: 1e-5 },
+  );
+
+  const [A, B, T0] = fit.parameterValues;
 
   if (T0 <= 0) {
     throw new Error(
@@ -330,16 +351,20 @@ export function fitVtfThreePoints(
       `VTF_FIT_INVALID_T0: T₀ = ${T0.toFixed(1)}°C ≥ lowest isokom T = ${T3.toFixed(1)}°C`,
     );
   }
-
-  const B = (y2 - y1) * (T2 - T0) * (T1 - T0) / (T1 - T2);
-
   if (B <= 0) {
     throw new Error(
       `VTF_FIT_INVALID_B: B = ${B.toFixed(1)} K is non-physical (must be > 0)`,
     );
   }
 
-  const A = y1 - B / (T1 - T0);
+  // Sanity check: residuals must be small (LM converged properly)
+  const maxResidual = Math.max(...xData.map((T, i) => Math.abs(vtfModel([A, B, T0])(T) - yData[i])));
+  if (maxResidual > 0.01) {
+    throw new Error(
+      `VTF_FIT_SINGULAR: LM did not converge — max residual ${maxResidual.toFixed(4)}. ` +
+      'Three isokom points may be collinear (Arrhenius-like) or composition is outside model range.',
+    );
+  }
 
   return { A, B, T0 };
 }

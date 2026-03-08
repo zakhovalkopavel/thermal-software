@@ -55,7 +55,7 @@ All algorithm documentation is organized by calculation domain:
 
 - **Phase Equilibrium** - Liquid-solid partitioning, eutectic systems
 - **Viscosity** - Arrhenius model with component effects  
-- **[Glass Viscosity](./GLASS_VISCOSITY_ALGORITHM.md)** ✅ ENHANCED - ASTM C965-96 fixed points
+- **[Glass Viscosity](./glass-viscosity/INDEX.md)** ✅ ENHANCED - ASTM C965-96 fixed points
 - **Packing Density** - Particle size distribution optimization
 - **Thermal Performance** - Conductivity and expansion calculations
 - **Shrinkage Prediction** - Sintering shrinkage estimation
@@ -258,6 +258,7 @@ Same model as ViscosityService but glass-optimized!
 - Specialty optical glass
 
 ---
+
 
 ### Phase Equilibrium Calculation
 
@@ -582,4 +583,3 @@ All algorithms documented, implemented, and validated against literature and ind
 **Version:** 1.0  
 **Date:** February 2, 2026  
 **Status:** Production Ready ✅
-

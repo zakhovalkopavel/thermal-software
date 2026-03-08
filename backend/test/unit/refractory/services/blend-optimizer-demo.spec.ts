@@ -66,9 +66,6 @@ describe('BlendOptimizerService - Live Demo', () => {
     // SCENARIO 1: Maximum Density with Fixed Cement Fondu + Alumina
     // Real materials from library: fondu, alumina_calcined, chamotte_standard
     // ============================================================
-    console.log('\n═══════════════════════════════════════════════════════════');
-    console.log('SCENARIO 1: Maximum Density with Fixed Cement Fondu + Alumina');
-    console.log('═══════════════════════════════════════════════════════════\n');
 
     const input1 = {
       fractions: [
@@ -89,28 +86,7 @@ describe('BlendOptimizerService - Live Demo', () => {
         minPackingEfficiency: 0.70,
       },
     };
-
-    console.log('INPUT:');
-    console.log(JSON.stringify(input1, null, 2));
-
     const results1 = service.optimize(input1);
-
-    console.log('\nOUTPUT (Top 3 Results):');
-    results1.forEach((result, index) => {
-      console.log(`\n--- Result ${index + 1} (Rank ${result.rank}) ---`);
-      console.log(`Optimization Score: ${result.optimizationScore}`);
-      console.log(`Bulk Density: ${result.rhoBulk_gml_green} g/mL`);
-      console.log(`Packing Efficiency: ${(result.packingEfficiency * 100).toFixed(1)}%`);
-      console.log(`Porosity: ${result.porosity_percent_green}%`);
-      console.log(`Water Demand: ${result.waterDemand_percent}%`);
-      console.log(`Method: ${result.method}, q=${result.q}, Scenario: ${result.scenario}`);
-      console.log(`Mass Fractions: [${result.massFractionsRoundedPercent.join('%, ')}%]`);
-      console.log(`  - Ciment Fondu (fixed): ${result.massFractionsRoundedPercent[0]}%`);
-      console.log(`  - Alumina 220 mesh (fixed): ${result.massFractionsRoundedPercent[1]}%`);
-      console.log(`  - Chamotte <120 mesh: ${result.massFractionsRoundedPercent[2]}%`);
-      console.log(`  - Chamotte 120-30 mesh: ${result.massFractionsRoundedPercent[3]}%`);
-      console.log(`  - Chamotte 30-10 mesh: ${result.massFractionsRoundedPercent[4]}%`);
-    });
 
     expect(results1).toHaveLength(3);
     expect(results1[0].rank).toBe(1);
@@ -123,9 +99,6 @@ describe('BlendOptimizerService - Live Demo', () => {
     // SCENARIO 2: Minimum Water Demand
     // Real materials: silica fume, fondu, alumina_tabular
     // ============================================================
-    console.log('\n═══════════════════════════════════════════════════════════');
-    console.log('SCENARIO 2: Minimum Water with Real Materials from Library');
-    console.log('═══════════════════════════════════════════════════════════\n');
 
     // Check if silica fume exists, if not use microsilica or create generic
     const silicaMaterial = ALL_MATERIALS.find(m => m.materialId.includes('silica') && m.materialId.includes('fume'))
@@ -160,26 +133,8 @@ describe('BlendOptimizerService - Live Demo', () => {
       },
     };
 
-    console.log('INPUT:');
-    console.log(JSON.stringify(input2, null, 2));
 
     const results2 = service.optimize(input2);
-
-    console.log(`\nOUTPUT (Top ${results2.length} Results):`);
-    results2.forEach((result, index) => {
-      console.log(`\n--- Result ${index + 1} (Rank ${result.rank}) ---`);
-      console.log(`Optimization Score: ${result.optimizationScore}`);
-      console.log(`Water Demand: ${result.waterDemand_percent}% ✓ (goal: minimize)`);
-      console.log(`Bulk Density: ${result.rhoBulk_gml_green} g/mL`);
-      console.log(`Porosity: ${result.porosity_percent_green}%`);
-      console.log(`Packing Efficiency: ${(result.packingEfficiency * 100).toFixed(1)}%`);
-      console.log(`Method: ${result.method}, q=${result.q}`);
-      console.log(`Mass Fractions: [${result.massFractionsRoundedPercent.join('%, ')}%]`);
-      console.log(`  - Silica Fume (fixed): ${result.massFractionsRoundedPercent[0]}%`);
-      console.log(`  - Ciment Fondu (fixed): ${result.massFractionsRoundedPercent[1]}%`);
-      console.log(`  - Tabular Alumina Fine: ${result.massFractionsRoundedPercent[2]}%`);
-      console.log(`  - Tabular Alumina Coarse: ${result.massFractionsRoundedPercent[3]}%`);
-    });
 
     expect(results2.length).toBeGreaterThan(0);
     expect(results2.length).toBeLessThanOrEqual(5);
@@ -197,10 +152,6 @@ describe('BlendOptimizerService - Live Demo', () => {
     // SCENARIO 3: Balanced Optimization with Chamotte
     // Real material: chamotte_standard
     // ============================================================
-    console.log('\n═══════════════════════════════════════════════════════════');
-    console.log('SCENARIO 3: Balanced Optimization with Chamotte from Library');
-    console.log('═══════════════════════════════════════════════════════════\n');
-
     const input3 = {
       fractions: [
         // Three different size fractions of chamotte_standard
@@ -214,26 +165,7 @@ describe('BlendOptimizerService - Live Demo', () => {
       },
     };
 
-    console.log('INPUT:');
-    console.log(JSON.stringify(input3, null, 2));
-
     const results3 = service.optimize(input3);
-
-    console.log(`\nOUTPUT (Top ${results3.length} Results):`);
-    results3.forEach((result, index) => {
-      console.log(`\n--- Result ${index + 1} (Rank ${result.rank}) ---`);
-      console.log(`Optimization Score: ${result.optimizationScore} (balanced)`);
-      console.log(`Bulk Density: ${result.rhoBulk_gml_green} g/mL`);
-      console.log(`Porosity: ${result.porosity_percent_green}%`);
-      console.log(`Water Demand: ${result.waterDemand_percent}%`);
-      console.log(`Packing Efficiency: ${(result.packingEfficiency * 100).toFixed(1)}%`);
-      console.log(`Method: ${result.method}, q=${result.q}, Model: ${result.packingModel}`);
-      console.log(`Mass Fractions: [${result.massFractionsRoundedPercent.join('%, ')}%]`);
-      console.log(`  - Chamotte Fine: ${result.massFractionsRoundedPercent[0]}%`);
-      console.log(`  - Chamotte Medium: ${result.massFractionsRoundedPercent[1]}%`);
-      console.log(`  - Chamotte Coarse: ${result.massFractionsRoundedPercent[2]}%`);
-      console.log(`Water Demand Range: ${result.waterDemandRange.min}% - ${result.waterDemandRange.max}%`);
-    });
 
     expect(results3).toHaveLength(5);
     expect(results3[0].rank).toBe(1);
@@ -244,17 +176,12 @@ describe('BlendOptimizerService - Live Demo', () => {
     // Log the score range to see the viable composition window
     const scores = results3.map(r => r.optimizationScore!);
     const scoreRange = Math.max(...scores) - Math.min(...scores);
-    console.log(`\nScore range: ${scoreRange.toFixed(2)} (small range = wide composition window)`);
   });
 
   it('should demonstrate all optimization goals comparison', () => {
     // ============================================================
     // SCENARIO 4: Compare All Optimization Goals
     // ============================================================
-    console.log('\n═══════════════════════════════════════════════════════════');
-    console.log('SCENARIO 4: Compare All Optimization Goals');
-    console.log('═══════════════════════════════════════════════════════════\n');
-
     const baseInput = {
       fractions: [
         { dMin_mm: 0.001, dMax_mm: 0.5, density_kgm3: 2700 },
@@ -271,31 +198,13 @@ describe('BlendOptimizerService - Live Demo', () => {
       'balanced',
     ];
 
-    console.log('INPUT (same for all goals):');
-    console.log(JSON.stringify(baseInput, null, 2));
-
-    console.log('\n\nCOMPARISON OF OPTIMIZATION GOALS:\n');
-    console.log('Goal'.padEnd(20) + 'Score'.padEnd(12) + 'Density'.padEnd(12) + 'Porosity'.padEnd(12) + 'Water'.padEnd(12) + 'Method/q');
-    console.log('─'.repeat(90));
-
     goals.forEach(goal => {
       const results = service.optimize({
         ...baseInput,
         options: { optimizationGoal: goal, topN: 1 },
       });
-
       const best = results[0];
-      console.log(
-        goal.padEnd(20) +
-        best.optimizationScore!.toFixed(2).padEnd(12) +
-        best.rhoBulk_gml_green.toFixed(2).padEnd(12) +
-        `${best.porosity_percent_green}%`.padEnd(12) +
-        `${best.waterDemand_percent}%`.padEnd(12) +
-        `${best.method}/${best.q}`
-      );
     });
-
-    console.log('\n');
   });
 
   it('should demonstrate viable composition ranges (similar scores)', () => {
@@ -304,9 +213,6 @@ describe('BlendOptimizerService - Live Demo', () => {
     // When packing is near limits, small composition changes don't affect results
     // This gives us a RANGE of acceptable formulations
     // ============================================================
-    console.log('\n═══════════════════════════════════════════════════════════');
-    console.log('SCENARIO 5: Viable Composition Ranges');
-    console.log('═══════════════════════════════════════════════════════════\n');
 
     const input = {
       fractions: [
@@ -321,12 +227,7 @@ describe('BlendOptimizerService - Live Demo', () => {
       },
     };
 
-    console.log('INPUT:');
-    console.log(JSON.stringify(input, null, 2));
-
     const results = service.optimize(input);
-
-    console.log(`\nOUTPUT: Analyzing top ${results.length} formulations\n`);
 
     // Group results by similar scores (within 1% difference)
     const scoreThreshold = 0.01;  // 1% difference
@@ -344,10 +245,7 @@ describe('BlendOptimizerService - Live Demo', () => {
       }
     });
 
-    console.log(`Found ${groups.length} groups of similar-performing formulations:\n`);
-
     groups.forEach((group, groupIndex) => {
-      console.log(`Group ${groupIndex + 1}: ${group.length} formulations (score ≈ ${group[0].optimizationScore!.toFixed(2)})`);
 
       // Find composition range for this group
       const fractionRanges = [0, 1, 2].map(fractionIndex => {
@@ -358,22 +256,7 @@ describe('BlendOptimizerService - Live Demo', () => {
           avg: fractions.reduce((a, b) => a + b, 0) / fractions.length,
         };
       });
-
-      console.log(`  Fine range: ${fractionRanges[0].min}-${fractionRanges[0].max}% (avg: ${fractionRanges[0].avg.toFixed(0)}%)`);
-      console.log(`  Medium range: ${fractionRanges[1].min}-${fractionRanges[1].max}% (avg: ${fractionRanges[1].avg.toFixed(0)}%)`);
-      console.log(`  Coarse range: ${fractionRanges[2].min}-${fractionRanges[2].max}% (avg: ${fractionRanges[2].avg.toFixed(0)}%)`);
-      console.log(`  Density range: ${Math.min(...group.map(r => r.rhoBulk_gml_green)).toFixed(2)} - ${Math.max(...group.map(r => r.rhoBulk_gml_green)).toFixed(2)} g/mL`);
-      console.log('');
     });
-
-    console.log('Key Insight:');
-    console.log('When packing is near φ_max, composition variations of ±2-5% may produce');
-    console.log('identical or very similar results. This defines the VIABLE RANGE.');
-    console.log('Engineers can adjust within this range based on:');
-    console.log('  - Material availability');
-    console.log('  - Cost optimization');
-    console.log('  - Processing requirements');
-    console.log('');
 
     // Verify we got results
     expect(results.length).toBeGreaterThan(0);
@@ -381,12 +264,6 @@ describe('BlendOptimizerService - Live Demo', () => {
 
     // Verify grouping found at least one group
     expect(groups.length).toBeGreaterThan(0);
-
-    // If we have multiple formulations with similar scores, that's expected and good!
-    if (groups[0].length > 1) {
-      console.log(`✓ Found ${groups[0].length} formulations with similar performance`);
-      console.log(`  This represents the viable composition window!\n`);
-    }
   });
 });
 

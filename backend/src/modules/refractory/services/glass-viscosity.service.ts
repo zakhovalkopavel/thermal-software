@@ -64,70 +64,62 @@ export class GlassViscosityService {
   // ─── VTF builder (shared by all VTF-based methods) ──────────────────────────
 
   /**
-   * Resolve model selection, honouring an optional caller override.
+   * Resolve model selection, honouring an optional caller preference.
    *
-   * Rules:
-   *   - No override  → auto-select (existing logic).
-   *   - Override given, composition in range → use requested model.
-   *   - Override given, composition OUT of range → fall back to auto-select,
-   *     add a warning that the override was not applicable.
+   * Rules (for silicate glass path):
+   *   - No preference  → auto-select (Fluegel is default; Lakatos is reserve).
+   *   - Preference given, composition in range → use preferred model.
+   *   - Preference given, composition OUT of range → fall back to auto-select,
+   *     populate preferredModelRejected + preferredModelRejectionReason so the
+   *     caller can inform the user that a substitution occurred.
    */
   private resolveModel(
     comp: Record<string, number>,
-    requestedModel?: ViscosityModel,
+    preferredModel?: ViscosityModel,
   ): ModelSelectionResult {
     const auto = this.selectModel(comp);
 
-    if (!requestedModel) return auto;
+    if (!preferredModel) return auto;
 
-    // Validate the requested model against the composition
-    if (requestedModel === ViscosityModel.HETHERINGTON_1964) {
+    // ── Hetherington ──────────────────────────────────────────────────────────
+    if (preferredModel === ViscosityModel.HETHERINGTON_1964) {
       const SiO2 = comp['SiO2'] ?? 0;
-      if (SiO2 > 99) return { primary: ViscosityModel.HETHERINGTON_1964, reason: auto.reason, warnings: [] };
-      return {
-        ...auto,
-        warnings: [
-          `Requested model HETHERINGTON_1964 requires SiO₂ > 99 wt% (got ${SiO2.toFixed(1)}%). Auto-selected ${ViscosityModelNames[auto.primary]} instead.`,
-          ...auto.warnings,
-        ],
-      };
+      if (SiO2 > 99) {
+        return { primary: ViscosityModel.HETHERINGTON_1964, reason: 'Preferred by caller', warnings: [] };
+      }
+      const reason = `HETHERINGTON_1964 requires SiO₂ > 99 wt% (got ${SiO2.toFixed(1)} wt%)`;
+      return { ...auto, preferredModelRejected: preferredModel, preferredModelRejectionReason: reason };
     }
 
-    if (requestedModel === ViscosityModel.LAKATOS_1976) {
+    // ── Lakatos ───────────────────────────────────────────────────────────────
+    if (preferredModel === ViscosityModel.LAKATOS_1976) {
       const validity = checkLakatosValidity(comp);
       if (validity.valid) {
-        return { primary: ViscosityModel.LAKATOS_1976, reason: 'Requested by caller', warnings: validity.warnings };
+        return { primary: ViscosityModel.LAKATOS_1976, reason: 'Preferred by caller', warnings: validity.warnings };
       }
-      return {
-        ...auto,
-        warnings: [
-          `Requested model LAKATOS_1976 is out of range: ${validity.reason}. Auto-selected ${ViscosityModelNames[auto.primary]} instead.`,
-          ...auto.warnings,
-        ],
-      };
+      const reason = `LAKATOS_1976 out of range: ${validity.reason}`;
+      return { ...auto, preferredModelRejected: preferredModel, preferredModelRejectionReason: reason };
     }
 
-    if (requestedModel === ViscosityModel.FLUEGEL_2007) {
-      if (auto.primary === ViscosityModel.NOT_SUPPORTED ||
-          auto.primary === ViscosityModel.IIDA ||
-          auto.primary === ViscosityModel.NAKAMOTO_2007) {
-        return {
-          ...auto,
-          warnings: [
-            `Requested model FLUEGEL_2007 is not applicable: ${auto.reason}`,
-            ...auto.warnings,
-          ],
-        };
+    // ── Fluegel ───────────────────────────────────────────────────────────────
+    if (preferredModel === ViscosityModel.FLUEGEL_2007) {
+      if (
+        auto.primary === ViscosityModel.NOT_SUPPORTED ||
+        auto.primary === ViscosityModel.IIDA ||
+        auto.primary === ViscosityModel.NAKAMOTO_2007
+      ) {
+        const reason = `FLUEGEL_2007 not applicable for this composition: ${auto.reason}`;
+        return { ...auto, preferredModelRejected: preferredModel, preferredModelRejectionReason: reason };
       }
-      return { primary: ViscosityModel.FLUEGEL_2007, reason: 'Requested by caller', warnings: auto.warnings };
+      return { primary: ViscosityModel.FLUEGEL_2007, reason: 'Preferred by caller', warnings: auto.warnings };
     }
 
-    if (requestedModel === ViscosityModel.IIDA) {
-      return { primary: ViscosityModel.IIDA, reason: 'Requested by caller', warnings: auto.warnings };
+    // ── Slag models ───────────────────────────────────────────────────────────
+    if (preferredModel === ViscosityModel.IIDA) {
+      return { primary: ViscosityModel.IIDA, reason: 'Preferred by caller', warnings: auto.warnings };
     }
-
-    if (requestedModel === ViscosityModel.NAKAMOTO_2007) {
-      return { primary: ViscosityModel.NAKAMOTO_2007, reason: 'Requested by caller', warnings: auto.warnings };
+    if (preferredModel === ViscosityModel.NAKAMOTO_2007) {
+      return { primary: ViscosityModel.NAKAMOTO_2007, reason: 'Preferred by caller', warnings: auto.warnings };
     }
 
     return auto;
@@ -374,7 +366,6 @@ export class GlassViscosityService {
     const CaO   = comp['CaO']   ?? 0;
     const FeO   = comp['FeO']   ?? 0;
     const Al2O3 = comp['Al2O3'] ?? 0;
-    const Na2O  = comp['Na2O']  ?? 0;
     const CaF2  = comp['CaF2']  ?? 0;
 
     const totalFluorides =
@@ -431,18 +422,14 @@ export class GlassViscosityService {
       };
     }
 
-    // ── Silicate glass path (Lakatos → Fluegel) ─────────────────────────────
+    // ── Silicate glass path ──────────────────────────────────────────────────
+    // Default: Fluegel 2007 (more complete component coverage).
+    // Lakatos 1976 is available as a reserve model via preferredModel parameter.
     const lakatosResult = checkLakatosValidity(comp);
-    if (lakatosResult.valid) {
-      return {
-        primary: ViscosityModel.LAKATOS_1976,
-        reason: `Within Lakatos 1976 range (SiO₂ ${SiO2.toFixed(1)} wt%, Na₂O ${Na2O.toFixed(1)} wt%)`,
-        warnings: lakatosResult.warnings,
-      };
-    }
     return {
       primary: ViscosityModel.FLUEGEL_2007,
-      reason: lakatosResult.reason ?? 'Outside Lakatos range — using Fluegel 2007',
+      secondary: lakatosResult.valid ? ViscosityModel.LAKATOS_1976 : undefined,
+      reason: `Silicate glass — Fluegel 2007 (default). ${lakatosResult.valid ? 'Lakatos 1976 also in range.' : `Lakatos out of range: ${lakatosResult.reason}`}`,
       warnings: lakatosResult.warnings,
     };
   }

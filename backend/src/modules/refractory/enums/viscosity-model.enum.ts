@@ -1,13 +1,5 @@
 /**
  * Glass viscosity model identifiers — valid published models only.
- *
- * History:
- *   v1 had 9 entries (SODA_LIME_SILICA, BOROSILICATE, …). All removed 2026-03-06.
- *   URBAIN_1981 and RIBOUD_1981 were declared 2026-03-06 but never implemented —
- *   coefficients could not be verified from the original papers.
- *   Replaced 2026-03-07 by IIDA (Iida & Guthrie 1988 / Mills 2011) and
- *   NAKAMOTO_2007 (Nakamoto et al., ISIJ Int. 2007) which have verified coefficients
- *   from the Slag Atlas and the ISIJ paper respectively.
  */
 export enum ViscosityModel {
   /** Lakatos (1976) isokom regression → 3-point VTF fit.

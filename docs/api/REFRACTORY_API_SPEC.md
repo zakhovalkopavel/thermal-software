@@ -487,7 +487,7 @@ Calculates glass viscosity at a given temperature. Automatically selects the bes
 | Pure fused silica | `HETHERINGTON_1964` | SiO₂ > 99 wt% |
 | Soda-lime-silica (SiO₂ 60–77%, Na₂O 10–17%) | `LAKATOS_1976` | Tightest accuracy, σ ≈ 3–5°C |
 | Broad oxide glass (borosilicate, lead, etc.) | `FLUEGEL_2007` | SiO₂ 43–89 mol%, ~50 components |
-| Industrial slag (CaO > 30%, SiO₂ < 40%) | `RIBOUD_1981` | Returned as `secondary`, primary = `NOT_SUPPORTED` |
+| Industrial slag (CaO > 30%, SiO₂ < 40%) | `IIDA` (NAKAMOTO_2007 for high CaF₂) | Iida primary; Nakamoto preferred/used for high CaF₂ (>8 mol%) |
 | Pure fluoride glass | `NOT_SUPPORTED` | No valid published model |
 
 **Request body:**
@@ -508,7 +508,7 @@ Calculates glass viscosity at a given temperature. Automatically selects the bes
 **Fields:**
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `composition` | object | ✅ | Oxide composition in **wt%**. Keys are oxide formulas: `SiO2`, `Al2O3`, `Na2O`, `K2O`, `Li2O`, `CaO`, `MgO`, `BaO`, `ZnO`, `PbO`, `B2O3`, `Fe2O3`, `TiO2`, `ZrO2`, `SrO`, `F`, `SO3`, etc. |
+| `composition` | object | ✅ | Oxide composition in **wt%**. Keys are oxide formulas: `SiO2`, `Al2O3`, `Na2O`, `K2O`, `Li2O`, `CaO`, `MgO`, `BaO`, `ZnO`, `PbO`, `ZrO2`, `SrO`, `F`, `SO3`, etc. |
 | `temperature` | number | ✅ | Temperature in °C |
 
 **Response:**

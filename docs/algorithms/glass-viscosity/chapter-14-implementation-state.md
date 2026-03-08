@@ -67,9 +67,9 @@ backend/src/modules/refractory/
 | `FLUEGEL_2007_T1_5` | ✅ Complete | Sourced from `shared/sources/fluegel_2007/Fluegel_table4.csv` |
 | `FLUEGEL_2007_T6_6` | ✅ Complete | Sourced from `shared/sources/fluegel_2007/Fluegel_table5.csv` |
 | `FLUEGEL_2007_T12` | ✅ Complete | Sourced from `shared/sources/fluegel_2007/Fluegel_table6.csv` |
-| `FLUEGEL_2007_BOUNDS` | ✅ Complete | Sourced from `shared/sources/fluegel_2007/Fluegel_table3.csv` |
+| `FLUEGEL_2007_BOUNDS` | ✅ Complete | Sourced from `shared/sources/fluegel_2007/Fluegel_table3.csv` (three-level bounds per viscosity) |
 | `HETHERINGTON_1964` | ✅ Complete | A = −3.905, B = 31 400 K |
-| `MOLAR_MASSES` | ✅ Complete | ~27 oxides |
+| `MOLAR_MASSES` | ✅ Complete | Expanded: includes ~35 oxides and elemental entries used by Fluegel (Ag2O, As2O3, etc.) |
 | `IIDA_COMPONENTS` | ❌ Pending | Ch. 13 — awaiting implementation |
 | `NAKAMOTO_2007_COEFFICIENTS` | ❌ Pending | Ch. 13 — awaiting implementation |
 | `MILLS_LIQUIDUS_COEFFICIENTS` | ❌ Pending | Ch. 13 — awaiting implementation |
@@ -81,13 +81,11 @@ backend/src/modules/refractory/
 | Enum value | Status | Notes |
 |------------|--------|-------|
 | `LAKATOS_1976` | ✅ Active | VTF model for soda-lime-silica |
-| `FLUEGEL_2007` | ✅ Active | VTF model for broad silicate space |
+| `FLUEGEL_2007` | ✅ Active | VFT model for broad silicate space |
 | `HETHERINGTON_1964` | ✅ Active | Arrhenius for pure fused silica |
-| `URBAIN_1981` | ⚠️ Declared only | Enum entry exists; no implementation. Coefficients unverified — original paper not available. Replaced by Iida/Nakamoto per this spec. |
-| `RIBOUD_1981` | ⚠️ Declared only | Same as above. |
+| `IIDA` | ✅ Active | Industrial mixed-slag model (Iida & Guthrie 1988) — used for CaO–SiO₂–Al₂O₃ slags up to CaF₂ ≈ 8 mol% |
+| `NAKAMOTO_2007` | ✅ Active | Fluoride-bearing slag model (Nakamoto 2007) — preferred for high-CaF₂ slags; CaF₂ ≥ 5 mol% recommended |
 | `NOT_SUPPORTED` | ✅ Active | Returned when no model matches |
-
-> **TODO:** Remove `URBAIN_1981` and `RIBOUD_1981` from the enum once `IIDA` and `NAKAMOTO_2007` are added. Do not remove them before the replacements are in place — they are currently referenced in `selectModel` routing logic.
 
 ---
 
@@ -140,7 +138,7 @@ backend/src/modules/refractory/
 | Case | Status | Notes |
 |------|--------|-------|
 | SiO₂ > 99% → HETHERINGTON | ✅ Complete | |
-| Slag detection → IIDA / NAKAMOTO | ⚠️ Partial | Currently routes to `RIBOUD_1981` placeholder; will be `IIDA` / `NAKAMOTO_2007` once implemented |
+| Slag detection → IIDA / NAKAMOTO | ⚠️ Partial | Iida implementation present (`calcIidaViscosity`); Nakamoto coefficients present in `viscosity-parameters.ts`. Full slag endpoints and integration tests are pending. |
 | Lakatos validity check | ✅ Complete | |
 | Lakatos → LAKATOS_1976 | ✅ Complete | |
 | Fallback → FLUEGEL_2007 | ✅ Complete | |
@@ -182,19 +180,29 @@ Swagger UI: `GET /api/docs`
 | `test/unit/refractory/utils/glass-composition.util.spec.ts` | ✅ Complete | `wtPctToMolPct`, `molPctToWtPct` |
 | `test/unit/refractory/utils/glass-viscosity-vtf.util.spec.ts` | ✅ Complete | `fitVtfThreePoints`, `evalVtf`, `temperatureAtLogViscosity` |
 | `test/unit/refractory/utils/glass-viscosity-isokom.spec.ts` | ✅ Complete | `predictIsokomsLakatos`, `predictIsokomsFluegel`, Hetherington self-check |
-| `test/unit/refractory/services/glass-viscosity-model-selection.spec.ts` | ✅ Complete | `selectModel` — all routing cases |
-| `test/unit/refractory/services/glass-viscosity.service.spec.ts` | ✅ Complete | `calculateViscosity` integration — Lakatos, Fluegel, Hetherington, edge cases |
+| `test/unit/refractory/services/glass-viscosity-model-selection.spec.ts` | ✅ Complete | `selectModel` — all routing cases (Fluegel default, Lakatos reserve, slag/fluoride logic verified) |
+| `test/unit/refractory/services/glass-viscosity.service.spec.ts` | ✅ Complete | `calculateViscosity` integration — explicit-preference flow covered |
 
-### Validation Data
+### Validation Data (split)
 
-All reference glass compositions and expected isokom temperatures are stored in:
+For clarity and maintainability the validation dataset was split into three files:
+
 ```
-backend/src/modules/refractory/data/glass-viscosity-validation.data.ts
+backend/src/modules/refractory/data/
+  ├─ lakatos-validation.data.ts
+  ├─ fluegel-validation.data.ts
+  └─ hetherington-validation.data.ts
 ```
 
-This file contains `LAKATOS_VALIDATION_GLASSES`, `FLUEGEL_VALIDATION_GLASSES`,
-and `HETHERINGTON_VALIDATION_GLASSES` — each entry includes both `composition_wt_pct`
-and `composition_mol_pct` so tests can verify both representations.
+`glass-viscosity-validation.data.ts` is now a small barrel that re-exports the three datasets.
+
+---
+
+## Developer convenience: syncing container node_modules to host
+
+To ease editor-based development the repository includes a small utility script that copies `node_modules` from the running container into the host workspace (useful when Docker builds install deps inside the image while `.dockerignore` excludes `node_modules` from the build context):
+
+- `scripts/sync-node-modules.sh` — streams `/app/node_modules` from the running container and extracts it into the host `backend/node_modules` (best-effort ownership fix applied). The script is intentionally left untracked by default in working trees; add it to your local git if you wish to keep it.
 
 ---
 
@@ -202,9 +210,9 @@ and `composition_mol_pct` so tests can verify both representations.
 
 | ID | Priority | Description |
 |----|----------|-------------|
-| IMPL-01 | High | Remove `URBAIN_1981` and `RIBOUD_1981` from enum after Iida/Nakamoto are implemented |
+| IMPL-01 | High | Implement and integrate Nakamoto viscosity calculation (`calcNakamotoViscosity`) and add slag endpoints; ensure liquidus safety guard is used for all slag calculations (see IMPL-02/03). |
 | IMPL-02 | High | Implement `calcLiquidusMills` — required as safety guard before any slag calculation |
-| IMPL-03 | High | Implement `calcIidaViscosity` and `calcNakamotoViscosity` in `glass-viscosity-slag.util.ts` |
+| IMPL-03 | High | Implement `calcIidaViscosity` and complete `calcNakamotoViscosity` in `glass-viscosity-slag.util.ts` (Iida present; Nakamoto pending) |
 | IMPL-04 | High | Add `POST /refractory/slag-viscosity` and `/slag-viscosity/profile` endpoints |
 | IMPL-05 | Medium | Add slag validation dataset to `glass-viscosity-validation.data.ts` |
 | IMPL-06 | Medium | Add slag model tests to `glass-viscosity-isokom.spec.ts` or new `slag-viscosity.spec.ts` |

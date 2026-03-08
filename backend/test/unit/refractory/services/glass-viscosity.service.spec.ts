@@ -33,24 +33,29 @@ describe('GlassViscosityService — calculateViscosity', () => {
     service = module.get<GlassViscosityService>(GlassViscosityService);
   });
 
-  // ─── Lakatos path ──────────────────────────────────────────────────────────
+  // ─── Lakatos path (reserve model — must be requested explicitly) ─────────
 
   describe('Lakatos path', () => {
     const windowGlass = { SiO2: 72.2, Na2O: 13.4, CaO: 11.2, MgO: 1.5, Al2O3: 1.3, K2O: 0.4 };
 
-    it('routes to LAKATOS_1976', () => {
+    it('default routes to FLUEGEL_2007 (not Lakatos) for a standard SLS glass', () => {
       expect(service.calculateViscosity(windowGlass, 1100).model.systemType)
+        .toBe(ViscosityModel.FLUEGEL_2007);
+    });
+
+    it('routes to LAKATOS_1976 when explicitly preferred', () => {
+      expect(service.calculateViscosity(windowGlass, 1100, ViscosityModel.LAKATOS_1976).model.systemType)
         .toBe(ViscosityModel.LAKATOS_1976);
     });
 
-    it('uses VFT model type', () => {
-      expect(service.calculateViscosity(windowGlass, 1100).model.type)
+    it('uses VFT model type when Lakatos preferred', () => {
+      expect(service.calculateViscosity(windowGlass, 1100, ViscosityModel.LAKATOS_1976).model.type)
         .toBe(ViscosityModelType.VFT);
     });
 
-    it('VTF predicts measured isokom T within 15°C for all Lakatos validation glasses', () => {
+    it('VTF predicts measured isokom T within 15°C for all Lakatos validation glasses (Lakatos preferred)', () => {
       for (const glass of LAKATOS_VALIDATION_GLASSES) {
-        const r = service.calculateViscosity(glass.composition_wt_pct, glass.isokoms[0].T_model_C);
+        const r = service.calculateViscosity(glass.composition_wt_pct, glass.isokoms[0].T_model_C, ViscosityModel.LAKATOS_1976);
         const vtf: VtfParameters = { A: r.model.parameters.A, B: r.model.parameters.B!, T0: r.model.parameters.T0! };
         for (const pt of glass.isokoms) {
           if (pt.T_measured_C !== undefined) {
@@ -61,8 +66,8 @@ describe('GlassViscosityService — calculateViscosity', () => {
       }
     });
 
-    it('all ASTM fixed points are defined, finite and in correct order', () => {
-      const fp = service.calculateViscosity(windowGlass, 1100).fixedPoints;
+    it('all ASTM fixed points are defined, finite and in correct order (Lakatos preferred)', () => {
+      const fp = service.calculateViscosity(windowGlass, 1100, ViscosityModel.LAKATOS_1976).fixedPoints;
       expect(fp.meltingPoint_C).toBeGreaterThan(fp.workingPoint_C);
       expect(fp.workingPoint_C).toBeGreaterThan(fp.softeningPoint_C);
       expect(fp.softeningPoint_C).toBeGreaterThan(fp.annealingPoint_C);
@@ -72,22 +77,28 @@ describe('GlassViscosityService — calculateViscosity', () => {
       }
     });
 
-    it('all spans are positive', () => {
-      const spans = service.calculateViscosity(windowGlass, 1100).fixedPoints.spans!;
+    it('all spans are positive (Lakatos preferred)', () => {
+      const spans = service.calculateViscosity(windowGlass, 1100, ViscosityModel.LAKATOS_1976).fixedPoints.spans!;
       expect(spans.meltingToStrain_C).toBeGreaterThan(0);
       expect(spans.workingToSoftening_C).toBeGreaterThan(0);
       expect(spans.softeningToAnnealing_C).toBeGreaterThan(0);
       expect(spans.annealingToStrain_C).toBeGreaterThan(0);
     });
 
-    it('confidence is HIGH for in-range SLS composition', () => {
-      expect(service.calculateViscosity(windowGlass, 1100).validation.confidenceLevel)
+    it('confidence is HIGH for in-range SLS composition (Lakatos preferred)', () => {
+      expect(service.calculateViscosity(windowGlass, 1100, ViscosityModel.LAKATOS_1976).validation.confidenceLevel)
         .toBe(ConfidenceLevel.HIGH);
     });
 
-    it('metadata reference mentions Lakatos', () => {
-      expect(service.calculateViscosity(windowGlass, 1100).metadata.reference.toLowerCase())
+    it('metadata reference mentions Lakatos when Lakatos preferred', () => {
+      expect(service.calculateViscosity(windowGlass, 1100, ViscosityModel.LAKATOS_1976).metadata.reference.toLowerCase())
         .toContain('lakatos');
+    });
+
+    it('falls back to FLUEGEL_2007 when Lakatos preferred but out of range (borosilicate)', () => {
+      const pyrex = { SiO2: 80.6, B2O3: 12.9, Al2O3: 2.3, Na2O: 3.9, K2O: 0.3 };
+      const r = service.calculateViscosity(pyrex, 1200, ViscosityModel.LAKATOS_1976);
+      expect(r.model.systemType).toBe(ViscosityModel.FLUEGEL_2007);
     });
   });
 
@@ -160,8 +171,8 @@ describe('GlassViscosityService — calculateViscosity', () => {
       expect(() => service.calculateViscosity({ SiO2: 0 }, 1100)).toThrow();
     });
 
-    it('throws BadRequestException for slag (NOT_SUPPORTED)', () => {
-      expect(() => service.calculateViscosity({ CaO: 45, Al2O3: 35, SiO2: 18, MgO: 2 }, 1450)).toThrow();
+    it('does NOT throw for slag — routes to IIDA model', () => {
+      expect(() => service.calculateViscosity({ CaO: 45, Al2O3: 35, SiO2: 18, MgO: 2 }, 1450)).not.toThrow();
     });
 
     it('throws BadRequestException for pure fluoride glass (NOT_SUPPORTED)', () => {

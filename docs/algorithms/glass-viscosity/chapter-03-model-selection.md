@@ -25,6 +25,13 @@
 
 ## Applicability Rules
 
+### High-level change (2026-03)
+
+The implementation now treats **Fluegel 2007 as the default silicate glass model** because of its broader component coverage. **Lakatos 1976 is retained as a reserve/high-accuracy model** and will be used when explicitly requested or when the composition lies strictly inside its narrow training domain.
+
+- Default behaviour: run Fluegel for broad silicate systems; Lakatos appears as a `secondary` recommendation when the composition is inside the Lakatos training set.
+- Explicit preference: callers may request `LAKATOS_1976` — the service will honour this only if the composition is within Lakatos validity; otherwise it will fall back to the auto-selected model and record that the preferred model was rejected.
+
 ### Lakatos 1976 — Use when:
 
 1. The glass is a silicate (SiO₂ ≥ 60 wt%) with components limited to:
@@ -52,16 +59,10 @@ Components not present in tables 4–6 are silently ignored. If any such compone
 
 ### Dual-Model Mode — Use when:
 
-Both conditions are met simultaneously:
-1. The composition falls within Lakatos validity range
-2. All Fluegel components are within `Fluegel_table3.csv` bounds
+When both models are applicable the service runs both and reports both results. The selection rules are:
 
-In dual-model mode:
-- Run both models independently
-- Produce two separate VTF fits
-- Report both sets of fixed-point temperatures
-- Compare: if all fixed points agree within 30°C, report the Lakatos result as primary (tighter σ)
-- If any fixed point disagrees by > 30°C, report both and flag `MODELS_DISAGREE`
+- If both models agree (all fixed points within 30°C), Fluegel is reported as primary unless the caller explicitly preferred Lakatos.
+- If they disagree by > 30°C, both results are returned and `MODELS_DISAGREE` is flagged.
 
 ---
 
@@ -104,28 +105,22 @@ SiO₂ > 99 wt%?
 
          │ NO
          ▼
-Slag detected?  (CaO > 20% AND SiO₂ < 50%) OR (FeO > 10%) OR (CaO+Al₂O₃ > 60% AND SiO₂ < 45%)
-    └─ YES ──► X_CaF₂ > 0.08 molar or W_CaF₂ > 10 wt%?
-                  ├─ YES ──► NAKAMOTO_2007  (pending — ch. 13)
-                  └─ NO  ──► IIDA           (pending — ch. 13)
-
-         │ NO
-         ▼
 Total fluorides > 20 wt% AND SiO₂ < 30 wt%?
-    └─ YES ──► NOT_SUPPORTED (pure fluoride glass — no reliable regression)
+    └─ YES ──► NOT_SUPPORTED (fluoride-dominant — no published regression)
 
          │ NO
          ▼
-SiO₂ > 50 wt%?
-    ├─ NO ──► NOT_SUPPORTED (neither Lakatos nor Fluegel valid below SiO₂ = 50%)
-    └─ YES
-         │
+Slag detected?  (CaO > 20% AND SiO₂ < 50%) OR (FeO > 10%) OR (CaO+Al₂O₃ > 60% AND SiO₂ < 45%)
+    └─ YES ──► Handle as slag (IIDA / NAKAMOTO per fluoride content)
+
+         │ NO
          ▼
-All non-zero components in {SiO₂, Al₂O₃, Na₂O, K₂O, Li₂O, CaO, MgO, BaO, ZnO, PbO, B₂O₃}
-AND within Lakatos validity ranges (Na₂O 10–17%, SiO₂ 60–77%)?
-    ├─ YES ──► LAKATOS_1976
-    └─ NO  ──► FLUEGEL_2007
+Silicate path: default → FLUEGEL_2007 (Lakatos returned as secondary when in-range)
 ```
+
+Notes:
+- The `pure-fluoride` test is intentionally performed before the slag detection so truly fluoride-dominant melts are rejected regardless of CaO content.
+- Slag routing still takes fluoride content into account: Iida covers industrial slags up to CaF₂ ≈ 8 mol%; Nakamoto is used when CaF₂ is higher (Nakamoto prefers CaF₂ ≥ 5 mol%).
 
 ---
 
@@ -152,4 +147,3 @@ A 95% confidence interval on any single predicted isokom temperature is approxim
 ---
 
 **Next:** [Chapter 4 — Lakatos 1976 Model](./chapter-04-lakatos-1976.md)
-
