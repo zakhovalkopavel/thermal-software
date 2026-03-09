@@ -6,15 +6,22 @@
 
 ## Overview
 
-Both Lakatos and Fluegel models provide **exactly three** (temperature, log viscosity) pairs. These are used to fit the Vogel-Tammann-Fulcher (VTF) equation, which is then inverted to give temperature at any desired viscosity level.
+The VTF fitting layer converts model outputs into a full viscosity-temperature curve.
 
-With exactly three points, the three-parameter VTF equation has a **unique analytical solution**. No iterative solver is needed for the initial fit.
+| Model | Path to VTF |
+|---|---|
+| **Lakatos 1976 (production)** | Composition → B, A, T₀ directly via Table 6 regression → convert to standard form. **No three-point fit needed.** |
+| **Lakatos 1976 (illustration)** | Composition → 3 isokom temperatures (Table 7) → three-point VTF fit |
+| **Fluegel 2007** | Composition → 3 isokom temperatures → three-point VTF fit |
+| **Hetherington 1964** | Fixed Arrhenius constants — no VTF |
+
+The three-point fit (`fitVtfThreePoints`) is therefore used only by Fluegel and by the Lakatos component-effect illustration path.
 
 ---
 
 ## VTF Equation
 
-This spec uses the form:
+This spec uses the standard form:
 
 ```
 log₁₀(η [Pa·s]) = A + B / (T [°C] − T₀)
@@ -37,9 +44,23 @@ T = B / (log η − A) + T₀
 
 ## Input Data Pairs
 
-### From Lakatos 1976
+### From Lakatos 1976 — production path (Table 6)
 
-The three viscosity labels from the regression are in **poise**. Before fitting, convert to Pa·s by subtracting 1:
+VTF constants are obtained directly from composition regression. No isokom temperatures are computed. The raw constants use Lakatos's poise-scale convention:
+
+```
+T [°C] = B_vtf / (log η [poise] + A_vtf) + T₀_vtf
+```
+
+Convert once to standard form (see Chapter 4):
+
+```
+A_std = −(A_vtf + 1),   B_std = B_vtf,   T₀_std = T₀_vtf
+```
+
+### From Lakatos 1976 — component-effect illustration (Table 7)
+
+Three isokom temperatures from the regression are in **poise**. Before fitting, subtract 1 to convert to Pa·s:
 
 | Lakatos regression level | Convert to Pa·s level | VTF point |
 |---|---|---|
@@ -59,134 +80,100 @@ No unit conversion needed — Fluegel tables already use Pa·s:
 
 ---
 
-## Three-Point Analytical VTF Solution
+## Three-Point VTF Fit — Levenberg-Marquardt Solver
 
-Given three points: (T₁, y₁), (T₂, y₂), (T₃, y₃) where yᵢ = log₁₀(ηᵢ [Pa·s]):
+Although the system is exactly determined (3 equations, 3 unknowns — a unique solution exists in principle), the implementation uses a **Levenberg-Marquardt (LM) nonlinear least-squares solver** rather than the analytical determinant form.
 
-The VTF equation gives:
-```
-y₁ = A + B / (T₁ − T₀)
-y₂ = A + B / (T₂ − T₀)
-y₃ = A + B / (T₃ − T₀)
-```
+### Why Not the Analytical Form?
 
-Subtracting equation 1 from equation 2 and equation 1 from equation 3 to eliminate A:
+The closed-form determinant solution for T₀ is:
 
 ```
-y₂ − y₁ = B · [1/(T₂ − T₀) − 1/(T₁ − T₀)]
-y₃ − y₁ = B · [1/(T₃ − T₀) − 1/(T₁ − T₀)]
+T₀ = (T₂·T₃·(y₂−y₃) + T₁·T₃·(y₃−y₁) + T₁·T₂·(y₁−y₂))
+   / (T₃·(y₂−y₃) + T₁·(y₃−y₁) + T₂·(y₁−y₂))
 ```
 
-Dividing:
+This is mathematically correct but **numerically unstable** for glass viscosity data:
+- Temperatures are large (~1000°C) while viscosity differences are small (Δy ~ 2–4 log units)
+- The numerator involves products like T₁·T₂ ≈ 10⁶ that cancel almost completely
+- Catastrophic cancellation leads to large relative errors in T₀, which then propagate into B and A
+
+The LM solver works directly on the residuals `yᵢ − (A + B/(Tᵢ − T₀))` in the original scale, avoiding large intermediate products entirely.
+
+### Initial Guess Strategy
+
+The LM solver requires a starting point. The seed is chosen to be physically meaningful:
 
 ```
-(y₂ − y₁) / (y₃ − y₁) = [1/(T₂ − T₀) − 1/(T₁ − T₀)] / [1/(T₃ − T₀) − 1/(T₁ − T₀)]
+T₀_seed = max(1°C,  T_min × 0.4)          ← well below lowest isokom T
+B_seed  = Δy / (1/(T_min − T₀_seed) − 1/(T_max − T₀_seed))   ← Arrhenius approximation
+A_seed  = y_max − B_seed / (T_max − T₀_seed)
 ```
 
-Let `r = (y₂ − y₁) / (y₃ − y₁)`. After algebraic manipulation:
+Where T_min and T_max are the lowest and highest isokom temperatures respectively.
 
-```
-r × [(T₂ − T₀)(T₃ − T₀)] = (T₂ − T₁)(T₃ − T₀) − r × (T₃ − T₁)(T₂ − T₀)
+### Convergence and Validation
 
-... which rearranges to a linear equation in T₀:
+After the solver converges, the result is validated:
 
-T₀ = [r × (T₃ − T₁) × T₂ − (T₂ − T₁) × T₃] / [r × (T₃ − T₁) − (T₂ − T₁)]
-```
+| Check | Condition | Error thrown |
+|---|---|---|
+| Physical T₀ | T₀ > 0°C | `VTF_FIT_INVALID_T0` |
+| T₀ below data | T₀ < T_min | `VTF_FIT_INVALID_T0` |
+| Physical B | B > 0 | `VTF_FIT_INVALID_B` |
+| Convergence | max residual < 0.01 log units | `VTF_FIT_SINGULAR` |
 
-More explicitly, let:
-```
-Δy₂₁ = y₂ − y₁
-Δy₃₁ = y₃ − y₁
-ΔT₂₁ = T₂ − T₁
-ΔT₃₁ = T₃ − T₁
-```
-
-Then T₀ solves from the cross-ratio condition. The numerically stable form is derived by noting that the VTF equation linearizes after eliminating A and B:
-
-### Stable Three-Point Algorithm
-
-Given points sorted in **descending temperature** (T₁ > T₂ > T₃, y₁ < y₂ < y₃):
-
-**Step 1: Solve for T₀**
-
-```
-numerator   = ΔT₂₁ × ΔT₃₁ × (Δy₃₁ − Δy₂₁) / (Δy₂₁ × Δy₃₁)
-              -- but simpler: use the following cross-multiplication form:
-
-T₀ = (T₂ × T₃ × (y₂ − y₃) + T₁ × T₃ × (y₃ − y₁) + T₁ × T₂ × (y₁ − y₂))
-   / (T₃ × (y₂ − y₃) + T₁ × (y₃ − y₁) + T₂ × (y₁ − y₂))
-```
-
-This determinant form is the most numerically stable for three-point VTF.
-
-**Step 2: Solve for B**
-
-```
-B = (y₂ − y₁) / (1/(T₂ − T₀) − 1/(T₁ − T₀))
-```
-
-Or equivalently:
-
-```
-B = (y₂ − y₁) × (T₁ − T₀) × (T₂ − T₀) / (T₁ − T₂)
-```
-
-**Step 3: Solve for A**
-
-```
-A = y₁ − B / (T₁ − T₀)
-```
+A max residual > 0.01 log units indicates the three points are nearly collinear (Arrhenius-like) — the LM solver cannot fit a VTF curve through them, which is physically meaningful: it means the glass does not show VTF behaviour in the given range.
 
 ### TypeScript Implementation
 
 ```typescript
-interface VtfParameters {
-  A: number;  // high-T limit of log10(η)
-  B: number;  // pseudo-activation energy in K (must be > 0)
-  T0: number; // Vogel temperature in °C (must be > 0)
-}
-
-interface VtfPoint {
-  T_celsius: number;
-  logEtaPaS: number;
-}
-
 function fitVtfThreePoints(p1: VtfPoint, p2: VtfPoint, p3: VtfPoint): VtfParameters {
-  // Sort descending temperature
+  // Sort descending T: T1 > T2 > T3, y1 < y2 < y3
   const pts = [p1, p2, p3].sort((a, b) => b.T_celsius - a.T_celsius);
   const [q1, q2, q3] = pts;
-
   const T1 = q1.T_celsius, y1 = q1.logEtaPaS;
-  const T2 = q2.T_celsius, y2 = q2.logEtaPaS;
+  const T2 = q2.T_celsius;
   const T3 = q3.T_celsius, y3 = q3.logEtaPaS;
 
-  // Determinant form for T0
-  const num = T2 * T3 * (y2 - y3) + T1 * T3 * (y3 - y1) + T1 * T2 * (y1 - y2);
-  const den = T3 * (y2 - y3) + T1 * (y3 - y1) + T2 * (y1 - y2);
+  // Seed T₀ well below the lowest measured temperature
+  const T0_seed = Math.max(1, T3 * 0.4);
 
-  if (Math.abs(den) < 1e-12) {
-    throw new Error('VTF_FIT_SINGULAR: three isokom points are collinear in (T, log η) space');
+  // Seed B from Arrhenius slope between the two extreme points
+  const dY = y3 - y1;
+  const dInvT = 1 / (T3 - T0_seed) - 1 / (T1 - T0_seed);
+  const B_seed = Math.abs(dInvT) > 1e-12 ? dY / dInvT : 5000;
+
+  // Seed A from the VTF equation at point 1
+  const A_seed = y1 - B_seed / (T1 - T0_seed);
+
+  // VTF model: ([A, B, T0]) => (T) => A + B / (T - T0)
+  const vtfModel = ([A, B, T0]: number[]) => (T: number) => A + B / (T - T0);
+
+  const fit = levenbergMarquardt(
+    [T1, T2, T3],
+    [q1.logEtaPaS, q2.logEtaPaS, q3.logEtaPaS],
+    vtfModel,
+    [A_seed, B_seed, T0_seed],
+    { maxIterations: 1000, damping: 1e-3, gradientDifference: 1e-5 },
+  );
+
+  const [A, B, T0] = fit.parameterValues;
+
+  // Physical and convergence validation
+  if (T0 <= 0)  throw new Error(`VTF_FIT_INVALID_T0: T₀ = ${T0.toFixed(1)}°C (must be > 0°C)`);
+  if (T0 >= T3) throw new Error(`VTF_FIT_INVALID_T0: T₀ = ${T0.toFixed(1)}°C ≥ lowest isokom T`);
+  if (B  <= 0)  throw new Error(`VTF_FIT_INVALID_B: B = ${B.toFixed(1)} K (must be > 0)`);
+
+  const maxResidual = Math.max(...[T1, T2, T3].map(
+    (T, i) => Math.abs(vtfModel([A, B, T0])(T) - [q1, q2, q3][i].logEtaPaS)
+  ));
+  if (maxResidual > 0.01) {
+    throw new Error(
+      `VTF_FIT_SINGULAR: LM did not converge — max residual ${maxResidual.toFixed(4)}. ` +
+      'Points may be collinear (Arrhenius-like).'
+    );
   }
-
-  const T0 = num / den;
-
-  // Physical constraint check
-  if (T0 <= 0) {
-    throw new Error(`VTF_FIT_INVALID_T0: T0 = ${T0.toFixed(1)}°C is non-physical (must be > 0)`);
-  }
-  if (T0 >= T3) {
-    throw new Error(`VTF_FIT_INVALID_T0: T0 = ${T0.toFixed(1)}°C ≥ lowest isokom T = ${T3.toFixed(1)}°C`);
-  }
-
-  // Solve B from first and second points
-  const B = (y2 - y1) * (T1 - T0) * (T2 - T0) / (T1 - T2);
-
-  if (B <= 0) {
-    throw new Error(`VTF_FIT_INVALID_B: B = ${B.toFixed(1)} K is non-physical (must be > 0)`);
-  }
-
-  // Solve A
-  const A = y1 - B / (T1 - T0);
 
   return { A, B, T0 };
 }
@@ -282,10 +269,12 @@ function validateFixedPoints(fixedPoints: Record<string, number>): string[] {
 
 ## Note on R² and Fit Quality
 
-With exactly three data points fitting three parameters, the VTF fit is **exact** (R² = 1.0 by definition). This means fit quality **cannot** be used as a confidence indicator.
+With exactly three data points and three free parameters (A, B, T₀), the VTF fit is **exactly determined** — the LM solver converges to a zero-residual solution (max residual < 0.01 log units is enforced). R² = 1.0 by construction. This means fit quality **cannot** be used as a confidence indicator for Fluegel or for the Lakatos illustration path.
+
+For the **Lakatos production path** (Table 6 direct VTF), no fitting occurs at all — the VTF constants are read directly from the regression, so there is no residual to report.
 
 The confidence of the fixed-point predictions comes entirely from:
-1. The model's reported σ on the isokom temperatures (Lakatos: 3–5°C; Fluegel: 9–17°C)
+1. The model's reported σ on the training dataset (Lakatos: 3–5°C at isokom levels; Fluegel: 9–17°C)
 2. Error propagation through the VTF inversion (see Chapter 9)
 3. Composition range compliance (Chapter 3)
 
@@ -293,9 +282,13 @@ Do not report R² as a quality metric for this fit.
 
 ---
 
-## Worked Example — S1 glass continued from Chapter 4
+## Worked Example — S1 glass (Fluegel / Lakatos illustration path)
 
-**Input points from Lakatos:**
+> **Note:** This example shows the analytical determinant approach for mathematical transparency.
+> The actual implementation (`fitVtfThreePoints`) uses the Levenberg-Marquardt solver
+> which produces the same result numerically but avoids catastrophic cancellation.
+
+**Input points from Lakatos Table 7 (illustration path), S1 glass:**
 
 ```
 (T₁, y₁) = (1503.19, 1)   [T at log η = 1 Pa·s]
@@ -303,62 +296,36 @@ Do not report R² as a quality metric for this fit.
 (T₃, y₃) = (843.30,  5)   [T at log η = 5 Pa·s]
 ```
 
-**Solve T₀:**
+**T₀ from determinant form:**
 
 ```
-num = 1054.33 × 843.30 × (3-5) + 1503.19 × 843.30 × (5-1) + 1503.19 × 1054.33 × (1-3)
-    = 1054.33 × 843.30 × (−2) + 1503.19 × 843.30 × 4 + 1503.19 × 1054.33 × (−2)
-    = −1778,804 + 5,072,775 − 3,167,490
-    = 126,481
+num = 1054.33 × 843.30 × (3−5) + 1503.19 × 843.30 × (5−1) + 1503.19 × 1054.33 × (1−3)
+    = −1,778,804 + 5,072,775 − 3,167,490 = 126,481
 
-den = 843.30 × (3-5) + 1503.19 × (5-1) + 1054.33 × (1-3)
-    = 843.30 × (−2) + 1503.19 × 4 + 1054.33 × (−2)
-    = −1686.6 + 6012.76 − 2108.66
-    = 2217.5
+den = 843.30 × (3−5) + 1503.19 × (5−1) + 1054.33 × (1−3)
+    = −1686.6 + 6012.76 − 2108.66 = 2217.5
 
-T₀ = 126,481 / 2217.5 ≈ 57.0°C
+T₀ ≈ 57.0°C
 ```
 
-**Solve B:**
+**B and A:**
 
 ```
-B = (y₂ − y₁) × (T₁ − T₀) × (T₂ − T₀) / (T₁ − T₂)
-  = (3 − 1) × (1503.19 − 57.0) × (1054.33 − 57.0) / (1503.19 − 1054.33)
-  = 2 × 1446.19 × 997.33 / 448.86
-  = 2,885,924.5 / 448.86 / 1      [note: need to recheck...]
-  ≈ 6430 K
+B = (3−1) × (1503.19−57.0) × (1054.33−57.0) / (1503.19−1054.33) ≈ 6430 K
+A = 1 − 6430 / (1503.19−57.0) ≈ −3.447
 ```
 
-**Solve A:**
+**LM result** (from `fitVtfThreePoints` on the same input): T₀ ≈ 57°C, B ≈ 6430 K, A ≈ −3.45 — matches to the precision that matters.
+
+**Fixed points from these VTF parameters:**
 
 ```
-A = y₁ − B / (T₁ − T₀)
-  = 1 − 6430 / (1503.19 − 57.0)
-  = 1 − 6430 / 1446.19
-  = 1 − 4.447
-  = −3.447
+T_softening (log η = 6.6)  = 6430 / (6.6 − (−3.447)) + 57.0 ≈ 697°C
+T_annealing (log η = 12.0) = 6430 / (12.0 − (−3.447)) + 57.0 ≈ 473°C
+T_strain    (log η = 13.5) = 6430 / (13.5 − (−3.447)) + 57.0 ≈ 436°C
 ```
 
-**Fixed points:**
-
-```
-T_softening (log η = 6.6) = 6430 / (6.6 − (−3.447)) + 57.0
-                           = 6430 / 10.047 + 57.0
-                           = 640.0 + 57.0
-                           = 697°C
-
-T_annealing (log η = 12)  = 6430 / (12 − (−3.447)) + 57.0
-                           = 6430 / 15.447 + 57.0
-                           = 416.3 + 57.0
-                           = 473°C
-
-T_strain (log η = 13.5)   = 6430 / (13.5 − (−3.447)) + 57.0
-                           = 6430 / 16.947 + 57.0
-                           = 379.4 + 57.0
-                           = 436°C
-```
-
-These values are physically consistent for a soda-lime glass and match typical literature values for a high-SiO₂, moderate-Na₂O container glass composition.
+These values are physically consistent for a soda-lime glass.
 
 ---
 

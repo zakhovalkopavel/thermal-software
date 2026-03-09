@@ -33,8 +33,8 @@ describe('glass-composition.util — wtPctToMolPct', () => {
     }
   });
 
-  it('Fluegel-710A wt% → mol% matches source Table 1 to ±0.05 mol%', () => {
-    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'Fluegel-710A')!;
+  it('NIST SRM 710A wt% → mol% matches source Table 1 to ±0.05 mol%', () => {
+    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 710A')!;
     const mol = wtPctToMolPct(glass.composition_wt_pct);
     const src = glass.composition_mol_pct as Record<string, number>;
     for (const [k, expected] of Object.entries(src)) {
@@ -44,8 +44,8 @@ describe('glass-composition.util — wtPctToMolPct', () => {
     }
   });
 
-  it('Fluegel-711 (lead glass) wt% → mol% recovers PbO mol% correctly', () => {
-    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'Fluegel-711')!;
+  it('NIST SRM 711 (lead glass) wt% → mol% recovers PbO mol% correctly', () => {
+    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 711')!;
     const mol = wtPctToMolPct(glass.composition_wt_pct);
     const src = glass.composition_mol_pct as Record<string, number>;
     // PbO is very heavy (M=223.20) so mol% << wt%
@@ -72,7 +72,7 @@ describe('glass-composition.util — molPctToWtPct', () => {
   });
 
   it('round-trip molPct → wtPct → molPct is identity (±0.05 mol%)', () => {
-    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'Fluegel-710A')!;
+    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 710A')!;
     const original = glass.composition_mol_pct as Record<string, number>;
     const wt = molPctToWtPct(original);
     const recovered = wtPctToMolPct(wt);
@@ -81,8 +81,8 @@ describe('glass-composition.util — molPctToWtPct', () => {
     }
   });
 
-  it('Fluegel-711 mol% → wt% matches derived table (heavy PbO shifts wt% up)', () => {
-    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'Fluegel-711')!;
+  it('NIST SRM 711 mol% → wt% matches derived table (heavy PbO shifts wt% up)', () => {
+    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 711')!;
     const wt = molPctToWtPct(glass.composition_mol_pct as Record<string, number>);
     const expected = glass.composition_wt_pct;
     for (const [k, v] of Object.entries(expected)) {

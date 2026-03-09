@@ -73,6 +73,86 @@ export const LAKATOS_1976_COEFFICIENTS = {
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 1b. LAKATOS 1976 — DIRECT VTF COEFFICIENT APPROACH (Table 6)
+//
+// Source: shared/sources/lakatos_ocr/page_002_table_006.csv
+//
+// Alternative to Table 7: regress VTF constants B, A, T₀ directly from
+// composition instead of going through three isokom temperatures.
+//
+// IMPORTANT — non-standard equation form used by Lakatos for this table:
+//   T [°C] = B_vtf / (log η [poise] + A_vtf) + T0_vtf
+//
+// This differs from the standard log η = A + B/(T - T₀) convention:
+//   • The argument of log η is in POISE (not Pa·s)
+//   • '+A_vtf' in the denominator (not '−T₀' subtracted from T)
+//   • The inversion gives T directly (not log η)
+//
+// The composition encoding is the SAME as Table 7: parts per 100 parts SiO₂.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Lakatos 1976 direct VTF regression coefficients (Table 6).
+ *  For each of B, A, T₀: apply Σ coeff_i · x_i where x_i = parts per 100 SiO₂.
+ *  Then use: T [°C] = B_vtf / (log η [poise] + A_vtf) + T0_vtf
+ */
+export const LAKATOS_1976_DIRECT_VTF_COEFFICIENTS = {
+  /** Per-component coefficients for VTF constant B (K·poise-scale) */
+  B: {
+    constant: 6237.013,
+    Al2O3:    15.21,
+    Na2O:    -66.01,
+    K2O:      -5.41,
+    Li2O:   -115.18,
+    CaO:     -60.63,
+    MgO:      56.21,
+    BaO:     -21.03,
+    ZnO:      -3.76,
+    PbO:     -25.44,
+    B2O3:   -155.11,   // linear term
+    B2O3_sq:   4.0999, // quadratic term
+  },
+  /** Per-component coefficients for VTF constant A (dimensionless, poise-scale) */
+  A: {
+    constant:  1.713,
+    Al2O3:    -0.0087,
+    Na2O:     -0.0162,
+    K2O:       0.0066,
+    Li2O:     -0.0318,
+    CaO:       0.0064,
+    MgO:       0.0589,
+    BaO:       0.0026,
+    ZnO:       0.016,
+    PbO:      -0.005,
+    B2O3:     -0.0465,  // linear term
+    B2O3_sq:   0.001627, // quadratic term
+  },
+  /** Per-component coefficients for VTF constant T₀ (°C) */
+  T0: {
+    constant: 149.4,
+    Al2O3:      1.4,
+    Na2O:       0.5,
+    K2O:       -2.36,
+    Li2O:     -13.29,
+    CaO:        7.71,
+    MgO:       -2.12,
+    BaO:        1.09,
+    ZnO:        0.96,
+    PbO:        0.82,
+    B2O3:      12.03,   // linear term
+    B2O3_sq:   -0.2765, // quadratic term
+  },
+
+  /**
+   * Equation form:  T [°C] = B_vtf / (log η [poise] + A_vtf) + T0_vtf
+   * Inversion:      log η [poise] = B_vtf / (T - T0_vtf) - A_vtf
+   * To convert log η [poise] → log η [Pa·s]: subtract 1.
+   */
+  equationNote: 'T = B/(log_eta_poise + A) + T0  — Lakatos Table 6 convention (poise scale)',
+
+  reference: 'Lakatos, T.; Johansson, L-G.; Simmingskőld, B. (1976). Table 6: Direct VTF constant regression.',
+} as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // 2. FLUEGEL 2007
 //
 // Source: shared/sources/fluegel_2007/Fluegel_table4.csv  (log η 1.5 Pa·s)

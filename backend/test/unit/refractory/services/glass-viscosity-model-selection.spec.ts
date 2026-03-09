@@ -61,13 +61,13 @@ describe('GlassViscosityService — selectModel', () => {
     ).toBe(ViscosityModel.FLUEGEL_2007);
   });
 
-  it('FLUEGEL_2007 for Fluegel-711 lead glass (~45 wt% PbO)', () => {
-    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'Fluegel-711')!;
+  it('FLUEGEL_2007 for NIST SRM 711 lead glass (~45 wt% PbO)', () => {
+    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 711')!;
     expect(service.selectModel(glass.composition_wt_pct).primary).toBe(ViscosityModel.FLUEGEL_2007);
   });
 
-  it('FLUEGEL_2007 for Fluegel-717A borosilicate (~18 wt% B2O3)', () => {
-    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'Fluegel-717A')!;
+  it('FLUEGEL_2007 for NIST SRM 717A borosilicate (~18 wt% B2O3)', () => {
+    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 717A')!;
     expect(service.selectModel(glass.composition_wt_pct).primary).toBe(ViscosityModel.FLUEGEL_2007);
   });
 

@@ -2,17 +2,18 @@
  * Unit tests for isokom regression models
  *
  * Covers:
- *   predictIsokomsLakatos — Lakatos 1976 regression vs paper Table 1A/1B
- *   predictIsokomsFluegel — Fluegel 2007 regression vs paper Table 12
- *   Hetherington 1964     — Arrhenius formula self-check via service
+ *   predictVtfDirectLakatos — Lakatos 1976 direct VTF regression (Table 6) — PRODUCTION
+ *   predictIsokomsFluegel   — Fluegel 2007 regression vs paper Table 12
+ *   Hetherington 1964       — Arrhenius formula self-check via service
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { GlassViscosityService } from '../../../../src/modules/refractory/services/glass-viscosity.service';
 import { ViscosityModelType } from '../../../../src/modules/refractory/enums/viscosity-model.enum';
 import {
-  predictIsokomsLakatos,
+  predictVtfDirectLakatos,
   predictIsokomsFluegel,
+  temperatureAtLogViscosity,
 } from '../../../../src/modules/refractory/utils/glass-viscosity-vtf.util';
 import { wtPctToMolPct } from '../../../../src/modules/refractory/utils/glass-composition.util';
 import {
@@ -23,49 +24,66 @@ import {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('predictIsokomsLakatos — regression vs paper Table 1A/1B', () => {
+describe('predictVtfDirectLakatos — direct VTF regression vs paper Table 1A/1B (PRODUCTION)', () => {
   for (const glass of LAKATOS_VALIDATION_GLASSES) {
-    it(`${glass.id} (${glass.description}): isokom T matches paper to <${glass.tolerance_model_C}°C`, () => {
-      const iso = predictIsokomsLakatos(glass.composition_wt_pct);
+    it(`${glass.id} (${glass.description}): isokom T within 20°C of paper`, () => {
+      const { vtf } = predictVtfDirectLakatos(glass.composition_wt_pct);
+      const T1 = temperatureAtLogViscosity(vtf, 1);
+      const T3 = temperatureAtLogViscosity(vtf, 3);
+      const T5 = temperatureAtLogViscosity(vtf, 5);
       const [p1, p2, p3] = glass.isokoms;
+
+      const tolerance = glass.tolerance_model_C;
       if (
-        Math.abs(iso.T_logEta1 - p1.T_model_C) >= glass.tolerance_model_C ||
-        Math.abs(iso.T_logEta3 - p2.T_model_C) >= glass.tolerance_model_C ||
-        Math.abs(iso.T_logEta5 - p3.T_model_C) >= glass.tolerance_model_C
+        Math.abs(T1 - p1.T_model_C) >= tolerance ||
+        Math.abs(T3 - p2.T_model_C) >= tolerance ||
+        Math.abs(T5 - p3.T_model_C) >= tolerance
       ) {
         console.log({
           id: glass.id,
-          composition: glass.composition_wt_pct,
-          got:  { T1: +iso.T_logEta1.toFixed(1), T3: +iso.T_logEta3.toFixed(1), T5: +iso.T_logEta5.toFixed(1) },
-          want: { T1: p1.T_model_C,              T3: p2.T_model_C,              T5: p3.T_model_C },
+          got:  { T1: +T1.toFixed(1), T3: +T3.toFixed(1), T5: +T5.toFixed(1) },
+          want: { T1: p1.T_model_C,   T3: p2.T_model_C,   T5: p3.T_model_C },
+          measured: { T1: p1.T_measured_C,   T3: p2.T_measured_C,   T5: p3.T_measured_C },
+          diff: { T1: +(T1 - p1.T_model_C).toFixed(1), T3: +(T3 - p2.T_model_C).toFixed(1), T5: +(T5 - p3.T_model_C).toFixed(1) },
         });
       }
-      expect(Math.abs(iso.T_logEta1 - p1.T_model_C)).toBeLessThan(glass.tolerance_model_C);
-      expect(Math.abs(iso.T_logEta3 - p2.T_model_C)).toBeLessThan(glass.tolerance_model_C);
-      expect(Math.abs(iso.T_logEta5 - p3.T_model_C)).toBeLessThan(glass.tolerance_model_C);
+      expect(Math.abs(T1 - p1.T_measured_C)).toBeLessThan(tolerance);
+      expect(Math.abs(T3 - p2.T_measured_C)).toBeLessThan(tolerance);
+      expect(Math.abs(T5 - p3.T_measured_C)).toBeLessThan(tolerance);
     });
   }
 
+  it('produces B > 0 and T₀ > 0 for all validation glasses', () => {
+    for (const glass of LAKATOS_VALIDATION_GLASSES) {
+      const { vtf } = predictVtfDirectLakatos(glass.composition_wt_pct);
+      expect(vtf.B).toBeGreaterThan(0);
+      expect(vtf.T0).toBeGreaterThan(0);
+    }
+  });
+
   it('produces strictly decreasing T with increasing viscosity for all validation glasses', () => {
     for (const glass of LAKATOS_VALIDATION_GLASSES) {
-      const iso = predictIsokomsLakatos(glass.composition_wt_pct);
-      expect(iso.T_logEta1).toBeGreaterThan(iso.T_logEta3);
-      expect(iso.T_logEta3).toBeGreaterThan(iso.T_logEta5);
+      const { vtf } = predictVtfDirectLakatos(glass.composition_wt_pct);
+      const T1 = temperatureAtLogViscosity(vtf, 1);
+      const T3 = temperatureAtLogViscosity(vtf, 3);
+      const T5 = temperatureAtLogViscosity(vtf, 5);
+      expect(T1).toBeGreaterThan(T3);
+      expect(T3).toBeGreaterThan(T5);
     }
   });
 
   it('warns when Na₂O exceeds Lakatos upper bound', () => {
-    const iso = predictIsokomsLakatos({ SiO2: 65, Na2O: 19, CaO: 10, MgO: 3, Al2O3: 1 });
-    expect(iso.warnings.some(w => w.includes('Na'))).toBe(true);
-  });
-
-  it('warns about non-Lakatos components > 2 wt%', () => {
-    const iso = predictIsokomsLakatos({ SiO2: 70, Na2O: 13, CaO: 10, Fe2O3: 5, MgO: 2 });
-    expect(iso.warnings.some(w => /Fe2O3|not modelled/i.test(w))).toBe(true);
+    const { warnings } = predictVtfDirectLakatos({ SiO2: 65, Na2O: 19, CaO: 10, MgO: 3, Al2O3: 1 });
+    expect(warnings.some(w => w.includes('Na'))).toBe(true);
   });
 
   it('throws for zero SiO₂', () => {
-    expect(() => predictIsokomsLakatos({ Na2O: 25, CaO: 75 })).toThrow();
+    expect(() => predictVtfDirectLakatos({ Na2O: 25, CaO: 75 })).toThrow();
+  });
+
+  it('warns about non-Lakatos components > 2 wt%', () => {
+    const iso = predictVtfDirectLakatos({ SiO2: 70, Na2O: 13, CaO: 10, Fe2O3: 5, MgO: 2 });
+    expect(iso.warnings.some(w => /Fe2O3|not modelled/i.test(w))).toBe(true);
   });
 });
 
@@ -76,10 +94,11 @@ describe('predictIsokomsFluegel — regression vs Fluegel 2007 Table 12', () => 
     it(`${glass.id} (${glass.description}): isokom T matches Table 12 model to <${glass.tolerance_model_C}°C`, () => {
       const iso = predictIsokomsFluegel(glass.composition_wt_pct);
       const [p1, p2, p3] = glass.isokoms;
+      const tolerance = glass.tolerance_model_C;
       if (
-        Math.abs(iso.T_logEta1_5 - p1.T_model_C) >= glass.tolerance_model_C ||
-        Math.abs(iso.T_logEta6_6 - p2.T_model_C) >= glass.tolerance_model_C ||
-        Math.abs(iso.T_logEta12  - p3.T_model_C) >= glass.tolerance_model_C
+        Math.abs(iso.T_logEta1_5 - p1.T_model_C) >= tolerance ||
+        Math.abs(iso.T_logEta6_6 - p2.T_model_C) >= tolerance ||
+        Math.abs(iso.T_logEta12  - p3.T_model_C) >= tolerance
       ) {
         const molPct = wtPctToMolPct(glass.composition_wt_pct);
         console.log({
@@ -95,9 +114,9 @@ describe('predictIsokomsFluegel — regression vs Fluegel 2007 Table 12', () => 
           },
         });
       }
-      expect(Math.abs(iso.T_logEta1_5 - p1.T_model_C)).toBeLessThan(glass.tolerance_model_C);
-      expect(Math.abs(iso.T_logEta6_6 - p2.T_model_C)).toBeLessThan(glass.tolerance_model_C);
-      expect(Math.abs(iso.T_logEta12  - p3.T_model_C)).toBeLessThan(glass.tolerance_model_C);
+      expect(Math.abs(iso.T_logEta1_5 - p1.T_model_C)).toBeLessThan(tolerance);
+      expect(Math.abs(iso.T_logEta6_6 - p2.T_model_C)).toBeLessThan(tolerance);
+      expect(Math.abs(iso.T_logEta12  - p3.T_model_C)).toBeLessThan(tolerance);
     });
   }
 

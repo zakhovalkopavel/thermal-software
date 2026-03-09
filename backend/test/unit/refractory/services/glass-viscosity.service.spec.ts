@@ -106,20 +106,20 @@ describe('GlassViscosityService — calculateViscosity', () => {
 
   describe('Fluegel path', () => {
 
-    it('routes Fluegel-717A (borosilicate) to FLUEGEL_2007', () => {
-      const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'Fluegel-717A')!;
+    it('routes NIST SRM 717A (borosilicate) to FLUEGEL_2007', () => {
+      const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 717A')!;
       expect(service.calculateViscosity(glass.composition_wt_pct, 1200).model.systemType)
         .toBe(ViscosityModel.FLUEGEL_2007);
     });
 
-    it('routes Fluegel-711 (lead glass) to FLUEGEL_2007', () => {
-      const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'Fluegel-711')!;
+    it('routes NIST SRM 711 (lead glass) to FLUEGEL_2007', () => {
+      const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 711')!;
       expect(service.calculateViscosity(glass.composition_wt_pct, 900).model.systemType)
         .toBe(ViscosityModel.FLUEGEL_2007);
     });
 
     it('metadata reference mentions Fluegel', () => {
-      const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'Fluegel-717A')!;
+      const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 717A')!;
       expect(service.calculateViscosity(glass.composition_wt_pct, 1200).metadata.reference.toLowerCase())
         .toContain('fluegel');
     });

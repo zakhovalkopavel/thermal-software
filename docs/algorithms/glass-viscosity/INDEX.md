@@ -37,9 +37,13 @@
 | Composition | Model | Type |
 |-------------|-------|------|
 | SiO₂ > 99 wt% | Hetherington 1964 | Arrhenius |
-| SiO₂ 60–77%, Na₂O 10–17%, SLS components only | Lakatos 1976 | VTF (via isokom) |
+| SiO₂ 60–77%, Na₂O 10–17%, SLS components only | Lakatos 1976 | VTF (direct — Table 6) |
 | Broad silicate oxide glass | Fluegel 2007 | VTF (via isokom) |
 | Industrial slag, CaF₂ ≤ 8 mol% | Iida (pending) | Modified Weymann-Frenkel |
 | Fluoride-bearing slag, CaF₂ > 5 mol% | Nakamoto 2007 (pending) | Modified Arrhenius |
 | Pure fluoride glass (ZBLAN-type) | NOT_SUPPORTED | — |
+
+> **Lakatos Table 7** (isokom regression) is retained as a scientific illustration tool
+> showing how individual oxides shift the viscosity curve at different viscosity levels.
+> It is NOT used for production viscosity calculations. See Chapter 4.
 

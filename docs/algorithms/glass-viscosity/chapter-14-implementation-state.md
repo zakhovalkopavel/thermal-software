@@ -17,7 +17,9 @@ Last updated: 2026-03-07
 ```
 backend/src/modules/refractory/
 ├── constants/
-│   └── viscosity-parameters.ts          ← Lakatos, Fluegel, Hetherington constants
+│   └── viscosity-parameters.ts          ← LAKATOS_1976_DIRECT_VTF_COEFFICIENTS [Table 6, production]
+│                                            LAKATOS_1976_COEFFICIENTS            [Table 7, illustration]
+│                                            Fluegel, Hetherington constants
 ├── enums/
 │   └── viscosity-model.enum.ts          ← ViscosityModel, ViscosityModelType,
 │                                            ConfidenceLevel, ExtrapolationRisk
@@ -30,7 +32,9 @@ backend/src/modules/refractory/
 ├── utils/
 │   ├── glass-composition.util.ts        ← wtPctToMolPct, molPctToWtPct,
 │   │                                        normalizeComposition
-│   ├── glass-viscosity-vtf.util.ts      ← predictIsokomsLakatos, predictIsokomsFluegel,
+│   ├── glass-viscosity-vtf.util.ts      ← predictVtfDirectLakatos  [PRODUCTION: Lakatos Table 6]
+│   │                                        predictIsokomsLakatos   [ILLUSTRATION: Lakatos Table 7]
+│   │                                        predictIsokomsFluegel,
 │   │                                        buildVtf, fitVtfThreePoints, evalVtf,
 │   │                                        temperatureAtLogViscosity,
 │   │                                        calculateFixedPointsFromVtf,

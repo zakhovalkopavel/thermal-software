@@ -31,39 +31,9 @@ All files are in `shared/sources/lakatos_ocr/`.
 #### `Lakatos_1976.txt`
 Full OCR text of the paper. Contains the formula derivation, qualitative discussion of component effects, and inline references to the table CSV files.
 
-#### `page_001_table_007.csv` — Isokom temperature regression coefficients
+#### `page_002_table_006.csv` — VTF constant regression coefficients ⭐ PRIMARY
 
-This is the **primary implementation table** for the Lakatos model.
-
-```
-,log η 2.0,log η 4.0,log η 6.0
-Constant,1847.8,1249.7,962.9
-Al2O3,8.32,5.23,4.01
-Na2O,-12.65,-9.19,-7.06
-K2O,-5.93,-4.17,-3.53
-Li2O,-35.54,-30.04,-26.45
-CaO,-11.27,-3.99,-0.74
-MgO,-5.87,-0.12,0.91
-BaO,-5.67,-3.04,-1.88
-ZnO,-5.37,-1.88,-0.71
-PbO,-4.85,-3.17,-2.24
-B₂O₃,-21.62,-11.97,-6.42
-(B₂O₃)²,0.5122,0.3182,0.19
-```
-
-**Column meaning:**
-- Rows: oxide component names (network-neutral term is "Constant")
-- Columns: the three viscosity levels, in **log₁₀ poise**; to convert to Pa·s subtract 1
-
-**Critical:** The compositions are **NOT in wt%**. They are in **parts per 100 parts of SiO₂ by weight** (see Chapter 6 for the conversion algorithm).
-
-**Note on B₂O₃:** There are two rows — a linear term `B₂O₃` and a quadratic term `(B₂O₃)²`. The quadratic term captures the boron anomaly (viscosity does not respond linearly to B₂O₃). When evaluating, add both: `coefficient_B * x_B + coefficient_B2 * x_B²`.
-
-**Note on missing SiO₂:** SiO₂ has no row because the composition encoding already expresses everything relative to 100 parts SiO₂. SiO₂ is the implicit reference.
-
-#### `page_002_table_006.csv` — VTF constant regression coefficients
-
-This table gives regression coefficients to directly compute the VTF constants A, B, T₀ from composition. It is an **alternative path** — not used in the two-stage architecture of this spec, but documented for completeness.
+This is the **primary production table** for the Lakatos model (`buildVtf()` uses this).
 
 ```
 ,B,A,T₀
@@ -81,13 +51,54 @@ B₂O3,-155.11,-0.0465,12.03
 (B₂O₃)²,4.0999,0.001627,-0.2765
 ```
 
-**Why not used in this spec:** The two-stage architecture (isokom → VTF fit) uses `page_001_table_007.csv` to get the three isokom temperatures, then fits VTF analytically. This is numerically more transparent and avoids compounding two layers of regression error.
+**Column meaning:** For each VTF constant (B, A, T₀), the table gives one regression coefficient per oxide component. All three VTF constants are evaluated from composition in a single step — no intermediate isokom temperatures.
+
+**Critical:** The compositions are **NOT in wt%**. They are in **parts per 100 parts of SiO₂ by weight** (see Chapter 6).
+
+**Note on B₂O₃:** Two rows — a linear term `B₂O₃` and a quadratic term `(B₂O₃)²`. Add both contributions for each VTF constant.
 
 **Equation form used in this table:**
 ```
-T = B_constant / (log η [poise] + A_constant) + T₀_constant
+T [°C] = B_vtf / (log η [poise] + A_vtf) + T₀_vtf
 ```
-Note the `+A` form (not `−T₀` as a denominator) — this is Lakatos's convention which differs from the A + B/(T−T₀) convention used elsewhere in this spec.
+Note `+ A_vtf` in the denominator and log η in **poise** — this is Lakatos's own convention.
+To convert to the standard form (`log η [Pa·s] = A_std + B_std / (T − T₀_std)`):
+```
+A_std = −(A_vtf + 1),   B_std = B_vtf,   T₀_std = T₀_vtf
+```
+See Chapter 4 for the full derivation and worked example.
+
+**Constant:** `LAKATOS_1976_DIRECT_VTF_COEFFICIENTS` in `constants/viscosity-parameters.ts`
+
+#### `page_001_table_007.csv` — Isokom temperature regression coefficients (illustration)
+
+This table is used for **scientific illustration of component effects only** — it is NOT used for production viscosity calculations.
+
+Lakatos described it as an intermediate step:
+> *"Although the factors for calculating the temperatures for different viscosity levels are only an intermediate step, it is of interest to study the effects of different oxides on temperature at different viscosity levels."*
+
+```
+,log η 2.0,log η 4.0,log η 6.0
+Constant,1847.8,1249.7,962.9
+Al2O3,8.32,5.23,4.01
+Na2O,-12.65,-9.19,-7.06
+K2O,-5.93,-4.17,-3.53
+Li2O,-35.54,-30.04,-26.45
+CaO,-11.27,-3.99,-0.74
+MgO,-5.87,-0.12,0.91
+BaO,-5.67,-3.04,-1.88
+ZnO,-5.37,-1.88,-0.71
+PbO,-4.85,-3.17,-2.24
+B₂O₃,-21.62,-11.97,-6.42
+(B₂O₃)²,0.5122,0.3182,0.19
+```
+
+**Column meaning:** Temperature in °C at each isokom viscosity level (log poise). Subtract 1 to convert to log Pa·s. The coefficients reveal how much each oxide shifts the viscosity curve at each level — the primary value of this table.
+
+**Note on missing SiO₂:** SiO₂ has no row because the composition encoding already expresses everything relative to 100 parts SiO₂.
+
+**Function:** `predictIsokomsLakatos()` in `glass-viscosity-vtf.util.ts`
+**Constant:** `LAKATOS_1976_COEFFICIENTS` in `constants/viscosity-parameters.ts`
 
 #### `page_002_table_007.csv` — Standard deviations
 

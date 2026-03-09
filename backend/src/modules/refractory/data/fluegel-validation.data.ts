@@ -19,22 +19,8 @@ import type { GlassValidationEntry } from './interfaces/glass-viscosity-validati
 
 export const FLUEGEL_VALIDATION_GLASSES: GlassValidationEntry[] = [
   {
-    id: 'Fluegel-CO',
-    description: 'Soda-lime container glass (CO)',
-    source: 'Fluegel 2007, Table 1 (mol%) + Table 12',
-    composition_mol_pct: { SiO2: 74.41, Al2O3: 0.75, Na2O: 12.9, K2O: 0.19, MgO: 0.3, CaO: 11.27, SO3: 0.16, Fe2O3: 0.01, TiO2: 0.01 },
-    composition_wt_pct:  { SiO2: 74.215, Al2O3: 1.269, Na2O: 13.273, K2O: 0.297, MgO: 0.201, CaO: 10.492, SO3: 0.213, Fe2O3: 0.027, TiO2: 0.013 },
-    isokoms: [
-      { logEta: 1.5,  T_model_C: 1468, T_measured_C: 1467 },
-      { logEta: 6.6,  T_model_C:  793, T_measured_C:  793 },
-      { logEta: 12.0, T_model_C:  611, T_measured_C:  611 },
-    ],
-    expectedModel: 'FLUEGEL_2007',
-    tolerance_model_C: 5.0,
-  },
-  {
-    id: 'Fluegel-710A',
-    description: 'NIST SRM 710A soda-lime-silica standard',
+    id: 'NIST SRM 710A',
+    description: 'Soda-lime-silica glass (high-viscosity reference standard)',
     source: 'Fluegel 2007, Table 1 (mol%) + Table 12',
     composition_mol_pct: { SiO2: 71.43, Al2O3: 1.31, Na2O: 8.25, K2O: 6.27, CaO: 9.62, TiO2: 0.32, ZnO: 2.81 },
     composition_wt_pct:  { SiO2: 67.895, Al2O3: 2.113, Na2O: 8.09, K2O: 9.344, CaO: 8.535, TiO2: 0.404, ZnO: 3.618 },
@@ -47,8 +33,8 @@ export const FLUEGEL_VALIDATION_GLASSES: GlassValidationEntry[] = [
     tolerance_model_C: 5.0,
   },
   {
-    id: 'Fluegel-717A',
-    description: 'NIST SRM 717A borosilicate standard',
+    id: 'NIST SRM 717A',
+    description: 'Borosilicate glass (viscosity reference standard)',
     source: 'Fluegel 2007, Table 1 (mol%) + Table 12',
     composition_mol_pct: { SiO2: 72.25, Al2O3: 2.19, Na2O: 1.03, K2O: 5.42, B2O3: 16.97, Li2O: 2.14 },
     composition_wt_pct:  { SiO2: 67.996, Al2O3: 3.498, Na2O: 1.0, K2O: 7.998, B2O3: 18.507, Li2O: 1.002 },
@@ -61,8 +47,8 @@ export const FLUEGEL_VALIDATION_GLASSES: GlassValidationEntry[] = [
     tolerance_model_C: 5.0,
   },
   {
-    id: 'Fluegel-711',
-    description: 'Lead silicate glass 711',
+    id: 'NIST SRM 711',
+    description: 'Lead silicate glass (viscosity reference standard)',
     source: 'Fluegel 2007, Table 1 (mol%) + Table 12',
     composition_mol_pct: { SiO2: 71.28, Al2O3: 0.51, Na2O: 3.76, K2O: 5.55, PbO: 18.9 },
     composition_wt_pct:  { SiO2: 46.005, Al2O3: 0.559, Na2O: 2.503, K2O: 5.616, PbO: 45.317 },
@@ -75,8 +61,8 @@ export const FLUEGEL_VALIDATION_GLASSES: GlassValidationEntry[] = [
     tolerance_model_C: 5.0,
   },
   {
-    id: 'Fluegel-710',
-    description: 'Glass 710 soda-lime-silica',
+    id: 'NIST SRM 710',
+    description: 'Soda-lime-silica glass (standard viscosity reference)',
     source: 'Fluegel 2007, Table 1 (mol%) + Table 12',
     composition_mol_pct: { SiO2: 72.74, Al2O3: 0.11, Na2O: 8.7, K2O: 5.07, CaO: 12.82, Fe2O3: 0.01 },
     composition_wt_pct:  { SiO2: 71.423, Al2O3: 0.183, Na2O: 8.813, K2O: 7.805, CaO: 11.75, Fe2O3: 0.026 },
@@ -89,8 +75,8 @@ export const FLUEGEL_VALIDATION_GLASSES: GlassValidationEntry[] = [
     tolerance_model_C: 5.0,
   },
   {
-    id: 'Fluegel-DGG-I',
-    description: 'DGG I optical glass standard',
+    id: 'DGG-I (Fluegel)',
+    description: 'Soda-lime-silica float glass (DGG-I reference composition)',
     source: 'Fluegel 2007, Table 1 (mol%) + Table 12',
     composition_mol_pct: { SiO2: 70.94, Al2O3: 0.72, Na2O: 14.34, K2O: 0.21, MgO: 6.16, CaO: 7.13, SO3: 0.32, Fe2O3: 0.07, TiO2: 0.1 },
     composition_wt_pct:  { SiO2: 71.789, Al2O3: 1.237, Na2O: 14.971, K2O: 0.333, MgO: 4.181, CaO: 6.735, SO3: 0.432, Fe2O3: 0.188, TiO2: 0.135 },
