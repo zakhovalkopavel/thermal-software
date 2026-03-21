@@ -1,0 +1,182 @@
+# Thermodynamics Module — Implementation Checklist
+
+Track each item with `[x]` when done.  
+**Prerequisite:** `common/thermal` shared library (recuperator PHASE 1) must be complete first.
+
+---
+
+## PHASE 1 — Scaffolding
+
+- [ ] Create `backend/src/modules/thermodynamics/` directory structure (see CH02)
+- [ ] Create `Species` enum
+- [ ] Create `GasMixtureInputDto`, `GasPropertiesResultDto`
+- [ ] Create `data/nasa7/nasa7-coefficients.interface.ts`
+
+---
+
+## PHASE 2 — NASA-7 as EquationTypeDto variant (extends common/thermal)
+
+- [ ] Add `nasa7 = "nasa7"` to `common/thermal/dto/equationType.dto.ts`
+- [ ] Create `common/thermal/type/nasa7-equation.ts` — `{ low, high: number[7], Tswitch }`
+- [ ] Create `common/thermal/utils/nasa7-equation-method.ts` — implements `Equation<Nasa7Equation>` + extra `enthalpy`, `entropy`, `gibbsEnergy` methods
+- [ ] Add `nasa7` case to `Common.equation()` dispatch in `common/thermal/utils/common.ts`
+- [ ] Extract full-precision NASA TM-4513 coefficients — **replace "approximate, truncated" values** from `furnaceCombustion/classes/Thermodynamics.js`
+- [ ] Add `nasa7` `EquationValue` entry to `heatCapacity.values[]` in each compound: N2, O2, CO2, CO, H2O, H2, CH4, NH3
+- [ ] Add NH3 NASA-7 coefficients (missing from all legacy — source from NASA TM-4513 or NIST)
+- [ ] Add C(graphite) NASA-7 entry if needed for combustion stoichiometry
+- [ ] Unit tests: `Nasa7EquationMethod.calculate('CO2', 1000)` ≈ 37.11 J/(mol·K) (NIST WebBook); H continuity at Tswitch=1000K
+- [ ] **No `Nasa7Service`** — H/S/G are methods on `GasPropertiesService` (see PHASE 5)
+
+---
+
+## PHASE 3 — Transport service
+
+- [ ] Port `TransportProperties.js` → `transport.service.ts`
+- [ ] Add NH3 Sutherland parameters (σ, T₀, S — from Reid et al.)
+- [ ] Implement `viscosity(species, T_K)`
+- [ ] Implement `viscosityMix(composition, T_K)` (Wilke rule)
+- [ ] Implement `thermalConductivity(species, T_K, Cp_J_molK)` (Eucken)
+- [ ] Implement `thermalConductivityMix(composition, T_K)`
+- [ ] Unit tests: viscosity of O2 at 300K vs known value; Wilke mix for CO2/N2
+
+---
+
+## PHASE 4 — Diffusion service
+
+- [ ] Port `DiffusionCoefficients.js` → `diffusion.service.ts`
+- [ ] Add NH3 Lennard-Jones params (σ=2.900Å, ε/k=558.3K)
+- [ ] Implement `binaryDiffusion(A, B, T_K, P_atm)`
+- [ ] Implement `effectiveDiffusion(species, composition, T_K, P_atm)`
+- [ ] Implement `getAllDiffusionCoefficients(composition, T_K, P_atm)`
+- [ ] Unit tests: D_12(O2/N2, 300K, 1atm) ≈ 1.8×10⁻⁵ m²/s
+
+---
+
+## PHASE 5 — Gas properties service (facade)
+
+- [ ] Implement `GasPropertiesService.cpSpecies()` — delegates to `FluidConditionCompound` with compound `def` index
+- [ ] Implement `GasPropertiesService.cpSpeciesByIndex()` — uses a specific `values[]` index
+- [ ] Implement `GasPropertiesService.cpCompare()` — iterates all `values[]` entries, returns Cp from each
+- [ ] Implement `GasPropertiesService.h()` — `Nasa7EquationMethod.enthalpy()` via compound `nasa7` entry
+- [ ] Implement `GasPropertiesService.s()` — `Nasa7EquationMethod.entropy()`
+- [ ] Implement `GasPropertiesService.g()` — `Nasa7EquationMethod.gibbsEnergy()`
+- [ ] Implement `GasPropertiesService.cpMixture()` — mass-fraction weighted
+- [ ] Implement `GasPropertiesService.hMixture()` — mole-fraction weighted via NASA-7
+- [ ] Implement `GasPropertiesService.density()` — ideal gas
+- [ ] Implement `GasPropertiesService.prandtl()` — uses `TransportService`
+- [ ] Implement `GasPropertiesService.getMixtureProperties()` — aggregates all
+- [ ] Unit tests: N2 Cp at 300K and 1800K; `cpCompare('CO2', 1000)` returns all equation types; `h('CO2', 1000)` vs NIST; mixture ρ at 1000K
+
+---
+
+## PHASE 6 — Dimensionless numbers service
+
+See [CH07_DIMENSIONLESS_NUMBERS.md](CH07_DIMENSIONLESS_NUMBERS.md) for full correlation and formula list.
+
+### Enums and DTOs
+- [ ] Create `enums/flow-geometry.enum.ts` — all `FlowGeometry` variants: internal (pipe, annulus, ducts, helical coil, corrugated/ribbed), external forced (flat plate, cylinder, sphere, tube banks, cone, elliptical cylinder), natural (vertical/horizontal/inclined/cavity/concentric), mixed, packed/fluidized beds, phase change, rotating, impinging jets
+- [ ] Create `enums/body-geometry.enum.ts` — all `BodyGeometry` variants (sphere, cylinder, cube, prism, cone, truncated cone, hollow cylinder, ellipsoid, hemispherical dome)
+- [ ] Create `interfaces/geometry-dims.interface.ts` — `{ a, b, c, L, epsilon, S_T, S_L, angle_deg }`
+- [ ] Create `dto/dimensionless-input.dto.ts`, `dto/dimensionless-result.dto.ts`
+- [ ] Create `dto/body-geometry-input.dto.ts`, `dto/body-geometry-result.dto.ts`
+
+### Primary dimensionless numbers
+- [ ] `reynolds`, `reynoldsKinematic`
+- [ ] `prandtl`
+- [ ] `grashof`, `rayleigh`
+- [ ] `hFromNusselt`
+
+### Flow channel geometry helpers
+- [ ] `hydraulicDiameter(area, perimeter)`
+- [ ] `channelArea(geometry, dims)` — all `FlowGeometry` cross-section variants
+- [ ] `channelPerimeter(geometry, dims)`
+- [ ] `characteristicLength(geometry, dims)`
+
+### Nusselt dispatcher — `nusselt(params): NusseltResult`
+
+**Internal forced (all D_h-based variants delegate to PIPE_CIRCULAR):**
+- [ ] `PIPE_CIRCULAR` — Mills (laminar), Sieder-Tate (laminar μ-correction), Gnielinski (transitional/turbulent), Dittus-Boelter, Petukhov, Russian textbook `0.021` — from `recuperator.js` + [I7] §8
+- [ ] `PIPE_ANNULUS` — D_h = D_o − D_i → PIPE_CIRCULAR
+- [ ] `DUCT_SQUARE`, `DUCT_RECTANGULAR`, `DUCT_TRIANGULAR`, `DUCT_TRIANGULAR_SCALENE`, `DUCT_ELLIPTICAL`, `DUCT_TRAPEZOIDAL`, `PARALLEL_PLATES` — D_h = 4A/P → PIPE_CIRCULAR
+- [ ] `HELICAL_COIL` — Seban & McLaughlin (turbulent), critical Re shift by Schmidt (1967); [VDI] L1.3
+- [ ] `CORRUGATED_PIPE` / `RIBBED_CHANNEL` — Webb-Eckert-Goldstein roughness function; [I7] §8.7, [VDI] G8
+
+**External forced:**
+- [ ] `FLAT_PLATE` — Churchill–Ozoe (all Re/Pr), laminar avg (0.664), turbulent avg (0.037), mixed; [I7] §7.2
+- [ ] `FLAT_PLATE_ROUGH` — VDI F2 roughness correlation
+- [ ] `CYLINDER_CROSSFLOW` — Churchill–Bernstein (primary); Hilpert with C/m table (5 Re ranges); [I7] §7.4
+- [ ] `ELLIPTICAL_CYLINDER` — Owen (1952) C/m table; [VDI] F5
+- [ ] `SPHERE_FORCED` — Whitaker with μ/μ_s correction; [I7] §7.4
+- [ ] `CONE_CROSSFLOW` — Yuge (1960) / VDI F6 approximation
+- [ ] `TUBE_BANK_INLINE` / `TUBE_BANK_STAGGERED` — Zukauskas with C₁/C₂/m table (4 Re ranges) + row correction C₂; [I7] §7.5
+
+**Natural convection:**
+- [ ] `VERTICAL_PLATE` / `VERTICAL_CYLINDER` — Churchill–Chu all-Ra + laminar-only form; cylinder validity check D/L ≥ 35/Gr^0.25; [I7] §9.6
+- [ ] `INCLINED_PLATE` — Churchill–Chu with g_eff = g·cos(θ); horizontal correlations for θ > 60°; [I7] §9.8
+- [ ] `HORIZONTAL_CYLINDER` — Morgan table (7 Ra ranges) + Churchill–Chu alternative; [I7] §9.6
+- [ ] `HORIZONTAL_PLATE_HOT_UP` / `HOT_DOWN` — 0.54·Ra^(1/4), 0.15·Ra^(1/3), 0.27·Ra^(1/4); L_c = A/P; [I7] §9.7
+- [ ] `SPHERE_NATURAL` — Churchill; [I7] §9.9
+- [ ] `CONCENTRIC_CYLINDERS` — Raithby–Hollands k_eff; [I7] §9.7
+- [ ] `CONCENTRIC_SPHERES` — Raithby–Hollands spheres; [I7] §9.7
+- [ ] `HORIZONTAL_CAVITY` — Hollands et al. + Globe–Dropkin; [I7] §9.9
+- [ ] `VERTICAL_CAVITY` — MacGregor–Emery (4 aspect-ratio ranges); [I7] §9.9
+
+**Mixed convection:**
+- [ ] `MIXED_PIPE_VERTICAL` — `(Nu_forced^n ± Nu_natural^n)^(1/n)`, n=3; Gr/Re² threshold; [I7] §9.10
+- [ ] `MIXED_PLATE_VERTICAL` — combined form aiding/opposing; [C5] §15-2
+
+**Packed / porous:**
+- [ ] `PACKED_BED` — Gunn (primary, from `HeatTransfer.js`); Wakao–Funazkri (secondary)
+- [ ] `PACKED_BED_CYLINDER` — D_eq = 6V_p/S_p → Gunn
+- [ ] `FLUIDIZED_BED` — Wen & Yu (Re_mf); Molerus & Wirth (heat transfer); [VDI] L3.4
+
+**Phase change:**
+- [ ] `CONDENSATION_VERTICAL_PLATE` — Nusselt laminar film + Chen turbulent; h_fg' correction; [I7] §10.6
+- [ ] `CONDENSATION_HORIZONTAL_TUBE` — Nusselt horizontal tube; [I7] §10.6
+- [ ] `POOL_BOILING` — Rohsenow nucleate; [I7] §10.3 (stub initially)
+
+**Rotating / special:**
+- [ ] `ROTATING_DISK` — Dorfman laminar + turbulent; [VDI] H4
+- [ ] `ROTATING_CYLINDER` — Bjorklund & Kays (Taylor–Couette); [VDI] H5
+- [ ] `IMPINGING_JET_SINGLE` — Martin (1977); [VDI] G8
+- [ ] `IMPINGING_JET_ARRAY` — Martin (1977) array; [VDI] G8
+
+### Body geometry methods
+- [ ] `bodyArea(geometry, dims, insulationH)` — all `BodyGeometry` variants with insulation offset
+- [ ] `bodyVolume(geometry, dims)` — all `BodyGeometry` variants
+- [ ] `meanBeamLength(geometry, dims)` — Hottel; `3.6·V/S` fallback for non-tabulated shapes
+
+### Controller endpoints
+- [ ] `POST /thermodynamics/dimensionless` — Re, Pr, Gr, Ra, Nu, h
+- [ ] `POST /thermodynamics/body-geometry` — surface, volume, meanBeamLength, characteristicLength
+
+### Tests
+- [ ] Unit tests per geometry correlation (see CH07 test table)
+- [ ] Unit tests for body area, volume, meanBeamLength for all 10 BodyGeometry variants
+- [ ] Edge cases: Re=0 (natural convection fallback), Ra=0, insulation h=0
+
+---
+
+## PHASE 7 — Aerodynamics service
+
+- [ ] Port `Aerodynamics.js` → `aerodynamics.service.ts`
+- [ ] Implement `pressureDrop` (Ergun equation)
+- [ ] Implement `superficialVelocity`
+- [ ] Unit tests
+
+---
+
+## PHASE 8 — Module wiring
+
+- [ ] `ThermodynamicsModule` providers + full exports
+- [ ] `ThermodynamicsController` — `POST /thermodynamics/properties` (dev/debug)
+- [ ] Register in `AppModule`
+
+---
+
+## PHASE 9 — Cleanup
+
+- [ ] No `console.log` in any service
+- [ ] All coefficient values cite source (NASA TM-4513, Reid et al., etc.)
+- [ ] Update `docs/migration/IMPLEMENTATION_STATUS.md`
+

@@ -1,97 +1,68 @@
-# Legacy Code Migration - Master Index
+# Legacy Code Migration — Master Index
 
-**Date:** February 1, 2026  
-**Status:** Planning Phase  
-**Approach:** Incremental, module-by-module migration
-
----
-
-## Migration Files Structure
-
-This master index links all migration specification files:
-
-### 1. Core Specifications
-- **[STEP_01_REFRACTORY_MODULE.md](STEP_01_REFRACTORY_MODULE.md)** - Refractory calculators migration
-- **[STEP_02_FURNACE_MODULE.md](STEP_02_FURNACE_MODULE.md)** - Furnace combustion migration
-- **[STEP_03_THERMOPHYSICAL_MODULE.md](STEP_03_THERMOPHYSICAL_MODULE.md)** - Material database migration
-- **[STEP_04_FRONTEND_PAGES.md](STEP_04_FRONTEND_PAGES.md)** - React UI migration
-- **[STEP_05_DATABASE_MIGRATION.md](STEP_05_DATABASE_MIGRATION.md)** - PostgreSQL schema & data
-- **[STEP_06_TESTING.md](STEP_06_TESTING.md)** - Test implementation
-
-### 2. Implementation Progress
-- **[IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md)** - Current progress tracking
-- **[MIGRATION_CHECKLIST.md](MIGRATION_CHECKLIST.md)** - Task checklist
+**Updated:** March 21, 2026  
+**Status:** Planning Phase — module architecture decided  
+**Primary reference:** [ROADMAP.md](ROADMAP.md) · [MODULE_ARCHITECTURE.md](MODULE_ARCHITECTURE.md)
 
 ---
 
-## Legacy → New Mapping
+## Active spec folders (current)
 
-### Refractory Module
-```
-legacy/refractory/src/
-├── calculators/              → backend/src/modules/refractory/services/
-├── types/                    → backend/src/modules/refractory/dto/
-├── models/                   → backend/src/modules/refractory/entities/
-├── data/                     → backend/src/modules/refractory/data/
-└── public/                   → frontend/src/pages/refractory/
-```
+| Module | Spec folder | Checklist |
+|---|---|---|
+| Shared thermal library | recuperator/ PHASE 1 | [recuperator/CHECKLIST.md](recuperator/CHECKLIST.md) |
+| `ThermodynamicsModule` | [thermodynamics/](thermodynamics/) | [thermodynamics/CHECKLIST.md](thermodynamics/CHECKLIST.md) |
+| `RecuperatorModule` | [recuperator/](recuperator/) | [recuperator/CHECKLIST.md](recuperator/CHECKLIST.md) |
+| `CombustionModule` | [combustion/](combustion/) | [combustion/CHECKLIST.md](combustion/CHECKLIST.md) |
+| `ThermophysicalModule` + Python | [thermophysical-library/](thermophysical-library/) | [thermophysical-library/CHECKLIST.md](thermophysical-library/CHECKLIST.md) |
+| `RefractoryModule` | [STEP_01_REFRACTORY_MODULE.md](STEP_01_REFRACTORY_MODULE.md) | [MIGRATION_CHECKLIST.md](MIGRATION_CHECKLIST.md) |
 
-### Furnace Module
-```
-legacy/furnaceCombustion/
-├── furnace_combustion_model.js → backend/src/modules/furnace/services/
-├── classes/                    → backend/src/modules/furnace/entities/
-├── modules/                    → backend/src/modules/furnace/services/
-└── [UI will be new]            → frontend/src/pages/furnace/
-```
+---
 
-### Thermophysical Module
+## Legacy STEP files (pre-March 2026 — partially superseded)
+
+These files predate the module architecture decision. Some content is still valid; consult the active spec folders above for the authoritative version.
+
+- [STEP_01_REFRACTORY_MODULE.md](STEP_01_REFRACTORY_MODULE.md)
+- [STEP_02_FURNACE_MODULE.md](STEP_02_FURNACE_MODULE.md) — superseded by `combustion/` + `thermodynamics/`
+- [STEP_03_THERMOPHYSICAL_MODULE.md](STEP_03_THERMOPHYSICAL_MODULE.md) — superseded by `thermophysical-library/`
+- [STEP_04_FRONTEND_PAGES.md](STEP_04_FRONTEND_PAGES.md)
+- [STEP_05_DATABASE_MIGRATION.md](STEP_05_DATABASE_MIGRATION.md) — see `thermophysical-library/CH04_DB_MIGRATION.md`
+- [STEP_06_TESTING.md](STEP_06_TESTING.md)
+
+---
+
+## Legacy → New mapping (updated)
+
 ```
-legacy/python_scripts/         → backend/src/modules/thermophysical/
-legacy/library/                → PostgreSQL database
+legacy/scripts/src/                → backend/src/common/thermal/          (shared library)
+legacy/furnaceCombustion/classes/  → backend/src/modules/thermodynamics/  (NASA-7, Sutherland, Chapman-Enskog)
+legacy/furnaceCombustion/modules/  → thermodynamics/ (HeatTransfer, Aerodynamics)
+                                     combustion/      (ChemicalKinetics, EquilibriumSolver)
+legacy/furnaceCombustion/furnace_combustion_model.js → combustion/FurnaceCombustionService
+legacy/scripts/recuperator.js      → combustion/ (lines ~575–680)
+                                     recuperator/ (all other sections)
+legacy/refractory/                 → backend/src/modules/refractory/
+legacy/library/processed_data/     → shared/processed/ (CSV now) → DB (future)
+legacy/python_scripts/             → python/src/thermophysical/
 ```
 
 ---
 
-## Implementation Order
+## Implementation order
 
-### Phase 1: Backend Core (Week 1-2)
-1. **Refractory Module** - 11 calculators
-2. **Furnace Module** - Combustion models
-3. **Thermophysical Module** - Material database
+See [ROADMAP.md](ROADMAP.md) for the full dependency graph and stage breakdown.
 
-### Phase 2: Frontend (Week 3-4)
-1. **Refractory Pages** - 3 main calculators
-2. **Furnace Pages** - Combustion calculator
-3. **Material Library** - Browser/manager
-
-### Phase 3: Integration (Week 5)
-1. **Database migration** - Material data
-2. **API integration** - Connect frontend to backend
-3. **Testing** - Unit + Integration + E2E
+```
+Stage A:  common/thermal shared library
+Stage B:  ThermodynamicsModule
+Stage C:  RecuperatorModule + CombustionModule core + ThermophysicalModule
+Stage D:  CombustionModule kinetics/layer model + DB migration
+```
 
 ---
 
-## Quick Reference
+## Progress tracking
 
-**Total Calculators to Migrate:** 14  
-**Total Frontend Pages:** 5+  
-**Total API Endpoints:** 20+  
-**Database Tables:** 8+  
-
-**Estimated Timeline:** 5-6 weeks  
-**Team Size:** 1-2 developers  
-
----
-
-## Next Steps
-
-1. Read **STEP_01_REFRACTORY_MODULE.md** for detailed refractory migration
-2. Follow step-by-step implementation
-3. Update **IMPLEMENTATION_STATUS.md** as you progress
-4. Use **MIGRATION_CHECKLIST.md** to track tasks
-
----
-
-**Start Here:** [STEP_01_REFRACTORY_MODULE.md](STEP_01_REFRACTORY_MODULE.md)
-
+- [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) — overall status
+- [MIGRATION_CHECKLIST.md](MIGRATION_CHECKLIST.md) — legacy checklist (pre-March 2026)
