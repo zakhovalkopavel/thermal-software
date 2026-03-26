@@ -1,180 +1,220 @@
 # CH04 — Cp Resolution: Unified Equation Framework
 
-## The framework already handles multiple approximations
-
-`legacy/scripts/src` implements a general-purpose equation evaluation framework:
-
-```
-CompoundValue
-  heatCapacity: { def: number, values: EquationValue[] }
-  viscosity:    { def: number, values: EquationValue[] }
-  thermalConductivity: { def: number, values: EquationValue[] }
-
-EquationValue
-  type: EquationTypeDto     ← selects the evaluation method
-  ref:  number              ← literature reference index
-  page: number              ← page in that reference
-  vars: ...                 ← equation coefficients
-  min, max: number          ← valid temperature range [K]
-  k?: number                ← optional scaling factor
-```
-
-Each compound (e.g. `CO2`) already carries **multiple `EquationValue` entries** for the same property,
-each from a different source/reference, all stored in `values[]`. The `def` index selects the preferred one.
-`FluidConditionCompound.heatCapacity(t1, t2?)` evaluates the `def` equation, with average over [t1,t2]
-computed analytically via the integral method on each equation class.
-
-This is the **correct place** to add NASA-7. It must be a new `EquationTypeDto` variant.
+**Status: IMPLEMENTED ✅** — `common/thermal` is fully operational.
 
 ---
 
-## Decision: NASA-7 = new `EquationTypeDto.nasa7` variant
+## Equation framework
 
-Add `nasa7 = "nasa7"` to `EquationTypeDto`. Add `Nasa7EquationMethod` to `utils/`. Store NASA-7
-coefficients as additional `EquationValue` entries inside each compound's `heatCapacity.values[]`
-array — alongside quartic, cubic, AlyLee, etc.
+`CompoundValue` stores multiple approximations per property in buckets:
 
 ```typescript
-// dto/equationType.dto.ts — add one entry
+// interfaces/compound-value.interface.ts
+interface CompoundValue {
+  nasa7?: Nasa7Equation;            // top-level — covers Cp, H, S, G simultaneously
+  heatCapacity: { def: number; values: EquationValue[] };
+  viscosity:    { def: number; values: EquationValue[] };
+  thermalConductivity: { def: number; values: EquationValue[] };
+}
+
+// interfaces/equation-value.interface.ts
+interface EquationValue {
+  type: EquationTypeDto;   // selects the evaluation class
+  ref:  RefKey;            // enum → docs/REFERENCES.md — never a raw number
+  page?: number;
+  vars: Record<string, unknown>;
+  min: number;             // valid T range [K]
+  max: number;
+  k?: number;              // optional post-multiply scaling factor
+}
+```
+
+Each property bucket carries multiple entries from different sources. `def` picks the default.
+Callers can override via `CompoundPropertyResolver` (see below).
+
+---
+
+## EquationTypeDto — implemented variants
+
+```typescript
+// dto/equation-type.dto.ts
 export enum EquationTypeDto {
-  linear                      = "linear",
-  quadratic                   = "quadratic",
-  cubic                       = "cubic",
-  quartic                     = "quartic",
-  linearHyperbolic            = "linearHyperbolic",
-  linearHyperbolicLogarithmic = "linearHyperbolicLogarithmic",
-  alyLee                      = "alyLee",
-  dipprN102                   = "dipprN102",
-  nasa7                       = "nasa7",   // ← NEW
+  linear                      = 'linear',
+  quadratic                   = 'quadratic',
+  cubic                       = 'cubic',
+  quartic                     = 'quartic',
+  linearHyperbolic            = 'linearHyperbolic',
+  linearHyperbolicLogarithmic = 'linearHyperbolicLogarithmic',
+  alyLee                      = 'alyLee',
+  dipprN102                   = 'dipprN102',
+  nasa7                       = 'nasa7',
 }
 ```
 
-```typescript
-// type/nasa7Equation.ts — new type
-export interface Nasa7Equation {
-  // low-T coefficients (200–1000 K)
-  low:  [number, number, number, number, number, number, number];
-  // high-T coefficients (1000–6000 K)
-  high: [number, number, number, number, number, number, number];
-  Tswitch: number;   // default 1000
-}
-```
+`Common.equation(type)` dispatches to the appropriate method class. Callers never instantiate
+equation methods directly.
+
+---
+
+## nasa7 — separate top-level field (NOT in heatCapacity.values)
+
+NASA-7 coefficients simultaneously define Cp, H, S and G. They **do not belong in** any single
+property bucket. They live as `CompoundValue.nasa7?: Nasa7Equation`.
 
 ```typescript
-// utils/nasa7EquationMethod.ts — new method class
+// type/nasa7-equation.ts
+export type Nasa7Coeffs = {
+  a1: number;
+  a2: number;
+  a3: number;
+  a4: number;
+  a5: number;
+  /** Integration constant — encodes reference enthalpy Hf° at 298 K */
+  a6: number;
+  /** Integration constant — encodes reference entropy S° at 298 K */
+  a7: number;
+};
+
+export type Nasa7Equation = {
+  low:     Nasa7Coeffs;   // 200 K – Tswitch
+  high:    Nasa7Coeffs;   // Tswitch – 6000 K
+  Tswitch: number;        // typically 1000 K
+};
+```
+
+Coefficients use **named fields** (`{a1…a7}`) — never tuple arrays.
+
+✅ **Correct** (actual implementation):
+```typescript
+export const N2: CompoundValue = {
+  nasa7: {
+    Tswitch: 1000,
+    low:  { a1: 3.531e+00, a2: -1.237e-04, a3: -5.030e-07, a4:  2.435e-09, a5: -1.409e-12, a6: -1047, a7: 2.967 },
+    high: { a1: 2.953e+00, a2:  1.397e-03, a3: -4.926e-07, a4:  7.860e-11, a5: -4.608e-15, a6:  -924, a7: 5.872 },
+  },
+  heatCapacity: {
+    def: 0,
+    values: [
+      // polynomial approximations (quartic, cubic, linear, alyLee)
+      // nasa7 is NOT here
+    ],
+  },
+};
+```
+
+---
+
+## Nasa7EquationMethod — extra methods beyond Equation\<T\>
+
+```typescript
+// utils/nasa7-equation-method.ts
 export class Nasa7EquationMethod implements Equation<Nasa7Equation> {
-  // Cp/R = a1 + a2T + a3T² + a4T³ + a5T⁴  →  Cp [J/(mol·K)]
-  calculate(T: number, vars: Nasa7Equation, min: number, max: number, k = 1): number
+  // Cp/R = a1 + a2·T + a3·T² + a4·T³ + a5·T⁴  →  Cp [J/(mol·K)]
+  calculate(T, vars, min, max, k?): number
 
-  // Integral of Cp dT / (T2-T1) — average Cp over interval
-  calculateAverage(T1: number, T2: number, vars: Nasa7Equation, min: number, max: number, k?: number): number
+  // Exact polynomial antiderivative: ∫Cp dT = R·(a1·T + a2·T²/2 + a3·T³/3 + a4·T⁴/4 + a5·T⁵/5)
+  integral(T, vars, min, max, k?): number
 
-  // H(T)/R = a1T + a2T²/2 + a3T³/3 + a4T⁴/4 + a5T⁵/5 + a6
-  enthalpy(T: number, vars: Nasa7Equation): number   // J/mol — extra method beyond Equation<T>
+  // Handles Tswitch boundary when T1 < Tswitch ≤ T2
+  calculateAverage(T1, T2, vars, min, max, k?): number
 
-  // S(T)/R = a1·lnT + a2T + a3T²/2 + a4T³/3 + a5T⁴/4 + a7
-  entropy(T: number, vars: Nasa7Equation): number    // J/(mol·K)
+  // H/RT = a1 + a2·T/2 + a3·T²/3 + a4·T³/4 + a5·T⁴/5 + a6/T  →  H [J/mol]
+  enthalpy(T, vars): number
 
-  // G = H - T·S
-  gibbsEnergy(T: number, vars: Nasa7Equation): number // J/mol
+  // S/R = a1·ln T + a2·T + a3·T²/2 + a4·T³/3 + a5·T⁴/4 + a7  →  S [J/(mol·K)]
+  entropy(T, vars): number
+
+  // G = H − T·S  →  G [J/mol]
+  gibbsEnergy(T, vars): number
 }
 ```
 
-`Common.equation(EquationTypeDto.nasa7)` returns a `Nasa7EquationMethod` instance — same dispatch
-as all other equation types.
+`enthalpy`, `entropy`, `gibbsEnergy` are extra methods — not part of `Equation<T>`.
+They are accessed via `CompoundPropertyResolver`.
 
 ---
 
-## How NASA-7 entries look in compound data
-
-Example — adding NASA-7 to `CO2.ts`:
+## CompoundPropertyResolver — the only access point
 
 ```typescript
-heatCapacity: {
-  def: 1,          // default stays quartic (ref.6) for recuperator energy balance
-  values: [
-    { type: EquationTypeDto.quartic, ref: 6, page: 51, vars: { a:27.437, ... }, min:50, max:5000 },
-    { type: EquationTypeDto.cubic,   ref: 5, page: 911, vars: { a:22.26, ... }, min:273, max:1800 },
-    { type: EquationTypeDto.linearHyperbolic, ref:1, ... },
-    { type: EquationTypeDto.alyLee,  ref: 4, ... },
-    { type: EquationTypeDto.nasa7,   ref: 8, page: 0,   // ref 8 = NASA TM-4513, McBride 1993
-      vars: {
-        low:  [2.35677352, 8.98459677e-3, -7.12356269e-6, 2.45919022e-9, -1.43699548e-13, -4.83719697e4, 9.90105222],
-        high: [4.63659493, 2.74131991e-3, -9.95828542e-7, 1.60373011e-10, -9.16103468e-15, -4.90249392e4, -1.93489550],
-        Tswitch: 1000,
-      },
-      min: 200, max: 6000,
-    },
-  ],
-},
-```
+// utils/compound-property-resolver.ts
+export type PreferredApprox = number | RefKey;
 
-To use NASA-7 Cp: `FluidConditionCompound.heatCapacity(T)` with `def` pointing to the nasa7 entry.  
-To use H, S, G: call `nasa7Method.enthalpy(T, vars)` / `entropy` / `gibbsEnergy` directly —
-these are extra methods on `Nasa7EquationMethod` not part of the base `Equation<T>` interface.
+export class CompoundPropertyResolver {
+  constructor(compound: CompoundValue) {}
 
----
+  // Default: nasa7 if present; else values[def]
+  heatCapacity(T: number, preferred?: PreferredApprox): number
 
-## Consequence: no separate `Nasa7Service`
+  // Default: nasa7 if present; else values[def] integral
+  heatCapacityAverage(T1: number, T2: number, preferred?: PreferredApprox): number
 
-H/S/G are methods on `GasPropertiesService`. It finds the `nasa7` entry in the compound's
-`heatCapacity.values[]` and calls `Nasa7EquationMethod`:
+  // Requires nasa7; returns NaN if absent
+  enthalpy(T: number): number
+  entropy(T: number): number
+  gibbsEnergy(T: number): number
 
-```typescript
-@Injectable()
-export class GasPropertiesService {
-  // ...Cp methods...
-
-  h(species: Species, T: number): number {
-    const entry = gasCompounds[species].heatCapacity.values
-      .find(v => v.type === EquationTypeDto.nasa7);
-    return new Nasa7EquationMethod().enthalpy(T, entry.vars as Nasa7Equation);
-  }
-
-  s(species: Species, T: number): number { /* entropy */ }
-  g(species: Species, T: number): number { /* h(T) - T * s(T) */ }
+  // Uses values[def] or overridden by preferred
+  viscosity(T: number, preferred?: PreferredApprox): number
+  thermalConductivity(T: number, preferred?: PreferredApprox): number
 }
 ```
 
-No separate service. No separate data store. One injectable for all thermophysical properties.
+Preferred resolution order:
+1. `preferred` is a number → `values[preferred]`
+2. `preferred` is a `RefKey` → first entry with matching `ref`
+3. `undefined` → `values[def]`
+
+Falls back to `values[def]` silently if preferred entry not found.
 
 ---
 
-## Comparing approximations
+## Closed-form vs numerical integrals
 
-Because all equations live in the same `values[]` array, comparison is trivial:
-
-```typescript
-// Compare all available Cp approximations at T=1000K for CO2:
-CO2.heatCapacity.values.forEach((eq, i) => {
-  const method = Common.equation(eq.type);
-  const cp = method.calculate(1000, eq.vars, eq.min, eq.max, eq.k);
-  console.log(`[${i}] ${eq.type} ref.${eq.ref}: Cp = ${cp} J/(mol·K)`);
-});
-```
-
-A future `/thermodynamics/compare` endpoint can expose this directly.
-
----
-
-## Which `def` index to use where
-
-| Use case | Preferred equation | Reason |
+| Equation type | Integral | Verified via |
 |---|---|---|
-| Recuperator energy balance (300–1800K) | quartic (ref.6) — current `def` | Validated in recuperator context |
-| Combustion flame temperature | quartic or nasa7 — caller's choice | Both cover 1000–5000K; nasa7 more accurate above 2000K |
-| Gibbs equilibrium, H/S/G | nasa7 only | Only equation type providing H, S, G |
-| Cross-validation / comparison | all entries | Use `values[]` loop |
+| `linear` | ✅ exact: `a·T + b·T²/2` | algebra |
+| `quadratic` | ✅ exact: `a·T + b·T²/2 + c·T³/3` | algebra |
+| `cubic` | ✅ exact: `a·T + b·T²/2 + c·T³/3 + d·T⁴/4` | algebra |
+| `quartic` | ✅ exact: `a·T + b·T²/2 + c·T³/3 + d·T⁴/4 + e·T⁵/5` | algebra |
+| `linearHyperbolic` | ✅ exact: `a·T + b·T²/2 − d/T` | algebra |
+| `linearHyperbolicLogarithmic` | ✅ exact: `c1·T + c2·(T·ln T − T) + c3·ln T + c4·T²/2` | `RefKey.WolframAlpha` |
+| `alyLee` | ✅ exact: `c1·T + c2·c3·coth(c3/T) − c4·c5·tanh(c5/T)` | `RefKey.WolframAlpha` |
+| `dipprN102` | ❌ no closed form for arbitrary c2 — `gaussLegendre20` | `RefKey.WolframAlpha` |
+| `nasa7` | ✅ exact (polynomial) | algebra |
 
-**Rule:** callers that need H/S/G must explicitly request the `nasa7` entry. Callers that need only Cp
-use `FluidConditionCompound` with the compound's default `def` index — no change to existing code.
+`gaussLegendre20` lives in `common/utils/gauss-legendre.util.ts` (SRP).
+`dippr-equation-102-method.ts` imports it from there.
+`numeric.util.ts` re-exports it for backward compatibility.
 
 ---
 
-## NASA-7 coefficient quality action (same as before)
+## Gas compounds implemented
 
-- [ ] Replace `furnaceCombustion/classes/Thermodynamics.js` "approximate, truncated" values with full-precision NASA TM-4513 coefficients
-- [ ] Add NASA-7 entries to all 9 gas compounds (CO2, CO, H2, H2O, O2, N2, CH4, NH3, + C(graphite) if needed)
-- [ ] Add NH3 NASA-7 coefficients (missing from all legacy sources)
-- [ ] Unit test: `nasa7Method.calculate('CO2', 1000)` ≈ 37.11 J/(mol·K) (NIST WebBook)
-- [ ] Unit test: H continuity across Tswitch=1000K (low-T and high-T sets must agree)
+All 8 combustion-relevant species have full data in `common/thermal/compound/gas/`:
+
+| File | Species | nasa7 | heatCapacity.values | viscosity | thermalConductivity |
+|---|---|---|---|---|---|
+| `n2.ts`  | N2  | ✅ | quartic, cubic, linear, alyLee | quadratic | quadratic, dipprN102 |
+| `o2.ts`  | O2  | ✅ | quartic, cubic, linearHyperbolic, alyLee | quadratic | quadratic |
+| `co2.ts` | CO2 | ✅ | quartic, cubic, linearHyperbolic, alyLee | quadratic | quadratic |
+| `co.ts`  | CO  | ✅ | quartic, cubic | quadratic | quadratic |
+| `h2o.ts` | H2O | ✅ | quartic, cubic | quadratic | quadratic |
+| `h2.ts`  | H2  | ✅ | quartic, cubic | quadratic | quadratic |
+| `ch4.ts` | CH4 | ✅ | quartic, cubic, alyLee | quadratic | quadratic |
+| `nh3.ts` | NH3 | ✅ | quartic, cubic, alyLee | quadratic | quadratic, dipprN102 |
+
+All nasa7 coefficients sourced from `RefKey.NASA7` (NASA TM-2002-211556) except NH3 from `RefKey.Burcat2005`.
+All registered in `GAS_REGISTRY` (registry.ts).
+
+---
+
+## Which approximation for which use case
+
+| Use case | Preferred | Reason |
+|---|---|---|
+| Energy balance (300–1800 K) | `values[def]` | Validated polynomial for the operating range |
+| Combustion above 2000 K | `nasa7` | Only accurate source above 2000 K |
+| Gibbs equilibrium, H/S/G | `nasa7` | Only equation type providing H, S, G |
+| Cross-validation | all `values[]` | Use `cpCompare()` loop |
+

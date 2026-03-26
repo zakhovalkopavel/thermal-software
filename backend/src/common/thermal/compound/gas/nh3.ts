@@ -1,6 +1,6 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
-import { RefKey } from '../../dto/ref-key.dto';
+import { RefKey } from '../../enum/ref-key.enum';
 
 /** NH3 — Ammonia. NASA-7: ref BurRus05, LJ: ref Poling7, Sutherland: fit from NIST data */
 export const NH3: CompoundValue = {

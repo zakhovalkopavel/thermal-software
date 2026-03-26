@@ -10,22 +10,43 @@ Track each item with `[x]` when done.
 - [ ] Create `backend/src/modules/thermodynamics/` directory structure (see CH02)
 - [ ] Create `Species` enum
 - [ ] Create `GasMixtureInputDto`, `GasPropertiesResultDto`
-- [ ] Create `data/nasa7/nasa7-coefficients.interface.ts`
 
 ---
 
-## PHASE 2 — NASA-7 as EquationTypeDto variant (extends common/thermal)
+## PHASE 2 — `common/thermal` shared library ✅ COMPLETE
 
-- [ ] Add `nasa7 = "nasa7"` to `common/thermal/dto/equationType.dto.ts`
-- [ ] Create `common/thermal/type/nasa7-equation.ts` — `{ low, high: number[7], Tswitch }`
-- [ ] Create `common/thermal/utils/nasa7-equation-method.ts` — implements `Equation<Nasa7Equation>` + extra `enthalpy`, `entropy`, `gibbsEnergy` methods
-- [ ] Add `nasa7` case to `Common.equation()` dispatch in `common/thermal/utils/common.ts`
-- [ ] Extract full-precision NASA TM-4513 coefficients — **replace "approximate, truncated" values** from `furnaceCombustion/classes/Thermodynamics.js`
-- [ ] Add `nasa7` `EquationValue` entry to `heatCapacity.values[]` in each compound: N2, O2, CO2, CO, H2O, H2, CH4, NH3
-- [ ] Add NH3 NASA-7 coefficients (missing from all legacy — source from NASA TM-4513 or NIST)
-- [ ] Add C(graphite) NASA-7 entry if needed for combustion stoichiometry
-- [ ] Unit tests: `Nasa7EquationMethod.calculate('CO2', 1000)` ≈ 37.11 J/(mol·K) (NIST WebBook); H continuity at Tswitch=1000K
-- [ ] **No `Nasa7Service`** — H/S/G are methods on `GasPropertiesService` (see PHASE 5)
+- [x] Add `nasa7 = "nasa7"` to `common/thermal/dto/equation-type.dto.ts`
+- [x] Create `common/thermal/type/nasa7-equation.ts` — `Nasa7Coeffs { a1…a7 }`, `Nasa7Equation { low, high, Tswitch }` (named fields, not arrays)
+- [x] Create `common/thermal/utils/nasa7-equation-method.ts` — implements `Equation<Nasa7Equation>` + `enthalpy`, `entropy`, `gibbsEnergy`
+- [x] Add `nasa7` case to `Common.equation()` dispatch
+- [x] Full-precision NASA TM-2002-211556 coefficients for N2, O2, CO2, CO, H2O, H2, CH4 (ref NASA7)
+- [x] NH3 NASA-7 coefficients from Burcat2005 (ANL-05/20)
+- [x] `nasa7` field is top-level in `CompoundValue` — **not** inside `heatCapacity.values[]`
+- [x] All 8 gas compounds complete: N2, O2, CO2, CO, H2O, H2, CH4, NH3 (see CH04 table)
+- [x] `GAS_REGISTRY` in `registry.ts`
+- [x] `CompoundPropertyResolver` with `PreferredApprox` (index or RefKey)
+- [x] `RefKey` enum in `enum/ref-key.enum.ts`; `REFERENCES_META` in `dto/ref-key.dto.ts`
+- [x] `gaussLegendre20` in `common/utils/gauss-legendre.util.ts` (SRP); re-exported from `numeric.util.ts`
+- [x] `dippr-equation-102-method.ts` uses `gaussLegendre20` for numerical integral
+- [x] `aly-lee-equation-method.ts` uses exact analytic antiderivative (WolframAlpha verified)
+- [ ] **Unit tests** — see PHASE 2 tests section below
+
+---
+
+### PHASE 2 — Unit tests
+
+- [x] `test/unit/thermal/utils/gauss-legendre.util.spec.ts` — GL20 nodes/weights, known polynomial integrals
+- [x] `test/unit/thermal/utils/linear-equation-method.spec.ts`
+- [x] `test/unit/thermal/utils/quadratic-equation-method.spec.ts`
+- [x] `test/unit/thermal/utils/cubic-equation-method.spec.ts`
+- [x] `test/unit/thermal/utils/quartic-equation-method.spec.ts`
+- [x] `test/unit/thermal/utils/linear-hyperbolic-equation-method.spec.ts`
+- [x] `test/unit/thermal/utils/linear-hyperbolic-logarithmic-equation-method.spec.ts`
+- [x] `test/unit/thermal/utils/aly-lee-equation-method.spec.ts` — exact integral verified
+- [x] `test/unit/thermal/utils/dippr-equation-102-method.spec.ts` — numerical integral vs reference
+- [x] `test/unit/thermal/utils/nasa7-equation-method.spec.ts` — Cp, H, S, G vs NIST; Tswitch continuity
+- [x] `test/unit/thermal/utils/compound-property-resolver.spec.ts` — preferred resolution logic
+- [x] `test/unit/thermal/compound/gas-compounds.spec.ts` — all 8 species registry, Cp sanity
 
 ---
 

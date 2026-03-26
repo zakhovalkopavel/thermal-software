@@ -1,6 +1,6 @@
 import { CompoundValue } from '../interfaces/compound-value.interface';
 import { EquationValue } from '../interfaces/equation-value.interface';
-import { RefKey } from '../dto/ref-key.dto';
+import { RefKey } from '../enum/ref-key.enum';
 import { Nasa7EquationMethod } from './nasa7-equation-method';
 import { Common } from './common';
 

@@ -1,5 +1,5 @@
 import { EquationTypeDto } from '../dto/equation-type.dto';
-import { RefKey } from '../dto/ref-key.dto';
+import { RefKey } from '../enum/ref-key.enum';
 
 export interface EquationValue {
   type: EquationTypeDto;

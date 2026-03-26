@@ -1,6 +1,6 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
-import { RefKey } from '../../dto/ref-key.dto';
+import { RefKey } from '../../enum/ref-key.enum';
 
 /** H2O — Water vapour */
 export const H2O: CompoundValue = {
