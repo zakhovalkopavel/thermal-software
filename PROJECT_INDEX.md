@@ -37,6 +37,11 @@ thermal-software/
 │   └── nginx/, legacy/
 │
 ├── docs/                           # Documentation
+│   ├── CONVENTIONS.md              # ⭐ MANDATORY CONTEXT — links all conventions
+│   ├── REFERENCES.md               # Numbered literature reference list (ref: fields)
+│   ├── NAMING_CONVENTIONS.md       # File/class/variable naming rules
+│   ├── CODE_QUALITY_STANDARDS.md   # SRP, no hardcoded values, DTOs
+│   ├── NUMERICAL_METHODS_CONVENTION.md  # Approved numerical wrappers
 │   ├── migration/                  # Migration guides
 │   │   ├── DOCKER_FIRST_SETUP.md   # ⭐ START HERE - Docker-only guide
 │   │   ├── NESTJS_MIGRATION_SPEC.md

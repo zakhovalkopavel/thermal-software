@@ -8,4 +8,6 @@ export { LinearHyperbolicLogarithmicEquationMethod } from './linear-hyperbolic-l
 export { AlyLeeEquationMethod } from './aly-lee-equation-method';
 export { DipprEquation102Method } from './dippr-equation-102-method';
 export { Nasa7EquationMethod } from './nasa7-equation-method';
+export { CompoundPropertyResolver } from './compound-property-resolver';
+export type { PreferredApprox } from './compound-property-resolver';
 

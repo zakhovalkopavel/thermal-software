@@ -354,6 +354,11 @@ export function levenbergMarquardt(
   };
 }
 
+// ─── Gaussian quadrature ─────────────────────────────────────────────────────
+// Implementation and coefficient tables live in gauss-legendre.util.ts (SRP).
+// Re-exported here so existing imports from numeric.util continue to work.
+export { gaussLegendre20, GL20_NODES, GL20_WEIGHTS } from './gauss-legendre.util';
+
 // ─── Linear system solver ─────────────────────────────────────────────────────
 
 /**

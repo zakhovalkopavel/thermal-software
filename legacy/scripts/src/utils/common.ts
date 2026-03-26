@@ -102,8 +102,8 @@ export class Common {
         let result = 0;
         for(let n=0; n < Common.gaussianSteps; n++) {
             a_n = Common.pochhammerFunction(a, n, a_n);
-            b_n = Common.pochhammerFunction(a, n, b_n);
-            b_n = Common.pochhammerFunction(a, n, c_n);
+            b_n = Common.pochhammerFunction(b, n, b_n);
+            c_n = Common.pochhammerFunction(c, n, c_n);
             factorial_n = Common.factorial(n, factorial_n);
             result += a_n*b_n*Math.pow(z, n)/(c_n*factorial_n);
         }
