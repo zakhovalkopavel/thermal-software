@@ -20,22 +20,3 @@ export class GasMixtureInputDto {
   fractionType?: 'mole' | 'mass';
 }
 
-export class GasPropertiesResultDto {
-  @ApiProperty() Cp_J_kgK: number;
-  @ApiProperty() H_J_mol: number;
-  @ApiProperty() mu_Pa_s: number;
-  @ApiProperty() lambda_W_mK: number;
-  @ApiProperty() rho_kg_m3: number;
-  @ApiProperty() Pr: number;
-  @ApiProperty() molecularWeight_kg_mol: number;
-  @ApiPropertyOptional() diffusion?: Partial<Record<Species, number>>;
-}
-
-export class CpComparisonEntryDto {
-  @ApiProperty() index: number;
-  @ApiProperty() type: string;
-  @ApiProperty() ref: number;
-  @ApiProperty() value: number;
-  @ApiProperty() rangeValid: boolean;
-}
-

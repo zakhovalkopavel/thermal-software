@@ -7,6 +7,10 @@ import { H2O } from './h2o';
 import { H2  } from './h2';
 import { CH4 } from './ch4';
 import { NH3 } from './nh3';
+import { SO2 } from './so2';
+import { SO3 } from './so3';
+import { NO  } from './no';
+import { NO2 } from './no2';
 
 /**
  * Central registry mapping species chemical formula → CompoundValue.
@@ -21,5 +25,8 @@ export const GAS_REGISTRY: Record<string, CompoundValue> = {
   H2,
   CH4,
   NH3,
+  SO2,
+  SO3,
+  NO,
+  NO2,
 };
-

@@ -7,7 +7,8 @@ import { GAS_REGISTRY } from '../../../common/thermal/compound/gas/registry';
 import { CompoundValue } from '../../../common/thermal/interfaces/compound-value.interface';
 import { EquationValue } from '../../../common/thermal/interfaces/equation-value.interface';
 import { Species } from '../enums/species.enum';
-import { CpComparisonEntryDto, GasPropertiesResultDto } from '../dto/gas-properties.dto';
+import { CpComparisonEntryDto } from '../dto/cp-comparison-entry.dto';
+import { GasPropertiesResultDto } from '../dto/gas-properties-result.dto';
 
 @Injectable()
 export class GasPropertiesService {
@@ -161,12 +162,12 @@ export class GasPropertiesService {
     T_K: number,
     P_atm: number,
     mu_Pa_s: number,
-    lambda_W_mK: number,
+    lambda: number,
     diffusion: Partial<Record<Species, number>>,
   ): GasPropertiesResultDto {
     const basic  = this.getMixtureBasicProperties(moleFractions, T_K, P_atm);
-    const Pr     = (mu_Pa_s * basic.Cp_J_kgK) / lambda_W_mK;
-    return { ...basic, mu_Pa_s, lambda_W_mK, Pr, diffusion };
+    const Pr     = (mu_Pa_s * basic.Cp_J_kgK) / lambda;
+    return { ...basic, mu_Pa_s, lambda, Pr, diffusion };
   }
 
   // ── Private helpers ──────────────────────────────────────────────────

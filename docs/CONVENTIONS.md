@@ -42,6 +42,37 @@ Each file exports **exactly one primary construct**:
 > **Do not mix** interfaces, types, and classes in a single file.  
 > A type file must not contain a class. A class file must not contain a type alias.
 
+#### SRP for Controllers and Services
+
+Controllers are **thin routing layers only**. They:
+- Validate and deserialise HTTP input (via DTOs and NestJS pipes).
+- Call **one** service method per handler.
+- Return the result directly.
+
+Controllers **must not** contain:
+- Business logic, formulas, or algorithm decisions.
+- Service-to-service orchestration (resolving fluid props, computing Re/Pr, etc.).
+- Private helper methods that belong in a service.
+
+Orchestration logic (e.g. resolving Mode B fluid properties, chaining gas-property + transport + dimensionless calls) lives in a dedicated **orchestration service** (e.g. `DimensionlessCalculationService`) that is injected into the controller.
+
+```typescript
+// ✅ CORRECT — thin controller, one call per handler
+@Post('dimensionless/reynolds')
+calcReynolds(@Body() dto: ReynoldsInputDto): ScalarDimensionlessResultDto {
+  return this.calc.reynolds(dto);
+}
+
+// ❌ WRONG — business logic inside controller
+@Post('dimensionless/reynolds')
+calcReynolds(@Body() dto: ReynoldsInputDto): ScalarDimensionlessResultDto {
+  const mu = this.transport.viscosity(dto.fluid.species, dto.fluid.T_K);
+  const rho = ...;                  // ← orchestration belongs in a service
+  const L = ...;
+  return { value: rho * dto.w * L / mu, ... };
+}
+```
+
 ### 2. Types vs Interfaces
 - Use **`export type`** for plain data shapes (equation coefficients, value objects).
 - Use **`export interface`** only for behavioural contracts (method signatures, service contracts).
@@ -183,6 +214,7 @@ interfaces/<domain>-<noun>.interface.ts
 Before committing any file, verify:
 
 - [ ] File exports exactly **one** primary construct (SRP)
+- [ ] Controller handler contains **no** business logic — delegates to a service
 - [ ] Coefficient shape uses `type`, behavioural contract uses `interface`
 - [ ] Every `EquationValue` has `ref: RefKey.Xxx` (not a raw number) pointing to `docs/REFERENCES.md`
 - [ ] New reference sources added to `docs/REFERENCES.md` **and** `dto/ref-key.dto.ts` before use
@@ -192,4 +224,43 @@ Before committing any file, verify:
 - [ ] Property calculations go through `CompoundPropertyResolver`, not direct equation method calls
 - [ ] File name is `kebab-case`, class name is `PascalCase`
 - [ ] No hardcoded magic numbers without a named constant or reference
+- [ ] Tests are run **inside Docker**, not on the host machine (see § Tests section below)
+
+---
+
+## Tests Must Run Inside Docker
+
+All automated tests (unit, integration, e2e) **must be executed inside the Docker container**,
+never directly on the host OS.
+
+**Rationale:** The Node.js runtime, Python interpreter, native extensions, and environment
+variables inside the container may differ from the host. Running tests on the host may produce
+false positives or mask container-specific failures.
+
+### Running tests
+
+```bash
+# Run all backend unit tests inside the backend container:
+docker compose exec backend npm run test
+
+# Watch mode:
+docker compose exec backend npm run test:watch
+
+# Coverage report (output saved to tmp/reports/tests/):
+docker compose exec backend npm run test:cov
+
+# e2e tests:
+docker compose exec backend npm run test:e2e
+```
+
+For the production stack use `compose.production.yml`:
+
+```bash
+docker compose -f compose.production.yml exec backend npm run test
+```
+
+### CI/CD
+
+The CI pipeline runs `docker compose run --rm backend npm run test:cov`.
+**Never configure CI to install Node on the runner and run `npm test` directly.**
 

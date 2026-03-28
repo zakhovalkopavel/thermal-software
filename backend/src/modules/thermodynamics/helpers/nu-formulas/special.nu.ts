@@ -1,4 +1,4 @@
-import { DimensionlessInputDto } from '../../dto/dimensionless.dto';
+import { GeometryDimsDto } from '../../dto/geometry-dims.dto';
 
 /**
  * Nu correlations for special geometries:
@@ -50,11 +50,11 @@ export const specialNu = {
    * Laminar (Re_ω < 2.5×10⁵): Nu = 0.36·Re_ω^0.5·Pr^0.6
    * Turbulent:                  Nu = 0.0195·Re_ω^0.8·Pr^0.6
    * Source: Dorfman L.A. (1963) Hydrodynamic Resistance; [VDI H4]
+   *
+   * nu_f — kinematic viscosity [m²/s], resolved upstream from fluid state.
+   * Defaults to air at 300 K (1.5×10⁻⁵ m²/s) when not supplied.
    */
-  dorfmanDisk(re: number, pr: number, params: DimensionlessInputDto): number {
-    const dims  = params.dims ?? {};
-    const nu_f  = (params.mu_Pa_s !== undefined && params.rho_kg_m3 !== undefined)
-      ? params.mu_Pa_s / params.rho_kg_m3 : 1.5e-5;
+  dorfmanDisk(re: number, pr: number, dims: GeometryDimsDto, nu_f: number): number {
     const Re_w  = (dims.omega !== undefined && dims.a !== undefined)
       ? dims.omega * dims.a * dims.a / nu_f : re;
     return Re_w < 2.5e5
@@ -66,11 +66,11 @@ export const specialNu = {
    * Bjorklund & Kays (1959) — rotating cylinder (Taylor-Couette)
    * Nu = 0.386·(Ta·Pr)^0.5
    * Source: Bjorklund I.C., Kays W.M. (1959) J.Heat Transfer 81:175; [VDI H5]
+   *
+   * nu_f — kinematic viscosity [m²/s], resolved upstream from fluid state.
+   * Defaults to air at 300 K (1.5×10⁻⁵ m²/s) when not supplied.
    */
-  bjorklundKays(pr: number, params: DimensionlessInputDto): number {
-    const dims  = params.dims ?? {};
-    const nu_f  = (params.mu_Pa_s !== undefined && params.rho_kg_m3 !== undefined)
-      ? params.mu_Pa_s / params.rho_kg_m3 : 1.5e-5;
+  bjorklundKays(pr: number, dims: GeometryDimsDto, nu_f: number): number {
     const r_i   = dims.a ?? 0.05;
     const delta = (dims.b ?? 0.1) - r_i;
     const Ta    = (dims.omega ?? 10) ** 2 * r_i * Math.pow(delta, 3) / (nu_f * nu_f);
@@ -86,8 +86,7 @@ export const specialNu = {
    * Source: Martin H. (1977) Adv.Heat Transfer 13:1; [VDI G8]
    * Range: Re [2000–4×10⁵]
    */
-  martinJetSingle(re: number, pr: number, params: DimensionlessInputDto, D: number): number {
-    const dims = params.dims ?? {};
+  martinJetSingle(re: number, pr: number, dims: GeometryDimsDto, D: number): number {
     const Hd = (dims.H ?? 6) / D;
     const rd = (dims.r ?? 3 * D) / D;
     const G  = (1/rd) * Math.sqrt(Math.max(0, (1 - 1.1/rd) / (1 + 0.1 * (Hd - 6) / rd)));
@@ -99,8 +98,7 @@ export const specialNu = {
    * Source: Martin H. (1977) Adv.Heat Transfer 13:1; [VDI G8]
    * Range: Re [2000–4×10⁵]
    */
-  martinJetArray(re: number, pr: number, params: DimensionlessInputDto, D: number): number {
-    const dims = params.dims ?? {};
+  martinJetArray(re: number, pr: number, dims: GeometryDimsDto, D: number): number {
     const Hd = (dims.H ?? 6) / D;
     const rd = (dims.r ?? 3 * D) / D;
     const f  = dims.f_jet ?? 0.02;
@@ -144,21 +142,41 @@ export const specialNu = {
   },
 
   // ── Dispatcher ─────────────────────────────────────────────────────────
-  compute(corr: string, re: number, pr: number, mu: number, mu_s: number,
-          params: DimensionlessInputDto, D: number): number {
-    const dims = params.dims ?? {};
+  /**
+   * Route a special-geometry correlation name to its implementation.
+   *
+   * @param corr   Correlation name (must be in the SPECIAL set).
+   * @param re     Reynolds number.
+   * @param pr     Prandtl number.
+   * @param mu     Dynamic viscosity [Pa·s] at bulk temperature.
+   * @param mu_s   Dynamic viscosity [Pa·s] at wall temperature (for viscosity-correction correlations).
+   * @param dims   Geometry dimensions object.
+   * @param D      Characteristic diameter [m] (pipe or jet nozzle diameter).
+   * @param nu_f   Kinematic viscosity [m²/s] — needed by rotating-surface correlations.
+   *               Resolved upstream from fluid state (Mode B). Defaults to air ≈ 300 K.
+   */
+  compute(
+    corr: string,
+    re: number,
+    pr: number,
+    mu: number,
+    mu_s: number,
+    dims: GeometryDimsDto,
+    D: number,
+    nu_f: number,
+  ): number {
     switch (corr) {
-      case 'gunn':               return specialNu.gunn(re, pr, dims.epsilon ?? 0.4);
-      case 'wakao_funazkri':     return specialNu.wakaoFunazkri(re, pr);
-      case 'whitaker_packed_bed':return specialNu.whitakerPackedBed(re, pr, mu, mu_s);
-      case 'dorfman_disk':       return specialNu.dorfmanDisk(re, pr, params);
-      case 'bjorklund_kays':     return specialNu.bjorklundKays(pr, params);
-      case 'martin_jet_single':  return specialNu.martinJetSingle(re, pr, params, D);
-      case 'martin_jet_array':   return specialNu.martinJetArray(re, pr, params, D);
-      case 'nusselt_condensation':return specialNu.nusseltCondensation();
-      case 'chen_condensation':  return specialNu.chenCondensation();
+      case 'gunn':                     return specialNu.gunn(re, pr, dims.epsilon ?? 0.4);
+      case 'wakao_funazkri':           return specialNu.wakaoFunazkri(re, pr);
+      case 'whitaker_packed_bed':      return specialNu.whitakerPackedBed(re, pr, mu, mu_s);
+      case 'dorfman_disk':             return specialNu.dorfmanDisk(re, pr, dims, nu_f);
+      case 'bjorklund_kays':           return specialNu.bjorklundKays(pr, dims, nu_f);
+      case 'martin_jet_single':        return specialNu.martinJetSingle(re, pr, dims, D);
+      case 'martin_jet_array':         return specialNu.martinJetArray(re, pr, dims, D);
+      case 'nusselt_condensation':     return specialNu.nusseltCondensation();
+      case 'chen_condensation':        return specialNu.chenCondensation();
       case 'elliptical_cylinder_owen': return specialNu.ellipticalCylinderOwen(re, pr);
-      case 'cone_yuge':          return specialNu.coneYuge(re, pr);
+      case 'cone_yuge':                return specialNu.coneYuge(re, pr);
       default: throw new Error(`Unknown special correlation: ${corr}`);
     }
   },

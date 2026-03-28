@@ -15,6 +15,8 @@ export class Common {
   static readonly Na = 6.02214076e23;
   /** Standard gravitational acceleration [m/s²] — ISO 80000-3 */
   static readonly g  = 9.80665;
+  static readonly pAtm = 101325;
+  static readonly Tstandart = 293.15;
 
   static logarithmicAverage(x1: number, x2: number): number {
     if (x1 < 0 || x2 < 0) throw new Error('Both args must be ≥ 0');

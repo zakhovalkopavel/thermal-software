@@ -1,32 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { FlowGeometry } from '../enums/flow-geometry.enum';
 import { BodyGeometry } from '../enums/body-geometry.enum';
-import {
-  DimensionlessInputDto, CorrelationName, GeometryDimsDto,
-} from '../dto/dimensionless.dto';
+import { DimensionlessInputDto } from '../dto/dimensionless-input.dto';
+import { GeometryDimsDto } from '../dto/geometry-dims.dto';
+import { ResolvedDimensionlessPropsDto } from '../dto/resolved-dimensionless-props.dto';
+import { CorrelationName } from '../enums/correlation-name.enum';
 import { FlowRegime } from '../types/flow-regime.type';
+import { NusseltResult } from '../interfaces/nusselt-result.interface';
 import { ChannelGeometryHelper } from '../helpers/channel-geometry.helper';
+
+export { NusseltResult } from '../interfaces/nusselt-result.interface';
 import { BodyGeometryHelper } from '../helpers/body-geometry.helper';
 import {
-  CORRELATION_VALIDITY, availableCorrelations,
+  availableCorrelations,
   resolveRegime, validatePreferredCorrelation,
 } from '../helpers/correlation-validity.helper';
-import { runCorrelation, bestCorrelation } from '../helpers/correlation-selector.helper';
+import { CorrelationSelectorHelper } from '../helpers/correlation-selector.helper';
 import { Common } from '../../../common/thermal/utils/common';
-
-export interface NusseltResult {
-  Nu: number;
-  h_W_m2K?: number;
-  correlation: CorrelationName;
-  regime: FlowRegime;
-  isNatural: boolean;
-  preferredRequested?: CorrelationName;
-  preferredUsed: boolean;
-  preferredRejectedReason?: string;
-  warning?: string;
-  rangeValid: boolean;
-  allCorrelations?: Record<string, { Nu: number; rangeValid: boolean; warning?: string }>;
-}
 
 @Injectable()
 export class DimensionlessNumbersService {
@@ -64,8 +54,8 @@ export class DimensionlessNumbersService {
     return this.grashof(T_hot_K, T_cold_K, L, nu, g) * Pr;
   }
 
-  /** h = Nu · λ / L */
-  hFromNusselt(Nu: number, lambda: number, L: number): number {
+  /** h = Nu · λ / L  (heat transfer coefficient) */
+  htc(Nu: number, lambda: number, L: number): number {
     return (Nu * lambda) / L;
   }
 
@@ -105,15 +95,21 @@ export class DimensionlessNumbersService {
   // Nu dispatcher — correlation selection and execution
   // ══════════════════════════════════════════════════════════════════════
 
-  nusselt(params: DimensionlessInputDto): NusseltResult {
+  /**
+  /**
+   * Compute Nusselt number.
+   * All dimensionless properties (Re, Pr, Ra, λ, ν) must be pre-resolved by the
+   * caller via DimensionlessCalculationService.resolveDimensionlessProperties().
+   */
+  nusselt(
+    params: DimensionlessInputDto,
+    resolved: ResolvedDimensionlessPropsDto,
+  ): NusseltResult {
     const { geometry, dims = {}, preferredCorrelation, compareAll } = params;
 
-    const Re     = this._resolveRe(params);
-    const Pr     = this._resolvePr(params);
-    const Gr     = params.Gr;
-    const Ra     = params.Ra ?? (Gr !== undefined && Pr !== undefined ? Gr * Pr : undefined);
-    const L      = ChannelGeometryHelper.characteristicLength(geometry, dims as GeometryDimsDto);
-    const lambda = params.lambda_W_mK;
+    const { Re, Pr, Ra } = resolved;
+    const { lambda } = resolved;
+    const L = ChannelGeometryHelper.characteristicLength(geometry, dims as GeometryDimsDto);
 
     const regime    = resolveRegime(geometry, Re, Ra, params.forceRegime);
     const isNatural = regime === FlowRegime.NATURAL;
@@ -122,7 +118,7 @@ export class DimensionlessNumbersService {
     const allResults: Record<string, { Nu: number; rangeValid: boolean; warning?: string }> = {};
     for (const corr of available) {
       try {
-        allResults[corr] = runCorrelation(corr, Re, Pr, Ra, params, regime);
+        allResults[corr] = CorrelationSelectorHelper.run(corr, resolved, params, regime);
       } catch { /* skip unsupported */ }
     }
 
@@ -137,16 +133,16 @@ export class DimensionlessNumbersService {
         preferredUsed = true;
       } else {
         preferredRejectedReason = rejection;
-        selectedCorr = bestCorrelation(geometry, Re, regime, params);
+        selectedCorr = CorrelationSelectorHelper.best(geometry, Re, regime, params);
       }
     } else {
-      selectedCorr = bestCorrelation(geometry, Re, regime, params);
+      selectedCorr = CorrelationSelectorHelper.best(geometry, Re, regime, params);
     }
 
     const mainResult = allResults[selectedCorr]
-      ?? runCorrelation(selectedCorr, Re, Pr, Ra, params, regime);
-    const Nu      = mainResult.Nu;
-    const h_W_m2K = lambda && L > 0 ? this.hFromNusselt(Nu, lambda, L) : undefined;
+      ?? CorrelationSelectorHelper.run(selectedCorr, resolved, params, regime);
+    const Nu        = mainResult.Nu;
+    const h_W_m2K   = lambda && L > 0 ? this.htc(Nu, lambda, L) : undefined;
 
     return {
       Nu, h_W_m2K,
@@ -159,23 +155,5 @@ export class DimensionlessNumbersService {
       rangeValid: mainResult.rangeValid,
       allCorrelations: compareAll ? allResults : undefined,
     };
-  }
-
-  // ── Private resolvers ──────────────────────────────────────────────────
-
-  private _resolveRe(p: DimensionlessInputDto): number | undefined {
-    if (p.Re !== undefined) return p.Re;
-    if (p.rho_kg_m3 !== undefined && p.w_m_s !== undefined && p.mu_Pa_s !== undefined && p.dims) {
-      const L = ChannelGeometryHelper.characteristicLength(p.geometry, p.dims as GeometryDimsDto);
-      return this.reynolds(p.rho_kg_m3, p.w_m_s, L, p.mu_Pa_s);
-    }
-    return undefined;
-  }
-
-  private _resolvePr(p: DimensionlessInputDto): number | undefined {
-    if (p.Pr !== undefined) return p.Pr;
-    if (p.mu_Pa_s !== undefined && p.Cp_J_kgK !== undefined && p.lambda_W_mK !== undefined)
-      return this.prandtl(p.mu_Pa_s, p.Cp_J_kgK, p.lambda_W_mK);
-    return undefined;
   }
 }

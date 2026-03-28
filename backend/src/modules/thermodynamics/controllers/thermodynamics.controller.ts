@@ -1,21 +1,24 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags, ApiQuery } from '@nestjs/swagger';
 import { GasPropertiesService } from '../services/gas-properties.service';
-import { DimensionlessNumbersService } from '../services/dimensionless-numbers.service';
+import { DimensionlessCalculationService } from '../services/dimensionless-calculation.service';
 import { TransportService } from '../services/transport.service';
 import { DiffusionService } from '../services/diffusion.service';
-import { GasMixtureInputDto, GasPropertiesResultDto, CpComparisonEntryDto } from '../dto/gas-properties.dto';
-import {
-  DimensionlessInputDto, DimensionlessResultDto,
-  BodyGeometryInputDto, BodyGeometryResultDto,
-  GeometryDimsDto,
-} from '../dto/dimensionless.dto';
-import {
-  ReynoldsInputDto, PrandtlInputDto, GrashofInputDto, RayleighInputDto,
-  NusseltToHInputDto, ScalarDimensionlessResultDto, FluidStateDto,
-} from '../dto/dimensionless-scalar.dto';
+import { GasMixtureInputDto } from '../dto/gas-mixture-input.dto';
+import { GasPropertiesResultDto } from '../dto/gas-properties-result.dto';
+import { CpComparisonEntryDto } from '../dto/cp-comparison-entry.dto';
+import { DimensionlessInputDto } from '../dto/dimensionless-input.dto';
+import { DimensionlessResultDto } from '../dto/dimensionless-result.dto';
+import { BodyGeometryInputDto } from '../dto/body-geometry-input.dto';
+import { BodyGeometryResultDto } from '../dto/body-geometry-result.dto';
+import { ReynoldsInputDto } from '../dto/reynolds-input.dto';
+import { PrandtlInputDto } from '../dto/prandtl-input.dto';
+import { GrashofInputDto } from '../dto/grashof-input.dto';
+import { RayleighInputDto } from '../dto/rayleigh-input.dto';
+import { HeatTransferCoefficientDto } from '../dto/heat-transfer-coefficient.dto';
+import { ScalarDimensionlessResultDto } from '../dto/scalar-dimensionless-result.dto';
+import { DimensionlessNumbersService } from '../services/dimensionless-numbers.service';
 import { Species } from '../enums/species.enum';
-import { Common } from '../../../common/thermal/utils/common';
 
 // ── Controller ───────────────────────────────────────────────────────────────
 
@@ -27,6 +30,7 @@ export class ThermodynamicsController {
     private readonly transport: TransportService,
     private readonly diffusion: DiffusionService,
     private readonly dimensionless: DimensionlessNumbersService,
+    private readonly calc: DimensionlessCalculationService,
   ) {}
 
   // ── Gas mixture properties ───────────────────────────────────────────
@@ -56,82 +60,48 @@ export class ThermodynamicsController {
     return this.gasProps.cpCompare(species, parseFloat(T_K));
   }
 
-  // ── Individual dimensionless numbers ─────────────────────────────────
+  // ── Individual dimensionless numbers (Mode B: species + T) ───────────
 
   @Post('dimensionless/reynolds')
-  @ApiOperation({ summary: 'Re = ρ·w·L / μ — requires geometry + fluid (ρ, μ) + velocity' })
+  @ApiOperation({ summary: 'Re = ρ·w·L / μ — fluid resolved from species + T; w_m_s required in fluid' })
   calcReynolds(@Body() dto: ReynoldsInputDto): ScalarDimensionlessResultDto {
-    const resolved = this._resolveFluid(dto.fluid);
-    const rho = resolved.rho_kg_m3;
-    const mu  = resolved.mu_Pa_s;
-    if (rho === undefined || mu === undefined)
-      throw new Error('Fluid density (rho_kg_m3) and viscosity (mu_Pa_s) are required for Re');
-    const L = this.dimensionless.characteristicLength(dto.geometry, dto.dims);
-    return {
-      value: this.dimensionless.reynolds(rho, dto.w_m_s, L, mu),
-      symbol: 'Re', L_m: L, resolvedFluid: resolved,
-    };
+    return this.calc.reynolds(dto);
   }
 
   @Post('dimensionless/prandtl')
-  @ApiOperation({ summary: 'Pr = μ·Cp / λ — requires fluid (μ, Cp, λ) at temperature' })
+  @ApiOperation({ summary: 'Pr = μ·Cp / λ — fluid resolved from species + T' })
   calcPrandtl(@Body() dto: PrandtlInputDto): ScalarDimensionlessResultDto {
-    const resolved = this._resolveFluid(dto.fluid);
-    const mu     = resolved.mu_Pa_s;
-    const Cp     = resolved.Cp_J_kgK;
-    const lambda = resolved.lambda_W_mK;
-    if (mu === undefined || Cp === undefined || lambda === undefined)
-      throw new Error('Fluid μ, Cp, λ are required for Pr');
-    const L = dto.dims
-      ? this.dimensionless.characteristicLength(dto.geometry, dto.dims as GeometryDimsDto)
-      : 1;
-    return {
-      value: this.dimensionless.prandtl(mu, Cp, lambda),
-      symbol: 'Pr', L_m: L, resolvedFluid: resolved,
-    };
+    return this.calc.prandtl(dto);
   }
 
   @Post('dimensionless/grashof')
-  @ApiOperation({ summary: 'Gr = g·β·ΔT·L³ / ν² — requires T_hot, T_cold, geometry + fluid (ν)' })
+  @ApiOperation({ summary: 'Gr = g·β·ΔT·L³ / ν² — fluid resolved from species + T' })
   calcGrashof(@Body() dto: GrashofInputDto): ScalarDimensionlessResultDto {
-    const resolved = this._resolveFluid(dto.fluid);
-    const nu  = resolved.nu_m2s ?? (resolved.mu_Pa_s !== undefined && resolved.rho_kg_m3 !== undefined
-      ? resolved.mu_Pa_s / resolved.rho_kg_m3 : undefined);
-    if (nu === undefined)
-      throw new Error('Kinematic viscosity (ν = μ/ρ) is required for Gr; supply mu_Pa_s + rho_kg_m3 or species+T');
-    const L = this.dimensionless.characteristicLength(dto.geometry, dto.dims);
-    return {
-      value: this.dimensionless.grashof(dto.T_hot_K, dto.T_cold_K, L, nu, dto.g_m_s2 ?? Common.g),
-      symbol: 'Gr', L_m: L, resolvedFluid: { ...resolved, nu_m2s: nu },
-    };
+    return this.calc.grashof(dto);
   }
 
   @Post('dimensionless/rayleigh')
-  @ApiOperation({ summary: 'Ra = Gr·Pr — requires T_hot, T_cold, geometry + fluid (ν, Cp, λ, μ)' })
+  @ApiOperation({ summary: 'Ra = Gr·Pr — fluid resolved from species + T' })
   calcRayleigh(@Body() dto: RayleighInputDto): ScalarDimensionlessResultDto {
-    const resolved = this._resolveFluid(dto.fluid);
-    const nu  = resolved.nu_m2s ?? (resolved.mu_Pa_s !== undefined && resolved.rho_kg_m3 !== undefined
-      ? resolved.mu_Pa_s / resolved.rho_kg_m3 : undefined);
-    const mu  = resolved.mu_Pa_s;
-    const Cp  = resolved.Cp_J_kgK;
-    const lam = resolved.lambda_W_mK;
-    if (nu === undefined) throw new Error('Kinematic viscosity required for Ra');
-    const Pr = (mu !== undefined && Cp !== undefined && lam !== undefined)
-      ? this.dimensionless.prandtl(mu, Cp, lam) : undefined;
-    if (Pr === undefined) throw new Error('Prandtl number cannot be resolved; supply μ, Cp, λ or a named species');
-    const L = this.dimensionless.characteristicLength(dto.geometry, dto.dims);
-    return {
-      value: this.dimensionless.rayleigh(dto.T_hot_K, dto.T_cold_K, L, nu, Pr, dto.g_m_s2 ?? Common.g),
-      symbol: 'Ra', L_m: L, resolvedFluid: { ...resolved, nu_m2s: nu },
-    };
+    return this.calc.rayleigh(dto);
   }
 
-  @Post('dimensionless/nusselt-to-h')
-  @ApiOperation({ summary: 'h = Nu·λ / L — convective heat transfer coefficient from Nusselt number' })
-  calcHFromNusselt(@Body() dto: NusseltToHInputDto): ScalarDimensionlessResultDto {
+  // ── Nusselt + full correlation set ────────────────────────────────────
+
+  @Post('dimensionless/nusselt')
+  @ApiOperation({ summary: 'Nu + h — Nusselt number via correlation; fluid resolved from species + T' })
+  calcNusselt(@Body() dto: DimensionlessInputDto): DimensionlessResultDto {
+    return this.calc.nusselt(dto);
+  }
+
+  // ── h from known Nu ──────────────────────────────────────────────────
+
+  @Post('dimensionless/htc')
+  @ApiOperation({ summary: 'h = Nu·λ / L — convective heat transfer coefficient from a known Nusselt number' })
+  calcHTC(@Body() dto: HeatTransferCoefficientDto): ScalarDimensionlessResultDto {
     const L = this.dimensionless.characteristicLength(dto.geometry, dto.dims);
     return {
-      value: this.dimensionless.hFromNusselt(dto.Nu, dto.lambda_W_mK, L),
+      value: this.dimensionless.htc(dto.Nu, dto.lambda, L),
       symbol: 'h [W/(m²·K)]', L_m: L,
     };
   }
@@ -139,32 +109,9 @@ export class ThermodynamicsController {
   // ── Full dimensionless number set + Nu correlation ────────────────────
 
   @Post('dimensionless')
-  @ApiOperation({ summary: 'Re, Pr, Gr, Ra, Nu, h — full set for any flow geometry' })
+  @ApiOperation({ summary: 'Re, Pr, Gr, Ra, Nu, h — full set for any flow geometry (Mode B: species + T)' })
   calcDimensionless(@Body() dto: DimensionlessInputDto): DimensionlessResultDto {
-    const result = this.dimensionless.nusselt(dto);
-
-    let Re: number | undefined = dto.Re;
-    if (Re === undefined && dto.rho_kg_m3 !== undefined && dto.w_m_s !== undefined
-        && dto.mu_Pa_s !== undefined && dto.dims) {
-      const L = this.dimensionless.characteristicLength(dto.geometry, dto.dims);
-      Re = this.dimensionless.reynolds(dto.rho_kg_m3, dto.w_m_s, L, dto.mu_Pa_s);
-    }
-
-    let Pr: number | undefined = dto.Pr;
-    if (Pr === undefined && dto.mu_Pa_s !== undefined && dto.Cp_J_kgK !== undefined && dto.lambda_W_mK !== undefined)
-      Pr = this.dimensionless.prandtl(dto.mu_Pa_s, dto.Cp_J_kgK, dto.lambda_W_mK);
-
-    let Gr: number | undefined = dto.Gr;
-    let Ra: number | undefined = dto.Ra;
-    if (Gr === undefined && dto.T_fluid_K !== undefined && dto.T_surface_K !== undefined
-        && dto.mu_Pa_s !== undefined && dto.rho_kg_m3 !== undefined && dto.dims) {
-      const nu = dto.mu_Pa_s / dto.rho_kg_m3;
-      const L  = this.dimensionless.characteristicLength(dto.geometry, dto.dims);
-      Gr = this.dimensionless.grashof(dto.T_surface_K, dto.T_fluid_K, L, nu);
-      if (Ra === undefined && Pr !== undefined) Ra = Gr * Pr;
-    }
-
-    return { Re, Pr, Gr, Ra, ...result };
+    return this.calc.nusselt(dto);
   }
 
   // ── Body geometry ─────────────────────────────────────────────────────
@@ -180,34 +127,4 @@ export class ThermodynamicsController {
       characteristicLength: Math.max(dims.a ?? 0, dims.b ?? 0, dims.c ?? 0),
     };
   }
-
-  // ── Private: resolve fluid properties from FluidStateDto ──────────────
-
-  private _resolveFluid(fluid: FluidStateDto): {
-    rho_kg_m3?: number; mu_Pa_s?: number; Cp_J_kgK?: number; lambda_W_mK?: number; nu_m2s?: number;
-  } {
-    // Mode A: raw values supplied directly
-    if (fluid.rho_kg_m3 !== undefined || fluid.mu_Pa_s !== undefined) {
-      return {
-        rho_kg_m3: fluid.rho_kg_m3,
-        mu_Pa_s:   fluid.mu_Pa_s,
-        Cp_J_kgK:  fluid.Cp_J_kgK,
-        lambda_W_mK: fluid.lambda_W_mK,
-      };
-    }
-    // Mode B: named species + temperature
-    if (fluid.species && fluid.T_K) {
-      const sp  = fluid.species as Species;
-      const T   = fluid.T_K;
-      const mu  = this.transport.viscosity(sp, T);
-      const cpM = this.gasProps.cpSpecies(sp, T);    // J/(mol·K)
-      const M   = this.gasProps.molecularWeight({ [sp]: 1 });
-      const Cp  = cpM / M;                           // J/(kg·K)
-      const lam = this.transport.thermalConductivity(sp, T, cpM);
-      const rho = this.gasProps.density(M, T, fluid.P_Pa ?? 101325);
-      return { rho_kg_m3: rho, mu_Pa_s: mu, Cp_J_kgK: Cp, lambda_W_mK: lam, nu_m2s: mu / rho };
-    }
-    return {};
-  }
 }
-
