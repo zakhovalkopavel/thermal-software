@@ -17,6 +17,8 @@ export class Common {
   static readonly g  = 9.80665;
   static readonly pAtm = 101325;
   static readonly Tstandart = 293.15;
+  /** Stefan–Boltzmann constant σ [W/(m²·K⁴)] — CODATA 2018 */
+  static readonly SIGMA = 5.67037441918e-8;
 
   static logarithmicAverage(x1: number, x2: number): number {
     if (x1 < 0 || x2 < 0) throw new Error('Both args must be ≥ 0');

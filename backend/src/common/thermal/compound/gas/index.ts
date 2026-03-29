@@ -1,3 +1,4 @@
+export { Ar  } from './ar';
 export { N2  } from './n2';
 export { O2  } from './o2';
 export { CO2 } from './co2';

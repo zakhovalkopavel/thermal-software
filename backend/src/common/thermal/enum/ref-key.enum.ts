@@ -28,5 +28,7 @@ export enum RefKey {
   WolframAlpha  = 'WolframAlpha',  // [18] WolframAlpha Online Integral Calculator
   Asano2006     = 'Asano2006',     // [19] Asano — Mass Transfer (2006)
   White3        = 'White3',        // [20] White — Viscous Fluid Flow 3rd ed. (2006)
+  Mikheev1977   = 'Mikheev1977',   // [21] Михеев М.А., Михеева И.М. — Основы теплопередачи, 2-е изд. (1977)
+  Whitaker1972  = 'Whitaker1972',  // [22] Whitaker S. — Forced Convection Heat Transfer Correlations (1972)
 }
 

@@ -16,6 +16,27 @@ export const SO3: CompoundValue = {
   gibbsEnergy298: -371.1e3,
   collisionDiameter: 4.19,
   epsilonToKb: 384.8,
+  nasa7: {
+    Tswitch: 1000,
+    low: {
+      a1: 7.29677572e+00,
+      a2: 2.73576437e-03,
+      a3: -1.06377755e-06,
+      a4: 1.80776031e-10,
+      a5: -1.12077527e-14,
+      a6: -5.03096739e+04,
+      a7: -1.24246659e+01,
+    },
+    high: {
+      a1: 2.37461122e+00,
+      a2: 1.59543297e-02,
+      a3: -1.26322543e-05,
+      a4: 2.81827264e-09,
+      a5: 6.23371547e-13,
+      a6: -4.89269231e+04,
+      a7: 1.31043046e+01,
+    },
+  },
   heatCapacity: {
     def: 1,
     values: [
@@ -68,4 +89,3 @@ export const SO3: CompoundValue = {
     ],
   },
 };
-

@@ -11,6 +11,12 @@ export const NO: CompoundValue = {
   gibbsEnergy298: 86.6e3,
   collisionDiameter: 4.495,
   epsilonToKb: 116.7,
+  // NASA TM-2002-211556 p. 76 — NO radical, doublet ground state
+  nasa7: {
+    Tswitch: 1000,
+    low:  { a1:  4.21859896e+00, a2: -4.63988124e-03, a3:  1.10443049e-05, a4: -9.34055507e-09, a5:  2.80554874e-12, a6:  9.84509964e+03, a7:  2.28061001e+00 },
+    high: { a1:  3.26071234e+00, a2:  1.19101135e-03, a3: -4.29122646e-07, a4:  6.94481463e-11, a5: -4.03295681e-15, a6:  9.92143132e+03, a7:  6.36900518e+00 },
+  },
   heatCapacity: {
     def: 2,
     values: [

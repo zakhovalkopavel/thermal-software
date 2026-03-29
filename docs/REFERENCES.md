@@ -45,6 +45,8 @@ import { RefKey } from '../../dto/ref-key.dto';
 | 18 | `WolframAlpha`   | WolframAlpha Online Integral Calculator — used to verify closed-form antiderivatives. URL: https://www.wolframalpha.com/calculators/integral-calculator/ |
 | 19 | `Asano2006`      | Asano, K. — *Mass Transfer: From Fundamentals to Modern Industrial Applications*. Wiley-VCH, 2006. Lennard-Jones collision parameters (σ, ε/kB). |
 | 20 | `White3`         | White, F.M. — *Viscous Fluid Flow*, 3rd ed. McGraw-Hill, 2006. Sutherland viscosity parameters (μ₀, T₀, S) in Appendix A. |
+| 21 | `Mikheev1977`    | Михеев М.А., Михеева И.М. — *Основы теплопередачи* (Fundamentals of Heat Transfer), 2nd ed. Энергия, 1977. Nu correlations for turbulent pipe flow (Mikheev equation); gas radiation heat transfer coefficients. |
+| 22 | `Whitaker1972`   | Whitaker, S. — *Forced Convection Heat Transfer Correlations for Flow in Pipes, Past Flat Plates, Single Cylinders, Single Spheres, and for Flow in Packed Beds and Tube Bundles*. AIChE Journal, 18(2), pp. 361–371, 1972. Nu correlations for external and internal forced convection. |
 
 ---
 

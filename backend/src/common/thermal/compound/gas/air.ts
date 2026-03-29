@@ -3,14 +3,24 @@ import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
 
 /**
- * Air — dry atmospheric air.
- * Composition: 78.084%(v) N2, 20.946%(v) O2, 0.934%(v) Ar, 0.0412%(v) CO2.
- * Mr = 0.028951 kg/mol. σ = 3.6 Å, ε/k = 103.3 K (Chapman–Enskog).
+ * Air — dry atmospheric air treated as a pseudo-pure compound.
+ *
+ * Marked with `isComposition: true` because air is not a single pure substance —
+ * its exact mole-fraction breakdown is provided in
+ * `compound/composition/air.composition.ts` (`AIR_MOLE_COMPOSITION`).
+ *
+ * Thermophysical property correlations (Cp, λ) are valid for the bulk mixture
+ * without requiring per-species resolution.
+ *
+ * References:
+ *   ICAO Doc 7488/3 — Manual of the ICAO Standard Atmosphere, 3rd ed. (1993).
+ *   ISO 2533:1975   — Standard Atmosphere.
  */
 export const Air: CompoundValue = {
   name: 'Air',
-  chemicalFormula: '78.084%(v) N2, 20.946%(v) O2, 0.934%(v) Ar, 0.0412%(v) CO2',
+  chemicalFormula: '78.084%(v) N2, 20.946%(v) O2, 0.934%(v) Ar, 0.040%(v) CO2',
   Mr: 0.028951,
+  isComposition: true,
   enthalpyFormation298: 0,
   gibbsEnergy298: 0,
   collisionDiameter: 3.6,
@@ -48,4 +58,3 @@ export const Air: CompoundValue = {
     ],
   },
 };
-

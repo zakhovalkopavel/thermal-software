@@ -1,6 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { N2  } from './n2';
 import { O2  } from './o2';
+import { Ar  } from './ar';
 import { CO2 } from './co2';
 import { CO  } from './co';
 import { H2O } from './h2o';
@@ -17,6 +18,7 @@ import { NO2 } from './no2';
  * Shared by all services — avoids per-service duplication of mapping tables.
  */
 export const GAS_REGISTRY: Record<string, CompoundValue> = {
+  Ar,
   N2,
   O2,
   CO2,

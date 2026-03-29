@@ -11,6 +11,11 @@ export const NO2: CompoundValue = {
   gibbsEnergy298: 51.3e3,
   collisionDiameter: 3.765,
   epsilonToKb: 210,
+  nasa7: {
+    Tswitch: 1000,
+    low:  { a1:  3.94403120e+00, a2: -1.58542900e-03, a3:  1.66578480e-05, a4: -2.04754360e-08, a5:  7.83505640e-12, a6:  2.89660820e+03, a7:  6.31199190e+00 },
+    high: { a1:  4.88475400e+00, a2:  2.17239550e-03, a3: -8.28099840e-07, a4:  1.57475100e-10, a5: -1.05189760e-14, a6:  2.31649980e+03, a7: -1.17416950e-01 },
+  },
   heatCapacity: {
     def: 1,
     values: [

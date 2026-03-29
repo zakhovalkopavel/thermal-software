@@ -1,5 +1,5 @@
 import { BodyGeometry } from '../enums/body-geometry.enum';
-import { GeometryDimsDto } from '../dto/dimensionless.dto';
+import { GeometryDimsDto } from '../dto/geometry-dims.dto';
 
 /**
  * Body geometry calculations: surface area, volume, mean beam length.

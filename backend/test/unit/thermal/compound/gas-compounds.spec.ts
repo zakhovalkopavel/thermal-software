@@ -1,16 +1,20 @@
 /**
  * Unit tests for gas compound data files and GAS_REGISTRY.
  *
- * Verifies structural integrity and physical sanity of all 8 registered species:
- *   N2, O2, CO2, CO, H2O, H2, CH4, NH3
+ * Verifies structural integrity and physical sanity of all registered species:
+ *   Ar
+ *   N2, O2, CO2, CO, H2O, H2, CH4, NH3  (8 combustion-relevant species)
+ *   SO2, SO3, NO, NO2                    (4 sulfur/nitrogen oxides)
+ *
+ * Total: 13 species.
  *
  * Checks per compound:
  *   - Present in GAS_REGISTRY
  *   - Required fields populated (name, chemicalFormula, Mr, etc.)
- *   - nasa7 field present with both low/high ranges and Tswitch
+ *   - nasa7 field present with both low/high ranges and Tswitch (where applicable)
  *   - All NASA-7 coefficients are finite numbers
  *   - heatCapacity.values non-empty; all entries have type, ref, vars, min, max
- *   - Cp at 300 K via nasa7 within ±2 J/(mol·K) of NIST
+ *   - Cp at 300 K via nasa7 within ±2 J/(mol·K) of NIST (for species with NASA-7)
  *   - CompoundPropertyResolver works for each species
  */
 
@@ -27,23 +31,27 @@ const CP_300K_NIST: Record<string, number> = {
   H2O: 33.60, H2: 28.85, CH4: 35.71, NH3: 35.65,
 };
 
-const SPECIES = ['N2', 'O2', 'CO2', 'CO', 'H2O', 'H2', 'CH4', 'NH3'] as const;
-type Sp = typeof SPECIES[number];
+/** Species that carry a NASA-7 dataset and should be validated against NIST Cp. */
+const NASA7_SPECIES = ['N2', 'O2', 'CO2', 'CO', 'H2O', 'H2', 'CH4', 'NH3'] as const;
+type Sp = typeof NASA7_SPECIES[number];
+
+/** All registered species — must match GAS_REGISTRY exactly. */
+const ALL_SPECIES = ['Ar', 'N2', 'O2', 'CO2', 'CO', 'H2O', 'H2', 'CH4', 'NH3', 'SO2', 'SO3', 'NO', 'NO2'] as const;
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
-describe('GAS_REGISTRY — 8 species registered', () => {
-  it('contains exactly N2, O2, CO2, CO, H2O, H2, CH4, NH3', () => {
-    for (const sp of SPECIES) {
+describe('GAS_REGISTRY — 13 species registered', () => {
+  it('contains exactly Ar, N2, O2, CO2, CO, H2O, H2, CH4, NH3, SO2, SO3, NO, NO2', () => {
+    for (const sp of ALL_SPECIES) {
       expect(GAS_REGISTRY).toHaveProperty(sp);
     }
-    expect(Object.keys(GAS_REGISTRY).length).toBe(8);
+    expect(Object.keys(GAS_REGISTRY).length).toBe(13);
   });
 });
 
 // ─── Structural checks — one describe block per species ───────────────────────
 
-for (const sp of SPECIES as unknown as Sp[]) {
+for (const sp of NASA7_SPECIES as unknown as Sp[]) {
   const c = GAS_REGISTRY[sp];
 
   describe(`compound data — ${sp}`, () => {
@@ -113,7 +121,7 @@ for (const sp of SPECIES as unknown as Sp[]) {
 
 // ─── CompoundPropertyResolver integration ────────────────────────────────────
 
-for (const sp of SPECIES as unknown as Sp[]) {
+for (const sp of NASA7_SPECIES as unknown as Sp[]) {
   const resolver = new CompoundPropertyResolver(GAS_REGISTRY[sp]);
 
   describe(`CompoundPropertyResolver — ${sp}`, () => {
@@ -154,8 +162,8 @@ for (const sp of SPECIES as unknown as Sp[]) {
 // ─── Cross-compound sanity ────────────────────────────────────────────────────
 
 describe('Cross-compound NASA-7 sanity', () => {
-  it('all 8 species Cp at 1000 K: positive and < 80 J/(mol·K)', () => {
-    for (const sp of SPECIES) {
+  it('all 8 combustion species Cp at 1000 K: positive and < 80 J/(mol·K)', () => {
+    for (const sp of NASA7_SPECIES) {
       const cp = nasa7Method.calculate(1000, GAS_REGISTRY[sp].nasa7 as Nasa7Equation, 200, 6000);
       expect(cp).toBeGreaterThan(0);
       expect(cp).toBeLessThan(80);
@@ -168,8 +176,8 @@ describe('Cross-compound NASA-7 sanity', () => {
     expect(cpCO2).toBeGreaterThan(cpN2);
   });
 
-  it('all 8 species Cp at 300 K within ±2 of NIST', () => {
-    for (const sp of SPECIES) {
+  it('all 8 combustion species Cp at 300 K within ±2 of NIST', () => {
+    for (const sp of NASA7_SPECIES) {
       const cp   = nasa7Method.calculate(300, GAS_REGISTRY[sp].nasa7 as Nasa7Equation, 200, 6000);
       const nist = CP_300K_NIST[sp];
       expect(cp).toBeGreaterThan(nist - 2);

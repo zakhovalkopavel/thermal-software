@@ -3,6 +3,9 @@ export { GasMixtureInputDto } from './gas-mixture-input.dto';
 export { GasPropertiesResultDto } from './gas-properties-result.dto';
 export { CpComparisonEntryDto } from './cp-comparison-entry.dto';
 
+// ── Fluid property inputs ─────────────────────────────────────────────────────
+export { FluidBaseInputDto } from './fluid-base-input.dto';
+
 // ── Geometry ──────────────────────────────────────────────────────────────────
 export { GeometryDimsDto } from './geometry-dims.dto';
 export { BodyGeometryInputDto } from './body-geometry-input.dto';

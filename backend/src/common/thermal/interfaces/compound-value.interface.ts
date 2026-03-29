@@ -17,6 +17,12 @@ export interface CompoundValue {
   readonly chemicalFormula: string;
   /** Molar mass [kg/mol] */
   readonly Mr: number;
+  /**
+   * When `true`, this compound is a defined composition of individual pure-component
+   * species rather than a single pure substance.  The exact mole fractions are
+   * stored in a corresponding `*Composition` constant under `compound/composition/`.
+   */
+  readonly isComposition?: true;
   /** Standard enthalpy of formation at 298 K [J/mol] */
   readonly enthalpyFormation298: number;
   /** Standard Gibbs energy at 298 K [J/mol] */

@@ -30,5 +30,7 @@ export const REFERENCES_META: Record<RefKey, {
   [RefKey.WolframAlpha]:  { index: 18, name: 'WolframAlpha Online Integral Calculator', year: 'ongoing', url: 'https://www.wolframalpha.com/calculators/integral-calculator/' },
   [RefKey.Asano2006]:     { index: 19, name: 'Asano — Mass Transfer: From Fundamentals to Modern Industrial Applications', year: '2006' },
   [RefKey.White3]:        { index: 20, name: 'White — Viscous Fluid Flow 3rd ed.', year: '2006' },
+  [RefKey.Mikheev1977]:   { index: 21, name: 'Михеев М.А., Михеева И.М. — Основы теплопередачи, 2-е изд., Энергия', year: '1977' },
+  [RefKey.Whitaker1972]:  { index: 22, name: 'Whitaker S. — Forced Convection Heat Transfer Correlations for Flow in Pipes, Past Flat Plates, Single Cylinders, Single Spheres, and for Flow in Packed Beds and Tube Bundles, AIChE J. 18(2)', year: '1972' },
 };
 
