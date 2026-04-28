@@ -32,5 +32,6 @@ export const REFERENCES_META: Record<RefKey, {
   [RefKey.White3]:        { index: 20, name: 'White — Viscous Fluid Flow 3rd ed.', year: '2006' },
   [RefKey.Mikheev1977]:   { index: 21, name: 'Михеев М.А., Михеева И.М. — Основы теплопередачи, 2-е изд., Энергия', year: '1977' },
   [RefKey.Whitaker1972]:  { index: 22, name: 'Whitaker S. — Forced Convection Heat Transfer Correlations for Flow in Pipes, Past Flat Plates, Single Cylinders, Single Spheres, and for Flow in Packed Beds and Tube Bundles, AIChE J. 18(2)', year: '1972' },
+  [RefKey.NASA9]:         { index: 23, name: 'Burcat, A.; Ruscic, B. — Third Millennium Ideal Gas and Condensed Phase Thermochemical Database for Combustion with Updates from Active Thermochemical Tables, ANL-05/20. NASA-9 polynomial coefficients.', year: '2005', url: 'https://publications.anl.gov/anlpubs/2005/07/53802.pdf' },
 };
 

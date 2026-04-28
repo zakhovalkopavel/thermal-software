@@ -42,15 +42,15 @@ The shared library is fully operational. All items below are complete.
 backend/src/common/thermal/
 ├── index.ts                              ← barrel: re-exports dto, interfaces, utils, compound, type
 ├── dto/
-│   ├── equation-type.dto.ts              ← enum EquationTypeDto (linear … nasa7)
+│   ├── equation-type.dto.ts              ← enum EquationTypeDto (linear … nasa7, nasa9)
 │   ├── ref-key.dto.ts                    ← REFERENCES_META: Record<RefKey, {index, name, year, url?}>
 │   └── index.ts
 ├── enum/
-│   └── ref-key.enum.ts                   ← enum RefKey — 20 entries (Szargut … White3)
+│   └── ref-key.enum.ts                   ← enum RefKey — 23 entries (Szargut … NASA9)
 ├── interfaces/
 │   ├── equation.interface.ts             ← interface Equation<T> { calculate, calculateAverage, integral }
 │   ├── equation-value.interface.ts       ← interface EquationValue { type, ref: RefKey, page?, vars, min, max, k? }
-│   ├── compound-value.interface.ts       ← interface CompoundValue (name, Mr, nasa7?, heatCapacity, viscosity, thermalConductivity, …)
+│   ├── compound-value.interface.ts       ← interface CompoundValue (name, Mr, nasa7?, nasa9?, heatCapacity, viscosity, thermalConductivity, …)
 │   └── index.ts
 ├── type/
 │   ├── linear-equation.ts                ← type LinearEquation { a, b }
@@ -62,6 +62,7 @@ backend/src/common/thermal/
 │   ├── aly-lee-equation.ts               ← type AlyLeeEquation { c1, c2, c3, c4, c5 }
 │   ├── dippr-n102-equation.ts            ← type DipprN102Equation { c1, c2, c3, c4 }
 │   ├── nasa7-equation.ts                 ← type Nasa7Coeffs { a1…a7 }; type Nasa7Equation { low, high, Tswitch }
+│   ├── nasa9-equation.ts                 ← type Nasa9Coeffs { a1…a9 }; type Nasa9Range { Tmin, Tmax, coeffs }; type Nasa9Equation { ranges }
 │   └── index.ts
 ├── utils/
 │   ├── common.ts                         ← class Common { kB, R, Na, g, validInterval, equation() dispatch }
@@ -74,6 +75,7 @@ backend/src/common/thermal/
 │   ├── aly-lee-equation-method.ts        ← exact antiderivative (WolframAlpha verified)
 │   ├── dippr-equation-102-method.ts      ← Gauss–Legendre 20-pt (no closed form)
 │   ├── nasa7-equation-method.ts          ← implements Equation<Nasa7Equation> + enthalpy/entropy/gibbsEnergy
+│   ├── nasa9-equation-method.ts          ← implements Equation<Nasa9Equation> + enthalpy/entropy/gibbsEnergy (multi-range)
 │   ├── compound-property-resolver.ts     ← class CompoundPropertyResolver; type PreferredApprox
 │   └── index.ts
 └── compound/
@@ -121,6 +123,7 @@ ThermodynamicsModule
     └── GAS_REGISTRY           (from common/thermal/compound/gas/registry.ts)
     └── CompoundPropertyResolver (from common/thermal/utils/)
     └── Nasa7EquationMethod    (from common/thermal/utils/ — for enthalpy/entropy/gibbs)
+    └── Nasa9EquationMethod    (from common/thermal/utils/ — preferred modern format)
   TransportService
     └── compound.sutherlandParams (from CompoundValue.sutherlandParams)
     └── Wilke mixing — own implementation (not in common/thermal)

@@ -30,5 +30,6 @@ export enum RefKey {
   White3        = 'White3',        // [20] White — Viscous Fluid Flow 3rd ed. (2006)
   Mikheev1977   = 'Mikheev1977',   // [21] Михеев М.А., Михеева И.М. — Основы теплопередачи, 2-е изд. (1977)
   Whitaker1972  = 'Whitaker1972',  // [22] Whitaker S. — Forced Convection Heat Transfer Correlations (1972)
+  NASA9         = 'NASA9',         // [23] Burcat & Ruscic — ANL-05/20 (2005) — NASA-9 polynomial coefficients
 }
 

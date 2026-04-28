@@ -1,4 +1,5 @@
 export { Nasa7Coeffs, Nasa7Equation } from './nasa7-equation';
+export * from './nasa9-equation';
 export * from './linear-equation';
 export * from './quadratic-equation';
 export * from './cubic-equation';

@@ -48,6 +48,7 @@ export enum EquationTypeDto {
   alyLee                      = 'alyLee',
   dipprN102                   = 'dipprN102',
   nasa7                       = 'nasa7',
+  nasa9                       = 'nasa9',
 }
 ```
 
@@ -104,6 +105,44 @@ export const N2: CompoundValue = {
 
 ---
 
+## nasa9 — separate top-level field (NOT in heatCapacity.values)
+
+NASA-9 is the modern successor to NASA-7, supporting arbitrary temperature ranges and two additional
+coefficients (`a1·T⁻²` and `a2·T⁻¹` terms) for higher accuracy at extreme temperatures.
+Lives as `CompoundValue.nasa9?: Nasa9Equation`. Preferred over `nasa7` when available.
+
+```typescript
+// type/nasa9-equation.ts
+export type Nasa9Coeffs = {
+  a1: number; a2: number; a3: number; a4: number;
+  a5: number; a6: number; a7: number;
+  /** Integration constant — encodes reference enthalpy Hf° */
+  a8: number;
+  /** Integration constant — encodes reference entropy S° */
+  a9: number;
+};
+
+export type Nasa9Range = { Tmin: number; Tmax: number; coeffs: Nasa9Coeffs };
+
+export type Nasa9Equation = {
+  ranges: Nasa9Range[];   // ordered, contiguous (Tmax[i] === Tmin[i+1])
+};
+```
+
+```typescript
+export const N2: CompoundValue = {
+  nasa9: {
+    ranges: [
+      { Tmin: 200, Tmax: 1000, coeffs: { a1: 2.210e+04, a2: -3.819e+02, a3: 6.083, a4: -8.530e-03, a5: 1.384e-05, a6: -9.625e-09, a7: 2.519e-12, a8: 7.108e+02, a9: -1.076e+01 } },
+      { Tmin: 1000, Tmax: 6000, coeffs: { a1: 5.878e+05, a2: -2.240e+03, a3: 6.067, a4: -6.139e-04, a5: 1.491e-07, a6: -1.923e-11, a7: 1.062e-15, a8: 1.283e+04, a9: -1.586e+01 } },
+    ],
+  },
+  // ...
+};
+```
+
+---
+
 ## Nasa7EquationMethod — extra methods beyond Equation\<T\>
 
 ```typescript
@@ -124,13 +163,43 @@ export class Nasa7EquationMethod implements Equation<Nasa7Equation> {
   // S/R = a1·ln T + a2·T + a3·T²/2 + a4·T³/3 + a5·T⁴/4 + a7  →  S [J/(mol·K)]
   entropy(T, vars): number
 
-  // G = H − T·S  →  G [J/mol]
+  // G/RT = a1·(1−ln T) − a2·T/2 − a3·T²/6 − a4·T³/12 − a5·T⁴/20 + a6/T − a7  →  G [J/mol]
+  // Direct polynomial — NOT computed as H − T·S (avoids cancellation errors at high T)
   gibbsEnergy(T, vars): number
 }
 ```
 
 `enthalpy`, `entropy`, `gibbsEnergy` are extra methods — not part of `Equation<T>`.
 They are accessed via `CompoundPropertyResolver`.
+
+---
+
+## Nasa9EquationMethod — extra methods beyond Equation\<T\>
+
+```typescript
+// utils/nasa9-equation-method.ts
+export class Nasa9EquationMethod implements Equation<Nasa9Equation> {
+  // Cp/R = a1·T⁻² + a2·T⁻¹ + a3 + a4·T + a5·T² + a6·T³ + a7·T⁴  →  Cp [J/(mol·K)]
+  calculate(T, vars, min, max, k?): number
+
+  // Exact antiderivative: R·(−a1/T + a2·ln T + a3·T + a4·T²/2 + a5·T³/3 + a6·T⁴/4 + a7·T⁵/5)
+  integral(T, vars, min, max, k?): number
+
+  // Handles range boundaries when integration spans multiple ranges
+  calculateAverage(T1, T2, vars, min, max, k?): number
+
+  // H/RT = −a1·T⁻² + a2·ln(T)/T + a3 + a4·T/2 + a5·T²/3 + a6·T³/4 + a7·T⁴/5 + a8/T  →  H [J/mol]
+  enthalpy(T, vars): number
+
+  // S/R = −a1·T⁻²/2 − a2·T⁻¹ + a3·ln(T) + a4·T + a5·T²/2 + a6·T³/3 + a7·T⁴/4 + a9  →  S [J/(mol·K)]
+  entropy(T, vars): number
+
+  // G/RT = −a1/(2T²) − a2·(1+ln T)/T + a3·(1−ln T) − a4·T/2 − a5·T²/6
+  //        − a6·T³/12 − a7·T⁴/20 + a8/T − a9  →  G [J/mol]
+  // Direct polynomial — NOT computed as H − T·S (avoids cancellation errors at high T)
+  gibbsEnergy(T, vars): number
+}
+```
 
 ---
 
@@ -182,6 +251,7 @@ Falls back to `values[def]` silently if preferred entry not found.
 | `alyLee` | ✅ exact: `c1·T + c2·c3·coth(c3/T) − c4·c5·tanh(c5/T)` | `RefKey.WolframAlpha` |
 | `dipprN102` | ❌ no closed form for arbitrary c2 — `gaussLegendre20` | `RefKey.WolframAlpha` |
 | `nasa7` | ✅ exact (polynomial) | algebra |
+| `nasa9` | ✅ exact (polynomial + 1/T + ln T terms) | algebra |
 
 `gaussLegendre20` lives in `common/utils/gauss-legendre.util.ts` (SRP).
 `dippr-equation-102-method.ts` imports it from there.
@@ -214,7 +284,7 @@ All registered in `GAS_REGISTRY` (registry.ts).
 | Use case | Preferred | Reason |
 |---|---|---|
 | Energy balance (300–1800 K) | `values[def]` | Validated polynomial for the operating range |
-| Combustion above 2000 K | `nasa7` | Only accurate source above 2000 K |
-| Gibbs equilibrium, H/S/G | `nasa7` | Only equation type providing H, S, G |
+| Combustion above 2000 K | `nasa9` (preferred) or `nasa7` | Only accurate sources above 2000 K |
+| Gibbs equilibrium, H/S/G | `nasa9` (preferred) or `nasa7` | Only equation types providing H, S, G |
 | Cross-validation | all `values[]` | Use `cpCompare()` loop |
 

@@ -8,6 +8,7 @@ import { LinearHyperbolicLogarithmicEquationMethod } from './linear-hyperbolic-l
 import { AlyLeeEquationMethod } from './aly-lee-equation-method';
 import { DipprEquation102Method } from './dippr-equation-102-method';
 import { Nasa7EquationMethod } from './nasa7-equation-method';
+import { Nasa9EquationMethod } from './nasa9-equation-method';
 
 export class Common {
   static readonly kB = 1.380649e-23;
@@ -50,6 +51,7 @@ export class Common {
       case EquationTypeDto.alyLee:                      return new AlyLeeEquationMethod();
       case EquationTypeDto.dipprN102:                   return new DipprEquation102Method();
       case EquationTypeDto.nasa7:                       return new Nasa7EquationMethod();
+      case EquationTypeDto.nasa9:                       return new Nasa9EquationMethod();
       default: throw new Error(`Unknown equation type: ${type}`);
     }
   }

@@ -74,10 +74,18 @@ export class Nasa7EquationMethod implements Equation<Nasa7Equation> {
   }
 
   /**
-   * Molar Gibbs free energy G = H − T·S [J/mol].
+   * Molar Gibbs free energy G [J/mol] — direct G/RT polynomial (not computed as H − T·S).
+   *
+   * G/RT = H/RT − S/R
+   *      = a1·(1 − ln T) − a2·T/2 − a3·T²/6 − a4·T³/12 − a5·T⁴/20 + a6/T − a7
+   *
+   * Using the direct formula avoids cancellation errors in H − T·S at high T.
    */
   gibbsEnergy(T: number, vars: Nasa7Equation): number {
-    return this.enthalpy(T, vars) - T * this.entropy(T, vars);
+    const { a1, a2, a3, a4, a5, a6, a7 } = this._coeffs(T, vars);
+    const GoRT = a1*(1 - Math.log(T)) - a2*T/2 - a3*T*T/6
+               - a4*T*T*T/12 - a5*Math.pow(T,4)/20 + a6/T - a7;
+    return GoRT * Common.R * T;
   }
 }
 

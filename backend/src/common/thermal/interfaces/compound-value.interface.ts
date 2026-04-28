@@ -1,5 +1,6 @@
 import { EquationValue } from './equation-value.interface';
 import { Nasa7Equation } from '../type/nasa7-equation';
+import { Nasa9Equation } from '../type/nasa9-equation';
 
 /**
  * Complete thermophysical data for a pure-component gas.
@@ -44,6 +45,14 @@ export interface CompoundValue {
    * Kept separate from heatCapacity because it is not a single-property fit.
    */
   readonly nasa7?: Nasa7Equation;
+
+  /**
+   * NASA 9-coefficient polynomial dataset (modern, higher accuracy).
+   * Covers Cp, H, S, G; supports variable temperature ranges (e.g. 200–1000–6000–20000 K).
+   * Preferred over nasa7 when available — use Nasa9EquationMethod for evaluation.
+   * ref: NASA9 (McBride & Gordon — NASA RP-1311 / NASA TP-2002-211556)
+   */
+  readonly nasa9?: Nasa9Equation;
 
   /** Gibbs energy of formation as a function of T (polynomial fit) */
   readonly gibbsEnergy?: {

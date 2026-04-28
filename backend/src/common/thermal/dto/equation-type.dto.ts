@@ -8,5 +8,6 @@ export enum EquationTypeDto {
   alyLee                      = 'alyLee',
   dipprN102                   = 'dipprN102',
   nasa7                       = 'nasa7',
+  nasa9                       = 'nasa9',
 }
 

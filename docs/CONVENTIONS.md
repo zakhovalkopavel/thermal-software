@@ -136,6 +136,7 @@ Verified antiderivatives for all equation types used in `heatCapacity`, `viscosi
 | `alyLee` (DIPPR-107) | ✅ | ref WolframAlpha — `c1T + c2c3·coth(c3/T) − c4c5·tanh(c5/T)` |
 | `dipprN102` | ❌ | no closed form for arbitrary c2 — use Gauss–Legendre |
 | `nasa7` | ✅ (polynomial) | algebra — but lives in `CompoundValue.nasa7`, not in property buckets |
+| `nasa9` | ✅ (polynomial + 1/T + ln T) | algebra — but lives in `CompoundValue.nasa9`, not in property buckets |
 
 ### 5. Equation Method Classes
 Each equation **method** lives in its own file in `utils/` and contains exactly one class
@@ -148,24 +149,31 @@ type/aly-lee-equation.ts        ← export type AlyLeeEquation
 utils/aly-lee-equation-method.ts ← export class AlyLeeEquationMethod implements Equation<AlyLeeEquation>
 ```
 
-### 6. NASA-7 is a Separate Property
-`nasa7` coefficients simultaneously cover Cp, H, S and G — they do not belong to any single
-property bucket. They are stored as a **top-level `nasa7?` field** on `CompoundValue`,
-separate from `heatCapacity`.
+### 6. NASA-7 and NASA-9 are Separate Properties
+`nasa7` and `nasa9` coefficients simultaneously cover Cp, H, S and G — they do not belong to any single
+property bucket. They are stored as **top-level fields** on `CompoundValue`, separate from `heatCapacity`.
+**NASA-9 is the modern format and is preferred when available.**
 
 ```typescript
-// ✅ CORRECT — nasa7 at top level, named coefficients
+// ✅ CORRECT — nasa7/nasa9 at top level, named coefficients
 export const N2: CompoundValue = {
   nasa7: {
     Tswitch: 1000,
     low:  { a1: 3.531, a2: -1.237e-4, ..., a6: -1047, a7: 2.967 },
     high: { a1: 2.953, a2:  1.397e-3, ..., a6:  -924, a7: 5.872 },
   },
+  // nasa9 preferred for new data — variable ranges, higher accuracy:
+  nasa9: {
+    ranges: [
+      { Tmin: 200,  Tmax: 1000, coeffs: { a1: 2.21e+04, a2: -3.82e+02, a3: 6.08, ..., a8: 7.11e+02, a9: -1.08e+01 } },
+      { Tmin: 1000, Tmax: 6000, coeffs: { a1: 5.88e+05, a2: -2.24e+03, a3: 6.07, ..., a8: 1.28e+04, a9: -1.59e+01 } },
+    ],
+  },
   heatCapacity: { def: 0, values: [ /* polynomial approximations only */ ] },
   ...
 };
 
-// ❌ WRONG — nasa7 inside heatCapacity
+// ❌ WRONG — nasa7/nasa9 inside heatCapacity
 heatCapacity: { def: 0, values: [ { type: EquationTypeDto.nasa7, vars: { low: [...], high: [...] } } ] }
 
 // ❌ WRONG — tuple arrays instead of named coefficients
@@ -182,7 +190,7 @@ import { RefKey } from '@/common/thermal/dto';
 
 const resolver = new CompoundPropertyResolver(N2);
 
-// Default (uses nasa7 if present, else def index):
+// Default (uses nasa9 if present, else nasa7 if present, else def index):
 const cp = resolver.heatCapacity(1000);
 
 // Select specific approximation by RefKey:
@@ -191,7 +199,7 @@ const cp = resolver.heatCapacity(1000, RefKey.Perry7);
 // Select by index:
 const cp = resolver.heatCapacity(1000, 0);
 
-// Enthalpy/entropy/Gibbs — always from nasa7:
+// Enthalpy/entropy/Gibbs — from nasa9 (preferred) or nasa7:
 const h = resolver.enthalpy(1000);
 const s = resolver.entropy(1000);
 const g = resolver.gibbsEnergy(1000);
@@ -218,8 +226,8 @@ Before committing any file, verify:
 - [ ] Coefficient shape uses `type`, behavioural contract uses `interface`
 - [ ] Every `EquationValue` has `ref: RefKey.Xxx` (not a raw number) pointing to `docs/REFERENCES.md`
 - [ ] New reference sources added to `docs/REFERENCES.md` **and** `dto/ref-key.dto.ts` before use
-- [ ] `nasa7` data is at top-level `CompoundValue.nasa7`, **not** inside `heatCapacity.values`
-- [ ] `nasa7` coefficients use named fields `{a1, a2, …, a7}`, **not** tuple arrays
+- [ ] `nasa7`/`nasa9` data is at top-level `CompoundValue.nasa7`/`CompoundValue.nasa9`, **not** inside `heatCapacity.values`
+- [ ] `nasa7` coefficients use named fields `{a1, a2, …, a7}`, **not** tuple arrays; `nasa9` uses `{a1…a9}` + `Tmin`/`Tmax` ranges
 - [ ] Closed-form integral used where it exists — no unnecessary numerical integration
 - [ ] Property calculations go through `CompoundPropertyResolver`, not direct equation method calls
 - [ ] File name is `kebab-case`, class name is `PascalCase`

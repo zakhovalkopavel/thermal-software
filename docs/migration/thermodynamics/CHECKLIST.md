@@ -19,6 +19,12 @@ Track each item with `[x]` when done.
 - [x] Create `common/thermal/type/nasa7-equation.ts` — `Nasa7Coeffs { a1…a7 }`, `Nasa7Equation { low, high, Tswitch }` (named fields, not arrays)
 - [x] Create `common/thermal/utils/nasa7-equation-method.ts` — implements `Equation<Nasa7Equation>` + `enthalpy`, `entropy`, `gibbsEnergy`
 - [x] Add `nasa7` case to `Common.equation()` dispatch
+- [x] Add `nasa9 = "nasa9"` to `common/thermal/dto/equation-type.dto.ts`
+- [x] Create `common/thermal/type/nasa9-equation.ts` — `Nasa9Coeffs { a1…a9 }`, `Nasa9Range { Tmin, Tmax, coeffs }`, `Nasa9Equation { ranges }` (modern variable-range format)
+- [x] Create `common/thermal/utils/nasa9-equation-method.ts` — implements `Equation<Nasa9Equation>` + `enthalpy`, `entropy`, `gibbsEnergy`
+- [x] Add `nasa9` case to `Common.equation()` dispatch
+- [x] Add `nasa9?: Nasa9Equation` top-level field to `CompoundValue` interface
+- [x] Add `RefKey.NASA9` to `enum/ref-key.enum.ts` and `REFERENCES_META` in `dto/ref-key.dto.ts` (index 23, NASA RP-1311)
 - [x] Full-precision NASA TM-2002-211556 coefficients for N2, O2, CO2, CO, H2O, H2, CH4 (ref NASA7)
 - [x] NH3 NASA-7 coefficients from Burcat2005 (ANL-05/20)
 - [x] `nasa7` field is top-level in `CompoundValue` — **not** inside `heatCapacity.values[]`
@@ -45,6 +51,7 @@ Track each item with `[x]` when done.
 - [x] `test/unit/thermal/utils/aly-lee-equation-method.spec.ts` — exact integral verified
 - [x] `test/unit/thermal/utils/dippr-equation-102-method.spec.ts` — numerical integral vs reference
 - [x] `test/unit/thermal/utils/nasa7-equation-method.spec.ts` — Cp, H, S, G vs NIST; Tswitch continuity
+- [ ] `test/unit/thermal/utils/nasa9-equation-method.spec.ts` — Cp, H, S, G vs NIST; range boundary continuity; multi-range calculateAverage
 - [x] `test/unit/thermal/utils/compound-property-resolver.spec.ts` — preferred resolution logic
 - [x] `test/unit/thermal/compound/gas-compounds.spec.ts` — all 8 species registry, Cp sanity
 
