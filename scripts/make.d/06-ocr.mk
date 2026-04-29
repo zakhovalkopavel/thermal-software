@@ -3,7 +3,7 @@
 
 ocr-test: ## Create OCR test images (in python container)
 	@echo "🔬 Creating test data for OCR extraction..."
-	@docker-compose run --rm python python /app/tests/create_simple_test_images.py
+	@docker-compose run --rm python python /app/tests/ocr/create_simple_test_images.py
 	@echo ""
 	@echo "✅ Test data created. You can now run:"
 	@echo "  make ocr-extract"
@@ -97,26 +97,26 @@ ocr-extract-doc-help: ## Show help for document extraction script
 
 ocr-test-doc: ## Run OCR document extraction unit tests
 	@echo "🧪 Testing new OCR document extraction..."
-	@docker-compose exec python python /app/tests/test_document_extraction.py
+	@docker-compose exec python python /app/tests/ocr/test_document_extraction.py
 
 # OCR Test Suite Commands
 ocr-test-scientific: ## Run scientific notation OCR tests
 	@echo "🧪 Testing Scientific Notation Processing..."
 	@echo "Tests: Greek letters, chemical formulas, subscripts/superscripts"
-	@docker-compose exec python python /app/tests/test_scientific_comprehensive.py
+	@docker-compose exec python python /app/tests/ocr/test_scientific_comprehensive.py
 
 ocr-test-chart: ## Run chart detection tests
 	@echo "🧪 Testing Chart Detection..."
 	@echo "Tests: Chart detection, table header filtering"
-	@docker-compose exec python python /app/tests/test_chart_detection.py
+	@docker-compose exec python python /app/tests/ocr/test_chart_detection.py
 
 ocr-test-opencv: ## Run OpenCV-related OCR tests
 	@echo "🧪 Testing OpenCV Functions..."
-	@docker-compose exec python python /app/tests/test_opencv.py
+	@docker-compose exec python python /app/tests/ocr/test_opencv.py
 
 ocr-test-images: ## Run image analysis tests
 	@echo "🧪 Analyzing Lakatos Cropped Images..."
-	@docker-compose exec python python /app/tests/analyze_lakatos_images.py
+	@docker-compose exec python python /app/tests/ocr/analyze_lakatos_images.py
 
 ocr-test-all: ## Run the full OCR test suite (multiple steps)
 	@echo "🧪 Running ALL OCR Tests..."
@@ -124,10 +124,9 @@ ocr-test-all: ## Run the full OCR test suite (multiple steps)
 	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
 	@echo "Test 1/4: OpenCV Verification"
 	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
-	@docker-compose exec python python /app/tests/test_opencv.py
+	@docker-compose exec python python /app/tests/ocr/test_opencv.py
 	@echo ""
 	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
 	@echo "Test 2/4: Scientific Notation Processing"
 	@echo "=" | awk '{for(i=1;i<=80;i++)printf "="}END{print ""}'
-	@docker-compose exec python python /app/tests/test_scientific_comprehensive.py
-
+	@docker-compose exec python python /app/tests/ocr/test_scientific_comprehensive.py

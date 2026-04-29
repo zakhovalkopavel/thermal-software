@@ -1,10 +1,23 @@
 # Scripts Documentation
 
-This directory contains documentation for OCR extraction scripts.
+This directory contains documentation for Python processing scripts.
 
 ---
 
-## 📚 Main Documentation
+## 🔬 NASA Thermodynamic Parser
+
+### [NASA_THERMO_PARSER_SPEC.md](NASA_THERMO_PARSER_SPEC.md)
+**Specification for the NASA thermodynamic database parser**
+- Converts NASA-7 (SP-273/1971) and NASA-9 (RP-1311/1996, Burcat ANL-05/20) to JSON
+- Package: `python/src/nasa_thermo/` — parsers, models, writers
+- CLI: `python/src/scripts/parse_nasa_thermo.py`
+- Make commands: `make nasa-parse`, `make nasa-test`
+- Source files: `shared/sources/NASA/`
+- Output: `shared/processed/nasa7.json`, `shared/processed/nasa9.json`
+
+---
+
+## 📚 OCR Extraction
 
 ### [OCR_SCRIPTS_GUIDE.md](OCR_SCRIPTS_GUIDE.md)
 **Complete guide to OCR extraction scripts**

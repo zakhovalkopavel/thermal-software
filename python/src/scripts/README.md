@@ -6,6 +6,35 @@ Production scripts for thermal engineering data processing and analysis.
 
 ## Available Scripts
 
+### NASA Thermodynamic Database Parser
+
+Convert NASA-7 and NASA-9 thermodynamic databases to JSON.
+
+**Script**: `parse_nasa_thermo.py`  
+**Spec**: [../../docs/scripts/NASA_THERMO_PARSER_SPEC.md](../../docs/scripts/NASA_THERMO_PARSER_SPEC.md)
+
+```bash
+# Parse both databases (preferred — via Makefile)
+make nasa-parse
+
+# Or directly in container
+python /app/src/scripts/parse_nasa_thermo.py \
+  --nasa7  /app/shared/sources/NASA/nasa7-origin.dat \
+  --nasa9  /app/shared/sources/NASA/nasa9-origin.dat \
+           /app/shared/sources/NASA/nasa9-new.dat \
+  --out-dir /app/shared/processed
+
+# Extract specific species only
+python /app/src/scripts/parse_nasa_thermo.py \
+  --nasa9  /app/shared/sources/NASA/nasa9-origin.dat \
+  --species N2,O2,H2O,CO2,CO
+
+# Run tests
+make nasa-test
+```
+
+**Output**: `shared/processed/nasa7.json`, `shared/processed/nasa9.json`
+
 ### OCR Table Extraction
 
 Extract tables from PDF and image files using the `ocr` package.

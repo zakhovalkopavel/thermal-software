@@ -48,6 +48,8 @@ import { RefKey } from '../../dto/ref-key.dto';
 | 21 | `Mikheev1977`    | Михеев М.А., Михеева И.М. — *Основы теплопередачи* (Fundamentals of Heat Transfer), 2nd ed. Энергия, 1977. Nu correlations for turbulent pipe flow (Mikheev equation); gas radiation heat transfer coefficients. |
 | 22 | `Whitaker1972`   | Whitaker, S. — *Forced Convection Heat Transfer Correlations for Flow in Pipes, Past Flat Plates, Single Cylinders, Single Spheres, and for Flow in Packed Beds and Tube Bundles*. AIChE Journal, 18(2), pp. 361–371, 1972. Nu correlations for external and internal forced convection. |
 | 23 | `NASA9`          | Burcat, A.; Ruscic, B. — *Third Millennium Ideal Gas and Condensed Phase Thermochemical Database for Combustion with Updates from Active Thermochemical Tables*. ANL-05/20, 2005. NASA-9 polynomial format coefficients for a wide range of species. URL: https://publications.anl.gov/anlpubs/2005/07/53802.pdf |
+| 24 | `CaltechSDT`     | California Institute of Technology Explosion Dynamics Laboratory — *Shock and Detonation Toolbox: Thermodynamic Data*. Caltech, maintained. Contains NASA-7 and NASA-9 coefficient databases. URL: https://shepherd.caltech.edu/EDL/PublicResources/sdt/thermo.html |
+| 25 | `BurcatELTE`     | Burcat, A.; Ruscic, B.; Goos, E. — *Extended Third Millennium Thermodynamic Database of New NASA Polynomials with Active Thermochemical Tables update*. Hosted at ELTE (Eötvös Loránd University), updated continuously. URL: https://respecth.elte.hu/burcat.php |
 
 ---
 

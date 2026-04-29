@@ -18,14 +18,37 @@ python/
 │   │   ├── file_manager.py
 │   │   ├── image_processing.py
 │   │   └── README.md     # Package documentation
+│   ├── nasa_thermo/      # NASA thermodynamic database parser package
+│   │   ├── __init__.py       # Public API re-exports
+│   │   ├── nasa7_coeffs.py   # Nasa7Coeffs dataclass
+│   │   ├── nasa7_equation.py # Nasa7Equation dataclass
+│   │   ├── nasa7_species.py  # Nasa7Species dataclass
+│   │   ├── nasa9_coeffs.py   # Nasa9Coeffs dataclass
+│   │   ├── nasa9_range.py    # Nasa9Range dataclass
+│   │   ├── nasa9_equation.py # Nasa9Equation dataclass
+│   │   ├── nasa9_species.py  # Nasa9Species dataclass
+│   │   ├── utils.py          # parse_e / parse_d / slice_e15
+│   │   ├── writers.py        # write_nasa7_json / write_nasa9_json
+│   │   └── parsers/
+│   │       ├── nasa7.py      # NASA-7 (SP-273/1971) parser
+│   │       └── nasa9.py      # NASA-9 (RP-1311/1996 + Burcat) parser
 │   └── scripts/          # Production scripts
+│       ├── parse_nasa_thermo.py  # NASA thermo CLI (thin wrapper)
 │       ├── extract_tables.py
 │       └── README.md     # Scripts documentation
 └── tests/                # Test files
-    ├── create_simple_test_images.py
-    ├── test_coordinate_parsing.py
-    ├── test_ocr_direct.py
-    └── test_pipeline_exact.py
+    ├── nasa_thermo/      # NASA parser unit tests
+    │   ├── test_utils.py
+    │   ├── test_models.py
+    │   ├── test_nasa7_parser.py
+    │   ├── test_nasa9_parser.py
+    │   └── test_writers.py
+    └── ocr/              # OCR module tests
+        ├── test_coordinate_parsing.py
+        ├── test_document_extraction.py
+        ├── test_scientific_comprehensive.py
+        ├── test_opencv.py
+        └── ...
 ```
 
 ## Quick Start
@@ -60,6 +83,24 @@ ls -la /app/shared/processed/
 ```
 
 ## Components
+
+### NASA Thermodynamic Parser (`src/nasa_thermo/`)
+
+Modular parser for NASA-7 (SP-273/1971) and NASA-9 (RP-1311/1996 + Burcat ANL-05/20) thermodynamic databases.
+
+**Spec**: [docs/scripts/NASA_THERMO_PARSER_SPEC.md](../docs/scripts/NASA_THERMO_PARSER_SPEC.md)
+
+**Source files**: `shared/sources/NASA/`
+
+**Output**: `shared/processed/nasa7.json`, `shared/processed/nasa9.json`
+
+**Make commands**:
+```bash
+make nasa-parse          # parse both databases
+make nasa-parse-nasa7    # NASA-7 only
+make nasa-parse-nasa9    # NASA-9 only
+make nasa-test           # run unit tests
+```
 
 ### OCR Package (`src/ocr/`)
 
@@ -141,18 +182,16 @@ python /app/src/scripts/extract_tables.py
 ### Testing
 
 ```bash
-# Generate test images
-make ocr-test
+# NASA thermo parser tests
+make nasa-test
+docker compose run --rm python python -m pytest /app/tests/nasa_thermo/ -v
 
-# Run individual test
-docker-compose exec python python /app/tests/test_coordinate_parsing.py
+# OCR tests
+docker-compose exec python python /app/tests/ocr/test_coordinate_parsing.py
+docker-compose exec python python /app/tests/ocr/test_opencv.py
 
-# Run all tests
-docker-compose exec python bash -c 'cd /app/tests && for t in test_*.py; do python "$t"; done'
-
-# View test outputs
-ls -la shared/processed/*.txt
-cat shared/processed/coordinate_test.txt
+# Run all tests in a folder
+docker-compose exec python bash -c 'cd /app/tests/ocr && for t in test_*.py; do python "$t"; done'
 ```
 
 ## Documentation
