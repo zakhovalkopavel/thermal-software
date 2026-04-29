@@ -15,7 +15,8 @@ or configuration in this project. All linked documents must be consulted for the
 | **Numerical Methods** | [`docs/NUMERICAL_METHODS_CONVENTION.md`](./NUMERICAL_METHODS_CONVENTION.md) | Use approved wrappers (brentq, nelderMead, etc.) — never call numerical libs directly |
 | **Environment / Secrets** | [`docs/ENV_ONLY_POLICY.md`](./ENV_ONLY_POLICY.md) | All secrets via `.env`; never commit credentials |
 | **Production Secrets** | [`docs/PRODUCTION_SECRETS.md`](./PRODUCTION_SECRETS.md) | Secret generation and rotation procedure |
-| **Literature References** | [`docs/REFERENCES.md`](./REFERENCES.md) | Every `ref:` field uses a `RefKey` enum value from `dto/ref-key.dto.ts` pointing to an entry in this list |
+| **Literature References** | [`docs/REFERENCES.md`](./REFERENCES.md) | TypeScript: `ref: RefKey.Xxx` in compound data files; Python: `Refs:` docstring + `from references import RefKey` |
+| **Python Code Standards** | [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) | `snake_case` files, `PascalCase` classes, `@dataclass` for data shapes, `Refs:` docstring citations, SRP, type hints |
 | **Interfaces & Index** | [`docs/INTERFACES_IMPLEMENTATION_INDEX.md`](./INTERFACES_IMPLEMENTATION_INDEX.md) | Master index of all interfaces and their implementations |
 | **Test Specification** | [`docs/TEST_SPECIFICATION.md`](./TEST_SPECIFICATION.md) | Unit / integration / e2e test requirements |
 | **Service Test Spec** | [`docs/SERVICE_TEST_SPEC.md`](./SERVICE_TEST_SPEC.md) | Per-service test checklist and coverage targets |
@@ -225,7 +226,9 @@ Before committing any file, verify:
 - [ ] Controller handler contains **no** business logic — delegates to a service
 - [ ] Coefficient shape uses `type`, behavioural contract uses `interface`
 - [ ] Every `EquationValue` has `ref: RefKey.Xxx` (not a raw number) pointing to `docs/REFERENCES.md`
-- [ ] New reference sources added to `docs/REFERENCES.md` **and** `dto/ref-key.dto.ts` before use
+- [ ] **Python:** every module/class/function using literature data has a `Refs:` docstring citation using `[N] KeyName` format
+- [ ] **Python:** `from references import RefKey` used for any runtime reference lookup — never raw integers
+- [ ] New reference sources added to `docs/REFERENCES.md` **and** `dto/ref-key.dto.ts` (TypeScript) / `python/src/references/` (Python) before use
 - [ ] `nasa7`/`nasa9` data is at top-level `CompoundValue.nasa7`/`CompoundValue.nasa9`, **not** inside `heatCapacity.values`
 - [ ] `nasa7` coefficients use named fields `{a1, a2, …, a7}`, **not** tuple arrays; `nasa9` uses `{a1…a9}` + `Tmin`/`Tmax` ranges
 - [ ] Closed-form integral used where it exists — no unnecessary numerical integration

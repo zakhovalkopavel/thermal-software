@@ -33,5 +33,7 @@ export const REFERENCES_META: Record<RefKey, {
   [RefKey.Mikheev1977]:   { index: 21, name: 'Михеев М.А., Михеева И.М. — Основы теплопередачи, 2-е изд., Энергия', year: '1977' },
   [RefKey.Whitaker1972]:  { index: 22, name: 'Whitaker S. — Forced Convection Heat Transfer Correlations for Flow in Pipes, Past Flat Plates, Single Cylinders, Single Spheres, and for Flow in Packed Beds and Tube Bundles, AIChE J. 18(2)', year: '1972' },
   [RefKey.NASA9]:         { index: 23, name: 'Burcat, A.; Ruscic, B. — Third Millennium Ideal Gas and Condensed Phase Thermochemical Database for Combustion with Updates from Active Thermochemical Tables, ANL-05/20. NASA-9 polynomial coefficients.', year: '2005', url: 'https://publications.anl.gov/anlpubs/2005/07/53802.pdf' },
+  [RefKey.CaltechSDT]:   { index: 24, name: 'Caltech EDL — Shock and Detonation Toolbox: Thermodynamic Data', year: 'ongoing', url: 'https://shepherd.caltech.edu/EDL/PublicResources/sdt/thermo.html' },
+  [RefKey.BurcatELTE]:  { index: 25, name: 'Burcat, A.; Ruscic, B.; Goos, E. — Extended Third Millennium Thermodynamic Database (ELTE, updated)', year: 'ongoing', url: 'https://respecth.elte.hu/burcat.php' },
 };
 

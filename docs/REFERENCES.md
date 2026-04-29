@@ -7,7 +7,7 @@ used in compound data files and equation implementations.
 corresponding `RefKey` enum value (see `dto/ref-key.dto.ts`), plus a `page` field where applicable.
 
 ```typescript
-// Example usage in a compound data file:
+// Example usage in a compound data file (TypeScript):
 import { RefKey } from '../../dto/ref-key.dto';
 
 {
@@ -18,6 +18,39 @@ import { RefKey } from '../../dto/ref-key.dto';
   min: 78, max: 1500,
 }
 ```
+
+### Python usage
+
+In Python, references are cited via a `Refs:` line in the **module / class / function docstring**.
+For runtime lookups, import `RefKey` from the `references` package (a mirror of the TypeScript enum).
+
+```python
+# Module-level citation — in the module docstring:
+"""
+nasa_thermo.writers — JSON serialisation for NASA species dicts.
+
+Refs: docs/REFERENCES.md  [8] NASA7, [9] Burcat2005, [23] NASA9
+"""
+
+# Class-level citation:
+@dataclass
+class Nasa9Equation:
+    """NASA-9 multi-range polynomial equation.
+
+    Refs: docs/REFERENCES.md  [9] Burcat2005, [23] NASA9
+    """
+
+# Runtime lookup using RefKey identifiers:
+from references import RefKey, REFERENCES_META
+
+#   Refs: RefKey.NASA7, RefKey.Burcat2005   ← use in docstrings
+
+meta = REFERENCES_META[RefKey.NASA7]
+print(meta['index'], meta['name'], meta.get('url'))
+```
+
+**Never** use raw numbers (`ref: 4`) or free-form strings — always use `RefKey` enum values.  
+See [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) § 7 for the full Python citation convention.
 
 ---
 
