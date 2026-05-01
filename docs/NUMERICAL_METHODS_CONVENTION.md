@@ -113,6 +113,10 @@ const [A, B] = x;
 - Slower than gradient methods for smooth functions.
 - Returns `{ x: number[], fx: number }`.
 
+> **HTTP API note:** `POST /numeric/nelder-mead` wraps this utility but uses a
+> **named-variable dict** for usability — `{ expression: "(x1-2)**2", variables: { x1: 0 } }`.
+> The controller maps names ↔ indices transparently. Internal code always passes a plain array.
+
 ---
 
 ### `conjugateGradient(f, x0, opts?)`
@@ -150,6 +154,9 @@ console.log(`η = ${slope}·T + ${intercept}  R²=${r2.toFixed(4)}`);
 - Ordinary least squares, closed-form.
 - Returns `{ slope, intercept, r2, predict }`.
 
+> **HTTP API note:** `POST /numeric/regression/linear` adds a `formula` string to the
+> response, built by `linearFormula()` in `numeric-format.util.ts`.
+
 ---
 
 ### `polynomialFit(x, y, degree)`
@@ -163,6 +170,10 @@ const { coefficients, r2, predict } = polynomialFit(T_values, shrinkage_values, 
 
 - Returns coefficients in **ascending** degree order `[c0, c1, …, cn]`
   (opposite to `numpy.polyfit` which is descending).
+
+> **HTTP API note:** `POST /numeric/regression/polynomial` reshapes `coefficients` into a
+> named object `{ c0, c1, …, cn }` and adds a `formula` string.
+> The underlying utility still returns a plain array.
 
 ---
 
@@ -178,6 +189,9 @@ const { A, B, r2, predict } = exponentialFit(T_values, creep_values);
 - Closed-form via log-linearisation. All `y` must be positive.
 - Use `levenbergMarquardt` if the exponent form is `A·exp(B/x)` (Arrhenius) — different model.
 
+> **HTTP API note:** `POST /numeric/regression/exponential` adds a `formula` string
+> (`y = A·e^(B·x)`) to the response.
+
 ---
 
 ### `powerFit(x, y)`
@@ -190,6 +204,9 @@ const { A, B, r2, predict } = powerFit(time_values, size_values);
 ```
 
 - Closed-form via log-log linearisation. All `x` and `y` must be positive.
+
+> **HTTP API note:** `POST /numeric/regression/power` adds a `formula` string
+> (`y = A·x^B`) to the response.
 
 ---
 
@@ -212,6 +229,12 @@ const [A, B] = result.parameterValues;
 - Practical substitute for `scipy.optimize.root(method='hybr')` on smooth residuals
   when there are more equations than unknowns.
 - Returns `{ parameterValues, parameterError, iterations }`.
+
+> **HTTP API note:** `POST /numeric/regression/levenberg-marquardt` adds a `formula` string
+> by substituting fitted parameter values into the `modelExpression` string
+> (via `lmFormula()` in `numeric-format.util.ts`). For example,
+> `([A,B]) => x => A * Math.exp(B * x)` with `parameterValues: [0.9999, 1.0001]`
+> produces `"y = 0.9999 * Math.exp(1.0001 * x)"`.
 
 ---
 

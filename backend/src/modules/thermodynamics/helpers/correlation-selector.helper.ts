@@ -78,7 +78,7 @@ export class CorrelationSelectorHelper {
     // viscosity mu_s is not available from Mode B; use mu_f as a conservative fallback
     // (ratio = 1, no correction). This is physically correct for gases with small ΔT.
     const mu_s      = mu_f;
-    const dims      = (params.dims ?? {}) as GeometryDimsDto;
+    const dims      = (params.dimensions ?? {}) as GeometryDimsDto;
     const D         = (dims.a ?? 0.05) * 2;
     const isHeating = params.isHeating !== false;
 
@@ -161,7 +161,7 @@ export class CorrelationSelectorHelper {
         return CorrelationName.MixedPowerSum;
       case FlowGeometry.PACKED_BED:
       case FlowGeometry.PACKED_BED_CYLINDER:
-        return Re > 1e5 || (params.dims?.epsilon ?? 0.4) < 0.35
+        return Re > 1e5 || (params.dimensions?.epsilon ?? 0.4) < 0.35
           ? CorrelationName.WakaoFunazkri : CorrelationName.Gunn;
       case FlowGeometry.HELICAL_COIL:
         return CorrelationName.SebanMcLaughlin;

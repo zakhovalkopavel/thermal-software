@@ -70,6 +70,17 @@ describe('POST /thermodynamics/fluid/cp', () => {
     const svc = buildService();
     expect(() => svc.getCp({ T_fluid_K: 500 } as any)).toThrow(BadRequestException);
   });
+
+  it('should return 400 when a named fluid AND composition are both supplied', () => {
+    const svc = buildService();
+    expect(() =>
+      svc.getCp({
+        fluid: 'N2',
+        composition: { [Species.N2]: 0.8, [Species.O2]: 0.2 },
+        T_fluid_K: 800,
+      }),
+    ).toThrow(BadRequestException);
+  });
 });
 
 // ── POST /thermodynamics/fluid/viscosity ──────────────────────────────────────
@@ -162,11 +173,22 @@ describe('POST /thermodynamics/fluid/thermal-conductivity', () => {
     expect(result.lambda).toBeLessThan(0.2);
   });
 
-  it('should return 400 when composition fractions do not sum to 1', () => {
+  it('should normalize composition fractions when they do not sum to 1', () => {
+    const svc = buildService();
+    // sum = 0.6 — service must normalise to { N2: 0.5, CO2: 0.5 } and succeed
+    const result = svc.getThermalConductivity({
+      composition: { [Species.N2]: 0.3, [Species.CO2]: 0.3 },
+      T_fluid_K: 500,
+    });
+    expect(result.lambda).toBeGreaterThan(0);
+  });
+
+  it('should return 400 when a named fluid AND composition are both provided', () => {
     const svc = buildService();
     expect(() =>
       svc.getThermalConductivity({
-        composition: { [Species.N2]: 0.3, [Species.CO2]: 0.3 }, // sum = 0.6
+        fluid: 'N2',
+        composition: { [Species.N2]: 0.8, [Species.CO2]: 0.2 },
         T_fluid_K: 500,
       }),
     ).toThrow(BadRequestException);

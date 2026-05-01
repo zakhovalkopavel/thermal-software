@@ -42,6 +42,7 @@ export class FluidPropertyService {
   // ── Cp ────────────────────────────────────────────────────────────────────
 
   getCp(dto: FluidBaseInputDto): FluidCpResultDto {
+    this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
 
     if (dto.fluid === 'air') {
@@ -76,6 +77,7 @@ export class FluidPropertyService {
   // ── Viscosity ─────────────────────────────────────────────────────────────
 
   getViscosity(dto: FluidBaseInputDto): FluidViscosityResultDto {
+    this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
     const P = dto.P_Pa ?? Common.pAtm;
 
@@ -100,6 +102,7 @@ export class FluidPropertyService {
   // ── Density ───────────────────────────────────────────────────────────────
 
   getDensity(dto: FluidBaseInputDto): FluidDensityResultDto {
+    this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
     const P = dto.P_Pa ?? Common.pAtm;
 
@@ -120,6 +123,7 @@ export class FluidPropertyService {
   // ── Thermal conductivity ──────────────────────────────────────────────────
 
   getThermalConductivity(dto: FluidBaseInputDto): FluidThermalConductivityResultDto {
+    this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
 
     let lambda: number;
@@ -221,14 +225,35 @@ export class FluidPropertyService {
     return (Object.keys(CORRELATION_VALIDITY) as CorrelationName[]).map(name => {
       const v = CORRELATION_VALIDITY[name]!;
       const entry: CorrelationListEntry = { name, geometry: v.geometries };
-      if (v.Re) entry.Re = v.Re;
-      if (v.Pr) entry.Pr = v.Pr;
-      if (v.Ra) entry.Ra = v.Ra;
+      /** Replace JS Infinity with the string "Infinity" for JSON serialisation */
+      const sanitiseBound = (n: number): number | string =>
+        Number.isFinite(n) ? n : 'Infinity';
+      if (v.Re) entry.Re = [v.Re[0], sanitiseBound(v.Re[1])];
+      if (v.Pr) entry.Pr = [v.Pr[0], sanitiseBound(v.Pr[1])];
+      if (v.Ra) entry.Ra = [v.Ra[0], sanitiseBound(v.Ra[1])];
       return entry;
     });
   }
 
   // ── Private helpers ───────────────────────────────────────────────────────
+
+  /**
+   * Throws 400 when a named fluid AND a non-empty composition are both supplied.
+   * Composition is only meaningful for `fluid = 'gas_mix'` (or when fluid is absent).
+   */
+  private _validateNoCompositionConflict(dto: FluidBaseInputDto): void {
+    if (
+      dto.fluid &&
+      dto.fluid !== 'gas_mix' &&
+      dto.composition &&
+      Object.keys(dto.composition).length > 0
+    ) {
+      throw new BadRequestException(
+        `composition must not be provided when fluid is a named species ('${dto.fluid}'). ` +
+        `Set fluid='gas_mix' and supply composition instead.`,
+      );
+    }
+  }
 
   /** Throws 400 when temperature is missing or ≤ 0 */
   private _requireT(T?: number): number {
@@ -253,6 +278,14 @@ export class FluidPropertyService {
   private _requireComposition(composition?: Record<string, number>): Partial<Record<Species, number>> {
     if (!composition || Object.keys(composition).length === 0)
       throw new BadRequestException('composition is required when fluid is gas_mix or absent');
+    const sum = Object.values(composition).reduce((acc, v) => acc + v, 0);
+    if (sum <= 0)
+      throw new BadRequestException('composition fractions must sum to a positive number');
+    if (Math.abs(sum - 1) > 1e-6) {
+      const normalised: Record<string, number> = {};
+      for (const [k, v] of Object.entries(composition)) normalised[k] = v / sum;
+      return normalised as Partial<Record<Species, number>>;
+    }
     return composition as Partial<Record<Species, number>>;
   }
 }

@@ -12,7 +12,8 @@ or configuration in this project. All linked documents must be consulted for the
 |--------|------|-----------|
 | **Naming** | [`docs/NAMING_CONVENTIONS.md`](./NAMING_CONVENTIONS.md) | `kebab-case` files, `PascalCase` classes, `camelCase` vars/methods, `UPPER_SNAKE_CASE` constants, chemical formula exception |
 | **Code Quality** | [`docs/CODE_QUALITY_STANDARDS.md`](./CODE_QUALITY_STANDARDS.md) | No hardcoded values, DTOs at API boundary, SRP, constants in config files |
-| **Numerical Methods** | [`docs/NUMERICAL_METHODS_CONVENTION.md`](./NUMERICAL_METHODS_CONVENTION.md) | Use approved wrappers (brentq, nelderMead, etc.) — never call numerical libs directly |
+| **Thermodynamics API** | [`docs/api/THERMODYNAMICS_API_SPEC.md`](./api/THERMODYNAMICS_API_SPEC.md) | Flat fluid interface, `dimensions` field, Prandtl geometry-free, HTC = Nusselt input, `KNOWN_FLUIDS` as single source of truth |
+| **Numerical Methods** | [`docs/NUMERICAL_METHODS_CONVENTION.md`](./NUMERICAL_METHODS_CONVENTION.md) | Use approved wrappers (brentq, nelderMead, etc.) — never call numerical libs directly; response formatting via `numeric-format.util.ts` |
 | **Environment / Secrets** | [`docs/ENV_ONLY_POLICY.md`](./ENV_ONLY_POLICY.md) | All secrets via `.env`; never commit credentials |
 | **Production Secrets** | [`docs/PRODUCTION_SECRETS.md`](./PRODUCTION_SECRETS.md) | Secret generation and rotation procedure |
 | **Literature References** | [`docs/REFERENCES.md`](./REFERENCES.md) | TypeScript: `ref: RefKey.Xxx` in compound data files; Python: `Refs:` docstring + `from references import RefKey` |

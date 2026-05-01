@@ -4,7 +4,6 @@ import { TransportService } from './transport.service';
 import { DimensionlessNumbersService } from './dimensionless-numbers.service';
 import { DimensionlessInputDto } from '../dto/dimensionless-input.dto';
 import { DimensionlessResultDto } from '../dto/dimensionless-result.dto';
-import { FluidStateDto } from '../dto/fluid-state.dto';
 import { GeometryDimsDto } from '../dto/geometry-dims.dto';
 import { ResolvedDimensionlessPropsDto } from '../dto/resolved-dimensionless-props.dto';
 import { ScalarDimensionlessResultDto } from '../dto/scalar-dimensionless-result.dto';
@@ -14,6 +13,7 @@ import { GrashofInputDto } from '../dto/grashof-input.dto';
 import { RayleighInputDto } from '../dto/rayleigh-input.dto';
 import { ReynoldsInputDto } from '../dto/reynolds-input.dto';
 import { PrandtlInputDto } from '../dto/prandtl-input.dto';
+import { KnownFluid } from '../types/known-fluid.type';
 
 /** Resolved fluid transport properties — output of Mode B resolution. */
 export interface ResolvedFluidProps {
@@ -24,10 +24,18 @@ export interface ResolvedFluidProps {
   nu_m2s: number;
 }
 
+/** Flat-format fluid descriptor shared by all scalar dimensionless endpoints. */
+interface FlatFluidInput {
+  fluid?: KnownFluid;
+  composition?: Record<string, number>;
+  T_fluid_K?: number;
+  P_Pa?: number;
+}
+
 /**
  * Service responsible for orchestrating dimensionless number calculations.
- * Resolves fluid properties from Mode B (species + T) inputs and delegates
- * the actual correlation maths to DimensionlessNumbersService.
+ * Resolves fluid properties from flat-format inputs (fluid name + T_K + optional P_Pa)
+ * and delegates the actual correlation maths to DimensionlessNumbersService.
  *
  * SRP: this service owns the fluid-resolution + orchestration layer;
  *      DimensionlessNumbersService owns the pure maths.
@@ -43,39 +51,35 @@ export class DimensionlessCalculationService {
   // ── Scalar calculations ──────────────────────────────────────────────
 
   reynolds(dto: ReynoldsInputDto): ScalarDimensionlessResultDto {
-    const fluid = this.resolveFluid(dto.fluid);
-    const w = dto.fluid.w_m_s;
+    const T = dto.T_fluid_K ?? Common.Tstandart;
+    const fluid = this.resolveFluid({ fluid: dto.fluid, composition: dto.composition, T_fluid_K: T, P_Pa: dto.P_Pa });
     if (!fluid)
-      throw new Error('Could not resolve fluid properties — supply species + T_K');
-    if (w === undefined)
-      throw new Error('Flow velocity w_m_s is required in fluid for Re');
-    const L = this.numbers.characteristicLength(dto.geometry, dto.dims);
+      throw new Error('Could not resolve fluid properties — supply fluid name or composition + T_fluid_K');
+    const L = this.numbers.characteristicLength(dto.geometry, dto.dimensions);
     return {
-      value: this.numbers.reynolds(fluid.rho_kg_m3, w, L, fluid.mu_Pa_s),
+      value: this.numbers.reynolds(fluid.rho_kg_m3, dto.w_m_s, L, fluid.mu_Pa_s),
       symbol: 'Re', L_m: L,
       resolvedFluid: fluid,
     };
   }
 
   prandtl(dto: PrandtlInputDto): ScalarDimensionlessResultDto {
-    const fluid = this.resolveFluid(dto.fluid);
+    const fluid = this.resolveFluid({ fluid: dto.fluid, composition: dto.composition, T_fluid_K: dto.T_fluid_K, P_Pa: dto.P_Pa });
     if (!fluid)
-      throw new Error('Could not resolve fluid properties — supply species + T_K');
-    const L = dto.dims
-      ? this.numbers.characteristicLength(dto.geometry, dto.dims as GeometryDimsDto)
-      : 1;
+      throw new Error('Could not resolve fluid properties — supply fluid name or composition + T_fluid_K');
     return {
       value: this.numbers.prandtl(fluid.mu_Pa_s, fluid.Cp_J_kgK, fluid.lambda),
-      symbol: 'Pr', L_m: L,
+      symbol: 'Pr', L_m: 0,
       resolvedFluid: fluid,
     };
   }
 
   grashof(dto: GrashofInputDto): ScalarDimensionlessResultDto {
-    const fluid = this.resolveFluid(dto.fluid);
+    const T = dto.T_fluid_K ?? dto.T_cold_K;
+    const fluid = this.resolveFluid({ fluid: dto.fluid, composition: dto.composition, T_fluid_K: T, P_Pa: dto.P_Pa });
     if (!fluid)
-      throw new Error('Could not resolve fluid properties — supply species + T_K');
-    const L = this.numbers.characteristicLength(dto.geometry, dto.dims);
+      throw new Error('Could not resolve fluid properties — supply fluid name or composition + T_fluid_K');
+    const L = this.numbers.characteristicLength(dto.geometry, dto.dimensions);
     return {
       value: this.numbers.grashof(dto.T_hot_K, dto.T_cold_K, L, fluid.nu_m2s, dto.g_m_s2 ?? Common.g),
       symbol: 'Gr', L_m: L,
@@ -84,11 +88,12 @@ export class DimensionlessCalculationService {
   }
 
   rayleigh(dto: RayleighInputDto): ScalarDimensionlessResultDto {
-    const fluid = this.resolveFluid(dto.fluid);
+    const T = dto.T_fluid_K ?? dto.T_cold_K;
+    const fluid = this.resolveFluid({ fluid: dto.fluid, composition: dto.composition, T_fluid_K: T, P_Pa: dto.P_Pa });
     if (!fluid)
-      throw new Error('Could not resolve fluid properties — supply species + T_K');
+      throw new Error('Could not resolve fluid properties — supply fluid name or composition + T_fluid_K');
     const Pr = this.numbers.prandtl(fluid.mu_Pa_s, fluid.Cp_J_kgK, fluid.lambda);
-    const L  = this.numbers.characteristicLength(dto.geometry, dto.dims);
+    const L  = this.numbers.characteristicLength(dto.geometry, dto.dimensions);
     return {
       value: this.numbers.rayleigh(dto.T_hot_K, dto.T_cold_K, L, fluid.nu_m2s, Pr, dto.g_m_s2 ?? Common.g),
       symbol: 'Ra', L_m: L,
@@ -105,23 +110,44 @@ export class DimensionlessCalculationService {
     return { Re, Pr, Gr, Ra, ...result };
   }
 
-  // ── Fluid property resolution (Mode B: species + T) ──────────────────
+  // ── Fluid property resolution ─────────────────────────────────────────
 
   /**
-   * Resolve all transport properties from a FluidStateDto (Mode B only).
-   * Returns null when species or T_K are missing.
+   * Resolve all transport properties from a flat-format fluid descriptor.
+   * Returns null when neither species nor composition is provided, or T_K is missing.
    */
-  resolveFluid(fluid: FluidStateDto): ResolvedFluidProps | null {
-    if (!fluid.species || !fluid.T_K) return null;
-    const sp  = fluid.species as Species;
-    const T   = fluid.T_K;
-    const mu  = this.transport.viscosity(sp, T);
-    const cpM = this.gasProps.cpSpecies(sp, T);
-    const M   = this.gasProps.molecularWeight({ [sp]: 1 });
-    const Cp  = cpM / M;
-    const lam = this.transport.thermalConductivity(sp, T, cpM);
-    const rho = this.gasProps.density(M, T, fluid.P_Pa ?? Common.pAtm);
-    return { rho_kg_m3: rho, mu_Pa_s: mu, Cp_J_kgK: Cp, lambda: lam, nu_m2s: mu / rho };
+  resolveFluid(input: FlatFluidInput): ResolvedFluidProps | null {
+    const T = input.T_fluid_K;
+    if (!T || T <= 0) return null;
+
+    const P = input.P_Pa ?? Common.pAtm;
+
+    let mu: number, Cp: number, lambda: number, rho: number;
+
+    if (input.fluid && input.fluid !== 'gas_mix') {
+      const sp  = input.fluid as Species;
+      mu     = this.transport.viscosity(sp, T);
+      const cpM = this.gasProps.cpSpecies(sp, T);
+      const M   = this.gasProps.molecularWeight({ [sp]: 1 });
+      Cp     = cpM / M;
+      lambda = this.transport.thermalConductivity(sp, T, cpM);
+      rho    = this.gasProps.density(M, T, P);
+    } else if (input.composition) {
+      const mole   = input.composition as Partial<Record<Species, number>>;
+      const M      = this.gasProps.molecularWeight(mole);
+      mu           = this.transport.viscosityMix(mole, T);
+      const cpM    = this.gasProps.cpMixture(mole, T);
+      Cp           = cpM / M;
+      const cpBySp = Object.fromEntries(
+        (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T)]),
+      ) as Partial<Record<Species, number>>;
+      lambda = this.transport.thermalConductivityMix(mole, T, cpBySp);
+      rho    = this.gasProps.density(M, T, P);
+    } else {
+      return null;
+    }
+
+    return { rho_kg_m3: rho, mu_Pa_s: mu, Cp_J_kgK: Cp, lambda, nu_m2s: mu / rho };
   }
 
   /**
@@ -177,17 +203,17 @@ export class DimensionlessCalculationService {
 
     // Re = 0 when w = 0 (natural convection mode — resolveRegime will pick NATURAL).
     let Re = 0;
-    if (w > 0 && dto.dims) {
-      const L = this.numbers.characteristicLength(dto.geometry, dto.dims as GeometryDimsDto);
+    if (w > 0 && dto.dimensions) {
+      const L = this.numbers.characteristicLength(dto.geometry, dto.dimensions as GeometryDimsDto);
       Re = this.numbers.reynolds(rho, w, L, mu);
     }
 
     // Gr/Ra = 0 when no surface temperature is given.
     let Gr = 0;
     let Ra = 0;
-    if (Ts !== undefined && dto.dims) {
-      const L = this.numbers.characteristicLength(dto.geometry, dto.dims as GeometryDimsDto);
-      Gr = this.numbers.grashof(Ts, T, L, nu_f);
+    if (Ts !== undefined && dto.dimensions) {
+      const L = this.numbers.characteristicLength(dto.geometry, dto.dimensions as GeometryDimsDto);
+      Gr = this.numbers.grashof(Ts, T, L, nu_f, dto.g_m_s2 ?? Common.g);
       Ra = Gr * Pr;
     }
 

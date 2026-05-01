@@ -25,6 +25,13 @@ export { RayleighInputDto } from './rayleigh-input.dto';
 export { HeatTransferCoefficientDto } from './heat-transfer-coefficient.dto';
 export { ScalarDimensionlessResultDto } from './scalar-dimensionless-result.dto';
 
+// ── Numeric (root finding, optimisation, regression) ─────────────────────────
+export { BrentqInputDto } from './brentq-input.dto';
+export { XYInputDto } from './xy-input.dto';
+export { PolynomialFitInputDto } from './polynomial-fit-input.dto';
+export { LevenbergMarquardtInputDto } from './levenberg-marquardt-input.dto';
+export { NelderMeadInputDto } from './nelder-mead-input.dto';
+
 // ── Types re-exported for convenience ────────────────────────────────────────
 export { CorrelationName } from '../types/correlation-name.type';
 export { KnownFluid } from '../types/known-fluid.type';

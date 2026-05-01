@@ -105,11 +105,11 @@ export class DimensionlessNumbersService {
     params: DimensionlessInputDto,
     resolved: ResolvedDimensionlessPropsDto,
   ): NusseltResult {
-    const { geometry, dims = {}, preferredCorrelation, compareAll } = params;
+    const { geometry, dimensions = {}, preferredCorrelation, compareAll } = params;
 
     const { Re, Pr, Ra } = resolved;
     const { lambda } = resolved;
-    const L = ChannelGeometryHelper.characteristicLength(geometry, dims as GeometryDimsDto);
+    const L = ChannelGeometryHelper.characteristicLength(geometry, dimensions as GeometryDimsDto);
 
     const regime    = resolveRegime(geometry, Re, Ra, params.forceRegime);
     const isNatural = regime === FlowRegime.NATURAL;

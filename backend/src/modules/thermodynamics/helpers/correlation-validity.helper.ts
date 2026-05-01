@@ -22,6 +22,8 @@ export const CORRELATION_VALIDITY: Partial<Record<CorrelationName, {
   [CorrelationName.Mikheev]:                 { geometries:[FlowGeometry.PIPE_CIRCULAR,...DUCT_VARIANTS()], Re:[1e4,Infinity] },
   [CorrelationName.Petukhov]:                { geometries:[FlowGeometry.PIPE_CIRCULAR,...DUCT_VARIANTS()], Re:[1e4,5e6], Pr:[0.5,200] },
   [CorrelationName.WhitakerPipe]:            { geometries:[FlowGeometry.PIPE_CIRCULAR,...DUCT_VARIANTS()], Re:[1e4,5e5], Pr:[0.7,700] },
+  [CorrelationName.WebbEckertGoldstein]:     { geometries:[FlowGeometry.PIPE_CIRCULAR,...DUCT_VARIANTS()], Re:[1e4,Infinity], Pr:[0.5,200] },
+  [CorrelationName.IsachenkoRoughness]:      { geometries:[FlowGeometry.PIPE_CIRCULAR,...DUCT_VARIANTS()], Re:[1e4,Infinity] },
   [CorrelationName.FlatPlateLaminar]:        { geometries:[FlowGeometry.FLAT_PLATE], Re:[0,5e5] },
   [CorrelationName.FlatPlateTurbulent]:      { geometries:[FlowGeometry.FLAT_PLATE], Re:[5e5,Infinity] },
   [CorrelationName.FlatPlateMixed]:          { geometries:[FlowGeometry.FLAT_PLATE], Re:[5e5,Infinity] },

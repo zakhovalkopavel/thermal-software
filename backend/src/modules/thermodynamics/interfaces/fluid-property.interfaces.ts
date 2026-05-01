@@ -27,9 +27,12 @@ export interface GeometryListEntry {
 export interface CorrelationListEntry {
   name: CorrelationName;
   geometry: FlowGeometry[];
-  Re?: [number, number];
-  Pr?: [number, number];
-  Ra?: [number, number];
+  /** Validity range [Re_min, Re_max]. Re_max is "Infinity" when there is no upper bound. */
+  Re?: [number, number | string];
+  /** Validity range [Pr_min, Pr_max]. Pr_max is "Infinity" when there is no upper bound. */
+  Pr?: [number, number | string];
+  /** Validity range [Ra_min, Ra_max]. Ra_max is "Infinity" when there is no upper bound. */
+  Ra?: [number, number | string];
 }
 
 

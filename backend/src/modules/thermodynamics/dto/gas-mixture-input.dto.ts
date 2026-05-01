@@ -1,13 +1,17 @@
 import { IsEnum, IsNumber, IsObject, IsOptional, IsString, Min, Max } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Species } from '../enums/species.enum';
+import { Common } from '../../../common/thermal';
 
 export class GasMixtureInputDto {
-  @ApiProperty({ description: 'Mole or mass fractions by species, must sum to 1' })
+  @ApiProperty({
+    description: 'Mole or mass fractions by species key, must sum to 1.',
+    example: { N2: 0.79, O2: 0.21 },
+  })
   @IsObject()
   composition: Partial<Record<Species, number>>;
 
-  @ApiProperty({ description: 'Temperature [K]', minimum: 100, maximum: 6000 })
+  @ApiProperty({ description: 'Temperature [K]', minimum: 100, maximum: 6000, example: Common.Tstandart })
   @IsNumber() @Min(100) @Max(6000)
   T_K: number;
 
