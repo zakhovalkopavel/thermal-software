@@ -1,86 +1,64 @@
 # Quick Setup Guide
 
+**Last Updated:** May 2026
+
+---
+
 ## 🚀 First Time Setup
 
 ### 1. Create Environment File
 ```bash
-# Copy template to .env
 make setup
-
-# This creates .env from .env.example
+# Copies .env.example → .env
 ```
 
-### 2. Edit Environment Variables
+### 2. Generate Secure Secrets
 ```bash
-# Edit .env file
-vim .env
-# or
-nano .env
+make setup-secrets
+# Generates JWT_SECRET, JWT_REFRESH_SECRET, DB_PASSWORD automatically
 ```
-
-**Required changes:**
-- ✅ `DB_PASSWORD` - Change from default
-- ✅ `JWT_SECRET` - Generate: `openssl rand -base64 32`
-- ✅ `JWT_REFRESH_SECRET` - Generate: `openssl rand -base64 32`
 
 ### 3. Start Services
 ```bash
-# Start all services
 make up
 ```
+
+That's it. No Node.js on the host required.
 
 ---
 
 ## 📝 Environment File (.env)
 
 ### ⚠️ Important
-- **NEVER commit `.env` to git!**
-- `.env` is gitignored for security
-- Only `.env.example` and `.env.production` are tracked in git
+- **NEVER commit `.env` to git!** — it is gitignored
+- `.env.example` is the source of truth for all variable names and default values
 
 ### Template Files
+
 | File | Purpose | Git Tracked |
 |------|---------|-------------|
-| `.env.example` | Development template | ✅ Yes |
+| `.env.example` | Development template with defaults | ✅ Yes |
 | `.env.production` | Production template | ✅ Yes |
 | `.env` | Your active config | ❌ No (gitignored) |
 
----
-
-## 🔧 Latest Stable Versions (Verified Feb 1, 2026)
-
-The `.env.example` is configured with latest stable versions:
-
-```bash
-# PostgreSQL 18.1 (verified Feb 1, 2026)
-POSTGRES_VERSION=18.1-alpine
-
-# Redis 8.4 (verified Feb 1, 2026)
-REDIS_VERSION=8.4-alpine
-
-# Nginx 1.28.1 (verified Feb 1, 2026)
-NGINX_VERSION=1.28.1-alpine
-
-# Node.js 24.13.0 LTS "Iron" (verified Feb 1, 2026)
-NODE_VERSION=24.13.0-alpine
-```
+> Image versions (PostgreSQL, Redis, Node.js, Nginx, Python) are defined in `.env.example`.  
+> Check that file for the current pinned versions.
 
 ---
 
 ## 🔒 Generate Secure Secrets
 
+The recommended way is:
 ```bash
-# Generate JWT secret
-openssl rand -base64 32
-
-# Generate refresh secret
-openssl rand -base64 32
-
-# Generate database password
-openssl rand -base64 24
+make setup-secrets
 ```
 
-Copy the output and paste into your `.env` file.
+This uses Docker's `alpine/openssl` — no local `openssl` required.
+
+To print freshly-generated secrets without writing them to `.env`:
+```bash
+make generate-jwt
+```
 
 ---
 
@@ -90,14 +68,11 @@ Copy the output and paste into your `.env` file.
 # Check .env exists
 ls -la .env
 
-# View .env (check your values)
-cat .env
-
 # Start services
 make up
 
-# Check running containers
-docker ps
+# Verify 6 containers running
+docker compose ps
 ```
 
 ---
@@ -106,20 +81,27 @@ docker ps
 
 ```bash
 # Initial setup
-make setup          # Create .env from template
+make setup              # Create .env from .env.example
+make setup-secrets      # Generate and inject secure secrets
 
-# Start/stop
-make up             # Start all services
-make down           # Stop all services
-make restart        # Restart all services
+# Start / stop
+make up                 # Start all services
+make down               # Stop all services
+make restart            # Stop then start
 
 # Logs
-make logs           # View all logs
+make logs               # All services (follow)
+make logs-backend       # Backend only
+make logs-frontend      # Frontend only
 
-# Development
-make dev            # Start dev watch mode
-make build          # Build TypeScript
-make test           # Run tests
+# Shell access
+make backend-shell      # sh into backend container
+make frontend-shell     # sh into frontend container
+make python-shell       # bash into python container
+
+# Tests
+make test-backend       # Run backend tests
+make test-frontend      # Run frontend tests
 ```
 
 ---
@@ -128,36 +110,36 @@ make test           # Run tests
 
 ### Error: ".env file not found"
 ```bash
-# Solution:
 make setup
-# Then edit .env and run:
+make setup-secrets
 make up
 ```
 
-### Error: "Permission denied"
+### Want to Reset .env?
 ```bash
-# Solution:
-chmod +x scripts/restructure-project.sh
+cp .env .env.backup     # Backup first
+make setup              # Recreate from template
+make setup-secrets      # Regenerate secrets
 ```
 
-### Want to reset .env?
+### Services Not Coming Up?
 ```bash
-# Backup current
-cp .env .env.backup
-
-# Create fresh from template
-make setup
+docker compose logs backend
+docker compose logs frontend
+docker compose build    # Rebuild if Dockerfile changed
+make up
 ```
 
 ---
 
 ## 📚 More Information
 
-- Full documentation: `/docs/ENVIRONMENT_MANAGEMENT.md`
-- Version tracking: `/VERSION.md`
-- Migration guide: `/docs/PARALLEL_DEVELOPMENT_STRATEGY.md`
+- **Environment variables:** [docs/ENVIRONMENT_MANAGEMENT.md](docs/ENVIRONMENT_MANAGEMENT.md)
+- **Secrets policy:** [docs/PRODUCTION_SECRETS.md](docs/PRODUCTION_SECRETS.md)
+- **Docker architecture:** [docs/NGINX_ARCHITECTURE.md](docs/NGINX_ARCHITECTURE.md)
+- **Dev strategy:** [docs/migration/PARALLEL_DEVELOPMENT_STRATEGY.md](docs/migration/PARALLEL_DEVELOPMENT_STRATEGY.md)
+- **Image versions:** `.env.example` — all `*_VERSION` variables are the single source of truth
 
 ---
 
-**Ready? Run `make setup` to begin!** 🚀
-
+**Ready? Run `make setup && make setup-secrets && make up`** 🚀
