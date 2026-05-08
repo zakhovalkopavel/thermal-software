@@ -2,7 +2,7 @@
 
 Modular Python package for extracting tables from PDF and image files.
 
-> **📚 User Documentation**: See [docs/scripts/OCR_TABLE_EXTRACTION.md](../../docs/scripts/OCR_TABLE_EXTRACTION.md)
+> **📚 User Documentation**: See [docs/scripts/OCR_TABLE_EXTRACTION.md](../../../docs/scripts/OCR_TABLE_EXTRACTION.md)
 
 ## Package Architecture
 

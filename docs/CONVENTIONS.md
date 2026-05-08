@@ -13,6 +13,8 @@ or configuration in this project. All linked documents must be consulted for the
 | **Naming** | [`docs/NAMING_CONVENTIONS.md`](./NAMING_CONVENTIONS.md) | `kebab-case` files, `PascalCase` classes, `camelCase` vars/methods, `UPPER_SNAKE_CASE` constants, chemical formula exception |
 | **Code Quality** | [`docs/CODE_QUALITY_STANDARDS.md`](./CODE_QUALITY_STANDARDS.md) | No hardcoded values, DTOs at API boundary, SRP, constants in config files |
 | **Thermodynamics API** | [`docs/api/THERMODYNAMICS_API_SPEC.md`](./api/THERMODYNAMICS_API_SPEC.md) | Flat fluid interface, `dimensions` field, Prandtl geometry-free, HTC = Nusselt input, `KNOWN_FLUIDS` as single source of truth |
+| **Thermodynamics Services** | [`docs/services/THERMODYNAMICS_SERVICES.md`](./services/THERMODYNAMICS_SERVICES.md) | Implemented service methods, formulas, correlations |
+| **Common Thermal Library** | [`docs/services/COMMON_THERMAL_LIBRARY.md`](./services/COMMON_THERMAL_LIBRARY.md) | Gas compounds, NASA-7/9, Sutherland, numeric utils |
 | **Numerical Methods** | [`docs/NUMERICAL_METHODS_CONVENTION.md`](./NUMERICAL_METHODS_CONVENTION.md) | Use approved wrappers (brentq, nelderMead, etc.) — never call numerical libs directly; response formatting via `numeric-format.util.ts` |
 | **Environment / Secrets** | [`docs/ENV_ONLY_POLICY.md`](./ENV_ONLY_POLICY.md) | All secrets via `.env`; never commit credentials |
 | **Production Secrets** | [`docs/PRODUCTION_SECRETS.md`](./PRODUCTION_SECRETS.md) | Secret generation and rotation procedure |
@@ -219,6 +221,35 @@ interfaces/<domain>-<noun>.interface.ts
 
 ---
 
+## Definition of Done
+
+A service, module, or utility is **not considered complete** until all three are true:
+
+| Requirement | Where |
+|---|---|
+| ✅ Implementation exists and compiles | `backend/src/` |
+| ✅ Unit tests exist with ≥ 80 % coverage | `backend/test/unit/` — see [`docs/TEST_SPECIFICATION.md`](./TEST_SPECIFICATION.md) |
+| ✅ Documentation exists for every public method | `docs/api/` for services; `docs/algorithms/` for algorithms |
+
+### Documentation requirements by artifact
+
+| Artifact | Required doc | Location |
+|---|---|---|
+| New backend **service** | Entry in the module's API spec doc | `docs/api/<MODULE>_SERVICES.md` or existing `docs/api/<MODULE>_API_SPEC.md` |
+| New **algorithm** or formula | Algorithm doc or entry in algorithm index | `docs/algorithms/` |
+| New **common library** (utility / compound data) | Reference doc | `docs/services/COMMON_THERMAL_LIBRARY.md` |
+| New **DTO or interface** | Entry in interfaces index | `docs/INTERFACES_IMPLEMENTATION_INDEX.md` |
+
+### IMPLEMENTATION_STATUS.md must be updated in the same commit
+
+Whenever a service, test file, or documentation entry is added or changed, update
+`docs/migration/IMPLEMENTATION_STATUS.md` in the **same commit**. It must never lag behind
+the codebase by more than one commit.
+
+> **Rule:** If `IMPLEMENTATION_STATUS.md` was not updated, the PR is incomplete.
+
+---
+
 ## Quick Checklist
 
 Before committing any file, verify:
@@ -237,6 +268,8 @@ Before committing any file, verify:
 - [ ] File name is `kebab-case`, class name is `PascalCase`
 - [ ] No hardcoded magic numbers without a named constant or reference
 - [ ] Tests are run **inside Docker**, not on the host machine (see § Tests section below)
+- [ ] **Definition of Done:** implementation + tests + docs all updated in the same PR
+- [ ] **`docs/migration/IMPLEMENTATION_STATUS.md`** updated in this commit if any service, test, or doc changed
 
 ---
 

@@ -1,20 +1,72 @@
 # Algorithms Documentation Index
 
-**Date:** February 2, 2026  
-**Version:** 1.0  
-**Last Updated:** February 2, 2026
+**Last Updated:** May 2026
+**Version:** 1.1
 
 ---
 
 ## Overview
 
-Complete algorithmic documentation for the thermal-software refractory calculation system. This index links all algorithm implementations with their theoretical foundations and practical applications.
+Complete algorithmic documentation for the thermal-software calculation system.
+Covers both the **Refractory module** (oxide composition calculations) and the
+**Thermodynamics module** (gas-phase transport, heat transfer, radiation).
 
-## Document Structure
+---
 
-All algorithm documentation is organized by calculation domain:
+## 🔬 Thermodynamics Algorithms
 
-### 📚 Core Algorithms
+These algorithms are implemented in `backend/src/modules/thermodynamics/` and
+`backend/src/common/thermal/`. Full service method reference:
+**[docs/services/THERMODYNAMICS_SERVICES.md](../services/THERMODYNAMICS_SERVICES.md)**  
+Common library reference:
+**[docs/services/COMMON_THERMAL_LIBRARY.md](../services/COMMON_THERMAL_LIBRARY.md)**
+
+### Gas Thermophysical Properties
+
+| Algorithm | Service | Formula / Model |
+|-----------|---------|-----------------|
+| **NASA-7 polynomial** | `GasPropertiesService` | `Cp/R = a1 + a2T + a3T² + a4T³ + a5T⁴`; two ranges at `Tswitch` |
+| **NASA-9 polynomial** | `GasPropertiesService` | 9-coefficient, variable T ranges; preferred format |
+| **Aly-Lee (DIPPR-107)** | `GasPropertiesService` | `c1 + c2[c3/T/sinh(c3/T)]² + c4[c5/T/cosh(c5/T)]²` |
+| **Sutherland viscosity** | `TransportService` | `μ = μ₀(T/T₀)^(3/2)(T₀+S)/(T+S)` |
+| **Eucken conductivity** | `TransportService` | `λ = μ(Cp + 5R/4M)` |
+| **Ideal gas density** | `TransportService` | `ρ = PM/(RT)` |
+| **Chapman-Enskog diffusion** | `DiffusionService` | `D = 1.858e-3·T^(3/2)·√(1/M_A+1/M_B) / (P·σ_AB²·Ω_D)` |
+| **Mixture Cp** | `GasPropertiesService` | `Cp_mix = Σ xᵢ·Cpᵢ(T)` (mole fractions) |
+
+### Dimensionless Numbers
+
+| Number | Formula | Notes |
+|--------|---------|-------|
+| **Reynolds** | `Re = ρwL/μ` or `wL/ν` | `DimensionlessNumbersService` |
+| **Prandtl** | `Pr = μCp/λ` | Fluid-only — no geometry |
+| **Grashof** | `Gr = gβΔTL³/ν²`; `β = 2/(T_h+T_c)` | Ideal gas approximation |
+| **Rayleigh** | `Ra = Gr·Pr` | Natural convection driver |
+
+### Nusselt Correlations
+
+| Geometry | Regime | Correlation |
+|----------|--------|-------------|
+| Pipe (internal) | Forced, laminar (Re < 2300) | Sieder-Tate |
+| Pipe (internal) | Forced, turbulent (Re > 10 000) | Dittus-Boelter |
+| Pipe (internal) | Natural | Churchill-Chu (1975) |
+| Flat plate | Forced | Average flat-plate |
+| Sphere | Forced | Whitaker (1972) |
+| Cylinder (external) | Forced | Churchill-Bernstein (1977) |
+| Annulus | Forced | Dittus-Boelter with hydraulic diameter |
+
+### Radiation
+
+| Algorithm | Service | Source |
+|-----------|---------|--------|
+| **Gas emissivity (CO₂+H₂O)** | `RadiationService` | Hottel-Mikheev; [21] Mikheev 1977 |
+| **Radiation HTC** | `RadiationService` | `α = ε·σ·(T_g⁴−T_w⁴)/(T_g−T_w)` |
+| **Stefan-Boltzmann** | `RadiationService` | `q = ε·σ·(T_h⁴−T_c⁴)` |
+| **Linearised α_rad** | `RadiationService` | `α_lin = ε·σ·(T_h²+T_c²)·(T_h+T_c)` |
+
+---
+
+## 🔥 Refractory Algorithms
 
 1. **[Component Effects System](./COMPONENT_EFFECTS.md)** ✅ NEW
    - Central data-driven architecture for all component calculations
@@ -51,14 +103,48 @@ All algorithm documentation is organized by calculation domain:
    - Temperature-dependent calculations
    - ±5% accuracy for typical refractories
 
-### 🔬 Additional Algorithms (Existing)
+### 🔬 Additional Refractory Algorithms
 
-- **Phase Equilibrium** - Liquid-solid partitioning, eutectic systems
-- **Viscosity** - Arrhenius model with component effects  
-- **[Glass Viscosity](./glass-viscosity/INDEX.md)** ✅ ENHANCED - ASTM C965-96 fixed points
-- **Packing Density** - Particle size distribution optimization
-- **Thermal Performance** - Conductivity and expansion calculations
-- **Shrinkage Prediction** - Sintering shrinkage estimation
+| File | Topic | Status |
+|------|-------|--------|
+| [`FULL_PHASE_EQUILIBRIUM.md`](./FULL_PHASE_EQUILIBRIUM.md) | Liquid-solid partitioning, eutectic, lever rule | ✅ |
+| [`PACKING_MODELS.md`](./PACKING_MODELS.md) | CPM and Furnas packing density models | ✅ |
+| [`THERMAL_PERFORMANCE_ALGORITHM.md`](./THERMAL_PERFORMANCE_ALGORITHM.md) | Effective thermal conductivity with porosity | ✅ |
+| [`WATER_DEMAND_ALGORITHM.md`](./WATER_DEMAND_ALGORITHM.md) | Water demand from packing fraction | ✅ |
+| [`PSD_ALGORITHMS.md`](./PSD_ALGORITHMS.md) | Andreasen and Funk-Dinger PSD models | ✅ |
+| [`MULTI_MODEL_COMPLETE.md`](./MULTI_MODEL_COMPLETE.md) | Multi-model viscosity comparison | ✅ |
+| [`COMPONENT_SPECIFIC_THRESHOLDS.md`](./COMPONENT_SPECIFIC_THRESHOLDS.md) | Per-component validity thresholds | ✅ |
+| [`VIABLE_COMPOSITION_RANGES.md`](./VIABLE_COMPOSITION_RANGES.md) | Composition feasibility ranges | ✅ |
+| [`VIABLE_RANGE_OUTPUT_FORMAT.md`](./VIABLE_RANGE_OUTPUT_FORMAT.md) | Output format for viable range results | ✅ |
+| [`BLEND_OPTIMIZER_FIXED_FRACTIONS.md`](./BLEND_OPTIMIZER_FIXED_FRACTIONS.md) | Fixed fractions & optimization goals | ✅ |
+| [`BLEND_OPTIMIZER_INPUT_OUTPUT_DEMO.md`](./BLEND_OPTIMIZER_INPUT_OUTPUT_DEMO.md) | Blend optimizer I/O examples | ✅ |
+| [`glass-viscosity/INDEX.md`](./glass-viscosity/INDEX.md) | Glass viscosity: Lakatos, Fluegel, VFT fitting | ✅ |
+
+---
+
+## 🌡️ Thermal Distribution Algorithms
+
+Specification for temperature field and thermal distribution calculations (not yet implemented in backend).
+
+**Sub-directory:** [`thermal-distribution/`](./thermal-distribution/)
+
+| Spec file | Topic |
+|-----------|-------|
+| [`THERMAL_DISTRIBUTION_SPEC_00_Overview.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_00_Overview.md) | Scope and design goals |
+| [`THERMAL_DISTRIBUTION_SPEC_01_Geometries.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_01_Geometries.md) | Supported geometries |
+| [`THERMAL_DISTRIBUTION_SPEC_02_Methods_A_Spectral.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_02_Methods_A_Spectral.md) | Spectral method |
+| [`THERMAL_DISTRIBUTION_SPEC_03_Methods_B_Power.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_03_Methods_B_Power.md) | Power-series method |
+| [`THERMAL_DISTRIBUTION_SPEC_04_Methods_ProductSolution.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_04_Methods_ProductSolution.md) | Product-solution method |
+| [`THERMAL_DISTRIBUTION_SPEC_05_VolumeAverage.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_05_VolumeAverage.md) | Volume-average temperature |
+| [`THERMAL_DISTRIBUTION_SPEC_06_API.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_06_API.md) | Planned API design |
+| [`THERMAL_DISTRIBUTION_SPEC_07_Calibration.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_07_Calibration.md) | Calibration strategy |
+| [`THERMAL_DISTRIBUTION_SPEC_08_Bibliography.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_08_Bibliography.md) | References |
+| [`THERMAL_DISTRIBUTION_SPEC_09_Validation.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_09_Validation.md) | Validation approach |
+| [`THERMAL_DISTRIBUTION_SPEC_10_Examples.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_10_Examples.md) | Worked examples |
+| [`THERMAL_DISTRIBUTION_SPEC_11_QuickReference.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_11_QuickReference.md) | Quick reference |
+
+> ⚠️ **Not yet implemented.** These are design specifications only — no backend service exists yet.  
+> When implementation begins, create `backend/src/modules/thermal-distribution/` and add an entry to `IMPLEMENTATION_STATUS.md`.
 
 ---
 
@@ -169,7 +255,7 @@ Extract Oxides → Check Alumina → Check Silica → Check Calcium
 
 ## Refractoriness Calculation
 
-**File:** `REFRACTORINESS_CALCULATION.md`
+**File:** [`REFRACTORINESS_ALGORITHM.md`](./REFRACTORINESS_ALGORITHM.md)
 
 ### Algorithm
 
@@ -222,7 +308,8 @@ RT = 1400 + (0.45×800) + (0.38×500) + (0.08×-450) + (0.04×400)
 
 ## Glass Viscosity Algorithm
 
-**File:** `GLASS_VISCOSITY_ALGORITHM.md`
+**Directory:** [`glass-viscosity/`](./glass-viscosity/) — 14-chapter specification  
+**Index:** [`glass-viscosity/INDEX.md`](./glass-viscosity/INDEX.md)
 
 ### Key Features
 
@@ -495,91 +582,81 @@ User Input (Composition)
 
 ## File Organization
 
-### Algorithm Documentation Location
+### Algorithm documentation (`docs/algorithms/`)
 ```
 docs/algorithms/
-├── README.md                                  (this file)
-├── COMPONENT_EFFECTS.md                       ✅
-├── MINERAL_PHASE_IDENTIFICATION.md            ✅
-├── REFRACTORINESS_CALCULATION.md              ✅
-├── phase-equilibrium.md                       (existing)
-├── viscosity.md                               (existing)
-├── packing-density.md                         (existing)
-└── thermal-performance.md                     (existing)
-```
-
-### Implementation Location
-```
-backend/src/modules/refractory/
-├── constants/
-│   ├── component-effects.ts           (33 components, 5+ properties)
-│   └── calculation-constants.ts       (Physical constants)
+├── README.md                              ← this file (index)
 │
-├── services/
-│   ├── refractoriness.service.ts
-│   ├── phase-equilibrium.service.ts
-│   ├── viscosity.service.ts
-│   ├── mineral-phase.service.ts
-│   └── (other services)
+├── ── Refractory ──────────────────────────────────────────
+├── COMPONENT_EFFECTS.md                   ✅
+├── MINERAL_PHASE_IDENTIFICATION.md        ✅
+├── REFRACTORINESS_ALGORITHM.md            ✅
+├── BLEND_OPTIMIZER_ALGORITHM.md           ✅
+├── BLEND_OPTIMIZER_FIXED_FRACTIONS.md     ✅
+├── BLEND_OPTIMIZER_INPUT_OUTPUT_DEMO.md   ✅
+├── SHRINKAGE_CALCULATOR_ALGORITHM.md      ✅
+├── FULL_PHASE_EQUILIBRIUM.md              ✅
+├── PACKING_MODELS.md                      ✅
+├── THERMAL_PERFORMANCE_ALGORITHM.md       ✅
+├── WATER_DEMAND_ALGORITHM.md              ✅
+├── PSD_ALGORITHMS.md                      ✅
+├── MULTI_MODEL_COMPLETE.md                ✅
+├── COMPONENT_SPECIFIC_THRESHOLDS.md       ✅
+├── VIABLE_COMPOSITION_RANGES.md           ✅
+├── VIABLE_RANGE_OUTPUT_FORMAT.md          ✅
+├── ALGORITHMS_INDEX.md                    ✅
+├── glass-viscosity/                       ✅  (14 chapters)
 │
-└── data/
-    ├── materials/
-    ├── eutectic-systems.data.ts
-    └── particle-sizes.data.ts
+└── ── Thermal Distribution (planned) ─────────────────────
+    thermal-distribution/                  ⚠️ spec only — not yet implemented
 ```
 
----
-
-## Quick Reference
-
-### Component Effects Summary
-
-**All 33 components:**
+### Thermodynamics service docs (`docs/services/`)
 ```
-Oxide Formers (8):      AL2O3, SIO2, CR2O3, ZRO2, TIO2, MGO, B2O3, GEO2
-Oxide Modifiers (14):   NA2O, K2O, LI2O, PBO, CAO, BAO, SRO, MNO, 
-                        FEO, FE2O3, COO, NIO, CUO
-Fluorides (6):          NAF, KF, LIF, CAF2, MGF2, ALF3
-Chlorides (6):          NACL, KCL, CACL2, MGCL2, FECL2, FECL3
+docs/services/
+├── THERMODYNAMICS_SERVICES.md     ← service method reference (formulas, correlations)
+└── COMMON_THERMAL_LIBRARY.md      ← compound registry, NASA-7/9, resolver, utils
 ```
 
-### Phase Melting Points (Sorted)
-
+### Thermodynamics implementation planning (`docs/migration/thermodynamics/`)
 ```
-2800°C  ← Periclase (MgO) - HIGHEST
-2715°C  ← Zirconia (ZrO2)
-2180°C  ← Chromite
-2135°C  ← Spinel
-2054°C  ← Corundum
-1890°C  ← Forsterite
-1860°C  ← β-Alumina
-1850°C  ← Mullite
-1723°C  ← Cristobalite
-1713°C  ← Quartz
-1593°C  ← Gehlenite
-1553°C  ← Anorthite
-1538°C  ← Magnetite
-1525°C  ← Nepheline
-1377°C  ← Wustite - LOWEST
+docs/migration/thermodynamics/
+├── README.md                       ← migration document index
+├── CH01_SCOPE.md                   ← scope and legacy sources
+├── CH02_FILE_STRUCTURE.md          ← file layout decisions
+├── CH03_SERVICE_DECOMPOSITION.md   ← service boundaries
+├── CH04_CP_RESOLUTION.md           ← Cp resolution strategy  
+├── CH05_DTOS.md                    ← DTO design
+├── CH06_NESTJS_REGISTRATION.md     ← module registration
+├── CH07_APPENDIX_CORRELATIONS.md   ← correlation appendix
+├── CH07_DIMENSIONLESS_NUMBERS.md   ← dimensionless number spec
+└── CHECKLIST.md                    ← implementation checklist
+```
+
+### Implementation locations
+```
+backend/src/modules/refractory/       ← Refractory services + constants
+backend/src/modules/thermodynamics/   ← Thermodynamics services + controllers
+backend/src/common/thermal/           ← Shared compound data + utils
 ```
 
 ---
 
 ## Status
 
-**✅ Complete and Production-Ready**
+**Last Updated:** May 2026
 
-All algorithms documented, implemented, and validated against literature and industrial data.
+| Domain | Algorithms documented | Implementation | Tests |
+|---|---|---|---|
+| Refractory — core | ✅ 5 full docs | ✅ 11 services | ⚠️ Partial |
+| Refractory — additional | ✅ 14 docs (real file names) | ✅ Implemented | ⚠️ Partial |
+| Thermodynamics | ✅ This index + [service ref](../services/THERMODYNAMICS_SERVICES.md) | ✅ 8 services | ⚠️ Partial |
+| Common thermal library | ✅ [COMMON_THERMAL_LIBRARY.md](../services/COMMON_THERMAL_LIBRARY.md) | ✅ 16 compounds | ✅ |
+| Thermal distribution | ✅ 12 spec files (planned only) | ❌ Not started | ❌ |
 
-**Latest Updates (Feb 2, 2026):**
-- ✅ Component Effects System fully documented
-- ✅ 17 Mineral Phases fully documented  
-- ✅ Refractoriness Calculation fully documented
-- ✅ All services updated to use centralized component effects
-- ✅ 95% code reduction through iteration architecture
-
----
-
-**Version:** 1.0  
-**Date:** February 2, 2026  
-**Status:** Production Ready ✅
+**Updates May 2026:**
+- ✅ Thermodynamics algorithms section added (gas properties, dimensionless numbers, radiation)
+- ✅ `thermal-distribution/` section added with link to all 12 spec files
+- ✅ All file references corrected to actual existing filenames (removed phantom `phase-equilibrium.md` etc.)
+- ✅ `docs/migration/thermodynamics/` planning docs indexed
+- ✅ Service docs moved from `docs/api/` to `docs/services/`

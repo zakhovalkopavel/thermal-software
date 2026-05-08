@@ -9,7 +9,7 @@ This guide helps you start the NestJS migration immediately.
 ## ⚠️ IMPORTANT: Read This First!
 
 **ALL code must follow project naming conventions!**
-👉 **BEFORE you start:** Read [../../NAMING_CONVENTIONS.md](../../NAMING_CONVENTIONS.md)
+👉 **BEFORE you start:** Read [../NAMING_CONVENTIONS.md](../NAMING_CONVENTIONS.md)
 
 **This guide shows the LEGACY approach (npm commands on host).**
 
@@ -22,9 +22,8 @@ This guide helps you start the NestJS migration immediately.
 - ✅ Follows project rules
 
 ### Project Rules & Manifests:
-📖 [../../PROJECT_INDEX.md](../../PROJECT_INDEX.md) - Complete rules  
-📖 [DOCKER_FIRST_SETUP.md](DOCKER_FIRST_SETUP.md) - Step-by-step Docker setup  
-📖 [../../VERSION.md](../../VERSION.md) - Latest versions  
+📖 [../NAMING_CONVENTIONS.md](../NAMING_CONVENTIONS.md) - Naming conventions  
+📖 [DOCKER_FIRST_SETUP.md](DOCKER_FIRST_SETUP.md) - Step-by-step Docker setup
 
 ---
 

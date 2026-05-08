@@ -134,10 +134,10 @@ make up
 
 ## 📚 More Information
 
-- **Environment variables:** [docs/ENVIRONMENT_MANAGEMENT.md](docs/ENVIRONMENT_MANAGEMENT.md)
+- **Environment variables:** [docs/ENV_ONLY_POLICY.md](docs/ENV_ONLY_POLICY.md)
 - **Secrets policy:** [docs/PRODUCTION_SECRETS.md](docs/PRODUCTION_SECRETS.md)
 - **Docker architecture:** [docs/NGINX_ARCHITECTURE.md](docs/NGINX_ARCHITECTURE.md)
-- **Dev strategy:** [docs/migration/PARALLEL_DEVELOPMENT_STRATEGY.md](docs/migration/PARALLEL_DEVELOPMENT_STRATEGY.md)
+- **Dev strategy:** [docs/migration/ROADMAP.md](docs/migration/ROADMAP.md)
 - **Image versions:** `.env.example` — all `*_VERSION` variables are the single source of truth
 
 ---

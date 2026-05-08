@@ -1,15 +1,31 @@
 # CH07 — DimensionlessNumbersService
 
 **Sources:**
-- `legacy/scripts/src/thermalExchange/fluidDynamics.ts` — Re, Gr, Ra (single geometry)
-- `legacy/scripts/src/dto/form.dto.ts` — FormDto: cylinder, sphere, cube, rectangularPrism, prism
-- `legacy/furnaceCombustion/modules/HeatTransfer.js` — Nu: Gunn (packed bed), Churchill–Chu (vertical cylinder)
-- `legacy/scripts/recuperator.js` — Nu: Mills/Gnielinski (pipe); surface/ray-length for sphere, cylinder, cube; channel forms: circle, square, triangle, circle_in_ring
+- [`legacy/scripts/recuperator.js`](../../../legacy/scripts/recuperator.js) — Nu: Mills/Gnielinski (pipe); Churchill-Chu (natural); Ranz-Marshall/diffusion (sphere); surface/ray-length for sphere, cylinder, cube
+- [`legacy/furnaceCombustion/modules/HeatTransfer.js`](../../../legacy/furnaceCombustion/modules/HeatTransfer.js) — Nu: Gunn correlation (packed bed)
+- [`legacy/scripts/src/thermalExchange/fluidDynamics.ts`](../../../legacy/scripts/src/thermalExchange/fluidDynamics.ts) — Re, Gr, Ra (single geometry)
+- [`legacy/scripts/src/dto/form.dto.ts`](../../../legacy/scripts/src/dto/form.dto.ts) — FormDto: cylinder, sphere, cube, rectangularPrism, prism
 
 **Target:** `backend/src/modules/thermodynamics/services/dimensionless-numbers.service.ts`
 **Controller:** `POST /thermodynamics/dimensionless`, `POST /thermodynamics/body-geometry`
 
-**Appendix:** `CH07_APPENDIX_CORRELATIONS.md` — exact formulas from original Churchill & Whitaker papers
+**Geometry enums & body formulas:** [CH08_GEOMETRY.md](CH08_GEOMETRY.md)
+— `FlowGeometry`, `BodyGeometry`, `GeometryDims`, `KnownFluid`, hydraulic diameter table, surface/volume/beam-length formulas
+
+**Appendix A — Internal flow:** [CH07_APPENDIX_A_INTERNAL_FLOW.md](CH07_APPENDIX_A_INTERNAL_FLOW.md)
+— Pipe/duct/helical/corrugated: Mills, Sieder-Tate, Gnielinski, Dittus-Boelter, Mikheev, Petukhov, Whitaker, Churchill friction factor
+
+**Appendix B — Plates & vertical surfaces:** [CH07_APPENDIX_B_PLATES.md](CH07_APPENDIX_B_PLATES.md)
+— Flat plate, vertical plate/cylinder, horizontal plate, inclined plate: Churchill-Ozoe, Churchill-Chu, McAdams, Whitaker
+
+**Appendix C — Cylinders:** [CH07_APPENDIX_C_CYLINDERS.md](CH07_APPENDIX_C_CYLINDERS.md)
+— Cylinder crossflow, horizontal cylinder, concentric cylinders: Churchill-Bernstein, Hilpert, Churchill-Chu horizontal, Whitaker, Raithby-Hollands
+
+**Appendix D — Spheres:** [CH07_APPENDIX_D_SPHERES.md](CH07_APPENDIX_D_SPHERES.md)
+— Sphere forced/natural, concentric spheres: Ranz-Marshall, diffusion, Whitaker, Churchill sphere, Raithby-Hollands
+
+**Appendix E — Special geometries:** [CH07_APPENDIX_E_SPECIAL.md](CH07_APPENDIX_E_SPECIAL.md)
+— Tube banks, cavities, mixed convection, packed bed, phase change, rotating, impinging jets
 
 ---
 
@@ -31,123 +47,11 @@ If `fluid` is present, Mode B is used; otherwise Mode A is assumed and raw prope
 
 ---
 
-## Two geometry enums
+## Geometry enums and body formulas
 
-### `BodyGeometry` — enclosure / furnace body shapes
-Used for: surface area, mean beam length (radiation), characteristic dimension for natural convection.
-
-```typescript
-export enum BodyGeometry {
-  // From legacy FormDto + recuperator.js surfaceFunction / getRayLength
-  SPHERE                = 'sphere',            // a = radius
-  CYLINDER              = 'cylinder',          // a = radius, b = height
-  CUBE                  = 'cube',              // a = side
-  RECTANGULAR_PRISM     = 'rectangularPrism',  // a = width, b = depth, c = height
-  TRIANGULAR_PRISM      = 'prism',             // a = base, b = triangle height, c = length
-
-  // Extensions — not in legacy
-  CONE                  = 'cone',              // a = base radius, b = height
-  TRUNCATED_CONE        = 'truncated_cone',    // a = r_bottom, b = r_top, c = height
-  HOLLOW_CYLINDER       = 'hollow_cylinder',   // a = inner radius, b = outer radius, c = height
-  ELLIPSOID             = 'ellipsoid',         // a, b, c = semi-axes
-  HEMISPHERICAL_DOME    = 'hemispherical_dome',// a = radius (includes flat base)
-}
-```
-
-### `FlowGeometry` — flow channel / convection configurations
-Used for: Re, Nu, h, hydraulic diameter.
-
-```typescript
-export enum FlowGeometry {
-  // ── Internal forced convection ─────────────────────────────────────────
-  PIPE_CIRCULAR             = 'pipe_circular',
-  PIPE_ANNULUS              = 'pipe_annulus',           // D_h = D_o − D_i
-  DUCT_SQUARE               = 'duct_square',
-  DUCT_RECTANGULAR          = 'duct_rectangular',
-  DUCT_TRIANGULAR           = 'duct_triangular',        // equilateral
-  DUCT_TRIANGULAR_SCALENE   = 'duct_triangular_scalene',
-  DUCT_ELLIPTICAL           = 'duct_elliptical',
-  DUCT_TRAPEZOIDAL          = 'duct_trapezoidal',
-  PARALLEL_PLATES           = 'parallel_plates',        // D_h = 2·gap
-  HELICAL_COIL              = 'helical_coil',
-  CORRUGATED_PIPE           = 'corrugated_pipe',
-  RIBBED_CHANNEL            = 'ribbed_channel',
-
-  // ── External forced convection ─────────────────────────────────────────
-  FLAT_PLATE                = 'flat_plate',
-  FLAT_PLATE_ROUGH          = 'flat_plate_rough',
-  CYLINDER_CROSSFLOW        = 'cylinder_crossflow',
-  SPHERE_FORCED             = 'sphere_forced',
-  TUBE_BANK_INLINE          = 'tube_bank_inline',
-  TUBE_BANK_STAGGERED       = 'tube_bank_staggered',
-  CONE_CROSSFLOW            = 'cone_crossflow',
-  ELLIPTICAL_CYLINDER       = 'elliptical_cylinder',
-
-  // ── Natural convection ─────────────────────────────────────────────────
-  VERTICAL_PLATE            = 'vertical_plate',
-  VERTICAL_CYLINDER         = 'vertical_cylinder',
-  HORIZONTAL_CYLINDER       = 'horizontal_cylinder',
-  HORIZONTAL_PLATE_HOT_UP   = 'horizontal_plate_hot_up',
-  HORIZONTAL_PLATE_HOT_DOWN = 'horizontal_plate_hot_down',
-  INCLINED_PLATE            = 'inclined_plate',         // angle_deg from vertical
-  SPHERE_NATURAL            = 'sphere_natural',
-  CONCENTRIC_CYLINDERS      = 'concentric_cylinders',
-  CONCENTRIC_SPHERES        = 'concentric_spheres',
-  HORIZONTAL_CAVITY         = 'horizontal_cavity',
-  VERTICAL_CAVITY           = 'vertical_cavity',
-
-  // ── Mixed (combined forced + natural) ─────────────────────────────────
-  MIXED_PIPE_VERTICAL       = 'mixed_pipe_vertical',
-  MIXED_PLATE_VERTICAL      = 'mixed_plate_vertical',
-
-  // ── Packed / porous beds ───────────────────────────────────────────────
-  PACKED_BED                = 'packed_bed',
-  PACKED_BED_CYLINDER       = 'packed_bed_cylinder',
-  FLUIDIZED_BED             = 'fluidized_bed',
-
-  // ── Phase change ──────────────────────────────────────────────────────
-  CONDENSATION_VERTICAL_PLATE  = 'condensation_vertical_plate',
-  CONDENSATION_HORIZONTAL_TUBE = 'condensation_horizontal_tube',
-  POOL_BOILING              = 'pool_boiling',
-
-  // ── Rotating / special ─────────────────────────────────────────────────
-  ROTATING_DISK             = 'rotating_disk',
-  ROTATING_CYLINDER         = 'rotating_cylinder',
-  IMPINGING_JET_SINGLE      = 'impinging_jet_single',
-  IMPINGING_JET_ARRAY       = 'impinging_jet_array',
-}
-```
-
----
-
-## `GeometryDims`
-
-```typescript
-export interface GeometryDims {
-  a?: number;         // radius / side / width / D_inner / D_particle / semi-major
-  b?: number;         // height / D_outer / semi-minor / depth
-  c?: number;         // length / 3rd dimension
-  L?: number;         // explicit characteristic length override (bypasses auto-compute)
-  epsilon?: number;   // porosity (packed bed)
-  S_T?: number;       // transverse pitch (tube bank)
-  S_L?: number;       // longitudinal pitch (tube bank)
-  angle_deg?: number; // inclination from vertical (inclined plate, degrees)
-  omega?: number;     // angular velocity [rad/s] (rotating geometries)
-}
-```
-
----
-
-## Known fluid identifiers
-
-```typescript
-export type KnownFluid =
-  | 'air'
-  | 'N2' | 'O2' | 'CO2' | 'CO' | 'H2' | 'H2O' | 'CH4'
-  | 'SO2' | 'SO3' | 'NO' | 'NO2' | 'NH3'
-  | 'water'          // liquid water
-  | 'gas_mix';       // arbitrary mixture — requires composition field
-```
+> `FlowGeometry`, `BodyGeometry`, `GeometryDims`, `KnownFluid`, hydraulic diameter table,
+> surface area / volume / mean beam length formulas:
+> → **[CH08_GEOMETRY.md](CH08_GEOMETRY.md)**
 
 ---
 
@@ -188,99 +92,43 @@ export class DimensionlessNumbersService {
 
 ### `CorrelationName` — complete catalog
 
-Every value corresponds to an exact formula defined in this spec and in `CH07_APPENDIX_CORRELATIONS.md`.
+Full formula, validity bounds, and paper citations for each name are in the appendixes.
 
 ```typescript
 export type CorrelationName =
-  // ── PIPE_CIRCULAR / duct (via D_h) ─────────────────────────────────────
-  | 'mills'                        // [Leg 871] default laminar
-  | 'sieder_tate_laminar'          // [Leg 877] μ-correction laminar
-  | 'fully_developed_uniform_T'    // Nu = 3.66 [I7 §8.4]
-  | 'fully_developed_uniform_q'    // Nu = 4.36 [I7 §8.4]
-  | 'transitional'                 // [Leg 882] 0.008·Re^0.9·Pr^0.43
-  | 'gnielinski'                   // [Leg 892] default turbulent
-  | 'gnielinski_v2'                // Churchill (1977) friction-based variant — see Appendix §A2
-  | 'dittus_boelter'               // [Leg 908]
-  | 'sieder_tate_turbulent'        // [Leg 903]
-  | 'mikheev'                      // [Leg 918] Russian — 0.021·Re^0.8·Pr^0.43
-  | 'petukhov'                     // [I7 §8.5]
-  | 'whitaker_pipe'                // Whitaker (1972) AIChE — 0.015·Re^0.83·Pr^(1/3)·(μ/μ_w)^0.14 — see Appendix §W1
+  // ── Pipe / internal flow  →  Appendix A ────────────────────────────────
+  | 'mills'                     | 'sieder_tate_laminar'
+  | 'fully_developed_uniform_T' | 'fully_developed_uniform_q'
+  | 'transitional'              | 'gnielinski'           | 'gnielinski_v2'
+  | 'dittus_boelter'            | 'sieder_tate_turbulent'
+  | 'mikheev'                   | 'petukhov'             | 'whitaker_pipe'
+  | 'seban_mclaughlin'          | 'webb_eckert_goldstein'| 'isachenko_roughness'
 
-  // ── HELICAL_COIL ───────────────────────────────────────────────────────
-  | 'seban_mclaughlin'             // [VDI L1.3]
+  // ── Plates & vertical surfaces  →  Appendix B ──────────────────────────
+  | 'flat_plate_laminar'        | 'flat_plate_turbulent' | 'flat_plate_mixed'
+  | 'churchill_ozoe'            | 'whitaker_flat_plate'
+  | 'churchill_chu'             | 'churchill_chu_laminar'| 'churchill_chu_all_ra'
+  | 'mcadams_hot_up'            | 'mcadams_hot_down'
+  | 'churchill_inclined'
 
-  // ── CORRUGATED_PIPE / RIBBED_CHANNEL ───────────────────────────────────
-  | 'webb_eckert_goldstein'        // [I7 §8.7, VDI G8]
-  | 'isachenko_roughness'          // simplified turbulent
+  // ── Cylinders  →  Appendix C ───────────────────────────────────────────
+  | 'churchill_bernstein'       | 'hilpert'              | 'whitaker_cylinder'
+  | 'morgan'                    | 'churchill_chu_horizontal'
+  | 'raithby_hollands_cylinders'
 
-  // ── FLAT_PLATE ─────────────────────────────────────────────────────────
-  | 'flat_plate_laminar'           // 0.664·Re^0.5·Pr^(1/3) [I7 §7.2]
-  | 'flat_plate_turbulent'         // 0.037·Re^0.8·Pr^(1/3) [I7 §7.2]
-  | 'flat_plate_mixed'             // (0.037·Re^0.8−871)·Pr^(1/3) [I7 §7.2]
-  | 'churchill_ozoe'               // Churchill & Ozoe (1973) all Re/Pr — see Appendix §A3
-  | 'whitaker_flat_plate'          // Whitaker (1972) — see Appendix §W2
+  // ── Spheres  →  Appendix D ─────────────────────────────────────────────
+  | 'sphere_ranz_marshall'      | 'sphere_diffusion'     | 'whitaker_sphere'
+  | 'churchill_sphere_natural'
+  | 'raithby_hollands_spheres'
 
-  // ── CYLINDER_CROSSFLOW ─────────────────────────────────────────────────
-  | 'churchill_bernstein'          // Churchill & Bernstein (1977) — default; see Appendix §A4
-  | 'hilpert'                      // range-table [I7 §7.4, C5 §7-3]
-  | 'whitaker_cylinder'            // Whitaker (1972) — see Appendix §W3
-
-  // ── SPHERE_FORCED ──────────────────────────────────────────────────────
-  | 'sphere_ranz_marshall'         // [Leg 841] 2+0.4·Re^0.5·Pr^(1/3) — default
-  | 'sphere_diffusion'             // [Leg 839] 2+0.17·Re^(2/3) — Russian lit, source TBD
-  | 'whitaker_sphere'              // Whitaker (1972) full form — default alternative; see Appendix §W4
-
-  // ── TUBE_BANK ──────────────────────────────────────────────────────────
-  | 'zukauskas'                    // [I7 §7.5]
-  | 'whitaker_tube_bank'           // Whitaker (1972) — see Appendix §W5
-
-  // ── VERTICAL_PLATE / VERTICAL_CYLINDER ────────────────────────────────
-  | 'churchill_chu'                // auto-selects laminar/all-Ra — default
-  | 'churchill_chu_laminar'        // [Leg 819] Ra < 1e9; Churchill & Chu (1975a) Eq.(1) — see Appendix §A5
-  | 'churchill_chu_all_ra'         // [Leg 820] all Ra; Churchill & Chu (1975a) Eq.(2) — see Appendix §A5
-
-  // ── HORIZONTAL_CYLINDER ───────────────────────────────────────────────
-  | 'morgan'                       // range-table [I7 §9.6] — default
-  | 'churchill_chu_horizontal'     // Churchill & Chu (1975b) all Ra — see Appendix §A6
-
-  // ── HORIZONTAL_PLATE ──────────────────────────────────────────────────
-  | 'mcadams_hot_up'               // 0.54·Ra^0.25 / 0.15·Ra^(1/3) [I7 §9.7]
-  | 'mcadams_hot_down'             // 0.27·Ra^0.25 [I7 §9.7]
-
-  // ── INCLINED_PLATE ────────────────────────────────────────────────────
-  | 'churchill_inclined'           // Churchill (1977) g_eff form — see Appendix §A7
-
-  // ── SPHERE_NATURAL ────────────────────────────────────────────────────
-  | 'churchill_sphere_natural'     // Churchill [I7 §9.9] — see Appendix §A8
-
-  // ── CONCENTRIC_CYLINDERS / SPHERES ────────────────────────────────────
-  | 'raithby_hollands_cylinders'   // [I7 §9.7]
-  | 'raithby_hollands_spheres'     // [I7 §9.7]
-
-  // ── CAVITIES ──────────────────────────────────────────────────────────
-  | 'hollands'                     // horizontal cavity [I7 §9.9]
-  | 'globe_dropkin'                // horizontal cavity [I7 §9.9]
-  | 'macgregor_emery'              // vertical cavity [I7 §9.9]
-
-  // ── MIXED CONVECTION ──────────────────────────────────────────────────
-  | 'mixed_power_sum'              // Churchill (1977) n=3 blend [I7 §9.10, C5 §15-2]
-
-  // ── PACKED BED ────────────────────────────────────────────────────────
-  | 'gunn'                         // [Leg HeatTransfer.js 22] — default
-  | 'wakao_funazkri'               // Wakao & Funazkri (1978) [VDI M8]
-  | 'whitaker_packed_bed'          // Whitaker (1972) — see Appendix §W6
-
-  // ── PHASE CHANGE ──────────────────────────────────────────────────────
-  | 'nusselt_condensation'         // [I7 §10.6]
-  | 'chen_condensation'            // [I7 §10.6]
-
-  // ── ROTATING ──────────────────────────────────────────────────────────
-  | 'dorfman_disk'                 // [VDI H4]
-  | 'bjorklund_kays'               // [VDI H5]
-
-  // ── IMPINGING JET ─────────────────────────────────────────────────────
-  | 'martin_jet_single'            // Martin (1977) [VDI G8]
-  | 'martin_jet_array'             // Martin (1977) [VDI G8]
+  // ── Special geometries  →  Appendix E ──────────────────────────────────
+  | 'zukauskas'                 | 'whitaker_tube_bank'
+  | 'hollands'                  | 'globe_dropkin'        | 'macgregor_emery'
+  | 'mixed_power_sum'
+  | 'gunn'                      | 'wakao_funazkri'       | 'whitaker_packed_bed'
+  | 'nusselt_condensation'      | 'chen_condensation'
+  | 'dorfman_disk'              | 'bjorklund_kays'
+  | 'martin_jet_single'         | 'martin_jet_array'
 ```
 
 ---
@@ -432,374 +280,8 @@ Re > 1e5 or ε < 0.35 → 'wakao_funazkri'
 
 #### All other geometries: single correlation; best-equation = that correlation.
 
----
-
-## Nu correlations per `FlowGeometry` — exact formulas and sources
-
-> **Abbreviations:**
-> [I7] = Incropera, *Fundamentals of Heat and Mass Transfer*, 7th ed.
-> [C5] = Cengel & Ghajar, *Heat and Mass Transfer*, 5th ed.
-> [VDI] = VDI Heat Atlas, 2nd ed. (Springer 2010)
-> [Leg] = `recuperator.js` formula taken verbatim — coefficients must not be changed
-> [App §Xn] = full formula with all bounds in CH07_APPENDIX_CORRELATIONS.md
 
 ---
-
-### Internal forced — `PIPE_CIRCULAR` (and D_h-based ducts)
-
-All duct variants compute `D_h = 4A/P` then delegate to PIPE_CIRCULAR correlations.
-
-| Correlation | Regime | Exact formula | Source |
-|---|---|---|---|
-| `mills` | laminar, default | `Nu = 3.66 + (0.065·Re·Pr·D/L) / (1 + 0.4·(Re·Pr·D/L)^(2/3))` | [Leg 871]; [I7 §8.4] |
-| `sieder_tate_laminar` | laminar | `Nu = 1.86·(Re·Pr·D/L)^(1/3)·(μ/μ_s)^0.14` | [Leg 877]; [C5 §8-3] |
-| `fully_developed_uniform_T` | laminar, L/D→∞ | `Nu = 3.66` | [I7 §8.4] |
-| `fully_developed_uniform_q` | laminar, L/D→∞ | `Nu = 4.36` | [I7 §8.4] |
-| `transitional` | 2300 ≤ Re ≤ 10000 | `Nu = 0.008·Re^0.9·Pr^0.43` | [Leg 882] |
-| `gnielinski` | turbulent, default | `Nu = (f/8)·(Re−1000)·Pr / (1+12.7·√(f/8)·(Pr^(2/3)−1))`, `f = (0.79·ln Re − 1.64)^−2` | [Leg 892–895]; [I7 §8.5] |
-| `gnielinski_v2` | turbulent | Churchill (1977) friction-based — full form with all bounds | [App §A2] |
-| `dittus_boelter` | turbulent | `Nu = 0.023·Re^0.8·Pr^n`, n=0.4 heating / n=0.3 cooling | [Leg 908–915]; [I7 §8.5] |
-| `sieder_tate_turbulent` | turbulent | `Nu = 0.027·Re^0.8·Pr^(1/3)·(μ/μ_s)^0.14` | [Leg 903]; [C5 §8-3] |
-| `mikheev` | turbulent | `Nu = 0.021·Re^0.8·Pr^0.43·(Pr/Pr_s)^0.25·ε_l`, ε_l=1.2 | [Leg 918–919]; Mikheev 1956 |
-| `petukhov` | turbulent | `Nu = (f/8)·Re·Pr / (1.07 + 12.7·√(f/8)·(Pr^(2/3)−1))` | [I7 §8.5]; [VDI G1] |
-| `whitaker_pipe` | turbulent | `Nu = 0.015·Re^0.83·Pr^(1/3)·(μ/μ_w)^0.14` — 10⁴≤Re≤5×10⁵, 0.7≤Pr≤700 | [App §W1] |
-
-**Default selection logic (preserved verbatim from [Leg 922–968]):**
-```
-isNatural   = w===0 OR (laminar AND Nu_natural/L > Nu_Mills/D)
-                     OR (transient AND Nu_natural/L > Nu_transient/D)
-                     OR (turbulent AND Nu_natural/L > Nu_Gnielinski/D)
-return isNatural  → Nu_natural (Churchill-Chu)
-       laminar    → mills
-       transient  → Re < 3000 ? transitional : gnielinski
-       turbulent  → gnielinski
-```
-
----
-
-### Internal — `HELICAL_COIL`
-
-| Regime | Formula | Source |
-|---|---|---|
-| Laminar | `Nu = 0.036·Re^0.5·Pr^0.43·(D/D_c)^0.1` | Seban & McLaughlin; [VDI L1.3] |
-| Turbulent | `Nu = Nu_straight·(1 + 3.6·(1−D/D_c)·(D/D_c)^0.8)` | Seban & McLaughlin; [VDI L1.3] |
-| Critical Re | `Re_cr = 2300·(1 + 8.6·(D/D_c)^0.45)` | Schmidt (1967); [C5 §8-4] |
-
----
-
-### Internal — `CORRUGATED_PIPE` / `RIBBED_CHANNEL`
-
-| Range | Formula | Source |
-|---|---|---|
-| `0.01 ≤ e/D ≤ 0.05`, `10 ≤ p/e ≤ 40` | `St·Pr^(2/3) = (f/2) / (1 + √(f/2)·f(e+))`, Webb-Eckert-Goldstein | [I7 §8.7], [VDI G8] |
-| Simplified turbulent | `Nu = 0.023·Re^0.8·Pr^0.4·(1 + 1.77·(e/D))` | Isachenko et al. |
-
----
-
-### External forced — `FLAT_PLATE`
-
-| Correlation | Regime | Formula | Source |
-|---|---|---|---|
-| `flat_plate_laminar` | Re ≤ 5×10⁵ | `Nu_L = 0.664·Re_L^0.5·Pr^(1/3)` | [I7 §7.2] |
-| `flat_plate_turbulent` | Re > 5×10⁵ | `Nu_L = 0.037·Re_L^0.8·Pr^(1/3)` | [I7 §7.2] |
-| `flat_plate_mixed` | mixed | `Nu_L = (0.037·Re_L^0.8 − 871)·Pr^(1/3)` | [I7 §7.2] |
-| `churchill_ozoe` | all Re, Pr | full blended form — see [App §A3] | Churchill & Ozoe (1973) |
-| `whitaker_flat_plate` | all Re | `Nu = (0.4·Re^0.5 + 0.06·Re^(2/3))·Pr^0.4·(μ/μ_s)^0.25` | [App §W2] |
-
----
-
-### External forced — `CYLINDER_CROSSFLOW`
-
-| Correlation | Formula | Validity | Source |
-|---|---|---|---|
-| `churchill_bernstein` | full blended form — see [App §A4] | all Re, Pr·Re^0.5 > 0.2 | Churchill & Bernstein (1977) |
-| `hilpert` | `Nu = C·Re^m·Pr^(1/3)` (C, m from table below) | 0.4 ≤ Re ≤ 4×10⁵ | [I7 §7.4], [C5 §7-3] |
-| `whitaker_cylinder` | full form with μ/μ_s correction — see [App §W3] | 10 ≤ Re ≤ 1.5×10⁵, 0.65 ≤ Pr ≤ 300 | Whitaker (1972) |
-
-**Hilpert constants:**
-
-| Re range | C | m |
-|---|---|---|
-| 0.4–4 | 0.989 | 0.330 |
-| 4–40 | 0.911 | 0.385 |
-| 40–4000 | 0.683 | 0.466 |
-| 4000–40000 | 0.193 | 0.618 |
-| 40000–400000 | 0.027 | 0.805 |
-
----
-
-### External forced — `ELLIPTICAL_CYLINDER`
-
-`Nu = C·Re_a^m·Pr^(1/3)`, C and m from Owen (1952); tabulated in [VDI F5].
-
----
-
-### External forced — `CONE_CROSSFLOW`
-
-`Nu ≈ 0.58·Re^0.5·Pr^(1/3)` for apex upstream, from Yuge (1960); [VDI F6].
-
----
-
-### External forced — `TUBE_BANK_INLINE` / `TUBE_BANK_STAGGERED`
-
-**Zukauskas:**
-`Nu = C₁·C₂·Re_D,max^m·Pr^0.36·(Pr/Pr_s)^0.25`
-`Re_D,max = V·S_T/(S_T−D)·D/ν`  (inline; diagonal check for staggered)
-
-| Re_D,max | C₁ inline | C₁ staggered | m |
-|---|---|---|---|
-| 10–100 | 0.80 | 0.90 | 0.40 |
-| 100–10³ | 0.27 | 0.35·(S_T/S_L)^0.2 | 0.63 |
-| 10³–2×10⁵ | 0.21 | 0.40 | 0.70 |
-| 2×10⁵–2×10⁶ | 0.021 | 0.022 | 0.84 |
-
-Row correction C₂: 1.0 for N_L ≥ 20 rows; table in [I7 §7.5].
-
-**Whitaker tube bank** — see [App §W5].
-
----
-
-### External forced — `SPHERE_FORCED`
-
-> ⚠️ [Leg] lines 838–841 contain **two distinct sphere correlations** (verbatim — must not change).
-
-| Correlation | Formula | Source |
-|---|---|---|
-| `sphere_ranz_marshall` (default) | `Nu = 2 + 0.4·Re^0.5·Pr^(1/3)` | [Leg 841]; Ranz & Marshall, *Chem.Eng.Prog.* 48:141, 1952 |
-| `sphere_diffusion` | `Nu = 2 + 0.17·Re^(2/3)` | [Leg 839]; ⚠️ Russian lit — source TBD |
-| `whitaker_sphere` | full form with (μ/μ_s)^0.25 — see [App §W4] | Whitaker (1972) AIChE |
-
----
-
-### Natural convection — `VERTICAL_PLATE` / `VERTICAL_CYLINDER`
-
-> ⚠️ Both forms verbatim from [Leg 818–820]. Ra boundary **Ra < 10⁹** must not change.
-
-| Correlation | Formula | Source |
-|---|---|---|
-| `churchill_chu_laminar` | `Nu = 0.68 + 0.67·Ra^(1/4) / (1+(0.492/Pr)^(9/16))^(4/9)` | [Leg 819]; Churchill & Chu (1975a) Eq.(1) — [App §A5] |
-| `churchill_chu_all_ra` | `Nu = (0.825 + 0.387·Ra^(1/6) / (1+(0.492/Pr)^(9/16))^(8/27))²` | [Leg 820]; Churchill & Chu (1975a) Eq.(2) — [App §A5] |
-| `churchill_chu` | auto-selects laminar for Ra < 1e9, all_ra otherwise | [Leg 819–820] |
-
-**Vertical cylinder validity (from [Leg 813–815, 853–857]):**
-`D/L ≥ 35/Gr_L^(1/4)` → use vertical plate; otherwise treat as pipe.
-
----
-
-### Natural convection — `HORIZONTAL_CYLINDER`
-
-| Correlation | Formula | Source |
-|---|---|---|
-| `morgan` (default) | `Nu = C·Ra_D^n` (range-table) | [I7 §9.6] |
-| `churchill_chu_horizontal` | all Ra form — see [App §A6] | Churchill & Chu (1975b) |
-
-**Morgan table:**
-
-| Ra_D | C | n |
-|---|---|---|
-| 10⁻¹⁰–10⁻² | 0.675 | 0.058 |
-| 10⁻²–10² | 1.02 | 0.148 |
-| 10²–10⁴ | 0.850 | 0.188 |
-| 10⁴–10⁷ | 0.480 | 0.250 |
-| 10⁷–10¹² | 0.125 | 0.333 |
-
----
-
-### Natural convection — `HORIZONTAL_PLATE_HOT_UP` / `HOT_DOWN`
-
-| Regime | Formula | Source |
-|---|---|---|
-| Hot up, 10⁴ ≤ Ra ≤ 10⁷ | `Nu = 0.54·Ra^(1/4)` | [I7 §9.7] |
-| Hot up, 10⁷ ≤ Ra ≤ 10¹¹ | `Nu = 0.15·Ra^(1/3)` | [I7 §9.7] |
-| Hot down, 10⁵ ≤ Ra ≤ 10¹¹ | `Nu = 0.27·Ra^(1/4)` | [I7 §9.7] |
-
-`L_c = A_s / P`
-
----
-
-### Natural convection — `INCLINED_PLATE`
-
-`g_eff = g·cos(θ)`, θ from vertical.
-- Upper surface heated facing down: use Churchill–Chu with `g_eff` — [App §A7]
-- Upper surface heated facing up + θ > 60°: use horizontal plate correlations
-
----
-
-### Natural convection — `SPHERE_NATURAL`
-
-`Nu = 2 + 0.589·Ra_D^(1/4) / (1+(0.469/Pr)^(9/16))^(4/9)` — Churchill; [I7 §9.9] — [App §A8]
-Validity: Ra ≤ 10¹¹, Pr ≥ 0.7.
-
----
-
-### Natural convection — `CONCENTRIC_CYLINDERS`
-
-**Raithby–Hollands:**
-`k_eff/k = 0.386·(Pr/(0.861+Pr))^(1/4)·Ra_c^(1/4)`
-`Ra_c = (ln(D_o/D_i))^4 / (r_i^(−3/5) + r_o^(−3/5))^5 · Ra_δ`
-`q' = 2π·k_eff·ΔT / ln(D_o/D_i)` — [I7 §9.7]
-
----
-
-### Natural convection — `CONCENTRIC_SPHERES`
-
-**Raithby–Hollands:**
-`k_eff/k = 0.74·(Pr/(0.861+Pr))^(1/4)·Ra_δ^(1/4) / (1−(r_i/r_o)^(−5/7))^(5/4)` — [I7 §9.7]
-
----
-
-### Natural convection — `HORIZONTAL_CAVITY`
-
-| Correlation | Formula | Validity |
-|---|---|---|
-| `hollands` | `Nu = 1 + 1.44·[1−1708/Ra]⁺ + [(Ra/5830)^(1/3)−1]⁺` | 1708 ≤ Ra ≤ 10⁸ — [I7 §9.9] |
-| `globe_dropkin` | `Nu = 0.069·Ra^(1/3)·Pr^0.074` | 3×10⁵ ≤ Ra ≤ 7×10⁹ — [I7 §9.9] |
-
-`[·]⁺` = max(·, 0)
-
----
-
-### Natural convection — `VERTICAL_CAVITY`
-
-**MacGregor–Emery:**
-
-| H/L | Ra range | Formula |
-|---|---|---|
-| 1–2 | 10⁴–10⁷ | `Nu = 0.18·(Pr/(0.2+Pr)·Ra)^0.29` |
-| 2–10 | 10³–10¹⁰ | `Nu = 0.22·(Pr/(0.2+Pr)·Ra)^0.28·(H/L)^(−1/4)` |
-| 10–40 | 10⁴–10⁷ | `Nu = 0.42·Ra^(1/4)·Pr^0.012·(H/L)^(−0.3)` |
-| 10–40 | 10⁶–10⁹ | `Nu = 0.046·Ra^(1/3)` |
-
-Source: [I7 §9.9]
-
----
-
-### Mixed convection — `MIXED_PIPE_VERTICAL` / `MIXED_PLATE_VERTICAL`
-
-**Churchill (1977) n=3 power-sum blend** — [App §A1]:
-`Nu_comb = (Nu_forced^3 ± Nu_natural^3)^(1/3)`
-`+` aiding flow, `−` opposing flow.
-Significant if `Gr/Re² > 0.1` — [I7 §9.10], [C5 §15-2]
-
----
-
-### Packed / porous beds — `PACKED_BED`
-
-| Correlation | Formula | Validity | Source |
-|---|---|---|---|
-| `gunn` (default) | `Nu = (7−10ε+5ε²)·(1+0.7·Re_p^0.2·Pr^(1/3)) + (1.33−2.4ε+1.2ε²)·Re_p^0.7·Pr^(1/3)` | 0 ≤ Re ≤ 10⁵, 0.35 ≤ ε ≤ 1.0 | [Leg HeatTransfer.js 22–27]; Gunn (1978) |
-| `wakao_funazkri` | `Nu = 2 + 1.1·Re_p^0.6·Pr^(1/3)` | Re > 0 | Wakao & Funazkri (1978); [VDI M8] |
-| `whitaker_packed_bed` | full form — see [App §W6] | 10 ≤ Re ≤ 10⁴ | Whitaker (1972) |
-
-`PACKED_BED_CYLINDER`: `D_eq = 3·D_p·L_p / (D_p/2 + L_p)` → use same correlations.
-
----
-
-### Packed bed — `FLUIDIZED_BED`
-
-**Wen & Yu (minimum fluidization):**
-`Re_mf = (C₁² + C₂·Ar)^0.5 − C₁`, C₁=33.7, C₂=0.0408
-`Ar = D_p³·ρ_f·(ρ_s−ρ_f)·g / μ²`
-
-**Molerus & Wirth (heat transfer to immersed surface):**
-`Nu = (1−ε)·Nu_slow + ε·Nu_fast` — [VDI L3.4]
-
----
-
-### Phase change — `CONDENSATION_VERTICAL_PLATE`
-
-**Nusselt film condensation (laminar):**
-`Nu_L = 0.943·[ρ_l·(ρ_l−ρ_v)·g·h_fg'·L³ / (μ_l·k_l·ΔT)]^(1/4)`
-`h_fg' = h_fg + 0.68·Cp_l·ΔT` — [I7 §10.6]
-
-**Chen turbulent (Re_δ > 1800):**
-`Nu = Re_δ^(1/3)·Pr_l^0.5 / (1.08·Re_δ^1.22 − 5.2)` — [I7 §10.6]
-
----
-
-### Phase change — `CONDENSATION_HORIZONTAL_TUBE`
-
-`Nu_D = 0.725·[ρ_l·(ρ_l−ρ_v)·g·h_fg'·D³ / (μ_l·k_l·ΔT)]^(1/4)` — [I7 §10.6]
-
----
-
-### Rotating — `ROTATING_DISK`
-
-| Regime | Formula | Re_ω |
-|---|---|---|
-| Laminar | `Nu = 0.36·Re_ω^0.5·Pr^0.6` | < 2.5×10⁵ |
-| Turbulent | `Nu = 0.0195·Re_ω^0.8·Pr^0.6` | > 2.5×10⁵ |
-
-`Re_ω = ω·r²/ν` — Dorfman; [VDI H4]
-
----
-
-### Rotating — `ROTATING_CYLINDER`
-
-`Nu = 0.386·(Ta·Pr)^0.5`, `Ta = ω²·r_i·δ³/ν²`, `δ = r_o−r_i`
-Validity: Ta^0.5·Pr > 1 — Bjorklund & Kays; [VDI H5]
-
----
-
-### Impinging jet — `IMPINGING_JET_SINGLE`
-
-`Nu = G·Re_D^0.5·Pr^0.42`
-`G = D/r · [(1−1.1·D/r)/(1+0.1·(H/D−6)·D/r)]^0.5`
-Validity: 2000 ≤ Re ≤ 4×10⁵, 2 ≤ H/D ≤ 12, 2.5 ≤ r/D ≤ 7.5 — Martin (1977); [VDI G8]
-
----
-
-### Impinging jet — `IMPINGING_JET_ARRAY`
-
-`Nu = K·G·Re_D^0.5·Pr^0.42`
-`K = (1+(H/D/(0.6/√f))^6)^(−0.05)`, f = jet area fraction — Martin (1977); [VDI G8]
-
----
-
-## `BodyGeometry` formulas
-
-### Surface area
-
-> ⚠️ SPHERE, CYLINDER, CUBE verbatim from [Leg] `recuperator.js` `surfaceFunction()` lines 1804–1824.
-
-| Geometry | Formula (h = insulation thickness) | Source |
-|---|---|---|
-| `SPHERE` | `4π(a+h)²` | [Leg 1807] |
-| `CYLINDER` | `2π(a+h)² + 2π(a+h)(b+2h)` | [Leg 1811] |
-| `CUBE` | `6(a+2h)²` | [Leg 1815] |
-| `RECTANGULAR_PRISM` | `2(ab+bc+ac)` + per-face insulation | geometry |
-| `TRIANGULAR_PRISM` | `a·b + 3·(a·c)` (equilateral approx) | geometry |
-| `CONE` | `π·a·√(a²+b²) + π·a²` | geometry |
-| `TRUNCATED_CONE` | `π(a+b)·√((a−b)²+c²) + π(a²+b²)` | geometry |
-| `HOLLOW_CYLINDER` | `2π·b·c + 2π(b²−a²)` | geometry |
-| `ELLIPSOID` | `4π·((a^p·b^p+a^p·c^p+b^p·c^p)/3)^(1/p)`, p=1.6075 | Thomsen approx |
-| `HEMISPHERICAL_DOME` | `3π·a²` | geometry |
-
-### Volume
-
-| Geometry | Formula |
-|---|---|
-| `SPHERE` | `(4/3)π·a³` |
-| `CYLINDER` | `π·a²·b` |
-| `CUBE` | `a³` |
-| `RECTANGULAR_PRISM` | `a·b·c` |
-| `TRIANGULAR_PRISM` | `(1/2)·a·b·c` |
-| `CONE` | `(1/3)π·a²·b` |
-| `TRUNCATED_CONE` | `(π/3)·c·(a²+ab+b²)` |
-| `HOLLOW_CYLINDER` | `π(b²−a²)·c` |
-| `ELLIPSOID` | `(4/3)π·a·b·c` |
-| `HEMISPHERICAL_DOME` | `(2/3)π·a³` |
-
-### Mean beam length (Hottel)
-
-> ⚠️ SPHERE, CYLINDER, CUBE verbatim from [Leg] `getRayLength()` lines 1826–1843.
-
-| Geometry | Formula | Source |
-|---|---|---|
-| `SPHERE` | `L = 0.6·2a` | [Leg 1829]; Hottel |
-| `CYLINDER` | `L = 3.6·a·b / (2a+2b)` | [Leg 1832]; Hottel |
-| `CUBE` | `L = 0.6·a` | [Leg 1835]; Hottel |
-| General fallback | `L = 3.6·V / S` | Hottel |
 
 ---
 
@@ -899,4 +381,9 @@ export class BodyGeometryResultDto {
 
 ## See also
 
-- `CH07_APPENDIX_CORRELATIONS.md` — exact formulas from original Churchill & Whitaker papers, all geometry variants, all validity bounds, best-equation selection criteria as stated by the authors themselves.
+- [CH08_GEOMETRY.md](CH08_GEOMETRY.md) — `FlowGeometry`, `BodyGeometry`, `GeometryDims`, hydraulic diameter table, surface/volume/beam-length formulas
+- [CH07_APPENDIX_A_INTERNAL_FLOW.md](CH07_APPENDIX_A_INTERNAL_FLOW.md) — pipe/duct/helical/corrugated correlations
+- [CH07_APPENDIX_B_PLATES.md](CH07_APPENDIX_B_PLATES.md) — flat plate, vertical/horizontal/inclined plate correlations
+- [CH07_APPENDIX_C_CYLINDERS.md](CH07_APPENDIX_C_CYLINDERS.md) — cylinder crossflow, horizontal cylinder, concentric cylinders
+- [CH07_APPENDIX_D_SPHERES.md](CH07_APPENDIX_D_SPHERES.md) — sphere forced/natural, concentric spheres
+- [CH07_APPENDIX_E_SPECIAL.md](CH07_APPENDIX_E_SPECIAL.md) — tube banks, cavities, mixed convection, packed bed, phase change, rotating, impinging jets

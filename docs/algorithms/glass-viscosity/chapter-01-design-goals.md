@@ -6,7 +6,7 @@
 
 ## Why V1 Failed
 
-The v1 implementation used a single Arrhenius model with constant per-component viscosity coefficients. The full problem analysis is in [v1 Chapter 1](../glass-viscosity/chapter-01-current-issues.md). The core defects were:
+The v1 implementation used a single Arrhenius model with constant per-component viscosity coefficients. The core defects were:
 
 1. **Constant component coefficients** — real effects depend on concentration and co-modifier context
 2. **No B₂O₃ non-linearity** — the boron anomaly is well-known but was not captured

@@ -100,10 +100,15 @@ make up
 - 🔌 **[backend/src/modules/refractory/interfaces/README.md](backend/src/modules/refractory/interfaces/README.md)** — Refractory interface quick reference
 
 ### Algorithms & Calculations
-- 📐 **[docs/algorithms/README.md](docs/algorithms/README.md)** — Index of all 15 documented algorithms
-  - Blend Optimizer, PSD Calculation, Packing Models, Shrinkage Prediction
-  - Phase Equilibrium, Thermal Performance, Refractoriness
-  - Viscosity, Glass Viscosity, Mineral Phase Identification, Component Effects
+- 📐 **[docs/algorithms/README.md](docs/algorithms/README.md)** — Index of all documented algorithms
+  - Refractory: Blend Optimizer, PSD, Packing, Shrinkage, Phase Equilibrium, Refractoriness, Glass Viscosity, Mineral Phase, Component Effects
+  - Thermodynamics: NASA-7/9, Sutherland, Eucken, Chapman-Enskog, dimensionless numbers, Nusselt correlations, radiation
+
+### API Reference
+- 📋 **[docs/api/REFRACTORY_API_SPEC.md](docs/api/REFRACTORY_API_SPEC.md)** — All 14 refractory endpoints with request/response shapes
+- 📋 **[docs/api/THERMODYNAMICS_API_SPEC.md](docs/api/THERMODYNAMICS_API_SPEC.md)** — Thermodynamics API conventions (fluid interface, DTOs, Swagger rules)
+- 📋 **[docs/services/THERMODYNAMICS_SERVICES.md](docs/services/THERMODYNAMICS_SERVICES.md)** — Thermodynamics service method reference (formulas, correlations)
+- 📋 **[docs/services/COMMON_THERMAL_LIBRARY.md](docs/services/COMMON_THERMAL_LIBRARY.md)** — Common thermal library (16 gas compounds, NASA-7/9, Sutherland, numeric utils)
 
 ### Configuration & Security
 - 🔐 **[docs/ENV_ONLY_POLICY.md](docs/ENV_ONLY_POLICY.md)** — All config via environment variables only

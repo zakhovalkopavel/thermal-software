@@ -8,16 +8,20 @@
 
 ## 📚 AVAILABLE ALGORITHMS
 
-### 1. **VISCOSITY_ALGORITHM.md** ⭐
-**Service:** `ViscosityService`  
-**Components:** 33 (21 oxides + 6 fluorides + 6 chlorides)  
-**Model:** Arrhenius Viscosity Equation  
+### 1. **Viscosity (Melt / Glass)** ⭐
+**Services:** `GlassViscosityService` (glass compositions), melt viscosity integrated in `PhaseEquilibriumService`  
+**Model:** Arrhenius (melt) + VFT / Lakatos / Fluegel (glass)
+
+**Algorithm documents:**
+- **[`MULTI_MODEL_COMPLETE.md`](./MULTI_MODEL_COMPLETE.md)** — multi-model viscosity comparison
+- **[`glass-viscosity/INDEX.md`](./glass-viscosity/INDEX.md)** — 14-chapter glass viscosity specification (VFT, Lakatos, Fluegel, composition encoding, confidence)
 
 **Resources:**
 - Urbain et al. (1982) - Base model
 - Mills (1993) - Comprehensive slag data
 - Giordano et al. (2008) - VFT model
-- Industrial viscosity databases
+- Lakatos (1976) - Glass composition model
+- Fluegel (2007) - Large-dataset regression
 
 **Key Features:**
 - Network former/modifier classification
@@ -148,7 +152,8 @@ Material Library (Composition Data)
 ## 🎯 QUICK ACCESS
 
 ### By Service:
-- **Viscosity** → `VISCOSITY_ALGORITHM.md`
+- **Melt Viscosity** → `MULTI_MODEL_COMPLETE.md`
+- **Glass Viscosity** → `glass-viscosity/INDEX.md`
 - **Phase Equilibrium** → `FULL_PHASE_EQUILIBRIUM.md`
 - **Packing Density** → `PACKING_MODELS.md`
 - **Particle Size** → `PSD_ALGORITHMS.md`
@@ -187,7 +192,8 @@ Material Library (Composition Data)
 
 | Algorithm | Validated | Tested | Production | Date |
 |-----------|-----------|--------|-----------|------|
-| Viscosity | ✅ | ✅ | ✅ | Feb 2, 2026 |
+| Melt Viscosity (Arrhenius) | ✅ | ✅ | ✅ | Feb 2, 2026 |
+| Glass Viscosity (VFT/Lakatos/Fluegel) | ✅ | ✅ | ✅ | Feb 2, 2026 |
 | Phase Equilibrium | ✅ | ✅ | ✅ | Earlier |
 | Packing | ✅ | ✅ | ✅ | Earlier |
 | PSD | ✅ | ✅ | ✅ | Earlier |
@@ -197,7 +203,7 @@ Material Library (Composition Data)
 ## 📝 UPDATE HISTORY
 
 ### February 2, 2026
-- ✅ Created VISCOSITY_ALGORITHM.md
+- ✅ Updated viscosity section — replaced phantom `VISCOSITY_ALGORITHM.md` with `MULTI_MODEL_COMPLETE.md` + `glass-viscosity/INDEX.md`
 - ✅ Documented 33 components (21 oxides + 6 fluorides + 6 chlorides)
 - ✅ Added resource citations
 - ✅ Created algorithms index
