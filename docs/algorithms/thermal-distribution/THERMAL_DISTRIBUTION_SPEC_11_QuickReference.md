@@ -1,330 +1,186 @@
-# THERMAL DISTRIBUTION SPEC — Quick Reference (EN)
+# THERMAL DISTRIBUTION SPEC — Quick Reference
 
-**Purpose:** Bulleted formula and concept summary for quick lookup.
+**Version:** 2.0  
+**Primary Reference:** Luikov A. V. *Analytical Heat Diffusion Theory.* Academic Press, 1968.
 
 ---
 
 ## Core Definitions
 
-**Characteristic Length:** Lc = V/S (volume / surface area) — **invariant**, always use for Bi
-
-**Biot Number:** Bi = h·Lc / k (convection × length / conductivity)
-
-**Normalized Coordinates:**
-- From center: x ∈ [0, 1] (0 = center, 1 = boundary)
-- From boundary: ξ = 1 − x ∈ [0, 1]
-
-**Boundary Conditions:**
-- T(center) = Tc
-- T(surface) = Ts
-- Temperature range: [Ts, Tc]
+| Symbol | Formula | Notes |
+|---|---|---|
+| `Fo` | `ā·τ / R²` | Fourier number; `R` = half-dimension |
+| `Bi` | `α·R / λ̄` | Biot number; same `R` as `Fo` |
+| `ā` | mean thermal diffusivity | averaged over `[T0, Tc]` |
+| `λ̄` | mean thermal conductivity | averaged over `[T0, Tc]` |
+| `ϑ` | `Tc − T(x, τ)` | excess temperature (BC III scale) |
+| `Θ` | `(T − Ts) / (T₀ − Ts)` | dimensionless temperature (BC I) |
 
 ---
 
-## Eigenvalue Equations (Reference Spectra)
+## Boundary Condition Selection
 
-**Slab:** cot(λ) = λ / Bi
-
-**Infinite Cylinder:** λ · J₁(λ) / J₀(λ) = −Bi
-
-**Sphere:** λ · cot(λ) = 1 − Bi (most common reference)
-
----
-
-## Basis Functions
-
-**Slab:** cos(λ·x)
-
-**Cylinder:** J₀(λ·x) (Bessel function of first kind)
-
-**Sphere:** sin(λ·x) / (λ·x)
+| Bi | BC Type | Physical scenario |
+|---|---|---|
+| ≥ 100 | **BC I** (Dirichlet) | Water / salt quench; `Ts = Tc` instantly |
+| 0.1 – 100 | **BC III** (Convective) | Furnace, air, oil; `−λ·∂T/∂n = α·(T − Tc)` |
 
 ---
 
-## Spectral Solution
+## BC I — Eigenvalues (Fixed, No Root-Finding)
 
-**General form (normalized):**
-```
-T(x) = Ts + (Tc − Ts) · F(x) / F(0)
-F(x) = Σ aₙ · φₙ(x)    (sum over modes n=1 to 3)
-```
+| Geometry | `μn` | Spec |
+|---|---|---|
+| Plate | `(2n−1)·π/2` | HC-02 |
+| Cylinder | roots of `J₀(μ) = 0` (2.4048, 5.5201, …) | HC-03 |
+| Sphere | `n·π` | HC-04 |
 
-**Standard coefficients:**
-```
-Cₙ = 4·(sin(λₙ) − λₙ·cos(λₙ)) / (2·λₙ − sin(2·λₙ))
-aₙ = Cₙ
-F(0) = Σ aₙ·λₙ
-```
+**BC I temperature field:**
 
-**Eigenvalue root finding:** λ₁(Bi) blended approximation for Newton initializer
+- Plate: `Θ(x,τ) = Σ Aₙ·cos(μₙ·x/R)·exp(−μₙ²·Fo)`   `Aₙ = (−1)^(n+1)·2/μₙ`
+- Cylinder: `Θ(r,τ) = Σ Aₙ·J₀(μₙ·r/R)·exp(−μₙ²·Fo)`   `Aₙ = 2/(μₙ·J₁(μₙ))`
+- Sphere: `Θ(r,τ) = Σ Aₙ·sin(μₙ·r/R)/(μₙ·r/R)·exp(−μₙ²·Fo)`   `Aₙ = 2·(−1)^(n+1)`
 
----
+**BC I volume-average coefficients `Bₙ`:**
 
-## Power-Law Models
+| Geometry | `Bₙ` |
+|---|---|
+| Plate | `8 / [(2n−1)²·π²]` |
+| Cylinder | `4 / μₙ²` |
+| Sphere | `6 / (n²·π²)` |
 
-**B1 (Heuristic):**
-```
-T(x) = Ts + (Tc − Ts)·(1 − xⁿ)
-n(Bi) = 1 + Bi / (1 + Bi)
-```
-
-**B2 (Spectral-Anchored):**
-- Two-point anchor (x₁=1/3, x₂=2/3):
-```
-n = ln((1 − S(x₁)) / (1 − S(x₂))) / ln(x₁ / x₂)
-```
-- Least-squares anchor: minimize ∫w(x)·[S(x) − (1 − xⁿ)]² dx with w ∈ {1, x, x²}
-
-Where S(x) = F(x) / F(0) from spectral method
+`T̄(τ) = Ts + (T₀ − Ts)·Σ Bₙ·exp(−μₙ²·Fo)`
 
 ---
 
-## Volume Averaging (Closed Forms for Power Law)
+## BC III — Eigenvalue Equations
 
-**Slab:**
-```
-Aslab = 1 − 1/(n+1)
-Tavg = Ts + (Tc − Ts)·Aslab
-```
+| Geometry | Transcendental equation | Spec |
+|---|---|---|
+| Plate | `ctg(μ) = (μ² − Bi²) / (2μ·Bi)` | HC-08 Ch. VI Sec. 3 p. 195 |
+| Cylinder | `μ·J₁(μ) − Bi·J₀(μ) = 0` | HC-09 Ch. VI Sec. 6 p. 240 |
+| Sphere | `tan(μ) = μ / (1 − Bi)` | HC-10 Ch. VI Sec. 5 p. 224 |
+| Hollow Cylinder | Bessel-Neumann coupled (see HC-11) | HC-11 Ch. VI Sec. 7 p. 255 |
 
-**Cylinder:**
-```
-Acyl = 1 − 2/(n+2)
-Tavg = Ts + (Tc − Ts)·Acyl
-```
-
-**Sphere:**
-```
-Asph = n / (n+3)
-Tavg = Ts + (Tc − Ts)·Asph
-```
-
-**Separable composition (e.g., finite cylinder r×z):**
-```
-Tavg = Ts + (Tc − Ts)·Acyl(nᵣ)·Aslab(nz)
-```
+**Newton-Raphson:** 1–3 iterations to double precision. Re-solve when `|ΔBi/Bi| > 0.01`.
 
 ---
 
-## 1D Volume Average Weights (Analytical)
+## BC III Uniform — Amplitude & Mean Coefficients
 
-**Slab:** ∫₀¹ T(ξ) dξ
+**Plate** `(Ch. VI, Sec. 3)`:
+- `Aₙ = 2·sin(μₙ) / (μₙ + sin(μₙ)·cos(μₙ))`
+- `Bₙ = 2·Bi² / [μₙ²·(Bi² + Bi + μₙ²)]`
 
-**Cylinder:** 2·∫₀¹ T(x)·x dx (weight: 2x)
+**Cylinder** `(Ch. VI, Sec. 6)`:
+- `Aₙ = 2·Bi / [J₀(μₙ)·(μₙ² + Bi²)]`
+- `Bₙ = 4·Bi² / [μₙ²·(μₙ² + Bi²)]`
 
-**Sphere:** 3·∫₀¹ T(x)·x² dx (weight: 3x²)
-
-**Energy:** E = ρ·c·V·Tavg
-
----
-
-## Product-Solution Method
-
-**Definition (separable coordinates):**
-```
-T(x,y,z) = Ts + (Tc − Ts)·∏ᵢ Sᵢ(xᵢ)
-```
-
-**Effective transverse scale (`perpScale`):**
-- `'avg'`: R⊥ = (1/H)·∫₀ᴴ Rloc(z) dz
-- `'area_weighted'`: R⊥ = (∫ Rloc·A(z) dz) / (∫ A(z) dz) — **default**
-
-**Biot invariance:** Global Bi = h·(V/S)/k always; per-axis Bi internal only
+**Sphere** `(Ch. VI, Sec. 5)`:
+- `Aₙ = (−1)^(n+1)·2·Bi·√(μₙ² + (Bi−1)²) / (μₙ² + Bi² − Bi)`
+- `Bₙ = 6·Bi² / [μₙ²·(μₙ² + Bi² − Bi)]`
 
 ---
 
-## Gauss-Legendre Quadrature
+## BC III Parabolic Initial Profile — Shape Modifiers
 
-**Mapping [-1,1] → [0,1]:** tᵢ = (ξᵢ + 1)/2, wᵢ = Wᵢ/2
+Applied as `Cn·Aₙ` in place of `Aₙ` (do NOT run numerical integration):
 
-**1D approximations:**
-- Slab: Tavg ≈ Σ wᵢ·T(tᵢ)
-- Cylinder: Tavg ≈ 2·Σ wᵢ·T(tᵢ)·tᵢ
-- Sphere: Tavg ≈ 3·Σ wᵢ·T(tᵢ)·tᵢ²
+| Geometry | Modifier `Cm` / `Cn*` / `Cn` |
+|---|---|
+| Plate | `ϑ_surf − 2(ϑ_ctr − ϑ_surf)·(1/Bi − 1/μm²)` |
+| Cylinder | `ϑ_surf − 2(ϑ_ctr − ϑ_surf)·(1/Bi − 2/μn²)` |
+| Sphere | `ϑ_surf − 2(ϑ_ctr − ϑ_surf)·(1/Bi − 3/μn²)` |
 
-**Node selection:**
-- N=16: Low curvature, fast
-- N=32: Standard production
-- N=64: High accuracy, regression baseline
+Where `ϑ_ctr = Tc − T0ctr`, `ϑ_surf = Tc − T0surf`.
 
----
+**Geometric progression of the denominator factor:** `1/μ²` → `2/μ²` → `3/μ²` for plate → cylinder → sphere.
 
-## Geometries (Rdist Selection & Local Radius/Dimensions)
-
-**Slab (thickness L):** Rdist = L/2
-
-**Infinite cylinder (diameter D):** Rdist = D/2
-
-**Sphere (radius R):** Rdist = R
-
-**Prism (aspect A:B:C):** Rdist = Lmin/2 (or V/S if complex)
-
-**Ring/annulus (thickness t):** Rdist = t/2 (radial), V/S per unit length (axial)
-
-**Torus (minor radius r):** Rdist ≈ r/2
-
-**Cone (height H, base R₀):** Rdist,z = H/2; Rdist,r = R₀(local), R(z) = R₀·(1 − z/H)
-
-**Frustum cone:** R(z) = R₁ + (R₂ − R₁)·z/H
-
-**Pyramid (height H, base A₀×B₀):** Rdist,z = H/2; A(z) = A₀·(1 − z/H), B(z) = B₀·(1 − z/H)
-
-**Frustum pyramid:** A(z) = A₁ + (A₀ − A₁)·z/H; B(z) = B₁ + (B₀ − B₁)·z/H
+**Unit test:** setting `T0ctr = T0surf = T0` must reproduce the exact uniform base-case output.
 
 ---
 
-## Variable-Section Axial Averaging
+## Product Solution Rule (Multi-Dimensional)
 
-**Formula:**
-```
-Tavg = (1/V)·∫₀ᴴ (∫_Ω(z) T dA) dz
-     ≈ (1/V)·Σⱼ wⱼ·A(z)·T̄_Ω(zⱼ)
-```
+**Finite Parallelepiped** `(Θ = Θₓ · Θᵧ · Θz)`:
+- Invoke Plate solver 3 times with `(R₁,Bi₁)`, `(R₂,Bi₂)`, `(R₃,Bi₃)`
+- `T̄ = Tc − (Tc − T₀)·T̄ₓ·T̄ᵧ·T̄z`
 
-**Weights by geometry:**
-- Cone: A(z) = π·R(z)²
-- Pyramid: A(z) = A(z)·B(z)
+**Finite Cylinder** `(Θ = Θ_cyl · Θ_plate)`:
+- Invoke Cylinder solver with `(R, Bi_lateral)` and Plate solver with `(l, Bi_endface)`
 
-**Quadrature:** Gauss-Legendre along z, local 1D profiles across section
+**No 2D/3D spatial meshing permitted.**
 
 ---
 
-## Newton-Raphson for λ₁(Bi)
+## Volume Average — Method Selection
 
-**Function:** f(λ) = λ·cot(λ) − (1 − Bi)
-
-**Derivative:** f'(λ) = cot(λ) − λ·csc²(λ)
-
-**Blended initializer (Bi ≈ 0.1…10):**
-```
-λ₁^blend = w·(π/2 − 1/(Bi+α)) + (1−w)·√(3·Bi)/(1+β·Bi)
-w = Biᵖ / (Biᵖ + qᵖ)
-
-Typical: α≈0.5, β≈0.2, q≈1.0, p≈1.4
-```
-
-**Refinement:** 1-2 Newton steps to double precision
+| Geometry | Method |
+|---|---|
+| Plate, Cylinder, Sphere (BC I or BC III) | Exact `Bₙ` series |
+| Hollow Cylinder | Gauss-Legendre N ≥ 32 (mandatory) |
+| Parallelepiped, Finite Cylinder | Product of 1D `Bₙ` series |
+| Complex / variable-section | Gauss-Legendre N ≥ 16/32 on z-axis |
 
 ---
 
-## API Overview
+## Complex Body Routing
 
-**Main functions:**
-- `temperatureAtDepth(d, opts)` → T at distance d
-- `temperatureProfileAtDepths(depths[], opts)` → T[] for array
-- `averageTemperature(opts)` → Tavg
-- `computeBi(opts)` → Bi (always via V/S)
-- `computeCharacteristicLengths(shape, mode)` → {Rdist, Rbi}
+```
+Shape → resistance weight analysis
+       ↓
+   dominant axis? → β = 1 (slab) | 2 (cylinder) | 3 (sphere)
+       ↓
+   Req = β·V/A   →  run 1D solver
+```
 
-**ProfileOptions fields:**
+See `SPEC_01_Geometries.md §4` and HC-16 for full matrix.
+
+---
+
+## API Quick Reference
+
 ```typescript
-Tc, Ts              // Boundary temperatures
-h, k                // Convection, conductivity
-shape               // Geometry + parameters
-method              // 'spectral' | 'power_heuristic' | 'power_spectral_anchored' | 'product_solution'
-avg.mode            // 'analytical' | 'gauss' | 'auto'
-avg.gaussNodes      // 8, 16, 32, 64
-spectralModes       // 1, 2, 3
+// Main entry points
+temperatureAtDepth(relDepth: number, opts: ProfileOptions): number
+temperatureProfile(depths: number[], opts: ProfileOptions): number[]
+averageTemperature(opts: ProfileOptions): number
+computeCriteria(opts: ProfileOptions): { Bi, Fo, Rdist, Rbi }
+runTimeSteppingLoop(opts: ProfileOptions): Array<{tau, Tsurface, Tcenter, Taverage}>
+
+// Key ProfileOptions fields
+bcType: 'BC_I' | 'BC_III'
+T0 / Tc / tau / alpha / lambda / thermalDiffusivity
+shape: { geometry, radius, halfThickness, halfX/Y/Z, innerRadius, outerRadius, V, A }
+initialProfile: 'uniform' | 'parabolic' | 'arbitrary'
+T0Ctr / T0Surf              // for parabolic
+arbitraryProfileFn(x): number // for arbitrary
+biCylinder: [Bi_lat, Bi_end] // finite cylinder
+biPerAxis: [Bi1, Bi2, Bi3]   // parallelepiped
+seriesTerms: 100             // Fourier terms
+alphaCurve(Ts): number       // for oil quench time-stepping
 ```
 
 ---
 
-## Acceptance Criteria
+## Acceptance Thresholds
 
-**Tavg relative error:** |T(candidate) − T(ref)| / T(ref) ≤ **1e−3**
-
-**Profile L2 error:** RMS ≤ **1e−2**
-
-**Conditions:** N ≥ 32, Bi ∈ {0.1, 1, 10}
-
-**Applies to:** All candidate methods (B1, B2, variants) vs spectral/product-solution
+| Metric | Threshold |
+|---|---|
+| `T̄` relative error (N=100 vs N=200) | ≤ 1 × 10⁻³ |
+| Profile L2 error | ≤ 1 × 10⁻² |
+| Eigenvalue Newton residual | ≤ 1 × 10⁻¹² |
+| Parabolic reduction identity | ≤ 1 × 10⁻⁸ |
+| Product-rule identity | ≤ 1 × 10⁻¹⁴ |
 
 ---
 
 ## Common Mistakes to Avoid
 
-1. **Wrong Bi calculation:** Always use Lc = V/S, not arbitrary length
-2. **Profile normalization:** Check T(0) = Tc and T(max) = Ts
-3. **Quadrature order:** N=16 insufficient for Bi>5; use N≥32 production
-4. **Method mismatch:** B1 poor for Bi>5; use B2 or spectral
-5. **Variable sections:** Must use product-solution or numerical quadrature
-6. **Separability assumption:** Only valid for product-solution geometries
-7. **perpScale:** Use 'area_weighted' for cones/pyramids, not 'avg'
-
----
-
-## Performance Typical Values
-
-| Method | Time (ms) | Accuracy |
-|--------|-----------|----------|
-| B1 | 0.3 | ±1% (engineering) |
-| B2 (2pt) | 0.8 | ±0.1% (good) |
-| B2 (LS:x²) | 1.2 | ±0.02% (excellent) |
-| Spectral (3 modes) | 2.1 | <1e-9 (reference) |
-| Product-solution 2D | 5–10 | Reference for 2D |
-| Product-solution 3D | 20–50 | Reference for 3D |
-
----
-
-## When to Use Which Method
-
-**Spectral (A):**
-- When: Accuracy paramount, Bi ≤ 10, 1D or quasi-3D
-- Cost: Highest
-- Accuracy: Excellent
-
-**Power B2 (LS:x²):**
-- When: Balance needed, practical engineering
-- Cost: Low
-- Accuracy: <0.02% vs spectral (excellent for engineering)
-- **Recommended default**
-
-**Power B1:**
-- When: Speed critical, Bi >5
-- Cost: Minimal
-- Accuracy: ±1% acceptable
-
-**Product-Solution:**
-- When: Multi-axis or variable-section geometry
-- Cost: Depends on quadrature (N² or N³)
-- Accuracy: Excellent for separable problems
-- **Must use for cones/pyramids**
-
----
-
-## Troubleshooting
-
-**Error: "Bi mismatch"**
-→ Check V/S calculation (units consistency)
-
-**Error: "T out of bounds"**
-→ Verify Tc > Ts and T values in [Ts, Tc]
-
-**Error: "Convergence failed (Newton)"**
-→ Check Bi range (0.01 to 100 is safe); avoid λ ≈ m·π starts
-
-**Large disagreement B2 vs Spectral**
-→ Check Bi (B2 may diverge at Bi >20); use spectral instead
-
-**Profile wiggles (oscillations)**
-→ Increase N (use N=64 for debug); check product-solution per-axis alignment
-
----
-
-## Bibliography References
-
-See THERMAL_DISTRIBUTION_SPEC_08_Bibliography.md for:
-- Recktenwald (transient conduction)
-- University of Washington (1D solutions)
-- Simon Fraser University (Biot, Lc)
-- NTHU OCW (time-dependent conduction)
-- Michigan Tech (Heisler/Gurney-Lurie)
-- Golub & Welsch (Gauss quadrature)
-- Bogaert (iteration-free quadrature)
-
----
-
-**Quick Reference Complete**  
-**Version:** 1.7  
-**Status:** Ready for bookmark/print
+1. **Wrong `R` for `Bi`:** always use geometric half-dimension, not `V/S` (the latter only for complex-body routing).
+2. **Numerical integration for parabolic profiles:** bypass it — use the exact analytical modifier `Cm`/`Cn*`.
+3. **Root re-use across Bi steps:** re-solve eigenvalues when `|ΔBi/Bi| > 0.01`.
+4. **3D meshing for parallelepiped/finite cylinder:** banned — use product rule only.
+5. **Gauss-Legendre for simple geometries:** unnecessary — use exact `Bₙ` series.
+6. **Center singularity (sphere):** `sin(μr/R)/(μr/R)` at `r=0` → limit = 1.
 
