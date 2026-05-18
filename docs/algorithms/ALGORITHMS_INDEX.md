@@ -293,6 +293,67 @@ Material Library (Composition Data)
 
 ---
 
+---
+
+## 🌡️ HEAT CONDUCTION & HEAT TRANSFER COEFFICIENT
+
+### **heat-conduction/** ⭐ NEW
+**Service:** Transient heat conduction solver (BC I / BC III)
+**Geometries:** Infinite Plate, Infinite Cylinder, Solid Sphere, Hollow Cylinder, Finite Parallelepiped, Finite Cylinder
+**Reference:** Luikov A. V. *Analytical Heat Diffusion Theory.* Academic Press, 1968.
+
+**Shared Foundation:**
+
+| File | Contents |
+|---|---|
+| [`HEAT_CONDUCTION_00_OVERVIEW.md`](./heat-conduction/HEAT_CONDUCTION_00_OVERVIEW.md) | Objectives, architectural constraints, mathematical citation catalog, bibliography |
+| [`HEAT_CONDUCTION_01_MATERIAL_PROPERTIES.md`](./heat-conduction/HEAT_CONDUCTION_01_MATERIAL_PROPERTIES.md) | AISI 304 thermophysical properties, mean property evaluation, effective heat transfer coefficient |
+
+**BC I — Boundary Conditions of the First Kind ($Bi \to \infty$):**
+
+| File | Geometry |
+|---|---|
+| [`HEAT_CONDUCTION_02_BC1_PLATE.md`](./heat-conduction/HEAT_CONDUCTION_02_BC1_PLATE.md) | Infinite Plate |
+| [`HEAT_CONDUCTION_03_BC1_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_03_BC1_CYLINDER.md) | Infinite Cylinder |
+| [`HEAT_CONDUCTION_04_BC1_SPHERE.md`](./heat-conduction/HEAT_CONDUCTION_04_BC1_SPHERE.md) | Solid Sphere |
+| [`HEAT_CONDUCTION_05_BC1_HOLLOW_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_05_BC1_HOLLOW_CYLINDER.md) | Unbounded Hollow Cylinder |
+| [`HEAT_CONDUCTION_06_BC1_PARALLELEPIPED.md`](./heat-conduction/HEAT_CONDUCTION_06_BC1_PARALLELEPIPED.md) | Rectangular Parallelepiped (product rule) |
+| [`HEAT_CONDUCTION_07_BC1_FINITE_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_07_BC1_FINITE_CYLINDER.md) | Finite Cylinder (product rule) |
+
+**BC III — Boundary Conditions of the Third Kind ($0.1 < Bi < 100$):**
+
+| File | Geometry |
+|---|---|
+| [`HEAT_CONDUCTION_08_BC3_PLATE.md`](./heat-conduction/HEAT_CONDUCTION_08_BC3_PLATE.md) | Infinite Plate — uniform, arbitrary, parabolic profiles |
+| [`HEAT_CONDUCTION_09_BC3_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_09_BC3_CYLINDER.md) | Infinite Cylinder — uniform, arbitrary, parabolic profiles |
+| [`HEAT_CONDUCTION_10_BC3_SPHERE.md`](./heat-conduction/HEAT_CONDUCTION_10_BC3_SPHERE.md) | Solid Sphere — uniform, arbitrary, parabolic profiles |
+| [`HEAT_CONDUCTION_11_BC3_HOLLOW_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_11_BC3_HOLLOW_CYLINDER.md) | Infinite Hollow Cylinder — Bessel-Neumann eigenvalue expansion |
+| [`HEAT_CONDUCTION_12_BC3_PARALLELEPIPED.md`](./heat-conduction/HEAT_CONDUCTION_12_BC3_PARALLELEPIPED.md) | Finite Parallelepiped — product rule, triple series |
+| [`HEAT_CONDUCTION_13_BC3_FINITE_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_13_BC3_FINITE_CYLINDER.md) | Finite Cylinder — product rule, double series |
+
+**Solver Framework:**
+
+| File | Contents |
+|---|---|
+| [`HEAT_CONDUCTION_14_TIME_STEPPING.md`](./heat-conduction/HEAT_CONDUCTION_14_TIME_STEPPING.md) | Nonlinear time-stepping, iterative convergence loop, sequential interval method |
+| [`HEAT_CONDUCTION_15_BC_SELECTION_KONDRATIEV.md`](./heat-conduction/HEAT_CONDUCTION_15_BC_SELECTION_KONDRATIEV.md) | BC selection criteria, Kondratiev Regular Thermal Regime, inverse IHCP solver |
+| [`HEAT_CONDUCTION_16_COMPLEX_GEOMETRIES.md`](./heat-conduction/HEAT_CONDUCTION_16_COMPLEX_GEOMETRIES.md) | Engineering approximations for complex shapes, automated topology classification |
+
+---
+
+### **heat-transfer-coefficient/** ⭐ NEW
+**Role:** Multi-regime HTC orchestrator — entry point for $\alpha(T_s)$ calculation used by the heat conduction solver
+**Regimes:** Film boiling → Nucleate boiling → Single-phase convection
+
+| File | Contents |
+|---|---|
+| [`HTC_00_REGIMES_OVERVIEW.md`](./heat-transfer-coefficient/HTC_00_REGIMES_OVERVIEW.md) | **Entry point.** Regime routing state machine, Leidenfrost / CHF2 switching boundaries |
+| [`HTC_01_CRITICAL_FLUX.md`](./heat-transfer-coefficient/HTC_01_CRITICAL_FLUX.md) | Critical Heat Flux (CHF) and Minimum Heat Flux (MHF): Zuber, Kutateladze-Borishanskii, Kandlikar, Henry/Berenson models |
+| [`HTC_02_FILM_BOILING.md`](./heat-transfer-coefficient/HTC_02_FILM_BOILING.md) | Film boiling: Leidenfrost marker, Bromley conductive film, Klimenko universal correlation, orientation routing |
+| [`HTC_03_NUCLEATE_BOILING.md`](./heat-transfer-coefficient/HTC_03_NUCLEATE_BOILING.md) | Nucleate boiling: Labuntsov, Rohsenow, Kutateladze, Stephan-Abdelsalam, Cooper, Yang-Maas, Kovalev models |
+
+---
+
 ## 🎊 STATUS
 
 **All algorithms documented and production-ready!**
