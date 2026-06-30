@@ -183,7 +183,6 @@ npm run calibrate:report
 
 ## 6. Best Practices
 
-- **Reference first:** Always generate spectral/product-solution as baseline
 - **Comprehensive grids:** Test all Bi values and geometry parameters listed
 - **Multiple N values:** Check N=16, 32, 64 convergence
 - **Archive results:** Keep calibration-data/ in version control

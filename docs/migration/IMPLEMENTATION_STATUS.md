@@ -227,9 +227,6 @@ Spec: [`docs/migration/combustion/`](combustion/) (10 chapters: scope, file stru
 **Target path:** `backend/src/modules/thermal-distribution/`
 
 - [ ] Module structure (not yet started)
-- [ ] Spectral method
-- [ ] Power-series method
-- [ ] Product-solution method
 - [ ] Volume-average temperature
 - [ ] API design
 

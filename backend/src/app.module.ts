@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RefractoryModule } from './modules/refractory/refractory.module';
 import { ThermodynamicsModule } from './modules/thermodynamics/thermodynamics.module';
+import { ThermalDistributionModule } from './modules/thermal-distribution/thermal-distribution.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ThermodynamicsModule } from './modules/thermodynamics/thermodynamics.mo
     }),
     ThermodynamicsModule,
     RefractoryModule,
+    ThermalDistributionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

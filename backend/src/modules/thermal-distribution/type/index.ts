@@ -1,0 +1,11 @@
+export type { BoundaryConditionKind } from './boundary-condition-kind.type';
+export type { InitialProfileKind } from './initial-profile-kind.type';
+export type { Geometry } from './geometry.type';
+export type { ShapeInput } from './shape-input.type';
+export type { RDistMode } from './r-dist-mode.type';
+export type { GaussNodes } from './gauss-nodes.type';
+export type { AverageOptions } from './average-options.type';
+export type { ProductSolutionOptions } from './product-solution-options.type';
+export type { ProfileOptions } from './profile-options.type';
+export type { ThermalCriteria } from './thermal-criteria.type';
+export type { EigenvalueCache } from './eigenvalue-cache.type';

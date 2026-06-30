@@ -132,10 +132,6 @@ Specification for temperature field and thermal distribution calculations (not y
 |-----------|-------|
 | [`THERMAL_DISTRIBUTION_SPEC_00_Overview.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_00_Overview.md) | Scope and design goals |
 | [`THERMAL_DISTRIBUTION_SPEC_01_Geometries.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_01_Geometries.md) | Supported geometries |
-| [`THERMAL_DISTRIBUTION_SPEC_02_Methods_A_Spectral.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_02_Methods_A_Spectral.md) | Spectral method |
-| [`THERMAL_DISTRIBUTION_SPEC_03_Methods_B_Power.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_03_Methods_B_Power.md) | Power-series method |
-| [`THERMAL_DISTRIBUTION_SPEC_04_Methods_ProductSolution.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_04_Methods_ProductSolution.md) | Product-solution method |
-| [`THERMAL_DISTRIBUTION_SPEC_05_VolumeAverage.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_05_VolumeAverage.md) | Volume-average temperature |
 | [`THERMAL_DISTRIBUTION_SPEC_06_API.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_06_API.md) | Planned API design |
 | [`THERMAL_DISTRIBUTION_SPEC_07_Calibration.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_07_Calibration.md) | Calibration strategy |
 | [`THERMAL_DISTRIBUTION_SPEC_08_Bibliography.md`](./thermal-distribution/THERMAL_DISTRIBUTION_SPEC_08_Bibliography.md) | References |
