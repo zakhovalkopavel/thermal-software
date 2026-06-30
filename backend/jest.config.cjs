@@ -9,7 +9,7 @@ module.exports = {
   // The pattern below excludes it (and its sub-deps) from the default
   // "ignore everything in node_modules" rule.
   transformIgnorePatterns: [
-    '/node_modules/(?!(ml-levenberg-marquardt)/)',
+    '/node_modules/(?!(ml-levenberg-marquardt|is-any-array|ml-array-rescale)/)',
   ],
   transform: {
     '^.+\\.(ts|tsx)$': [
