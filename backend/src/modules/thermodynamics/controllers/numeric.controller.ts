@@ -1,15 +1,14 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { brentq } from '../../../common/utils/root-finding.util';
+import { brent, nelderMead } from '../../../common/utils/optimization.util';
 import {
-  brentq,
-  brent,
-  nelderMead,
   linearRegression,
   polynomialFit,
   exponentialFit,
   powerFit,
   levenbergMarquardt,
-} from '../../../common/utils/numeric.util';
+} from '../../../common/utils/regression.util';
 import {
   polyCoefficientsToObject,
   polyFormula,

@@ -34,19 +34,6 @@ describe('predictVtfDirectLakatos — direct VTF regression vs paper Table 1A/1B
       const [p1, p2, p3] = glass.isokoms;
 
       const tolerance = glass.tolerance_model_C;
-      if (
-        Math.abs(T1 - p1.T_model_C) >= tolerance ||
-        Math.abs(T3 - p2.T_model_C) >= tolerance ||
-        Math.abs(T5 - p3.T_model_C) >= tolerance
-      ) {
-        console.log({
-          id: glass.id,
-          got:  { T1: +T1.toFixed(1), T3: +T3.toFixed(1), T5: +T5.toFixed(1) },
-          want: { T1: p1.T_model_C,   T3: p2.T_model_C,   T5: p3.T_model_C },
-          measured: { T1: p1.T_measured_C,   T3: p2.T_measured_C,   T5: p3.T_measured_C },
-          diff: { T1: +(T1 - p1.T_model_C).toFixed(1), T3: +(T3 - p2.T_model_C).toFixed(1), T5: +(T5 - p3.T_model_C).toFixed(1) },
-        });
-      }
       expect(Math.abs(T1 - p1.T_measured_C)).toBeLessThan(tolerance);
       expect(Math.abs(T3 - p2.T_measured_C)).toBeLessThan(tolerance);
       expect(Math.abs(T5 - p3.T_measured_C)).toBeLessThan(tolerance);
@@ -95,25 +82,6 @@ describe('predictIsokomsFluegel — regression vs Fluegel 2007 Table 12', () => 
       const iso = predictIsokomsFluegel(glass.composition_wt_pct);
       const [p1, p2, p3] = glass.isokoms;
       const tolerance = glass.tolerance_model_C;
-      if (
-        Math.abs(iso.T_logEta1_5 - p1.T_model_C) >= tolerance ||
-        Math.abs(iso.T_logEta6_6 - p2.T_model_C) >= tolerance ||
-        Math.abs(iso.T_logEta12  - p3.T_model_C) >= tolerance
-      ) {
-        const molPct = wtPctToMolPct(glass.composition_wt_pct);
-        console.log({
-          id: glass.id,
-          composition_wt_pct: glass.composition_wt_pct,
-          molPct: Object.fromEntries(Object.entries(molPct).map(([k, v]) => [k, +v.toFixed(3)])),
-          got:  { T1_5: +iso.T_logEta1_5.toFixed(1), T6_6: +iso.T_logEta6_6.toFixed(1), T12: +iso.T_logEta12.toFixed(1) },
-          want: { T1_5: p1.T_model_C,                T6_6: p2.T_model_C,                T12: p3.T_model_C },
-          errors: {
-            err1_5: +(iso.T_logEta1_5 - p1.T_model_C).toFixed(1),
-            err6_6: +(iso.T_logEta6_6 - p2.T_model_C).toFixed(1),
-            err12:  +(iso.T_logEta12  - p3.T_model_C).toFixed(1),
-          },
-        });
-      }
       expect(Math.abs(iso.T_logEta1_5 - p1.T_model_C)).toBeLessThan(tolerance);
       expect(Math.abs(iso.T_logEta6_6 - p2.T_model_C)).toBeLessThan(tolerance);
       expect(Math.abs(iso.T_logEta12  - p3.T_model_C)).toBeLessThan(tolerance);

@@ -1,7 +1,7 @@
 import { Equation } from '../interfaces/equation.interface';
 import { DipprN102Equation } from '../type/dippr-n102-equation';
 import { Common } from './common';
-import { gaussLegendre20 } from '../../utils/numeric.util';
+import { gaussLegendre20 } from '../../utils/gauss-legendre.util';
 
 /**
  * DIPPR Correlation 102 method.

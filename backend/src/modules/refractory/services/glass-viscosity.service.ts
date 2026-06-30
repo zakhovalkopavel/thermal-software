@@ -40,7 +40,7 @@ import {
 import { calcIidaViscosity } from '../utils/glass-viscosity-iida.util';
 import { calcNakamotoViscosity } from '../utils/glass-viscosity-nakamoto.util';
 import { IIDA_MODEL, NAKAMOTO_2007 } from '../constants/viscosity-parameters';
-import { brentq } from '../../../common/utils/numeric.util';
+import { brentq } from '../../../common/utils/root-finding.util';
 
 /**
  * Glass Viscosity Calculator Service — v3

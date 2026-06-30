@@ -27,7 +27,7 @@ import {
   FluegelIsokoms,
   ModelSelectionResult,
 } from '../interfaces/viscosity-parameters.interface';
-import { levenbergMarquardt } from '../../../common/utils/numeric.util';
+import { levenbergMarquardt } from '../../../common/utils/regression.util';
 import { FixedPoints } from '../interfaces/glass-viscosity.interface';
 import {
   LAKATOS_1976_COEFFICIENTS,
