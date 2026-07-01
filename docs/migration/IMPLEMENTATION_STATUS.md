@@ -1,7 +1,7 @@
 # Implementation Status
 
-**Last Updated:** May 2026
-**Overall Progress:** ~35%
+**Last Updated:** July 2026
+**Overall Progress:** ~55%
 
 > ⚠️ **Maintenance rule:** This file must be updated in the **same commit** as any change
 > to a service, test file, or documentation entry. A PR that changes code without updating
@@ -13,14 +13,16 @@
 
 | Module | Progress | Notes |
 |--------|----------|-------|
-| **Refractory** | ~80% | All 11 services implemented; tests partially complete |
+| **Refractory** | ~85% | All 11 services + RefractoryThermalService; tests partially complete |
 | **Thermodynamics** | ~55% | All 8 services + 3 controllers implemented; tests partial |
 | **Common thermal library** | ~70% | 16 gas compounds, composition, numeric utils |
 | **Frontend** | ~2% | Skeleton only — no pages or components yet |
 | **Furnace** | 0% | Not started |
-| **Recuperator** | 0% | Not started — spec in `docs/migration/recuperator/` |
-| **Combustion** | 0% | Not started — spec in `docs/migration/combustion/` |
-| **Thermal Distribution** | 0% | Not started — algorithm spec in `docs/algorithms/thermal-distribution/` |
+| **Recuperator** | 100% | Implemented — 4 modules: combustion, metals, thermal-exchange, recuperator |
+| **Combustion** | 100% | `backend/src/modules/combustion/` — standalone module |
+| **Metals** | 100% | `backend/src/modules/metals/` — MetalThermalService (AISI 304, mild steel) |
+| **Thermal Exchange** | 100% | `backend/src/modules/thermal-exchange/` — MultilayerWallService + RecuperatorHtcService |
+| **Thermal Distribution** | 100% | Fully implemented, 31 test suites, 602 tests passing |
 | **Thermophysical** | 0% | Not started |
 | **Database migrations** | 0% | Not started |
 | **E2E tests** | 0% | Not started |
@@ -195,30 +197,50 @@ Spec: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md)
 
 ---
 
-## Recuperator Module — 0%
+## Recuperator Module — 100% ✅
 
-**Target path:** `backend/src/modules/recuperator/`
+**Implemented:** July 2026  
+**Architecture:** 4 separate modules following SRP
 
-- [ ] Module structure
-- [ ] Heat exchanger service
-- [ ] Effectiveness-NTU service
-- [ ] Pressure drop service
+### `combustion/` — 100%
+**Path:** `backend/src/modules/combustion/`
+- [x] `combustion.module.ts`
+- [x] `services/combustion.service.ts` — flame temp, smoke composition (legacy findMaxFlameT)
+- [x] `dto/combustion-input.dto.ts`, `combustion-result.dto.ts`
+- [x] `constants/combustion.constants.ts`
+- [x] `controllers/combustion.controller.ts` → `POST /combustion/calculate`
 
-Spec: [`docs/migration/recuperator/`](recuperator/) (12 chapters: scope, file structure, service decomposition, DTOs, controller, material data, testing, registration, implementation order)
+### `refractory/` extension — 100%
+- [x] `enums/refractory-thermal-material.enum.ts` — 19 refractory materials
+- [x] `services/refractory-thermal.service.ts` — λ(T) and ε(T) polynomial/exponential
 
----
+### `metals/` — 100%
+**Path:** `backend/src/modules/metals/`
+- [x] `metals.module.ts`
+- [x] `enums/metal-material.enum.ts` — AISI_304, MILD_STEEL
+- [x] `services/metal-thermal.service.ts` — λ(T) and ε(T)
+- [x] `dto/metal-thermal-query.dto.ts`, `metal-thermal-result.dto.ts`
+- [x] `controllers/metals.controller.ts` → `GET /metals/thermal-properties`
 
-## Combustion Module — 0%
+### `thermal-exchange/` — 100%
+**Path:** `backend/src/modules/thermal-exchange/`
+- [x] `thermal-exchange.module.ts`
+- [x] `enums/wall-geometry.enum.ts` — FLAT, CYLINDER, SPHERE
+- [x] `services/multilayer-wall.service.ts` — binary search, FD traverse, outer cooling
+- [x] `services/recuperator-htc.service.ts` — overall HTC at cross-section
+- [x] `dto/layer.dto.ts`, `multilayer-wall-input.dto.ts`, `multilayer-wall-result.dto.ts`
+- [x] `controllers/thermal-exchange.controller.ts` → `POST /thermal-exchange/multilayer-wall`
 
-**Target path:** `backend/src/modules/combustion/`
+### `recuperator/` (thin) — 100%
+**Path:** `backend/src/modules/recuperator/`
+- [x] `recuperator.module.ts`
+- [x] `enums/hole-form.enum.ts` — SQUARE, CIRCLE, TRIANGLE, CIRCLE_IN_RING
+- [x] `services/recuperator-geometry.service.ts` — areas, perimeters, dEq, ray lengths
+- [x] `services/recuperator.service.ts` — 8-neighbour grid-search optimizer
+- [x] `dto/recuperator-input.dto.ts`, `recuperator-result.dto.ts`
+- [x] `controllers/recuperator.controller.ts` → `POST /recuperator/calculate`
 
-- [ ] Module structure
-- [ ] Flame temperature service
-- [ ] Combustion products service
-- [ ] Chemical kinetics service
-- [ ] Layer model service
-
-Spec: [`docs/migration/combustion/`](combustion/) (10 chapters: scope, file structure, service decomposition, chemical kinetics, thermodynamics, transport, DTOs, registration)
+**Algorithm docs:** [`docs/algorithms/recuperator/`](../algorithms/recuperator/) (9 spec files)
 
 ---
 
