@@ -212,13 +212,17 @@ Spec: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md)
 
 ### `refractory/` extension — 100%
 - [x] `enums/refractory-thermal-material.enum.ts` — 19 refractory materials
-- [x] `services/refractory-thermal.service.ts` — λ(T) and ε(T) polynomial/exponential
+- [x] `data/interfaces/refractory-thermal.interface.ts` — `RefractoryThermalEntry`, λ/ε coefficient types
+- [x] `data/materials/refractory-thermal.data.ts` — `REFRACTORY_THERMAL_MATERIALS[]` + O(1) `REFRACTORY_THERMAL_MAP`
+- [x] `services/refractory-thermal.service.ts` — pure computation (no hardcoded values)
 
 ### `metals/` — 100%
 **Path:** `backend/src/modules/metals/`
 - [x] `metals.module.ts`
 - [x] `enums/metal-material.enum.ts` — AISI_304, MILD_STEEL
-- [x] `services/metal-thermal.service.ts` — λ(T) and ε(T)
+- [x] `data/interfaces/metal-thermal.interface.ts` — `MetalThermalEntry`, λ `tempUnit` flag (K vs °C)
+- [x] `data/materials/metal-thermal.data.ts` — `METAL_THERMAL_MATERIALS[]` + `METAL_THERMAL_MAP`
+- [x] `services/metal-thermal.service.ts` — pure computation (no hardcoded values)
 - [x] `dto/metal-thermal-query.dto.ts`, `metal-thermal-result.dto.ts`
 - [x] `controllers/metals.controller.ts` → `GET /metals/thermal-properties`
 
@@ -227,8 +231,9 @@ Spec: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md)
 - [x] `thermal-exchange.module.ts`
 - [x] `enums/wall-geometry.enum.ts` — FLAT, CYLINDER, SPHERE
 - [x] `services/multilayer-wall.service.ts` — binary search, FD traverse, outer cooling
-- [x] `services/recuperator-htc.service.ts` — overall HTC at cross-section
+- [x] `services/recuperator-htc.service.ts` — overall HTC; air-side supports mixed compositions (air+steam, air+smoke); radiation via `gasRadiationHTC` when H₂O/CO₂ present
 - [x] `dto/layer.dto.ts`, `multilayer-wall-input.dto.ts`, `multilayer-wall-result.dto.ts`
+- [x] `dto/recuperator-htc-input.dto.ts` — optional `airComposition` (defaults to pure air)
 - [x] `controllers/thermal-exchange.controller.ts` → `POST /thermal-exchange/multilayer-wall`
 
 ### `recuperator/` (thin) — 100%
@@ -239,6 +244,9 @@ Spec: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md)
 - [x] `services/recuperator.service.ts` — 8-neighbour grid-search optimizer
 - [x] `dto/recuperator-input.dto.ts`, `recuperator-result.dto.ts`
 - [x] `controllers/recuperator.controller.ts` → `POST /recuperator/calculate`
+
+### Common utilities
+- [x] `common/utils/math.util.ts` — `logMean(x1, x2)` (moved from `MultilayerWallService`, used across thermal-exchange + recuperator)
 
 **Algorithm docs:** [`docs/algorithms/recuperator/`](../algorithms/recuperator/) (9 spec files)
 

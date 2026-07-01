@@ -11,6 +11,7 @@ import { MineralPhaseService } from './services/mineral-phase.service';
 import { RefractorinessService } from './services/refractoriness.service';
 import { ThermalPerformanceService } from './services/thermal-performance.service';
 import { ParticipationService } from './services/participation.service';
+import { RefractoryThermalService } from './services/refractory-thermal.service';
 
 @Module({
   controllers: [RefractoryController],
@@ -26,6 +27,7 @@ import { ParticipationService } from './services/participation.service';
     RefractorinessService,
     ThermalPerformanceService,
     ParticipationService,
+    RefractoryThermalService,
   ],
   exports: [
     PhaseEquilibriumService,
@@ -39,6 +41,7 @@ import { ParticipationService } from './services/participation.service';
     RefractorinessService,
     ThermalPerformanceService,
     ParticipationService,
+    RefractoryThermalService,
   ],
 })
 export class RefractoryModule {}
