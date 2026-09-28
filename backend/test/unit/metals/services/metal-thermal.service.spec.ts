@@ -60,4 +60,29 @@ describe('MetalThermalService', () => {
       expect(() => service.emissivity('unknown-material' as MetalMaterial, 800)).toThrow(NotFoundException);
     });
   });
+
+  describe('listMaterials', () => {
+    it('returns every MetalMaterial once', () => {
+      const ids = service.listMaterials().map(m => m.materialId);
+      expect(ids.sort()).toEqual(Object.values(MetalMaterial).sort());
+    });
+
+    it('AISI_304 - emissivity range equals the data T_min_K / T_max_K', () => {
+      const aisi = service.listMaterials().find(m => m.materialId === MetalMaterial.AISI_304);
+      expect(aisi?.emissivityRange_K).toEqual({ min: 600, max: 1400 });
+      expect(aisi?.name).toBe('AISI 304 stainless steel');
+    });
+  });
+
+  describe('getThermalProperties', () => {
+    it('returns λ and ε equal to lambda() / emissivity()', () => {
+      const result = service.getThermalProperties({ material: MetalMaterial.MILD_STEEL, T_K: 700 });
+      expect(result).toEqual({
+        material:   MetalMaterial.MILD_STEEL,
+        T_K:        700,
+        lambda_WmK: service.lambda(MetalMaterial.MILD_STEEL, 700),
+        emissivity: service.emissivity(MetalMaterial.MILD_STEEL, 700),
+      });
+    });
+  });
 });

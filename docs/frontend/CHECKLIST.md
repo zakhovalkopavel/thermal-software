@@ -25,15 +25,15 @@ Track implementation against [README.md](README.md). Tick an item only when it w
 
 - [x] Spec: backend catalogue endpoints E1–E10, one construct per file (Step 3 §1)
 - [x] Spec: frontend module shell (six sections), types, API, hooks, `MaterialPicker`, temperature sweep (Step 3 §2)
-- [ ] Backend: `GET /metals/list` (E1)
-- [ ] Backend: `GET /refractory/refractories`, `/refractories/properties` (E2, E3)
-- [ ] Backend: `GET /refractory/materials`, `/materials/:materialId` (E4, E5)
-- [ ] Backend: `GET /refractory/material-groups` + one route per library group (E6, E7)
-- [ ] Backend: `GET /refractory/particle-sizes` (E8)
-- [ ] Backend: `GET /refractory/mix-components` (E9) — binders, oxides, silicates, clays, carbides, nitrides by primary group
-- [ ] Backend: `GET /refractory/material-categories` (E10) — all library materials, each once, by primary group
-- [ ] Backend: tests (Step 3 §1.5) + docs (Step 3 §1.6)
-- [ ] Backend: numeric `T_K` query fix on `/metals/thermal-properties` — **awaiting approval** (not applied)
+- [x] Backend: `GET /metals/list` (E1)
+- [x] Backend: `GET /refractory/refractories`, `/refractories/properties` (E2, E3)
+- [x] Backend: `GET /refractory/materials`, `/materials/:materialId` (E4, E5)
+- [x] Backend: `GET /refractory/material-groups` + one route per library group (E6, E7)
+- [x] Backend: `GET /refractory/particle-sizes` (E8)
+- [x] Backend: `GET /refractory/mix-components` (E9) — binders, oxides, silicates, clays, carbides, nitrides by primary group
+- [x] Backend: `GET /refractory/material-categories` (E10) — all library materials, each once, by primary group
+- [x] Backend: tests (Step 3 §1.5) + docs (Step 3 §1.6)
+- [x] Backend: numeric `T_K` query fix on `/metals/thermal-properties` — approved and applied
 - [ ] Frontend: Materials hub (6 cards), section tabs, catalogue hooks, `MaterialPicker`, `TemperatureSweepFields`
 
 ## STEP 04 — Metals
@@ -81,7 +81,7 @@ Track implementation against [README.md](README.md). Tick an item only when it w
 ## STEP 09 — Mineral compositions
 
 - [x] Spec: `POST /refractory/mix/composition` backend + frontend (Step 9 §2) — approved
-- [ ] Backend: `POST /refractory/mix/composition` + tests + docs (Step 9 §2.3–2.5)
+- [x] Backend: `POST /refractory/mix/composition` + tests + docs (Step 9 §2.3–2.5)
 - [ ] Mix table: material × size fraction × mass % × density; picker = mix components from E9 only
 - [ ] Mix composition: fired basis, loss on ignition, accepted oxides (wt% / mol%), other oxides, non-oxide groups, true density
 - [ ] Chemical: phase equilibrium, mineral phases, refractoriness, λ_eff

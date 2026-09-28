@@ -27,6 +27,21 @@ All endpoints accept and return JSON. All `POST` endpoints return `200 OK` on su
 | POST | `/thermal-conductivity` | `ThermalPerformanceService.calculateThermalConductivity` | Effective thermal conductivity with porosity |
 | POST | `/refractoriness` | `RefractorinessService.calculateRefractoriness` | PCE / RUL temperature from composition |
 | POST | `/glass-viscosity` | `GlassViscosityService.calculateViscosity` | Glass viscosity + VFT curve + fixed points |
+| POST | `/mix/composition` | `MixCompositionService.calculate` | Fired-basis composition of a mix of library raw materials (§15) |
+
+Read-only catalogue (`MaterialCatalogController`, tag `materials`, §16):
+
+| Method | Path | Service method | Description |
+|--------|------|----------------|-------------|
+| GET | `/refractories` | `RefractoryThermalService.listProducts` | 19 known refractory / insulation products |
+| GET | `/refractories/properties?material=&T_K=` | `RefractoryThermalService.getProperties` | λ, ε of a product at T_K |
+| GET | `/materials?type=&search=` | `MaterialCatalogService.listMaterials` | Raw-material library (102 unique active entries) |
+| GET | `/materials/:materialId` | `MaterialCatalogService.getMaterial` | One library material |
+| GET | `/material-groups` | `MaterialCatalogService.listGroups` | Groups with route and count |
+| GET | `/particle-sizes` | `ParticleSizeCatalogService.getParticleSizes` | Standard particle-size tables |
+| GET | `/mix-components` | `MixComponentCatalogService.listGroups` | Raw materials allowed in mixes, by primary group |
+| GET | `/material-categories` | `MaterialCatalogService.listCategories` | All materials, each once, by primary group |
+| GET | `/:groupRoute` | `MaterialCatalogService.listByGroupRoute` | Materials of one group (`oxides`, `silicates`, `glasses`, …) |
 
 ---
 
@@ -556,6 +571,92 @@ Calculates glass viscosity at a given temperature. Automatically selects the bes
 
 ---
 
+## 15. Mix Composition
+
+### `POST /mix/composition`
+
+Chemical composition of a mix of library raw materials on the **fired basis**. Mix components are the materials returned by `GET /mix-components`. Algorithm: [`MIX_COMPOSITION_ALGORITHM.md`](../algorithms/MIX_COMPOSITION_ALGORITHM.md).
+
+**Request body** (`MixCompositionInputDto`):
+```json
+{
+  "fractions": [
+    { "materialId": "alumina_tabular", "massFraction": 0.7 },
+    { "materialId": "kaolinite", "massFraction": 0.3 }
+  ]
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `fractions` | `MixComponentInputDto[]` | ✅ | At least one row; repeated materials add up |
+| `fractions[].materialId` | string | ✅ | Library id of a mix component |
+| `fractions[].massFraction` | number | ✅ | 0–1; rescaled so that Σ = 1 |
+
+**Response** (`MixCompositionResultDto`):
+```json
+{
+  "basis": "fired",
+  "lossOnIgnition_wt": 4.2,
+  "acceptedOxides_wt": { "Al2O3": 85.07, "SiO2": 14.63, "CaO": 0.07, "Fe2O3": 0.07, "Na2O": 0.15 },
+  "acceptedOxides_normalized": { "Al2O3": 85.07, "SiO2": 14.63, "CaO": 0.07, "Fe2O3": 0.07, "Na2O": 0.15 },
+  "otherOxides_wt": {},
+  "nonOxideComponents_wt": {},
+  "droppedMetals_wt": 0,
+  "trueDensity_kgm3": 3465.4,
+  "warnings": []
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `lossOnIgnition_wt` | H2O, CO2, OH, Organic — % of the raw mix |
+| `acceptedOxides_wt` | the 8 `OxideCompositionDto` oxides — % of fired mass |
+| `acceptedOxides_normalized` | accepted oxides rescaled to 100; send this to `/phase-equilibrium`, `/mineral-phases`, `/refractoriness`, `/thermal-conductivity`. Empty if no accepted oxide |
+| `otherOxides_wt` | other oxides (`B2O3`, `SO3`, `Cr2O3`, …) — % of fired mass |
+| `nonOxideComponents_wt` | `carbide`, `nitride`, `carbon`, `other` — % of fired mass |
+| `droppedMetals_wt` | elemental metal keys below 1 wt% of their material, dropped — % of fired mass |
+| `trueDensity_kgm3` | `1 / Σ(w′ᵢ / ρᵢ)` on fired mass fractions, ρ = `rho_true_after_firing_kgm3` |
+| `warnings` | one entry when other oxides + non-oxides exceed 5 % of fired mass |
+
+Numbers are unrounded.
+
+| Status | When |
+|--------|------|
+| 200 | calculated |
+| 400 | validation error; Σ `massFraction` = 0; material not a mix component (e.g. `soda_lime_glass`, `calcium_fluoride`) or excluded (`paper_clay`) |
+| 404 | unknown material id (includes refractory product ids such as `chamotte_solid`) |
+
+---
+
+## 16. Material catalogue (read-only)
+
+Controller `MaterialCatalogController`, tag `materials`. All `GET`, `200 OK`, data from the existing library files (nothing is copied).
+
+| Path | Query / param | Response | Errors |
+|------|---------------|----------|--------|
+| `/refractories` | — | `RefractoryProductSummaryDto[]`: `materialId`, `name`, `description`, `emissivityRange_K { min, max }` | — |
+| `/refractories/properties` | `material` (`RefractoryThermalMaterial`), `T_K` ≥ 1 | `RefractoryProductResultDto`: `material`, `T_K`, `lambda_WmK`, `emissivity` (ε clamped to `emissivityRange_K`, λ not clamped) | 400 |
+| `/materials` | `type?` (`aggregate`, `binder`, `additive`, `clay`, `glass`), `search?` (≤ 64 chars, substring of id or name) | `MaterialEntryDto[]` | 400 invalid / unknown parameter |
+| `/materials/:materialId` | — | `MaterialEntryDto` | 404 |
+| `/material-groups` | — | `MaterialGroupSummaryDto[]`: `group`, `route`, `label`, `count` (non-empty groups only) | — |
+| `/particle-sizes` | — | `ParticleSizesDto`: `standard`, `classifications`, `cement`, `mesh`, `fepaF`, `fepaP` — each `Record<code, ParticleSizeRangeDto>` | — |
+| `/mix-components` | — | `MaterialCategoryDto[]` (`group`, `label`, `materials`) | — |
+| `/material-categories` | — | `MaterialCategoryDto[]` | — |
+| `/:groupRoute` | `oxides`, `silicates`, `clays`, `binders`, `carbides`, `nitrides`, `borides`, `glasses`, `fluxes`, `fluorides`, `borates`, `phosphates`, `rare-earths`, `glass-formers`, `hydroxides`, `gels`, `carbonates` | `MaterialEntryDto[]` | 400 unknown route |
+
+Rules:
+
+- **Library list:** active entries of `ALL_MATERIALS`, unique by `materialId` (10 ids are defined twice with identical data; first occurrence wins), sorted by `orderNumber`, then `name`.
+- **Groups (`/:groupRoute`, `/material-groups`):** a material with several groups appears in each. Order and labels come from `MATERIAL_GROUP_ROUTES`.
+- **Categories (`/material-categories`):** each material once, under its primary group `materialGroup[0]`.
+- **Mix components (`/mix-components`):** primary group in `MIX_COMPONENT_GROUPS` (binder, oxide, silicate, clay, carbide, nitride) and id not in `MIX_EXCLUDED_MATERIAL_IDS` (`paper_clay`). 60 materials today. Glasses carry silicate / oxide as secondary groups and are therefore not mix components.
+- **Route order:** `/:groupRoute` is the last handler of `MaterialCatalogController`, and the controller is registered after `RefractoryController`. New static `GET /refractory/<name>` routes must be declared above it.
+
+`MaterialEntryDto`: `materialId`, `name`, `type`, `materialGroup[]` (first = primary), `orderNumber`, `description`, `composition` (wt% as stored), `rho_true_after_firing_kgm3`, `availableParticleSizes?`, `particleSize?`, `thermalProperties?` (`thermalConductivity_WmK?`, `specificHeat_JkgK?`, `thermalExpansion_perK?`), `mechanicalProperties?`, `chemicalShrinkage_volFrac`, `activationEnergy_Jmol`, `meltingPoint_C`, `sourceUrl?`, `supplier?`, `grade?`.
+
+---
+
 ## Common Types
 
 ### `OxideCompositionDto`
@@ -636,4 +737,6 @@ The global prefix in `main.ts` is `api/v1`. The controller is decorated with `@C
 | `/thermal-conductivity` | ❌ needs DTO | ❌ | ✅ service |
 | `/refractoriness` | ✅ | ❌ | ✅ service |
 | `/glass-viscosity` | ✅ | ❌ | ✅ service |
+| `/mix/composition` | ✅ | ✅ | ✅ (tests: `mix-composition.service.spec.ts`, `mix-composition-input.dto.spec.ts`) |
+| Catalogue `GET` routes (§16) | ✅ | ✅ `MaterialCatalogController` | ✅ (tests: catalogue service specs, DTO specs, `material-catalog.controller.spec.ts`) |
 

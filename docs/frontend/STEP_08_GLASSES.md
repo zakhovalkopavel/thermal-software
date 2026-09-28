@@ -21,7 +21,7 @@ There is no separate glass backend module — all endpoints live under `/api/v1/
 
 | UI action | Method | Path |
 |-----------|--------|------|
-| Preset / reference glasses | `GET` | `/refractory/glasses` (specified in Step 3, E7 — not implemented) |
+| Preset / reference glasses | `GET` | `/refractory/glasses` (Step 3, E7 — implemented) |
 | wt% ↔ mol% | `POST` | `/refractory/utils/convert-composition` |
 | η at one T | `POST` | `/refractory/glass-viscosity` |
 | η(T) profile | `POST` | `/refractory/glass-viscosity/profile` |

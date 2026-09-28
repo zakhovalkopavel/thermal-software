@@ -1,8 +1,8 @@
 # STEP 07 — Materials: Raw materials (categorised library)
 
 **Priority:** MEDIUM  
-**Status:** specification only  
-**Depends on:** [STEP_03_MATERIALS_MODULE.md](STEP_03_MATERIALS_MODULE.md) (E5, E9, E10, temperature sweep), [STEP_09 §2](STEP_09_MINERAL_COMPOSITIONS.md) (`POST /refractory/mix/composition`, approved, not implemented)  
+**Status:** backend ready (E5, E9, E10, C1); frontend not started  
+**Depends on:** [STEP_03_MATERIALS_MODULE.md](STEP_03_MATERIALS_MODULE.md) (E5, E9, E10, temperature sweep), [STEP_09 §2](STEP_09_MINERAL_COMPOSITIONS.md) (`POST /refractory/mix/composition`, implemented)  
 **Frontend root:** `frontend/src/modules/materials/sections/raw-materials/`  
 **Route:** `/materials/raw-materials?category=&material=`
 
@@ -26,10 +26,10 @@ No new backend change for this section. It uses:
 
 | # | Method | Path | Use | State |
 |---|--------|------|-----|-------|
-| E10 | `GET` | `/refractory/material-categories` | categories (primary group) with their materials | specified in [Step 3](STEP_03_MATERIALS_MODULE.md), not implemented |
-| E5 | `GET` | `/refractory/materials/:materialId` | full entry of the selected material | specified in Step 3, not implemented |
-| E9 | `GET` | `/refractory/mix-components` | which materials allow the calculated block | specified in Step 3, not implemented |
-| C1 | `POST` | `/refractory/mix/composition` | single material `{ fractions: [{ materialId, massFraction: 1 }] }` → fired-basis `acceptedOxides_normalized`, coverage, warnings | approved, specified in [Step 9 §2](STEP_09_MINERAL_COMPOSITIONS.md), not implemented |
+| E10 | `GET` | `/refractory/material-categories` | categories (primary group) with their materials | implemented ([Step 3](STEP_03_MATERIALS_MODULE.md)) |
+| E5 | `GET` | `/refractory/materials/:materialId` | full entry of the selected material | implemented |
+| E9 | `GET` | `/refractory/mix-components` | which materials allow the calculated block | implemented |
+| C1 | `POST` | `/refractory/mix/composition` | single material `{ fractions: [{ materialId, massFraction: 1 }] }` → fired-basis `acceptedOxides_normalized`, coverage, warnings | implemented ([Step 9 §2](STEP_09_MINERAL_COMPOSITIONS.md)) |
 | C2 | `POST` | `/refractory/thermal-conductivity` | `{ composition: acceptedOxides_normalized, temperature (°C), porosity }` → `thermalConductivity_WmK`, `specificHeat_JkgK`, `density_kgm3`, `thermalDiffusivity_m2s` | exists |
 
 ### 1.1 Why the calculated block goes through C1
@@ -88,7 +88,7 @@ Using the true density in C2 would be a backend calculation change and would nee
 | `mechanicalProperties.*` | crushing strength MPa, modulus of rupture MPa, Young's modulus GPa, hardness HV |
 | `availableParticleSizes`, `particleSize` | particle sizes |
 
-- **Calculated block:** shown when the material is in E9. Flow: C1 once per material → `acceptedOxides_normalized`; then C2 for each T of `toTemperatureGrid(sweep)` (converted to °C) with the chosen porosity (default `RAW_MATERIALS_UI.defaultPorosity = 0.2`). Disabled with a reason when the material is not a mix component ("not a mix raw material": glasses, phosphates, fluorides, …) or C1 returns no accepted oxide. Until C1 is implemented, the block shows "Calculation not available yet".
+- **Calculated block:** shown when the material is in E9. Flow: C1 once per material → `acceptedOxides_normalized`; then C2 for each T of `toTemperatureGrid(sweep)` (converted to °C) with the chosen porosity (default `RAW_MATERIALS_UI.defaultPorosity = 0.2`). Disabled with a reason when the material is not a mix component ("not a mix raw material": glasses, phosphates, fluorides, …) or C1 returns no accepted oxide.
 - **Compare:** up to `RAW_MATERIALS_UI.maxCompared = 3` materials; reference values side by side; calculated series for the ones that allow it.
 
 ### 2.2 Charts

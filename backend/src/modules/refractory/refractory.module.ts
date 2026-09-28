@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { RefractoryController } from './controllers/refractory.controller';
+import { MaterialCatalogController } from './controllers/material-catalog.controller';
 import { PhaseEquilibriumService } from './services/phase-equilibrium.service';
 import { BlendOptimizerService } from './services/blend-optimizer.service';
 import { PSDCalculatorService } from './services/psd-calculator.service';
@@ -12,9 +13,14 @@ import { RefractorinessService } from './services/refractoriness.service';
 import { ThermalPerformanceService } from './services/thermal-performance.service';
 import { ParticipationService } from './services/participation.service';
 import { RefractoryThermalService } from './services/refractory-thermal.service';
+import { MaterialCatalogService } from './services/material-catalog.service';
+import { ParticleSizeCatalogService } from './services/particle-size-catalog.service';
+import { MixComponentCatalogService } from './services/mix-component-catalog.service';
+import { MixCompositionService } from './services/mix-composition.service';
 
 @Module({
-  controllers: [RefractoryController],
+  // MaterialCatalogController ends with GET /refractory/:groupRoute and must stay last.
+  controllers: [RefractoryController, MaterialCatalogController],
   providers: [
     PhaseEquilibriumService,
     BlendOptimizerService,
@@ -28,6 +34,10 @@ import { RefractoryThermalService } from './services/refractory-thermal.service'
     ThermalPerformanceService,
     ParticipationService,
     RefractoryThermalService,
+    MaterialCatalogService,
+    ParticleSizeCatalogService,
+    MixComponentCatalogService,
+    MixCompositionService,
   ],
   exports: [
     PhaseEquilibriumService,
@@ -42,7 +52,9 @@ import { RefractoryThermalService } from './services/refractory-thermal.service'
     ThermalPerformanceService,
     ParticipationService,
     RefractoryThermalService,
+    MaterialCatalogService,
+    MixComponentCatalogService,
+    MixCompositionService,
   ],
 })
 export class RefractoryModule {}
-

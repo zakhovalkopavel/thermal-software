@@ -1,7 +1,7 @@
 # STEP 04 — Materials: Metals
 
 **Priority:** HIGH  
-**Status:** specification only  
+**Status:** backend ready (E1, M1); frontend not started  
 **Depends on:** [STEP_03_MATERIALS_MODULE.md](STEP_03_MATERIALS_MODULE.md) (E1, `MaterialPicker`, temperature sweep)  
 **Frontend root:** `frontend/src/modules/materials/sections/metals/`  
 **Route:** `/materials/metals?material=`
@@ -18,8 +18,8 @@ Select a metal grade and get its temperature-dependent thermal conductivity λ a
 
 | # | Method | Path | Request | Response | State |
 |---|--------|------|---------|----------|-------|
-| E1 | `GET` | `/metals/list` | — | `MetalSummaryDto[]` (`materialId`, `name`, `description`, `emissivityRange_K`) | specified in [Step 3](STEP_03_MATERIALS_MODULE.md), not implemented |
-| M1 | `GET` | `/metals/thermal-properties?material=&T_K=` | `MetalThermalQueryDto` (`material`: `aisi_304` \| `mild_steel`; `T_K` ≥ 1) | `MetalThermalResultDto` = `{ material, T_K, lambda_WmK, emissivity }` | exists; **returns 400 from a browser until the `T_K` query fix is approved** ([Step 3 §1.7](STEP_03_MATERIALS_MODULE.md)) |
+| E1 | `GET` | `/metals/list` | — | `MetalSummaryDto[]` (`materialId`, `name`, `description`, `emissivityRange_K`) | implemented ([Step 3](STEP_03_MATERIALS_MODULE.md)) |
+| M1 | `GET` | `/metals/thermal-properties?material=&T_K=` | `MetalThermalQueryDto` (`material`: `aisi_304` \| `mild_steel`; `T_K` ≥ 1) | `MetalThermalResultDto` = `{ material, T_K, lambda_WmK, emissivity }` | implemented; query-string `T_K` fix applied ([Step 3 §1.7](STEP_03_MATERIALS_MODULE.md)) |
 
 Model (backend, display only): λ and ε are polynomials in T; **ε is clamped** to `emissivityRange_K`, λ is not. No other backend change is needed for this section.
 
@@ -85,7 +85,7 @@ sections/metals/
 ## Acceptance criteria
 
 - [ ] Grades load from E1; description and ε validity range shown for the selected grade
-- [ ] AISI 304 at 800 K shows λ and ε (after the `T_K` fix is approved and applied)
+- [ ] AISI 304 at 800 K shows λ and ε
 - [ ] Range mode: table and two-axis chart; clamped ε points marked; up to 2 grades compared
 - [ ] `?material=aisi_304` preselects the grade
 - [ ] Nest errors shown in `JsonErrorAlert`; no coefficients in the frontend

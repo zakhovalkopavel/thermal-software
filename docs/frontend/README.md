@@ -164,11 +164,11 @@ Backend and frontend specs in these steps follow [`docs/CONVENTIONS.md`](../CONV
 
 | Change | Status | Where |
 |--------|--------|-------|
-| Catalogue endpoints E1–E10 (read-only, existing library data; E9 = mix components, E10 = categories by primary group) | allowed by policy; specified, not implemented | [Step 3 §1](STEP_03_MATERIALS_MODULE.md) |
-| Numeric `T_K` query fix on `GET /metals/thermal-properties` | **awaiting approval**; not applied | [Step 3 §1.7](STEP_03_MATERIALS_MODULE.md) |
-| `POST /refractory/mix/composition` — fired-basis mix composition by component group + true density | **approved**; specified, not implemented | [Step 9 §2](STEP_09_MINERAL_COMPOSITIONS.md) (also used by [Step 7](STEP_07_RAW_MATERIALS.md)) |
+| Catalogue endpoints E1–E10 (read-only, existing library data; E9 = mix components, E10 = categories by primary group) | allowed by policy; **implemented** | [Step 3 §1](STEP_03_MATERIALS_MODULE.md) |
+| Numeric `T_K` query fix on `GET /metals/thermal-properties` | **approved**; applied | [Step 3 §1.7](STEP_03_MATERIALS_MODULE.md) |
+| `POST /refractory/mix/composition` — fired-basis mix composition by component group + true density | **approved**; **implemented** | [Step 9 §2](STEP_09_MINERAL_COMPOSITIONS.md) (also used by [Step 7](STEP_07_RAW_MATERIALS.md)) |
 
-Current phase: **specification only** — no backend code is changed until implementation is requested.
+Current phase: **backend step done** (E1–E10, `T_K` fix, mix composition; 49 suites / 758 tests pass). Frontend steps follow one at a time, starting with Step 1.
 
 ---
 

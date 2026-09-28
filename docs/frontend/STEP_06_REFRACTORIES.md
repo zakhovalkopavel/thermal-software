@@ -1,7 +1,7 @@
 # STEP 06 — Materials: Refractories (known products)
 
 **Priority:** HIGH  
-**Status:** specification only  
+**Status:** backend ready (E2, E3); frontend not started  
 **Depends on:** [STEP_03_MATERIALS_MODULE.md](STEP_03_MATERIALS_MODULE.md) (E2, E3, `MaterialPicker`, temperature sweep)  
 **Frontend root:** `frontend/src/modules/materials/sections/refractories/`  
 **Route:** `/materials/refractories?material=`
@@ -20,8 +20,8 @@ This section is about *finished, known products*. Raw materials (oxides, clays, 
 
 | # | Method | Path | Request | Response | State |
 |---|--------|------|---------|----------|-------|
-| E2 | `GET` | `/refractory/refractories` | — | `RefractoryProductSummaryDto[]` (19): `materialId`, `name`, `description`, `emissivityRange_K` | specified in [Step 3](STEP_03_MATERIALS_MODULE.md), not implemented |
-| E3 | `GET` | `/refractory/refractories/properties?material=&T_K=` | `RefractoryProductQueryDto` | `RefractoryProductResultDto` = `{ material, T_K, lambda_WmK, emissivity }` | specified in Step 3, not implemented |
+| E2 | `GET` | `/refractory/refractories` | — | `RefractoryProductSummaryDto[]` (19): `materialId`, `name`, `description`, `emissivityRange_K` | implemented ([Step 3](STEP_03_MATERIALS_MODULE.md)) |
+| E3 | `GET` | `/refractory/refractories/properties?material=&T_K=` | `RefractoryProductQueryDto` | `RefractoryProductResultDto` = `{ material, T_K, lambda_WmK, emissivity }` | implemented |
 
 Model (backend, display only): λ(T_C) = a + b·T + c·T² + d·T³; ε from a polynomial or power law, **clamped** to `emissivityRange_K`. No other backend change is needed for this section.
 

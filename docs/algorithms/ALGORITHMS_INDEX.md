@@ -119,6 +119,18 @@
 
 ---
 
+### 6. **[MIX_COMPOSITION_ALGORITHM.md](./MIX_COMPOSITION_ALGORITHM.md)**
+**Service:** `MixCompositionService` — `POST /api/v1/refractory/mix/composition`  
+**Model:** Fired-basis mixing of library raw-material compositions
+
+**Key Features:**
+- Composition key classification (loss on ignition, accepted oxides, other oxides, metal impurities, carbon, non-oxides by group)
+- Fired-basis rescaling and accepted oxides normalised to 100 % for the chemical endpoints
+- True density of the fired mix from material true densities
+- Reliability warning when > 5 % of the fired mass is outside the accepted oxides
+
+---
+
 ## 🔗 SERVICE INTERCONNECTIONS
 
 ```

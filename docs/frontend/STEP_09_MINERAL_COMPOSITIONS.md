@@ -3,7 +3,7 @@
 **Priority:** HIGH  
 **Depends on:** [STEP_02_SHARED_CALC_COMPONENTS.md](STEP_02_SHARED_CALC_COMPONENTS.md), [STEP_03_MATERIALS_MODULE.md](STEP_03_MATERIALS_MODULE.md)  
 **Frontend root:** `frontend/src/modules/materials/sections/mineral-compositions/`  
-**Backend:** `refractory.controller.ts` (+ `POST /refractory/mix/composition` — approved, specified in §2, not implemented)
+**Backend:** `refractory.controller.ts` (+ `POST /refractory/mix/composition` — approved and implemented, §2)
 
 ---
 
@@ -87,7 +87,7 @@ export type MixFraction = {
 
 ## 2. Mix composition (entry point for chemistry)
 
-> **Approved, specified, not implemented.** New backend calculation, approved by the owner. No existing endpoint does this: the legacy `MixLibraryService.calculateOxideComposition` is a stub that returns `{}`. The chemical tab stays disabled until the endpoint exists. Depends on `MixComponentCatalogService` from [Step 3 §1.4](STEP_03_MATERIALS_MODULE.md).
+> **Approved and implemented** (`MixCompositionService`, algorithm in [MIX_COMPOSITION_ALGORITHM.md](../algorithms/MIX_COMPOSITION_ALGORITHM.md), API in [REFRACTORY_API_SPEC.md §15](../api/REFRACTORY_API_SPEC.md)). It replaces the legacy `MixLibraryService.calculateOxideComposition` stub, which returns `{}`. Depends on `MixComponentCatalogService` from [Step 3 §1.4](STEP_03_MATERIALS_MODULE.md).
 
 ### 2.1 Endpoint
 

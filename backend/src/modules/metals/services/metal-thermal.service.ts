@@ -2,7 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { MetalMaterial } from '../enums/metal-material.enum';
 import { MetalThermalQueryDto } from '../dto/metal-thermal-query.dto';
 import { MetalThermalResultDto } from '../dto/metal-thermal-result.dto';
-import { METAL_THERMAL_MAP } from '../data/materials/metal-thermal.data';
+import { MetalSummaryDto } from '../dto/metal-summary.dto';
+import { METAL_THERMAL_MAP, METAL_THERMAL_MATERIALS } from '../data/materials/metal-thermal.data';
 
 /**
  * MetalThermalService
@@ -35,6 +36,16 @@ export class MetalThermalService {
     const { a, b, c, d, T_min_K, T_max_K } = entry.emissivity;
     const T = Math.min(Math.max(T_K, T_min_K), T_max_K);
     return a + 1e-5 * b * T + 1e-8 * c * T * T + 1e-10 * d * T * T * T;
+  }
+
+  /** Catalogue of metal grades with their emissivity validity range. */
+  listMaterials(): MetalSummaryDto[] {
+    return METAL_THERMAL_MATERIALS.map(entry => ({
+      materialId:        entry.materialId,
+      name:              entry.name,
+      description:       entry.description,
+      emissivityRange_K: { min: entry.emissivity.T_min_K, max: entry.emissivity.T_max_K },
+    }));
   }
 
   getThermalProperties(dto: MetalThermalQueryDto): MetalThermalResultDto {

@@ -109,7 +109,51 @@ backend/src/modules/refractory/interfaces/
 backend/src/modules/refractory/constants/
 ├── blend-optimizer.constants.ts        ✅ 180+ lines
 ├── calculation-constants.ts            ✅ Existing
-└── component-effects.ts                ✅ Existing
+├── component-effects.ts                ✅ Existing
+├── material-group-routes.constants.ts  ✅ MATERIAL_GROUP_ROUTES (route → group → label)
+├── mix-component-groups.constants.ts   ✅ MIX_COMPONENT_GROUPS
+├── mix-excluded-material-ids.constants.ts ✅ MIX_EXCLUDED_MATERIAL_IDS
+├── material-catalog.constants.ts       ✅ MATERIAL_CATALOG_CONSTANTS
+└── mix-composition.constants.ts        ✅ MIX_COMPOSITION_CONSTANTS (key classification)
+```
+
+### Material catalogue and mix composition (September 2026)
+
+One construct per file. API: [`REFRACTORY_API_SPEC.md`](api/REFRACTORY_API_SPEC.md) §15–16, [`METALS_API_SPEC.md`](api/METALS_API_SPEC.md).
+
+```
+backend/src/common/thermal/dto/
+└── temperature-range.dto.ts                 TemperatureRangeDto
+
+backend/src/modules/metals/dto/
+└── metal-summary.dto.ts                     MetalSummaryDto
+
+backend/src/modules/refractory/enums/
+├── material-group.enum.ts                   MaterialGroup (17)
+├── material-group-route.enum.ts             MaterialGroupRoute (17)
+├── material-type.enum.ts                    MaterialType
+├── composition-basis.enum.ts                CompositionBasis
+└── non-oxide-component-group.enum.ts        NonOxideComponentGroup
+
+backend/src/modules/refractory/dto/
+├── refractory-product-summary.dto.ts        RefractoryProductSummaryDto
+├── refractory-product-query.dto.ts          RefractoryProductQueryDto
+├── refractory-product-result.dto.ts         RefractoryProductResultDto
+├── material-list-query.dto.ts               MaterialListQueryDto
+├── material-id-param.dto.ts                 MaterialIdParamDto
+├── material-group-route-param.dto.ts        MaterialGroupRouteParamDto
+├── material-group-summary.dto.ts            MaterialGroupSummaryDto
+├── material-category.dto.ts                 MaterialCategoryDto
+├── material-entry.dto.ts                    MaterialEntryDto
+├── material-particle-size.dto.ts            MaterialParticleSizeDto
+├── material-thermal-properties.dto.ts       MaterialThermalPropertiesDto
+├── material-mechanical-properties.dto.ts    MaterialMechanicalPropertiesDto
+├── particle-size-range.dto.ts               ParticleSizeRangeDto
+├── particle-sizes.dto.ts                    ParticleSizesDto
+├── mix-component-input.dto.ts               MixComponentInputDto
+├── mix-composition-input.dto.ts             MixCompositionInputDto
+├── non-oxide-components.dto.ts              NonOxideComponentsDto
+└── mix-composition-result.dto.ts            MixCompositionResultDto
 ```
 
 ### Documentation Files (in tmp/reports/)
@@ -336,6 +380,7 @@ Each needs import path updates from `../dto/` to `../interfaces/`
 | Version | Date | Status | Notes |
 |---------|------|--------|-------|
 | 1.0 | Feb 2, 2026 | ✅ Complete | Initial release, production ready |
+| 1.1 | Sep 28, 2026 | ✅ Complete | Material catalogue DTOs / enums, mix composition DTOs, `TemperatureRangeDto`, `MetalSummaryDto` |
 
 ---
 

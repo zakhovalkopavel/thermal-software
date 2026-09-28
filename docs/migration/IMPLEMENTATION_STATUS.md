@@ -1,6 +1,6 @@
 # Implementation Status
 
-**Last Updated:** July 2026
+**Last Updated:** September 2026
 **Overall Progress:** ~55%
 
 > ⚠️ **Maintenance rule:** This file must be updated in the **same commit** as any change
@@ -13,14 +13,14 @@
 
 | Module | Progress | Notes |
 |--------|----------|-------|
-| **Refractory** | ~85% | All 11 services + RefractoryThermalService; tests partially complete |
+| **Refractory** | ~85% | All 11 services + RefractoryThermalService + material catalogue (read-only) + mix composition; tests partially complete |
 | **Thermodynamics** | ~55% | All 8 services + 3 controllers implemented; tests partial |
 | **Common thermal library** | ~70% | 16 gas compounds, composition, numeric utils |
 | **Frontend** | ~2% | Skeleton only — no pages or components yet |
 | **Furnace** | 0% | Not started |
 | **Recuperator** | 100% | Implemented — 4 modules: combustion, metals, thermal-exchange, recuperator |
 | **Combustion** | 100% | `backend/src/modules/combustion/` — standalone module |
-| **Metals** | 100% | `backend/src/modules/metals/` — MetalThermalService (AISI 304, mild steel) |
+| **Metals** | 100% | `backend/src/modules/metals/` — MetalThermalService (AISI 304, mild steel); `GET /metals/list`; numeric `T_K` query fix |
 | **Thermal Exchange** | 100% | `backend/src/modules/thermal-exchange/` — MultilayerWallService + RecuperatorHtcService |
 | **Thermal Distribution** | 100% | Fully implemented, 31 test suites, 602 tests passing |
 | **Thermophysical** | 0% | Not started |
@@ -35,7 +35,22 @@
 
 ### Structure
 - [x] `refractory.module.ts`
-- [x] `refractory.controller.ts`
+- [x] `refractory.controller.ts` (+ `POST /mix/composition`)
+- [x] `material-catalog.controller.ts` — read-only catalogue, tag `materials` ([API §16](../api/REFRACTORY_API_SPEC.md))
+
+### Material catalogue and mix composition (September 2026)
+
+| Service | Tests | Notes |
+|---------|-------|-------|
+| `material-catalog.service.ts` | ✅ `material-catalog.service.spec.ts` | 102 unique active materials; groups, categories by primary group |
+| `mix-component-catalog.service.ts` | ✅ `mix-component-catalog.service.spec.ts` | 60 mix components (binder, oxide, silicate, clay, carbide, nitride); `paper_clay` excluded |
+| `particle-size-catalog.service.ts` | ✅ `particle-size-catalog.service.spec.ts` | six size tables |
+| `mix-composition.service.ts` | ✅ `mix-composition.service.spec.ts` | fired basis; algorithm in [`MIX_COMPOSITION_ALGORITHM.md`](../algorithms/MIX_COMPOSITION_ALGORITHM.md) |
+| `refractory-thermal.service.ts` — `listProducts`, `getProperties` | ✅ extended spec | 19 products; ε clamped |
+
+- DTOs and enums (one per file): listed in [`INTERFACES_IMPLEMENTATION_INDEX.md`](../INTERFACES_IMPLEMENTATION_INDEX.md)
+- DTO specs: `test/unit/refractory/dto/` (refractory-product-query, material-list-query, material-group-route-param, material-id-param, mix-composition-input), `test/unit/metals/dto/metal-thermal-query.dto.spec.ts`
+- HTTP routing spec: `test/unit/refractory/controllers/material-catalog.controller.spec.ts` (static routes not captured by `/:groupRoute`)
 
 ### Services (11 / 11 implemented)
 

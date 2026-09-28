@@ -75,4 +75,35 @@ describe('RefractoryThermalService', () => {
       expect(() => service.emissivity('unknown-material' as RefractoryThermalMaterial, 1000)).toThrow(NotFoundException);
     });
   });
+
+  describe('listProducts', () => {
+    it('returns the 19 products, ids equal to the enum values', () => {
+      const ids = service.listProducts().map(p => p.materialId);
+      expect(ids).toHaveLength(19);
+      expect([...ids].sort()).toEqual(Object.values(RefractoryThermalMaterial).sort());
+    });
+
+    it('CHAMOTTE_SOLID - emissivity range equals the data validity range', () => {
+      const product = service.listProducts().find(p => p.materialId === RefractoryThermalMaterial.CHAMOTTE_SOLID);
+      expect(product?.emissivityRange_K).toEqual({ min: 673, max: 1673 });
+    });
+  });
+
+  describe('getProperties', () => {
+    it('CHAMOTTE_SOLID at 1273 K - λ and ε equal lambda() / emissivity()', () => {
+      const result = service.getProperties({ material: RefractoryThermalMaterial.CHAMOTTE_SOLID, T_K: 1273 });
+      expect(result).toEqual({
+        material:   RefractoryThermalMaterial.CHAMOTTE_SOLID,
+        T_K:        1273,
+        lambda_WmK: service.lambda(RefractoryThermalMaterial.CHAMOTTE_SOLID, 1273),
+        emissivity: service.emissivity(RefractoryThermalMaterial.CHAMOTTE_SOLID, 1273),
+      });
+    });
+
+    it('below the ε validity range - ε clamped, λ not clamped', () => {
+      const result = service.getProperties({ material: RefractoryThermalMaterial.CHAMOTTE_SOLID, T_K: 300 });
+      expect(result.emissivity).toBeCloseTo(service.emissivity(RefractoryThermalMaterial.CHAMOTTE_SOLID, 673), 6);
+      expect(result.lambda_WmK).toBeCloseTo(0.700 + 6.4e-4 * (300 - 273), 6);
+    });
+  });
 });

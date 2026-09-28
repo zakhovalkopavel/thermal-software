@@ -1,6 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { RefractoryThermalMaterial } from '../enums/refractory-thermal-material.enum';
-import { REFRACTORY_THERMAL_MAP } from '../data/materials/refractory-thermal.data';
+import {
+  REFRACTORY_THERMAL_MAP,
+  REFRACTORY_THERMAL_MATERIALS,
+} from '../data/materials/refractory-thermal.data';
+import { RefractoryProductSummaryDto } from '../dto/refractory-product-summary.dto';
+import { RefractoryProductQueryDto } from '../dto/refractory-product-query.dto';
+import { RefractoryProductResultDto } from '../dto/refractory-product-result.dto';
 
 /**
  * RefractoryThermalService
@@ -43,5 +49,25 @@ export class RefractoryThermalService {
     }
 
     return eps.a + 1e-5 * eps.b * T + 1e-8 * eps.c * T * T + 1e-10 * eps.d * T * T * T;
+  }
+
+  /** Catalogue of the known refractory and insulation products. */
+  listProducts(): RefractoryProductSummaryDto[] {
+    return REFRACTORY_THERMAL_MATERIALS.map(entry => ({
+      materialId:        entry.materialId,
+      name:              entry.name,
+      description:       entry.description,
+      emissivityRange_K: { min: entry.emissivity.T_min_K, max: entry.emissivity.T_max_K },
+    }));
+  }
+
+  /** λ and ε of one product at one temperature. */
+  getProperties(dto: RefractoryProductQueryDto): RefractoryProductResultDto {
+    return {
+      material:   dto.material,
+      T_K:        dto.T_K,
+      lambda_WmK: this.lambda(dto.material, dto.T_K),
+      emissivity: this.emissivity(dto.material, dto.T_K),
+    };
   }
 }

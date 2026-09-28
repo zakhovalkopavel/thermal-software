@@ -13,6 +13,7 @@ import { ThermalPerformanceService } from '../services/thermal-performance.servi
 import { RefractorinessService } from '../services/refractoriness.service';
 import { GlassViscosityService } from '../services/glass-viscosity.service';
 import { MineralPhaseService } from '../services/mineral-phase.service';
+import { MixCompositionService } from '../services/mix-composition.service';
 
 // DTOs
 import { PhaseCalculationDto, PhaseCalculationResponseDto } from '../dto/phase-equilibrium.dto';
@@ -32,6 +33,8 @@ import {
   GlassCompositionConvertDto,
   ConversionDirectionDto,
 } from '../dto/glass-viscosity.dto';
+import { MixCompositionInputDto } from '../dto/mix-composition-input.dto';
+import { MixCompositionResultDto } from '../dto/mix-composition-result.dto';
 import { ViscosityModel } from '../enums/viscosity-model.enum';
 
 @ApiTags('Refractory Calculations')
@@ -49,6 +52,7 @@ export class RefractoryController {
     private readonly refractorinessService: RefractorinessService,
     private readonly glassViscosityService: GlassViscosityService,
     private readonly mineralPhaseService: MineralPhaseService,
+    private readonly mixCompositionService: MixCompositionService,
   ) {}
 
   // ─── 1. Phase Equilibrium ────────────────────────────────────────────────────
@@ -368,5 +372,23 @@ export class RefractoryController {
       dto.composition,
       dto.direction as ConversionDirectionDto,
     );
+  }
+
+  // ─── 18. Mix composition (fired basis) ──────────────────────────────────────
+
+  @Post('mix/composition')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Fired-basis chemical composition of a mix of library raw materials',
+    description:
+      'Mix components = GET /refractory/mix-components. Returns loss on ignition, the 8 accepted oxides ' +
+      '(also rescaled to 100 % for the chemical endpoints), other oxides, non-oxide components by group, ' +
+      'dropped metal impurities, true density of the fired mix and reliability warnings.',
+  })
+  @ApiResponse({ status: 200, type: MixCompositionResultDto })
+  @ApiResponse({ status: 400, description: 'Invalid input, Σ massFraction = 0, or material not allowed in mixes' })
+  @ApiResponse({ status: 404, description: 'Unknown material id' })
+  calculateMixComposition(@Body() dto: MixCompositionInputDto): MixCompositionResultDto {
+    return this.mixCompositionService.calculate(dto);
   }
 }

@@ -1,7 +1,7 @@
 # STEP 05 — Materials: Gases
 
 **Priority:** HIGH  
-**Status:** specification only  
+**Status:** backend ready (existing endpoints); frontend not started  
 **Depends on:** [STEP_03_MATERIALS_MODULE.md](STEP_03_MATERIALS_MODULE.md) (gas list, `MaterialPicker`, temperature sweep), [STEP_02](STEP_02_SHARED_CALC_COMPONENTS.md) (`GasCompositionInput`)  
 **Frontend root:** `frontend/src/modules/materials/sections/gases/`  
 **Route:** `/materials/gases?gas=`

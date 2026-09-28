@@ -4,7 +4,7 @@
 **Depends on:** [STEP_02_SHARED_CALC_COMPONENTS.md](STEP_02_SHARED_CALC_COMPONENTS.md)  
 **Frontend root:** `frontend/src/modules/materials/`  
 **Backend touched:** `metals`, `refractory` modules — read-only catalogue endpoints only  
-**Status:** specification only — nothing in this step is implemented yet
+**Status:** backend (§1) implemented and tested; frontend (§2) not started
 
 ---
 
@@ -121,7 +121,7 @@ The existing `MaterialGroupType` union in `data/interfaces/material.interface.ts
 | `modules/refractory/dto/particle-size-range.dto.ts` | `ParticleSizeRangeDto` | `dMin_mm`, `dMax_mm`, `d50_mm`, `grade`, `description?`, `mesh?`, `name?` |
 | `modules/refractory/dto/particle-sizes.dto.ts` | `ParticleSizesDto` | `standard`, `classifications`, `cement`, `mesh`, `fepaF`, `fepaP` — each `Record<string, ParticleSizeRangeDto>` keyed by size code |
 
-`MATERIAL_SEARCH_MAX_LENGTH` lives in `modules/refractory/constants/material-catalog.constants.ts` (`MATERIAL_CATALOG_CONSTANTS`).
+The `search` length limit is `MATERIAL_CATALOG_CONSTANTS.SEARCH_MAX_LENGTH` (64) in `modules/refractory/constants/material-catalog.constants.ts`.
 
 **Services**
 
@@ -176,15 +176,15 @@ Updated in the same change as the code:
 | `docs/INTERFACES_IMPLEMENTATION_INDEX.md` | new DTOs and enums |
 | `docs/migration/IMPLEMENTATION_STATUS.md` | new services / methods / tests |
 
-### 1.7 Change awaiting approval — metals `T_K` query conversion
+### 1.7 Approved change — metals `T_K` query conversion
 
-Not part of the catalogue work (it changes an existing endpoint), so it is listed separately under the backend change policy.
+Not part of the catalogue work (it changes an existing endpoint), so it was approved separately under the backend change policy.
 
 | Item | Detail |
 |------|--------|
 | Problem | `GET /metals/thermal-properties?material=aisi_304&T_K=800` returns 400 "T_K must be a number": query values arrive as strings and `MetalThermalQueryDto.T_K` has no `@Type(() => Number)` (the global pipe has no implicit conversion). The endpoint cannot be used from a browser. |
 | Proposed change | `modules/metals/dto/metal-thermal-query.dto.ts`: add `@Type(() => Number)` on `T_K`; DTO spec `test/unit/metals/dto/metal-thermal-query.dto.spec.ts`. |
-| Status | **Awaiting approval.** Not applied. Metal calculations in [Step 4](STEP_04_METALS.md) depend on it. |
+| Status | **Approved and applied.** `GET /metals/thermal-properties?material=aisi_304&T_K=800` returns 200. |
 
 ---
 
