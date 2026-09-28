@@ -354,6 +354,23 @@ Material Library (Composition Data)
 
 ---
 
+### **recuperator/** ⭐ NEW
+**Role:** Counter-flow heat exchanger optimisation, multilayer wall heat loss, combustion
+
+| File | Contents |
+|---|---|
+| [`RECUPERATOR_SPEC_00_Overview.md`](./recuperator/RECUPERATOR_SPEC_00_Overview.md) | Multi-module architecture, service map, API summary |
+| [`RECUPERATOR_SPEC_01_Combustion.md`](./recuperator/RECUPERATOR_SPEC_01_Combustion.md) | Flame temperature, carbon combustion, water-gas shift |
+| [`RECUPERATOR_SPEC_02_Geometry.md`](./recuperator/RECUPERATOR_SPEC_02_Geometry.md) | Channel cross-sections for 4 hole forms, perimeters, ray lengths |
+| [`RECUPERATOR_SPEC_03_Materials.md`](./recuperator/RECUPERATOR_SPEC_03_Materials.md) | 21 materials: λ(T) and ε(T) split across refractory/metals modules |
+| [`RECUPERATOR_SPEC_04_HeatTransfer.md`](./recuperator/RECUPERATOR_SPEC_04_HeatTransfer.md) | Nu correlations, gas radiation (Hottel–Mikheev), overall wall HTC |
+| [`RECUPERATOR_SPEC_05_RecuperatorAlgorithm.md`](./recuperator/RECUPERATOR_SPEC_05_RecuperatorAlgorithm.md) | Counter-flow HX optimiser, 8-neighbour grid search, energy balance |
+| [`RECUPERATOR_SPEC_06_FurnaceAlgorithm.md`](./recuperator/RECUPERATOR_SPEC_06_FurnaceAlgorithm.md) | Multilayer radial FD, binary search, outer surface cooling |
+| [`RECUPERATOR_SPEC_07_API.md`](./recuperator/RECUPERATOR_SPEC_07_API.md) | All 4 endpoint specs with full DTOs |
+| [`RECUPERATOR_SPEC_08_Bibliography.md`](./recuperator/RECUPERATOR_SPEC_08_Bibliography.md) | Mikheev 1977, Gnielinski, Hottel, Churchill–Chu |
+
+---
+
 ## 🎊 STATUS
 
 **All algorithms documented and production-ready!**
