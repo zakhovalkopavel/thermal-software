@@ -19,27 +19,10 @@ import {
   sphereEigenvaluesBC3,
 } from './eigenvalues-bc3.util';
 import { besselJ0, besselJ1 } from '../../../common/utils/bessel.util';
+import { simpson } from '../../../common/utils/quadrature.util';
 
 const DEFAULT_N       = 100;
 const SIMPSON_DEFAULT = 128;
-
-// ─── Simpson's rule (odd number of intervals ⟹ even number of sub-panels) ────
-
-function simpsonIntegral(
-  f: (x: number) => number,
-  a: number,
-  b: number,
-  n: number, // must be even
-): number {
-  const h = (b - a) / n;
-  let s = f(a) + f(b);
-  for (let i = 1; i < n; i++) s += (i % 2 === 0 ? 2 : 4) * f(a + i * h);
-  return (h / 3) * s;
-}
-
-function ensureEven(n: number): number {
-  return n % 2 === 0 ? n : n + 1;
-}
 
 // ─── sinc limit ───────────────────────────────────────────────────────────────
 
@@ -167,10 +150,9 @@ export function plateTempBC3ArbitraryAbs(
   simpsonN = SIMPSON_DEFAULT,
 ): number {
   const mus = plateEigenvaluesBC3(Bi, N);
-  const sN  = ensureEven(simpsonN);
   let sum = 0;
   for (const mu of mus) {
-    const integral = simpsonIntegral((x) => f1(x) * Math.cos(mu * x / R), 0, R, sN);
+    const integral = simpson((x) => f1(x) * Math.cos(mu * x / R), 0, R, simpsonN);
     const Dm = (2 * mu * Math.sin(mu)) / (R * (mu - Math.sin(mu) * Math.cos(mu))) * integral;
     sum += Dm * Math.cos(mu * relDepth) * Math.exp(-mu * mu * Fo);
   }
@@ -182,10 +164,9 @@ export function plateMeanTempBC3ArbitraryAbs(
   N = DEFAULT_N, simpsonN = SIMPSON_DEFAULT,
 ): number {
   const mus = plateEigenvaluesBC3(Bi, N);
-  const sN  = ensureEven(simpsonN);
   let sum = 0;
   for (const mu of mus) {
-    const integral = simpsonIntegral((x) => f1(x) * Math.cos(mu * x / R), 0, R, sN);
+    const integral = simpson((x) => f1(x) * Math.cos(mu * x / R), 0, R, simpsonN);
     const Dm = (2 * mu * Math.sin(mu)) / (R * (mu - Math.sin(mu) * Math.cos(mu))) * integral;
     sum += Dm * (Math.sin(mu) / mu) * Math.exp(-mu * mu * Fo);
   }
@@ -288,12 +269,11 @@ export function cylinderTempBC3ArbitraryAbs(
   N = DEFAULT_N, simpsonN = SIMPSON_DEFAULT,
 ): number {
   const mus = cylinderEigenvaluesBC3(Bi, N);
-  const sN  = ensureEven(simpsonN);
   let sum = 0;
   for (const mu of mus) {
     const j0mu = besselJ0(mu), j1mu = besselJ1(mu);
     const norm = R * R * (j0mu * j0mu + j1mu * j1mu);
-    const integral = simpsonIntegral((r) => r * f1(r) * besselJ0(mu * r / R), 0, R, sN);
+    const integral = simpson((r) => r * f1(r) * besselJ0(mu * r / R), 0, R, simpsonN);
     const Cn = 2 / norm * integral;
     sum += Cn * besselJ0(mu * relR) * Math.exp(-mu * mu * Fo);
   }
@@ -306,12 +286,11 @@ export function cylinderMeanTempBC3ArbitraryAbs(
   N = DEFAULT_N, simpsonN = SIMPSON_DEFAULT,
 ): number {
   const mus = cylinderEigenvaluesBC3(Bi, N);
-  const sN  = ensureEven(simpsonN);
   let sum = 0;
   for (const mu of mus) {
     const j0mu = besselJ0(mu), j1mu = besselJ1(mu);
     const norm = R * R * (j0mu * j0mu + j1mu * j1mu);
-    const integral = simpsonIntegral((r) => r * f1(r) * besselJ0(mu * r / R), 0, R, sN);
+    const integral = simpson((r) => r * f1(r) * besselJ0(mu * r / R), 0, R, simpsonN);
     const Cn = 2 / norm * integral;
     sum += Cn * (2 * besselJ1(mu) / mu) * Math.exp(-mu * mu * Fo);
   }
@@ -417,12 +396,11 @@ export function sphereTempBC3ArbitraryAbs(
   N = DEFAULT_N, simpsonN = SIMPSON_DEFAULT,
 ): number {
   const mus = sphereEigenvaluesBC3(Bi, N);
-  const sN  = ensureEven(simpsonN);
   let sum = 0;
   for (let n = 0; n < N; n++) {
     const mu = mus[n];
     const denom = R * (mu - Math.sin(mu) * Math.cos(mu));
-    const integral = simpsonIntegral((r) => r * f1(r) * Math.sin(mu * r / R), 0, R, sN);
+    const integral = simpson((r) => r * f1(r) * Math.sin(mu * r / R), 0, R, simpsonN);
     const Cn = (2 * mu / denom) * integral;
     // ϑ(r,τ) = Σ Cₙ·sin(μₙr/R)/r·exp  (HC-10 §3.2)
     // With relR = r/R: sin(μₙ·relR)/(relR·R); limit at r=0 is μₙ/R
@@ -438,11 +416,10 @@ export function sphereMeanTempBC3ArbitraryAbs(
   N = DEFAULT_N, simpsonN = SIMPSON_DEFAULT,
 ): number {
   const mus = sphereEigenvaluesBC3(Bi, N);
-  const sN  = ensureEven(simpsonN);
   let sum = 0;
   for (const mu of mus) {
     const denom = R * (mu - Math.sin(mu) * Math.cos(mu));
-    const integral = simpsonIntegral((r) => r * f1(r) * Math.sin(mu * r / R), 0, R, sN);
+    const integral = simpson((r) => r * f1(r) * Math.sin(mu * r / R), 0, R, simpsonN);
     const Cn = (2 * mu / denom) * integral;
     const meanCoeff = 3 * (Math.sin(mu) - mu * Math.cos(mu)) / (R * mu * mu);
     sum += Cn * meanCoeff * Math.exp(-mu * mu * Fo);

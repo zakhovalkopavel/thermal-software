@@ -1,14 +1,12 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ThermalDistributionService } from '../services/thermal-distribution.service';
-import {
-  ProfileRequestDto,
-  ProfileAtDepthsRequestDto,
-  TemperatureAtDepthResultDto,
-  TemperatureProfileResultDto,
-  AverageTemperatureResultDto,
-  ThermalCriteriaDto,
-} from '../dto/profile-request.dto';
+import { ProfileRequestDto } from '../dto/profile-request.dto';
+import { ProfileAtDepthsRequestDto } from '../dto/profile-at-depths-request.dto';
+import { TemperatureAtDepthResultDto } from '../dto/temperature-at-depth-result.dto';
+import { TemperatureProfileResultDto } from '../dto/temperature-profile-result.dto';
+import { AverageTemperatureResultDto } from '../dto/average-temperature-result.dto';
+import { ThermalCriteriaDto } from '../dto/thermal-criteria.dto';
 import type { ProfileOptions } from '../type/profile-options.type';
 import type { AverageOptions } from '../type/average-options.type';
 

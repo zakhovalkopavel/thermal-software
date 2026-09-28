@@ -7,9 +7,9 @@
  *   − [α₂/λ · J₀(p·R₂) − p·J₁(p·R₂)] · [α₁/λ · Y₀(p·R₁) + p·Y₁(p·R₁)] = 0
  */
 import { besselJ0, besselJ1, besselY0, besselY1 } from '../../../common/utils/bessel.util';
+import { brentq } from '../../../common/utils/root-finding.util';
 
-const DEFAULT_TOL      = 1e-10;
-const DEFAULT_MAX_ITER = 50;
+const DEFAULT_TOL = 1e-10;
 
 /** Evaluate the hollow-cylinder characteristic function F(p). */
 function hollowCylF(
@@ -34,8 +34,9 @@ function hollowCylF(
 /**
  * Find N positive roots of the hollow cylinder BC III eigenvalue equation.
  *
- * Roots are sought in the interval (0, maxP] using sign-change bracketing
- * on a fine mesh, then refined by bisection + one Newton step.
+ * Roots are sought in the interval (0, maxP]. Brackets come from sign changes
+ * on a uniform grid (no closed-form brackets exist); each bracket is refined
+ * with Brent's method (brentq).
  *
  * @param R1   Inner radius (m)
  * @param R2   Outer radius (m)
@@ -50,7 +51,6 @@ export function hollowCylinderEigenvaluesBC3(
   H2: number,
   N: number,
   tol = DEFAULT_TOL,
-  maxIter = DEFAULT_MAX_ITER,
 ): number[] {
   // Roots lie roughly π/(R2-R1) apart; scan with fine step
   const step = Math.PI / (R2 - R1) / 4;
@@ -65,15 +65,7 @@ export function hollowCylinderEigenvaluesBC3(
   for (let p = pPrev + step; roots.length < N && p <= maxP; p += step) {
     const fCur = f(p);
     if (fPrev * fCur < 0) {
-      // Bisect to find root bracket
-      let lo = pPrev, hi = p;
-      for (let iter = 0; iter < 60; iter++) {
-        const mid = (lo + hi) / 2;
-        if (f(lo) * f(mid) <= 0) hi = mid;
-        else lo = mid;
-        if (hi - lo < tol) break;
-      }
-      const root = (lo + hi) / 2;
+      const root = brentq(f, pPrev, p, tol).root;
       if (roots.length === 0 || root - roots[roots.length - 1] > tol * 10) {
         roots.push(root);
       }

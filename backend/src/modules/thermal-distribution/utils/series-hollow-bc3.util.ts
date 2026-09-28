@@ -15,7 +15,7 @@ import {
   besselJ0,
   besselJ1,
 } from '../../../common/utils/bessel.util';
-import { adaptiveIntegrate } from '../../../common/utils/quadrature.util';
+import { adaptiveIntegrate, simpson } from '../../../common/utils/quadrature.util';
 import {
   hollowCylinderEigenvaluesBC3,
   hollowCylW0,
@@ -23,17 +23,6 @@ import {
 
 const DEFAULT_N       = 50;
 const SIMPSON_DEFAULT = 128;
-
-function ensureEven(n: number): number {
-  return n % 2 === 0 ? n : n + 1;
-}
-
-function simpsonIntegral(f: (x: number) => number, a: number, b: number, n: number): number {
-  const h = (b - a) / n;
-  let s = f(a) + f(b);
-  for (let i = 1; i < n; i++) s += (i % 2 === 0 ? 2 : 4) * f(a + i * h);
-  return (h / 3) * s;
-}
 
 /**
  * Compute Fourier coefficient Eₙ for one eigenvalue pₙ.
@@ -59,7 +48,7 @@ function computeEn(
   const A = H1 * besselJ0(p * R1) + p * besselJ1(p * R1);
   const C = H2 * besselJ0(p * R2) - p * besselJ1(p * R2);
 
-  const integral = simpsonIntegral((r) => r * f1(r) * hollowCylW0(p, r, R1, H1), R1, R2, simpsonN);
+  const integral = simpson((r) => r * f1(r) * hollowCylW0(p, r, R1, H1), R1, R2, simpsonN);
   const numerator = (Math.PI * Math.PI * p * p / 2) * C * C * integral;
   const denominator = (p * p + H1 * H1) * A * A - (p * p + H2 * H2) * C * C;
 
@@ -81,7 +70,7 @@ function computeEn(
  * @param f1       f₁(r) = Tc − f(r) — excess above ambient for the initial profile
  * @param Tc       Ambient / quenching medium temperature (°C)
  * @param N        Number of series terms
- * @param simpsonN Simpson quadrature nodes for Eₙ integrals (must be even)
+ * @param simpsonN Simpson subintervals for Eₙ integrals (odd values are raised to even)
  */
 export function hollowCylinderTempBC3(
   r: number,
@@ -99,12 +88,11 @@ export function hollowCylinderTempBC3(
 ): number {
   const H1 = alpha1 / lambda;
   const H2 = alpha2 / lambda;
-  const sN = ensureEven(simpsonN);
   const ps = hollowCylinderEigenvaluesBC3(R1, R2, H1, H2, N);
 
   let sum = 0;
   for (const p of ps) {
-    const En = computeEn(p, R1, R2, H1, H2, f1, sN);
+    const En = computeEn(p, R1, R2, H1, H2, f1, simpsonN);
     sum += En * Math.exp(-a * p * p * tau) * hollowCylW0(p, r, R1, H1);
   }
   return Tc - sum;
@@ -135,11 +123,10 @@ export function hollowCylinderMeanTempBC3(
 ): number {
   const H1 = alpha1 / lambda;
   const H2 = alpha2 / lambda;
-  const sN = ensureEven(simpsonN);
   const ps = hollowCylinderEigenvaluesBC3(R1, R2, H1, H2, N);
 
   // Pre-compute all Eₙ once
-  const Ens = ps.map((p) => computeEn(p, R1, R2, H1, H2, f1, sN));
+  const Ens = ps.map((p) => computeEn(p, R1, R2, H1, H2, f1, simpsonN));
 
   // Integrand involves W₀(pₙ, r) = combinations of J₀/Y₀ → oscillating
   const integrand = (r: number): number => {

@@ -23,6 +23,7 @@
 import { gaussLegendre, type GaussNodeCount } from './gauss-legendre.util';
 
 export { gaussLegendre, type GaussNodeCount } from './gauss-legendre.util';
+export { simpson } from './simpson.util';
 
 // ─── Clenshaw–Curtis ──────────────────────────────────────────────────────────
 

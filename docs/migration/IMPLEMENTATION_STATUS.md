@@ -277,6 +277,9 @@ Spec: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md)
 
 Algorithm spec: [`docs/algorithms/thermal-distribution/`](../algorithms/thermal-distribution/) (12 spec files covering geometries, methods, API, calibration, validation, examples)
 
+- Root finding standardised (September 2026): hollow-cylinder BC III eigenvalues via `brentq` (grid-scan brackets), J₀ zeros (`besselJ0Roots`) via `newtonPolish`. Profile formulas unchanged.
+- Simpson's rule moved to `common/utils/simpson.util.ts` (`simpson`, re-exported from `quadrature.util.ts`); the two local copies in `series-bc3.util.ts` and `series-hollow-bc3.util.ts` removed. Results unchanged.
+
 ---
 
 ## Thermophysical Module — 0%

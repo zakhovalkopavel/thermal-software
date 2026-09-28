@@ -17,8 +17,9 @@ import { plateEigenvaluesBC3, cylinderEigenvaluesBC3, sphereEigenvaluesBC3 }
   from '../../../../src/modules/thermal-distribution/utils/eigenvalues-bc3.util';
 import { hollowCylinderEigenvaluesBC3 }
   from '../../../../src/modules/thermal-distribution/utils/eigenvalues-hollow-bc3.util';
-import { besselJ0, besselJ1 }
+import { besselJ0, besselJ1, besselY0, besselY1 }
   from '../../../../src/common/utils/bessel.util';
+import { brentq } from '../../../../src/common/utils/root-finding.util';
 
 // ─── BC I (closed-form) ───────────────────────────────────────────────────────
 
@@ -184,19 +185,22 @@ describe('hollowCylinderEigenvaluesBC3', () => {
   const H = alpha / lambda; // H1 = H2
 
   /** Hollow cylinder characteristic function value (must be ≈ 0 at roots). */
-  function hollowF(p: number): number {
-    const j0r1 = besselJ0(p * R1), j1r1 = besselJ1(p * R1);
-    const j0r2 = besselJ0(p * R2), j1r2 = besselJ1(p * R2);
-    // Import Y functions inline to avoid circular imports in test
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { besselY0, besselY1 } = require('../../../../src/common/utils/bessel.util');
-    const y0r1 = besselY0(p * R1), y1r1 = besselY1(p * R1);
-    const y0r2 = besselY0(p * R2), y1r2 = besselY1(p * R2);
-    const A = H * j0r1 + p * j1r1;
-    const B = H * y0r2 - p * y1r2;
-    const C = H * j0r2 - p * j1r2;
-    const D = H * y0r1 + p * y1r1;
+  function hollowF(p: number, r1 = R1, r2 = R2, H1 = H, H2 = H): number {
+    const j0r1 = besselJ0(p * r1), j1r1 = besselJ1(p * r1);
+    const j0r2 = besselJ0(p * r2), j1r2 = besselJ1(p * r2);
+    const y0r1 = besselY0(p * r1), y1r1 = besselY1(p * r1);
+    const y0r2 = besselY0(p * r2), y1r2 = besselY1(p * r2);
+    const A = H1 * j0r1 + p * j1r1;
+    const B = H2 * y0r2 - p * y1r2;
+    const C = H2 * j0r2 - p * j1r2;
+    const D = H1 * y0r1 + p * y1r1;
     return A * B - C * D;
+  }
+
+  /** F changes sign within ±1e-8 relative of p, i.e. p is a root of F. */
+  function isRoot(p: number, H1 = H, H2 = H): boolean {
+    const d = p * 1e-8;
+    return hollowF(p - d, R1, R2, H1, H2) * hollowF(p + d, R1, R2, H1, H2) <= 0;
   }
 
   it('returns N roots', () => {
@@ -208,17 +212,41 @@ describe('hollowCylinderEigenvaluesBC3', () => {
     for (const p of ps) expect(p).toBeGreaterThan(0);
   });
 
-  it('roots satisfy the characteristic equation |F(pₙ)| < 1e-6', () => {
+  it('roots satisfy the characteristic equation (F changes sign within ±1e-8·pₙ)', () => {
     const ps = hollowCylinderEigenvaluesBC3(R1, R2, H, H, 5);
-    for (const p of ps) {
-      expect(Math.abs(hollowF(p))).toBeLessThan(1e-6);
-    }
+    for (const p of ps) expect(isRoot(p)).toBe(true);
   });
 
   it('roots are monotonically increasing', () => {
     const ps = hollowCylinderEigenvaluesBC3(R1, R2, H, H, 8);
     for (let i = 1; i < ps.length; i++) {
       expect(ps[i]).toBeGreaterThan(ps[i - 1]);
+    }
+  });
+
+  it('H1 ≠ H2: roots are positive, increasing and satisfy the characteristic equation', () => {
+    const H1 = 2, H2 = 50;
+    const ps = hollowCylinderEigenvaluesBC3(R1, R2, H1, H2, 6);
+    expect(ps[0]).toBeGreaterThan(0);
+    for (let i = 1; i < ps.length; i++) expect(ps[i]).toBeGreaterThan(ps[i - 1]);
+    for (const p of ps) expect(isRoot(p, H1, H2)).toBe(true);
+  });
+
+  it('thin wall: roots → slab roots tan(pL) = p(H1+H2)/(p²−H1·H2)', () => {
+    const r1 = 1, r2 = 1.01, L = r2 - r1;
+    const H1 = 20, H2 = 80;
+    const slab = (p: number) =>
+      (p * p - H1 * H2) * Math.sin(p * L) - p * (H1 + H2) * Math.cos(p * L);
+
+    const slabRoots: number[] = [];
+    const step = Math.PI / L / 400;
+    for (let p = step; slabRoots.length < 3; p += step) {
+      if (slab(p - step) * slab(p) < 0) slabRoots.push(brentq(slab, p - step, p, 1e-12).root);
+    }
+
+    const ps = hollowCylinderEigenvaluesBC3(r1, r2, H1, H2, 3);
+    for (let i = 0; i < 3; i++) {
+      expect(Math.abs(ps[i] - slabRoots[i]) / slabRoots[i]).toBeLessThan(0.01);
     }
   });
 });

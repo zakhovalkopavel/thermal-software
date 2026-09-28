@@ -8,6 +8,8 @@
  *   Olver, F.W.J. et al. (eds.) — NIST Digital Library of Mathematical Functions, 2010.
  */
 
+import { newtonPolish } from './root-finding.util';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const _j0: (x: number) => number = require('@stdlib/math/base/special/besselj0');
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -59,23 +61,17 @@ export function besselY1(x: number): number {
  * Compute the first N positive roots of J₀(μ) = 0.
  *
  * Uses McMahon's asymptotic expansion (AMS-55 §9.5.12) for the initial guess,
- * then refines each root with Newton's method (J₀'(μ) = −J₁(μ)).
+ * then refines each root with Newton's method (newtonPolish, J₀'(μ) = −J₁(μ)).
  *
- * Called by numeric.util.brentq via eigenvalues-bc1.util for the cylinder BC I case.
+ * Used by eigenvalues-bc1.util (cylinder BC I eigenvalues) and
+ * eigenvalues-bc3.util (brackets for the cylinder BC III roots).
  */
 export function besselJ0Roots(N: number): number[] {
   const roots: number[] = [];
   for (let n = 1; n <= N; n++) {
     const b = Math.PI * (n - 0.25);
-    let mu = b + 1 / (8 * b) - 31 / (384 * b ** 3) + 3779 / (15360 * b ** 5);
-    for (let iter = 0; iter < 10; iter++) {
-      const j0 = besselJ0(mu);
-      const j1 = besselJ1(mu);
-      if (Math.abs(j1) < 1e-30) break;
-      mu += j0 / j1; // Newton step: μ ← μ − J₀/J₀' = μ + J₀/J₁
-      if (Math.abs(j0) < 1e-14) break;
-    }
-    roots.push(mu);
+    const guess = b + 1 / (8 * b) - 31 / (384 * b ** 3) + 3779 / (15360 * b ** 5);
+    roots.push(newtonPolish(besselJ0, (x) => -besselJ1(x), guess));
   }
   return roots;
 }

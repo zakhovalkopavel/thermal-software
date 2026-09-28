@@ -4,13 +4,33 @@
  * Tests:
  *  - clenshawCurtis  — accuracy on smooth and oscillating integrands
  *  - adaptiveIntegrate — auto-selection between GL and CC, and forced modes
+ *  - simpson — exactness for cubics, odd n handling, accuracy on sin
  */
 
 import {
   clenshawCurtis,
   adaptiveIntegrate,
   gaussLegendre,
+  simpson,
 } from '../../../../src/common/utils/quadrature.util';
+
+// ─── Simpson ──────────────────────────────────────────────────────────────────
+
+describe('simpson', () => {
+  it('is exact for cubics: ∫₀¹ x³ dx = 0.25', () => {
+    expect(simpson((x) => x ** 3, 0, 1, 2)).toBeCloseTo(0.25, 14);
+    expect(simpson((x) => x ** 3, 0, 1, 8)).toBeCloseTo(0.25, 14);
+  });
+
+  it('raises an odd n to the next even value', () => {
+    const f = (x: number) => Math.exp(x);
+    expect(simpson(f, 0, 1, 3)).toBe(simpson(f, 0, 1, 4));
+  });
+
+  it('∫₀^π sin x dx = 2 with the default 128 subintervals', () => {
+    expect(Math.abs(simpson(Math.sin, 0, Math.PI) - 2)).toBeLessThan(1e-8);
+  });
+});
 
 // ─── Clenshaw–Curtis ──────────────────────────────────────────────────────────
 
