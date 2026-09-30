@@ -43,8 +43,11 @@ Charcoal presets ported **verbatim** from `legacy/furnaceCombustion/classes/Fuel
 
 | id | C | H | O | N | ash | ΔHf [J/kg] | cp [J/(kg·K)] | porosity | ρ_bulk [kg/m³] | d_p [m] | tortuosity | activity | emissivity | ref |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `charcoal-briquette` | 0.85 | 0.03 | 0.10 | 0.01 | 0.01 | −8 500 000 | 1100 | 0.45 | 450 | 0.05 | 3.0 | 1.0 | 0.85 | Basu 2006, p. 67 |
-| `charcoal-oak` | 0.82 | 0.04 | 0.12 | 0.01 | 0.01 | −8 200 000 | 1050 | 0.50 | 380 | 0.03 | 2.8 | 1.1 | 0.83 | Van Krevelen 1993, p. 235 |
+| `charcoal-briquette` | 0.85 | 0.03 | 0.10 | 0.01 | 0.01 | −8 500 000 | 1100 | 0.45 | 450 | 0.05 | 3.0 | 1.0 | 0.85 | `Basu2006`, p. 67 |
+| `charcoal-oak` | 0.82 | 0.04 | 0.12 | 0.01 | 0.01 | −8 200 000 | 1050 | 0.50 | 380 | 0.03 | 2.8 | 1.1 | 0.83 | `VanKrevelen1993`, p. 235 |
+
+`ref` is a `RefKey` ([REFERENCES](../../REFERENCES.md)) with an optional `page`; it is absent for
+`map-pro` (manufacturer SDS, no literature source) and for custom fuels.
 
 Derived: briquette LHV ≈ 22.95 MJ/kg, stoichiometric dry air ≈ 10.3 kg/kg.
 
@@ -62,7 +65,7 @@ O2_stoich          = C + H/4 + S − O/2       [mol O2]
 air(O2)            : N2 = O2·(1 − pO2)/pO2,  H2O = wH2Om · m_dry_air / M_H2O
 ```
 
-Atomic weights: IUPAC 2021 conventional values (`ATOMIC_MASS`). Species molar masses come from the
+Atomic weights: `IUPAC2021` conventional values (`ATOMIC_MASS`). Species molar masses come from the
 compound registry.
 
 ## 1.4 Product equilibrium (`ProductEquilibriumService.solve(elements, T, inerts)`)

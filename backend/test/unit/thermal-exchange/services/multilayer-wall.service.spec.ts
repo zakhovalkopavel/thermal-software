@@ -1,4 +1,5 @@
 import { RefractoryThermalMaterial } from '../../../../src/modules/refractory/enums/refractory-thermal-material.enum';
+import { MetalMaterial } from '../../../../src/modules/metals/enums/metal-material.enum';
 import { WallGeometry } from '../../../../src/modules/thermal-exchange/enums/wall-geometry.enum';
 import { MultilayerWallService } from '../../../../src/modules/thermal-exchange/services/multilayer-wall.service';
 
@@ -71,7 +72,38 @@ describe('MultilayerWallService', () => {
     expect(result.tOuter_K).toBeLessThan(dto.tFlame_K);
     expect(result.tInner_K).toBeLessThan(dto.tFlame_K);
     expect(result.fluxInner_W).toBeGreaterThan(0);
-    expect(relativeFluxGap).toBeLessThan(0.05); // converged within 5%
+    expect(relativeFluxGap).toBeLessThan(1e-3);
     expect(result.betweenLayers).toHaveLength(dto.layers.length - 1);
+    // previous bisection (stop at 0.1 % flux error) gave 1448.28 K
+    expect(Math.abs(result.tInner_K - 1448.28)).toBeLessThan(1);
+  });
+
+  it('calculate - two layers: temperatures fall monotonically from flame to ambient and fluxes balance', () => {
+    const dto = {
+      geometry: WallGeometry.CYLINDER,
+      a_m: 1,
+      b_m: 3,
+      tFlame_K: 1600,
+      tAmbient_K: 293,
+      w_ms: 5,
+      composition: { N2: 0.72, O2: 0.02, CO2: 0.13, CO: 0, H2O: 0.13, H2: 0 },
+      mPerSecond_kgs: 1,
+      layers: [
+        { material: RefractoryThermalMaterial.CHAMOTTE_SOLID, thicknessMm: 50 },
+        { material: MetalMaterial.MILD_STEEL, thicknessMm: 5 },
+      ],
+      innerEmissivity: 0.85,
+    };
+
+    const result = service.calculate(dto);
+    const relativeFluxGap = Math.abs(result.fluxInner_W - result.fluxOuter_W) / result.fluxInner_W;
+    const tBetween_K = result.betweenLayers[0].tCelsius + 273;
+
+    expect(result.betweenLayers).toHaveLength(1);
+    expect(result.tInner_K).toBeLessThan(dto.tFlame_K);
+    expect(tBetween_K).toBeLessThan(result.tInner_K);
+    expect(result.tOuter_K).toBeLessThan(tBetween_K);
+    expect(result.tOuter_K).toBeGreaterThan(dto.tAmbient_K);
+    expect(relativeFluxGap).toBeLessThan(1e-3);
   });
 });

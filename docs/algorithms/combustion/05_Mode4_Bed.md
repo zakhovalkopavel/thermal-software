@@ -9,6 +9,10 @@ The bed outlet gas is burned with secondary air exactly as step 2 of mode 2.
 
 ## 5.1 Kinetics (constants verbatim from legacy, `BED_KINETICS`)
 
+Refs ([REFERENCES](../../REFERENCES.md)): `Laurendeau1978` pp. 221–270 (char surface reactions),
+`Turns2012` pp. 120–145 (gas phase), `Higman2008` pp. 78–95 (Boudouard, water-gas).
+Pressure drop: `Ergun1952`.
+
 Char surface reactions, rate per bed volume [mol/(m³·s)], partial pressures in atm:
 
 | id | Reaction | Rate | E [J/mol] | A |

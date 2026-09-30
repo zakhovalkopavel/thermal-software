@@ -9,9 +9,21 @@ import { RecuperatorInputDto } from '../dto/recuperator-input.dto';
 import { RecuperatorResultDto } from '../dto/recuperator-result.dto';
 import { RECUPERATOR } from '../constants/recuperator.constants';
 import { COMBUSTION } from '../../combustion/constants/combustion.constants';
-import { GasMoleFractions } from '../../combustion/dto/combustion-result.dto';
+import { SmokeCompositionDto } from '../../thermal-exchange/dto/smoke-composition.dto';
 import { HoleForm } from '../enums/hole-form.enum';
 import { logMean } from '../../../common/utils/math.util';
+
+type GasMoleFractions = SmokeCompositionDto;
+
+const SMOKE_SPECIES = ['N2', 'O2', 'CO2', 'CO', 'H2O', 'H2'] as const;
+
+/** Flue gas mole fractions reduced to the species of the heat-transfer model, renormalised (SO2, Ar dropped) */
+function toSmokeComposition(y: Record<string, number>): GasMoleFractions {
+  const total = SMOKE_SPECIES.reduce((s, sp) => s + (y[sp] ?? 0), 0);
+  const out = {} as GasMoleFractions;
+  for (const sp of SMOKE_SPECIES) out[sp] = (y[sp] ?? 0) / total;
+  return out;
+}
 
 /**
  * RecuperatorService
@@ -36,7 +48,7 @@ export class RecuperatorService {
 
   calculate(dto: RecuperatorInputDto): RecuperatorResultDto {
     const {
-      fPower_W, fuelQ_Jkg, kExcessAir, tAirStart_K,
+      tAirStart_K,
       holeForm, d0_m, refractoryThickness_m, nAir, nSmoke,
       wantedRecuperatorLength_m, refractoryLambda_WmK, refractoryEmissivity,
       surfaceEmissivity, surfaceArea_m2, thermalInsulationThickness_m,
@@ -45,8 +57,6 @@ export class RecuperatorService {
     const h0_m    = dto.h0_m    ?? 0.02;
     const nPasses = dto.nPasses ?? 1;
     const turbulence = dto.smokeTurbulence ?? false;
-    const pO2    = dto.pO2    ?? COMBUSTION.DEFAULT_PO2;
-    const wH2Om  = dto.wH2Om  ?? COMBUSTION.DEFAULT_W_H2OM;
     const airPreheat_K = dto.airPreheat_K ?? 0;
 
     // ── Geometry ──────────────────────────────────────────────────────────────
@@ -59,13 +69,16 @@ export class RecuperatorService {
     const rayLengthSmoke_m = this.geometry.getRayLength(holeForm, d0_m, refractoryThickness_m, h0_m, 'smoke');
     const rayLengthAir_m   = this.geometry.getRayLength(holeForm, d0_m, refractoryThickness_m, h0_m, 'air');
 
-    // ── Initial combustion ────────────────────────────────────────────────────
-    const combustionResult = this.combustion.calculate({
-      fPower_W, fuelQ_Jkg, kExcessAir, tAirStart_K, pO2, wH2Om,
-    });
-
-    const { tSmokeStart_K, mSmoke_kgs, mAir_kgs, mFuel_kgs, composition } = combustionResult;
-    const smokeComp = composition.after;
+    // ── Combustion (selected mode) ────────────────────────────────────────────
+    const flue = this.combustion.flueGas(dto.combustion);
+    const tSmokeStart_K = Math.min(flue.tFlame_K / RECUPERATOR.FLAME_TO_SMOKE_RATIO, RECUPERATOR.T_SMOKE_START_MAX_K);
+    const { mAir_kgs, mFuel_kgs } = flue;
+    const mSmoke_kgs = flue.mFlueGas_kgs;
+    const smokeComp = toSmokeComposition(flue.moleFractions);
+    const composition = {
+      before: { N2: 1 - flue.pO2, O2: flue.pO2, CO2: 0, CO: 0, H2O: 0, H2: 0 },
+      after:  smokeComp,
+    };
 
     // ── Initial velocity ──────────────────────────────────────────────────────
     const atm = COMBUSTION.ATMOSPHERIC_PRESSURE_PA;
@@ -76,8 +89,8 @@ export class RecuperatorService {
     const wSmokeStart_ms = mSmoke_kgs / (rhoSmokeStart  * sSmoke_m2);
 
     // ── Optimizer initial state ───────────────────────────────────────────────
-    let tSmokeEnd_K = tAirStart_K * COMBUSTION.FLAME_TO_SMOKE_RATIO;
-    let tAirEnd_K   = tSmokeStart_K / COMBUSTION.FLAME_TO_SMOKE_RATIO;
+    let tSmokeEnd_K = tAirStart_K * RECUPERATOR.FLAME_TO_SMOKE_RATIO;
+    let tAirEnd_K   = tSmokeStart_K / RECUPERATOR.FLAME_TO_SMOKE_RATIO;
 
     // Clamp
     tSmokeEnd_K = Math.min(tSmokeEnd_K, tSmokeStart_K - 1);
@@ -150,20 +163,18 @@ export class RecuperatorService {
       wantedRecuperatorLength_m, turbulence, dto,
     );
 
-    // Max flame with preheated air
-    const maxCombustion = this.combustion.calculate({
-      fPower_W, fuelQ_Jkg, kExcessAir,
-      tAirStart_K: tAirStart_K + airPreheat_K,
-      pO2, wH2Om,
-    });
+    // Max flame with preheated combustion air
+    const maxFlameTemp_K = airPreheat_K === 0
+      ? flue.tFlame_K
+      : this.combustion.flueGas(dto.combustion, airPreheat_K).tFlame_K;
 
     return {
       recuperatorLength_m:   L_recuperator,
       tAirEnd_K,
       tSmokeEnd_K,
       tSmokeStart_K,
-      tFlame_K:              combustionResult.tFlame_K,
-      maxFlameTemp_K:        maxCombustion.tFlame_K,
+      tFlame_K:              flue.tFlame_K,
+      maxFlameTemp_K,
       energyReturnedPercent: smokeTotalEnergy_W > 0 ? (qAir / smokeTotalEnergy_W) * 100 : 0,
       airEnergyIncrease_W:   qAir,
       smokeEnergyDecrease_W: qSmoke,

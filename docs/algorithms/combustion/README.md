@@ -66,6 +66,8 @@ data:  data/fuels (charcoal-briquette, charcoal-oak, map-pro)
   lean/stoichiometric flame temperatures above ≈ 2300 K are overestimated.
 - Bed kinetics has no sulphur chemistry (fuels with S are rejected) and no reverse methanation;
   the legacy Boudouard constants make the reduction zone sluggish (see [05](05_Mode4_Bed.md)).
-- The MAP-Pro preset composition (C3H6 0.995 / C3H8 0.005) is to be confirmed against the supplier SDS;
-  allene (`aC3H4`) uses the propyne Lennard-Jones parameters.
-- Eucken thermal conductivity of the hydrocarbon gases is ≈ 12–15 % below measured values.
+- The MAP-Pro preset composition (C3H6 0.995 / C3H8 0.005) is to be confirmed against the supplier SDS.
+- Of the hydrocarbon fuel gases only C2H6, C3H8, C4H10 have Sutherland parameters (Eakin1963); iC4H10,
+  C2H2, C3H4, aC3H4, C3H6 are skipped by `TransportService` mixture μ/λ (their μ, λ are Perry 8th ed.
+  DIPPR 102 in the compound files). Allene (`aC3H4`) has no Lennard-Jones parameters, so
+  `DiffusionService` rejects it.

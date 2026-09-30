@@ -39,10 +39,15 @@ Registry species usable in `fuelGas` besides CH4/H2/CO:
 | `aC3H4` | propadiene (allene) | — |
 | `C3H6` | propylene | 45.8 |
 
-Compound data (`common/thermal/compound/gas/`): NASA-7 from `json/NASA/nasa7.json` (heat capacity,
-ΔHf, ΔGf derived from it), Lennard-Jones σ, ε/k from Poling 5th ed. App. B (allene uses the propyne
-values), Sutherland fit of Chapman–Enskog viscosity (Neufeld Ω), Eucken conductivity
-(≈ 12–15 % low vs. measured). Isomer keys follow mechanism names; elements come from `chemicalFormula`.
+Compound data (`common/thermal/compound/gas/`): NASA-7 and NASA-9 read from `backend/data/nasa/nasa7.json`
+/ `nasa9.json` by `nasa7Key` / `nasa9Key` (e.g. `"C3H4,propyne"`; Cp defaults to NASA-9; H, S, G(T)
+come from the NASA datasets). Only sourced numbers are stored: Mr as the sum of IUPAC 2021 atomic
+weights, `enthalpyFormation298` / `gibbsEnergy298` from Perry 9th ed. Table 2-95 (DIPPR 801, `Perry9`;
+within 0.5 kJ/mol of the NASA-9 ΔHf), Lennard-Jones σ, ε/k from Poling 5th ed. App. B (none for allene — not listed),
+viscosity and thermal conductivity as DIPPR Eq. 102 from Perry 8th ed. Tables 2-312 / 2-314 (`Perry8`),
+Sutherland parameters only for C2H6, C3H8, C4H10 (Eakin & Ellington 1963, Table 1, `Eakin1963`);
+the other five have no published Sutherland constant, so `TransportService` does not cover them.
+Isomer keys follow mechanism names; elements come from `chemicalFormula`.
 
 Preset `fuelId: "map-pro"` (instead of `fuelGas`): C3H6 0.995 + C3H8 0.005 (MAP-Pro type,
 propylene-based; composition to be confirmed against the supplier SDS). Classic MAPP blends are given

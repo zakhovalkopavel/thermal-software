@@ -10,13 +10,16 @@ import { Species } from '../../thermodynamics/enums/species.enum';
 import { MultilayerWallInputDto } from '../dto/multilayer-wall-input.dto';
 import { MultilayerWallResultDto, BetweenLayerDto } from '../dto/multilayer-wall-result.dto';
 import { AlphaResult } from '../interfaces/alpha-result.interface';
+import { WallBalance } from '../interfaces/wall-balance.interface';
 import { WallGeometry } from '../enums/wall-geometry.enum';
 import { WallMaterialKey } from '../dto/layer.dto';
 import { SmokeCompositionDto } from '../dto/smoke-composition.dto';
 import { logMean } from '../../../common/utils/math.util';
+import { brentq } from '../../../common/utils/root-finding.util';
 
 const REFRACTORY_KEYS = new Set<string>(Object.values(RefractoryThermalMaterial));
 const LOW_TEMP_THRESHOLD_K = 423;
+const WALL_ROOT_TOL = 1e-6;
 
 /**
  * MultilayerWallService
@@ -24,12 +27,11 @@ const LOW_TEMP_THRESHOLD_K = 423;
  * Computes steady-state heat transfer through a multilayer cylindrical or flat wall
  * separating hot combustion gases from ambient air.
  *
- * Algorithm (binary search on inner surface temperature):
- *   1. Guess T_inner via log-mean of T_flame and T_ambient
- *   2. Compute inner gas→surface HTC (convection + gas radiation)
- *   3. Walk finite-difference steps outward through each layer (λ(T) per material)
- *   4. Compute outer surface natural convection + radiation HTC
- *   5. Converge when |Q_inner − Q_outer| / Q_avg ≤ endFactor
+ * Algorithm (Brent root finding on inner surface temperature, T_inner ∈ [T_ambient, T_flame]):
+ *   1. For a trial T_inner compute inner gas→surface HTC (convection + gas radiation)
+ *   2. Walk finite-difference steps outward through each layer (λ(T) per material)
+ *   3. Compute outer surface natural convection + radiation HTC
+ *   4. Solve Q_inner − Q_outer = 0 with brentq (Q_outer = 0 if the traverse drops below T_ambient)
  *
  * Source: legacy recuperator.js heatFluxFurnaceMultyLayer() lines 2194–2320
  */
@@ -50,7 +52,6 @@ export class MultilayerWallService {
     } = dto;
     const b_m        = dto.b_m        ?? 1;
     const nSteps     = dto.numberOfSteps ?? 50;
-    const endFactor  = dto.endFactor    ?? 0.001;
 
     const totalH_m        = dto.layers.reduce((s, l) => s + l.thicknessMm / 1000, 0);
     const totalThickness_mm = totalH_m * 1000;
@@ -60,29 +61,15 @@ export class MultilayerWallService {
     const sOuter = this.surfaceArea(geometry, a_m, b_m, totalH_m);
     const rayLength_m = 0.9 * a_m;
 
-    let tInnerMin = tAmbient_K;
-    let tInnerMax = tFlame_K;
-    let tInner    = logMean(tInnerMin, tInnerMax);
-
-    let alphaInner: AlphaResult = { total_Wm2K: 0, convection_Wm2K: 0, radiation_Wm2K: 0 };
-    let alphaOuter_Wm2K = 0;
-    let fluxInner_W     = 0;
-    let fluxOuter_W     = 0;
-    let tOuter          = tAmbient_K;
-    let betweenTemps: BetweenLayerDto[] = [];
-
-    for (let iter = 0; iter < 50; iter++) {
-      tInner    = logMean(tInnerMin, tInnerMax);
-
+    const wallBalance = (tInner: number): WallBalance => {
       // ── Step A: inner gas → wall HTC ──────────────────────────────────────
-      alphaInner  = this.innerGasAlpha(tFlame_K, tInner, innerEmissivity, composition, a_m, rayLength_m, w_ms);
-      fluxInner_W = alphaInner.total_Wm2K * (tFlame_K - tInner) * sInner;
+      const alphaInner  = this.innerGasAlpha(tFlame_K, tInner, innerEmissivity, composition, a_m, rayLength_m, w_ms);
+      const fluxInner_W = alphaInner.total_Wm2K * (tFlame_K - tInner) * sInner;
 
       // ── Step B: finite-difference traverse through layers ─────────────────
-      betweenTemps = [];
+      const betweenTemps: BetweenLayerDto[] = [];
       let tCurrent   = tInner;
       let x          = 0;
-      let layerCumulative = 0;
       let layerIdx   = 0;
       let prevLayerIdx = -1;
       let broke = false;
@@ -121,26 +108,26 @@ export class MultilayerWallService {
         if (tCurrent < tAmbient_K) { broke = true; break; }
       }
 
-      tOuter = tCurrent;
-
       if (broke) {
-        tInnerMin = tInner;
-        continue;
+        return { alphaInner, fluxInner_W, alphaOuter_Wm2K: 0, fluxOuter_W: 0, tOuter: tCurrent, betweenTemps, broke };
       }
 
       // ── Step C: outer surface HTC ─────────────────────────────────────────
       const lSurface = Math.sqrt(sOuter);
       const dSurface = a_m + 2 * totalH_m;
-      alphaOuter_Wm2K = this.outerAlpha(tOuter, tAmbient_K, lSurface, dSurface, innerEmissivity);
-      fluxOuter_W     = alphaOuter_Wm2K * (tOuter - tAmbient_K) * sOuter;
+      const alphaOuter_Wm2K = this.outerAlpha(tCurrent, tAmbient_K, lSurface, dSurface, innerEmissivity);
+      const fluxOuter_W     = alphaOuter_Wm2K * (tCurrent - tAmbient_K) * sOuter;
 
-      // ── Convergence ───────────────────────────────────────────────────────
-      const err = 2 * Math.abs(fluxInner_W - fluxOuter_W) / (fluxInner_W + fluxOuter_W + 1e-12);
-      if (err <= endFactor) break;
+      return { alphaInner, fluxInner_W, alphaOuter_Wm2K, fluxOuter_W, tOuter: tCurrent, betweenTemps, broke };
+    };
 
-      if (fluxInner_W > fluxOuter_W) tInnerMin = tInner;
-      else                             tInnerMax = tInner;
-    }
+    // ── Step D: Q_inner − Q_outer = 0; a wall too cold to reach T_ambient has Q_outer = 0 ──
+    const balanceResidual = (tInner: number): number => {
+      const b = wallBalance(tInner);
+      return b.fluxInner_W - b.fluxOuter_W;
+    };
+    const tInner = brentq(balanceResidual, tAmbient_K, tFlame_K, WALL_ROOT_TOL).root;
+    const { alphaInner, fluxInner_W, alphaOuter_Wm2K, fluxOuter_W, tOuter, betweenTemps } = wallBalance(tInner);
 
     // ── Gas cooling estimate (log-mean) ───────────────────────────────────────
     const tGasAverage_K = logMean(tFlame_K, tInner);

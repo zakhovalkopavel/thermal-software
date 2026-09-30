@@ -75,7 +75,8 @@ The implementation differs from the original chapters CH03–CH08 where noted be
 
 ## PHASE 8 — Extra gases
 
-- [x] Compounds C2H6, C3H8, C4H10, iC4H10, C2H2, C3H4, aC3H4, C3H6 (NASA-7 from `json/NASA/nasa7.json`, heat capacity, Sutherland, Eucken conductivity)
+- [x] Compounds C2H6, C3H8, C4H10, iC4H10, C2H2, C3H4, aC3H4, C3H6 (`nasa7Key` / `nasa9Key` into `backend/data/nasa/nasa7.json` / `nasa9.json`, IUPAC Mr, Poling5 LJ, Perry8 DIPPR 102 μ and λ, Perry9 Table 2-95 ΔHf and ΔGf, Eakin1963 Sutherland for C2H6/C3H8/C4H10; no computed values)
+- [x] NASA databases moved to `backend/data/nasa/` and read at runtime (`utils/nasa-database.ts`); compounds keep only the keys
 - [x] `Species` enum + `GAS_REGISTRY` entries
 - [x] MAP-gas preset `map-pro` + `fuelId` on `POST /combustion/fluid` (composition to be confirmed)
 - [x] Tests `fuel-gases.spec.ts` (LHV, isomers, viscosity, flame temperatures, MAP preset)
