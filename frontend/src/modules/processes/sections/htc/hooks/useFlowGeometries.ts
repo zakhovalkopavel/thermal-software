@@ -1,0 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
+import { PROCESSES_QUERY_KEYS } from '../../../constants/processes-query-keys.constants';
+import { htcApi } from '../api/htc.api';
+
+export function useFlowGeometries() {
+  return useQuery({ queryKey: PROCESSES_QUERY_KEYS.catalogue('flow-geometries'), queryFn: htcApi.geometries, staleTime: Infinity });
+}

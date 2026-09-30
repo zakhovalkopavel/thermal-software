@@ -1,0 +1,15 @@
+export type ThermalFieldKey =
+  | 'Tc'
+  | 'T0'
+  | 'tau'
+  | 'alpha'
+  | 'lambda'
+  | 'thermalDiffusivity'
+  | 'T0Ctr'
+  | 'T0Surf'
+  | 'seriesTerms'
+  | 'bi1'
+  | 'bi2'
+  | 'bi3'
+  | 'biLateral'
+  | 'biEnd';

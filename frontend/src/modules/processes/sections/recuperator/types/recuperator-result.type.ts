@@ -1,0 +1,23 @@
+export type RecuperatorResult = {
+  recuperatorLength_m: number;
+  tAirEnd_K: number;
+  tSmokeEnd_K: number;
+  tSmokeStart_K: number;
+  tFlame_K: number;
+  maxFlameTemp_K: number;
+  energyReturnedPercent: number;
+  airEnergyIncrease_W: number;
+  smokeEnergyDecrease_W: number;
+  smokeTotalEnergy_W: number;
+  alphaAverage_Wm2K: number;
+  averageDeltaT_K: number;
+  sSmoke_m2: number;
+  sAir_m2: number;
+  dAir_m: number;
+  dSmoke_m: number;
+  wSmokeStart_ms: number;
+  wSmokeEnd_ms: number;
+  wAirStart_ms: number;
+  wAirEnd_ms: number;
+  mFuel_kgh: number;
+};

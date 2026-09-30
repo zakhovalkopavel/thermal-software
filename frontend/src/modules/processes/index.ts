@@ -1,0 +1,1 @@
+export { processesRoutes } from './routes';

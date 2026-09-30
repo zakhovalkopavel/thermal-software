@@ -1,27 +1,14 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material'
-import App from './App'
-import './index.css'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { RouterProvider } from 'react-router-dom';
+import { Providers } from './app/providers';
+import { router } from './app/router';
+import './index.css';
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-})
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <App />
-    </ThemeProvider>
-  </React.StrictMode>,
-)
-
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <Providers>
+      <RouterProvider router={router} />
+    </Providers>
+  </StrictMode>,
+);
