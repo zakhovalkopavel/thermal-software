@@ -37,9 +37,10 @@ export function brentq(
   tol = 1e-10,
 ): Root1dResult {
   const { zero } = require('brent-zero-generator') as {
-    zero: (f: (x: number) => number, a: number, b: number, tol: number) => number;
+    zero: (f: (x: number) => number, a: number, b: number, macheps: number, t: number) => number;
   };
-  const root = zero(f, a, b, tol);
+  // Library stops when |m| ≤ 2·macheps·|b| + t; the macheps term keeps every step ≥ 1 ulp.
+  const root = zero(f, a, b, Number.EPSILON, tol / 2);
   return { root };
 }
 

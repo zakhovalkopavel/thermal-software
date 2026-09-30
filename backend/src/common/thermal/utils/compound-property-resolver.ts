@@ -1,8 +1,9 @@
 import { CompoundValue } from '../interfaces/compound-value.interface';
 import { EquationValue } from '../interfaces/equation-value.interface';
 import { RefKey } from '../enum/ref-key.enum';
-import { Nasa7EquationMethod } from './nasa7-equation-method';
 import { Common } from './common';
+import { heatCapacityEntries } from './heat-capacity-entries';
+import { compoundNasaThermo } from './nasa-thermo';
 
 /**
  * Preferred approximation selector.
@@ -43,72 +44,56 @@ function resolveEntry(
  * Use this instead of accessing compound data directly.
  */
 export class CompoundPropertyResolver {
-  private readonly _nasa7 = new Nasa7EquationMethod();
-
   constructor(private readonly compound: CompoundValue) {}
 
   // ─── Heat capacity ──────────────────────────────────────────────────────────
 
   /**
    * Isobaric molar heat capacity Cp [J/(mol·K)] at temperature T [K].
-   * @param preferred  Index or RefKey to select approximation; default uses `def`.
+   * @param preferred  Index or RefKey into `heatCapacityEntries`; default NASA-9, else NASA-7, else `def`.
    */
   heatCapacity(T: number, preferred?: PreferredApprox): number {
-    if (preferred === undefined && this.compound.nasa7) {
-      return this._nasa7.calculate(
-        T, this.compound.nasa7,
-        this.compound.nasa7 ? 200 : 0,
-        this.compound.nasa7 ? 6000 : Infinity,
-      );
-    }
-    const entry = resolveEntry(this.compound.heatCapacity, preferred);
+    const entry = resolveEntry(heatCapacityEntries(this.compound), preferred);
     return Common.equation(entry.type).calculate(T, entry.vars as never, entry.min, entry.max, entry.k ?? 1);
   }
 
   /**
    * Average Cp [J/(mol·K)] over [T1, T2].
-   * @param preferred  Index or RefKey to select approximation; default uses nasa7 if available.
+   * @param preferred  Index or RefKey into `heatCapacityEntries`; default NASA-9, else NASA-7, else `def`.
    */
   heatCapacityAverage(T1: number, T2: number, preferred?: PreferredApprox): number {
-    if (preferred === undefined && this.compound.nasa7) {
-      const n = this.compound.nasa7;
-      return this._nasa7.calculateAverage(T1, T2, n, 200, 6000);
-    }
-    const entry = resolveEntry(this.compound.heatCapacity, preferred);
+    const entry = resolveEntry(heatCapacityEntries(this.compound), preferred);
     return Common.equation(entry.type).calculateAverage(T1, T2, entry.vars as never, entry.min, entry.max, entry.k ?? 1);
   }
 
   // ─── Enthalpy ───────────────────────────────────────────────────────────────
 
   /**
-   * Molar enthalpy H [J/mol] at temperature T [K].
-   * Requires nasa7 data; returns NaN if unavailable.
+   * Formation-referenced molar enthalpy H [J/mol] at temperature T [K].
+   * NASA-9, else NASA-7; returns NaN without NASA data.
    */
   enthalpy(T: number): number {
-    if (!this.compound.nasa7) return NaN;
-    return this._nasa7.enthalpy(T, this.compound.nasa7);
+    return compoundNasaThermo(this.compound)?.enthalpy(T) ?? NaN;
   }
 
   // ─── Entropy ────────────────────────────────────────────────────────────────
 
   /**
    * Molar entropy S [J/(mol·K)] at temperature T [K].
-   * Requires nasa7 data; returns NaN if unavailable.
+   * NASA-9, else NASA-7; returns NaN without NASA data.
    */
   entropy(T: number): number {
-    if (!this.compound.nasa7) return NaN;
-    return this._nasa7.entropy(T, this.compound.nasa7);
+    return compoundNasaThermo(this.compound)?.entropy(T) ?? NaN;
   }
 
   // ─── Gibbs energy ───────────────────────────────────────────────────────────
 
   /**
    * Molar Gibbs free energy G = H − T·S [J/mol] at temperature T [K].
-   * Requires nasa7 data; returns NaN if unavailable.
+   * NASA-9, else NASA-7; returns NaN without NASA data.
    */
   gibbsEnergy(T: number): number {
-    if (!this.compound.nasa7) return NaN;
-    return this._nasa7.gibbsEnergy(T, this.compound.nasa7);
+    return compoundNasaThermo(this.compound)?.gibbsEnergy(T) ?? NaN;
   }
 
   // ─── Viscosity ──────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 /**
  * NASA 7-coefficient polynomial — one temperature range.
- * ref: NASA2002 (McBride, Zehe, Gordon — NASA TM-2002-211556)
+ * ref: NASA7 (McBride, Zehe, Gordon — NASA TM-2002-211556)
  *
  * Cp/R = a1 + a2·T + a3·T² + a4·T³ + a5·T⁴
  * H/RT = a1 + a2·T/2 + a3·T²/3 + a4·T³/4 + a5·T⁴/5 + a6/T
@@ -20,7 +20,7 @@ export type Nasa7Coeffs = {
 
 /**
  * NASA 7-coefficient polynomial for a species — two temperature ranges.
- * ref: NASA2002
+ * ref: NASA7
  *
  * low  range: 200 K – Tswitch
  * high range: Tswitch – 6000 K

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 /**
- * AerodynamicsService — Ergun equation for packed-bed pressure drop.
+ * AerodynamicsService — Ergun equation for packed-bed pressure drop (ref Ergun1952).
  * Source: legacy/furnaceCombustion/modules/Aerodynamics.js
  */
 @Injectable()

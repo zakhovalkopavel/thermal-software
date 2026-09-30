@@ -13,11 +13,9 @@ export const H2: CompoundValue = {
   epsilonToKb: 59.7,
   /** ref: White3 — Sutherland parameters */
   sutherlandParams: { mu0: 8.411e-6, T0: 273, S: 97 },
-  nasa7: {
-    Tswitch: 1000,
-    low:  { a1:  2.34433112e+00, a2:  7.98052075e-03, a3: -1.94781510e-05, a4:  2.01572094e-08, a5: -7.37611761e-12, a6: -9.17935173e+02, a7:  6.83010238e-01 },
-    high: { a1:  3.33727920e+00, a2: -4.94024731e-05, a3:  4.99456778e-07, a4: -1.79566394e-10, a5:  2.00255376e-14, a6: -9.50158922e+02, a7: -3.20502331e+00 },
-  },
+  nasa7Key: 'H2',
+  /** Burcat & Ruscic set (ATcT), 50–6000 K */
+  nasa9Key: 'H2',
   heatCapacity: {
     def: 0,
     values: [

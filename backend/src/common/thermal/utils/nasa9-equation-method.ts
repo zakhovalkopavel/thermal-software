@@ -4,7 +4,7 @@ import { Common } from './common';
 
 /**
  * NASA 9-coefficient polynomial method.
- * ref: NASA9 (McBride & Gordon — NASA RP-1311 / NASA TP-2002-211556)
+ * ref: NASA9 (Burcat & Ruscic ANL-05/20; format of McBride & Gordon, NASA RP-1311)
  *
  * Covers Cp, H, S, G for an arbitrary number of contiguous temperature ranges.
  * Each range has its own 9 coefficients {a1…a9}.
@@ -96,7 +96,7 @@ export class Nasa9EquationMethod implements Equation<Nasa9Equation> {
    * Molar Gibbs free energy G [J/mol] — direct G/RT polynomial (not computed as H − T·S).
    *
    * G/RT = H/RT − S/R
-   *      = −a1/(2T²) − a2·(1 + ln T)/T + a3·(1 − ln T)
+   *      = −a1/(2T²) + a2·(1 + ln T)/T + a3·(1 − ln T)
    *        − a4·T/2 − a5·T²/6 − a6·T³/12 − a7·T⁴/20 + a8/T − a9
    *
    * Using the direct formula avoids cancellation errors in H − T·S at high T.
@@ -104,7 +104,7 @@ export class Nasa9EquationMethod implements Equation<Nasa9Equation> {
   gibbsEnergy(T: number, vars: Nasa9Equation): number {
     const { a1, a2, a3, a4, a5, a6, a7, a8, a9 } = this._coeffs(T, vars);
     const lnT = Math.log(T);
-    const GoRT = -a1/(2*T*T) - a2*(1 + lnT)/T + a3*(1 - lnT)
+    const GoRT = -a1/(2*T*T) + a2*(1 + lnT)/T + a3*(1 - lnT)
                - a4*T/2 - a5*T*T/6 - a6*Math.pow(T,3)/12 - a7*Math.pow(T,4)/20
                + a8/T - a9;
     return GoRT * Common.R * T;

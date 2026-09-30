@@ -13,11 +13,9 @@ export const CH4: CompoundValue = {
   epsilonToKb: 148.6,
   /** ref: White3 — Sutherland parameters */
   sutherlandParams: { mu0: 1.027e-5, T0: 273, S: 170 },
-  nasa7: {
-    Tswitch: 1000,
-    low:  { a1:  5.14987613e+00, a2: -1.36709788e-02, a3:  4.91800599e-05, a4: -4.84743026e-08, a5:  1.66693956e-11, a6: -1.02466476e+04, a7: -4.64130376e+00 },
-    high: { a1:  7.48514950e-02, a2:  1.33909467e-02, a3: -5.73285809e-06, a4:  1.22292535e-09, a5: -1.01815230e-13, a6: -9.46834459e+03, a7:  1.84373180e+01 },
-  },
+  nasa7Key: 'CH4',
+  /** NASA RP-1311 set */
+  nasa9Key: 'CH4',
   heatCapacity: {
     def: 0,
     values: [

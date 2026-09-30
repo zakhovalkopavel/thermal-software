@@ -390,7 +390,6 @@ findMaxFlameT(params: {
   wH2O_massFraction?: number; // Added moisture in air [mass fraction]
   pO2?: number;              // O₂ fraction in air (default 0.21)
   fuelQ_J_kg?: number;       // Fuel heating value (default 30 000 000 J/kg)
-  maxIterations?: number;
 }): {
   tFlame_K: number;
   smokeComposition: { N2: number; O2: number; CO2: number; CO: number; H2O: number; H2: number };
@@ -408,8 +407,16 @@ findMaxFlameT(params: {
 5. Moisture reactions: compute `kH₂O`, `kH₂` (water-gas shift CO + H₂O → CO₂ + H₂)
 6. Compute mass of each species; derive weight fractions
 7. Build gas composition by weight fraction
-8. Use **`GasPropertiesService.cpMixture()`** to get average Cp of products
-9. Iterate: `T_flame = T_air + Q / (Cp_mix · mGasAfter)` until convergence (ΔT < 1 K)
+8. ~~Use `GasPropertiesService.cpMixture()` to get average Cp of products~~
+9. ~~Solve `T_flame − T_air − Q / (Cp_mix(T_flame) · mGasAfter) = 0`~~
+
+> **Superseded (September 2026):** the carbon-equivalent model (steps 1–9) is removed. The
+> recuperator request selects one of the four combustion modes (`combustion.mode` =
+> `solid-direct` | `solid-two-step` | `fluid` | `bed`) and uses that mode's flue gas
+> (`CombustionService.flueGas()`: element balance + water-gas shift Kp(T), absolute-enthalpy
+> balance solved with `brentq`). See
+> [`algorithms/combustion/07_RecuperatorFlueGas.md`](algorithms/combustion/07_RecuperatorFlueGas.md)
+> and [`algorithms/combustion/`](algorithms/combustion/README.md).
 
 > `GasPropertiesService` already covers N₂, O₂, CO₂, CO, H₂O, H₂ via the NASA-7 / polynomial
 > registry. Map legacy species names to `Species` enum values: `N2`, `O2`, `CO2`, `CO`, `H2O`, `H2`.
@@ -524,7 +531,8 @@ calculate(input: FurnaceInputDto): FurnaceResultDto
 1. Assign `layers[i].start` / `layers[i].end` positions in metres.
 2. Compute inner surface geometry:  `surfaceFunction(form, a, b, c)` → s_inner, s_outer.
 3. Call **`DimensionlessNumbersService.meanBeamLength()`** → ray length for radiation.
-4. Binary-search inner surface temperature `tInner ∈ [tAmbient, tFlame]`:
+4. Find inner surface temperature `tInner ∈ [tAmbient, tFlame]` with `brentq` on
+   `h(tInner) = flux_inner − flux_outer` (flux_outer = 0 if the traverse drops below tAmbient; see SPEC_06 §6.5):
    a. Call `furnaceFluxInnerRecursion`: iterate gas end-temperature `tGasEnd` via
       `GasPropertiesService.cpMixture()` until `tGasEnd` converges.
    b. Step through layers (finite-difference along radial direction):
@@ -536,7 +544,7 @@ calculate(input: FurnaceInputDto): FurnaceResultDto
       - below 423 K: simple correlation `α = 9.8 + 0.07·(T_surface − T_room)`
       - above 423 K: **`DimensionlessCalculationService.nusselt()`** (natural convection,
         `VERTICAL_PLATE` or `HORIZONTAL_CYLINDER`) + **`RadiationService.solidRadiationHTC()`**
-   d. Stop when `|flux_inner² − flux_outer²| / (flux_inner · flux_outer) < 0.001`
+   d. `brentq` stops on its temperature tolerance (1e-6)
 5. Collect between-layer temperatures.
 
 ---

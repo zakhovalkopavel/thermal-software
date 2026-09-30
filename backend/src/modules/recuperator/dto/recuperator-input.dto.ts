@@ -1,18 +1,19 @@
-import { IsBoolean, IsEnum, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, Min, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { HoleForm } from '../enums/hole-form.enum';
+import { CombustionModeInputDto } from '../../combustion/dto/combustion-mode-input.dto';
 
 export class RecuperatorInputDto {
-  @ApiProperty({ description: 'Furnace power [W]', example: 1_000_000, minimum: 0 })
-  @IsNumber() @Min(0) fPower_W: number;
+  @ApiProperty({
+    type: CombustionModeInputDto,
+    description: 'Combustion model producing the smoke (flame temperature, flows, composition); ' +
+      'all combustion air (primary + secondary) passes the recuperator',
+  })
+  @ValidateNested() @Type(() => CombustionModeInputDto)
+  combustion: CombustionModeInputDto;
 
-  @ApiProperty({ description: 'Lower heating value of fuel [J/kg]', example: 35_000_000, minimum: 1 })
-  @IsNumber() @Min(1) fuelQ_Jkg: number;
-
-  @ApiProperty({ description: 'Excess air ratio (1.0 = stoichiometric)', example: 1.2, minimum: 0.01 })
-  @IsNumber() @Min(0.01) kExcessAir: number;
-
-  @ApiProperty({ description: 'Inlet air temperature [K]', example: 573, minimum: 200 })
+  @ApiProperty({ description: 'Air temperature at the recuperator inlet [K]', example: 293, minimum: 200 })
   @IsNumber() @Min(200) tAirStart_K: number;
 
   @ApiProperty({ enum: HoleForm, description: 'Channel cross-section geometry', example: HoleForm.CIRCLE })
@@ -57,12 +58,8 @@ export class RecuperatorInputDto {
   @ApiProperty({ description: 'Outer surface area [m²]', example: 5.0, minimum: 0 })
   @IsNumber() @Min(0) surfaceArea_m2: number;
 
-  @ApiPropertyOptional({ description: 'Water mass fraction in air — humidity (default 0)', example: 0.01, minimum: 0 })
-  @IsOptional() @IsNumber() @Min(0) wH2Om?: number;
-
-  @ApiPropertyOptional({ description: 'Air preheat offset [K] for max flame temp (default 0)', example: 0 })
+  @ApiPropertyOptional({
+    description: 'Offset [K] added to the combustion air temperatures for maxFlameTemp_K (default 0)', example: 0,
+  })
   @IsOptional() @IsNumber() airPreheat_K?: number;
-
-  @ApiPropertyOptional({ description: 'O₂ vol fraction in dry air (default 0.21)', example: 0.21 })
-  @IsOptional() @IsNumber() pO2?: number;
 }

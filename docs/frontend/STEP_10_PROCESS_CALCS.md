@@ -36,36 +36,34 @@ Imports from Materials only via `modules/materials/index.ts` (`MaterialPicker`, 
 ## 1. Combustion — flame temperature and products
 
 **Route:** `/processes/combustion`  
-**Backend:** `combustion.controller.ts`, `dto/combustion-input.dto.ts`
+**Backend:** `combustion.controller.ts`, DTOs in `combustion/dto/` — full shapes in [`docs/algorithms/combustion/06_API.md`](../algorithms/combustion/06_API.md)
 
-| Method | Path |
-|--------|------|
-| `POST` | `/combustion/calculate` |
+| Method | Path | Mode |
+|--------|------|------|
+| `GET` | `/combustion/fuels` | fuel presets (for the fuel picker) |
+| `POST` | `/combustion/solid/direct` | 1 — solid fuel, one step |
+| `POST` | `/combustion/solid/two-step` | 2 — generator gas + secondary-air burnout |
+| `POST` | `/combustion/fluid` | 3 — gaseous or liquid fuel |
+| `POST` | `/combustion/bed` | 4 — packed bed by layers |
 
-| Field | Unit | Required |
-|-------|------|----------|
-| `fPower_W` | W | yes |
-| `fuelQ_Jkg` | J/kg (LHV) | yes |
-| `kExcessAir` | – (1.0 = stoichiometric) | yes |
-| `tAirStart_K` | K | yes |
-| `carbonQ_Jkg` | J/kg | no |
-| `pO2` | vol fraction in dry air | no |
-| `wH2Om` | mass fraction (humidity) | no |
-| `generatorHeatLoss_W` | W | no |
+UI: a mode selector (4 tabs) on top; each tab shows the fields of its input DTO. Fuel: preset from
+`GET /fuels` (filtered by phase) or a custom fuel (elemental analysis + ΔHf or LHV; gas mole fractions for mode 3).
+Required fields on top, optional ones (`pO2`, `wH2Om`, heat losses, bed/furnace walls) in an "Advanced" accordion.
 
-Outputs: `tFlame_K`, `tSmokeStart_K`, `mFuel_kgs`, `mAir_kgs`, `mSmoke_kgs`, composition before/after, `pCO2`, `pH2O`.
-
-UI: required fields on top, optional ones in an "Advanced" accordion; results as cards (temperatures, mass flows) + composition table.
+Common outputs: `fuel` (LHV, stoichiometric air), `mFuel_kgs`, `fPower_W`, `tFlame_K` and the step result(s)
+(`combustion`, or `generator` + `burnout`) with product mole/mass flows and fractions. Modes 2 and 4 add `tStep1_K`,
+primary/secondary air; mode 4 adds the per-layer table. Results as cards (temperatures, mass flows) + composition table.
 
 ### Charts
 
 | Chart | Component | Axes / series |
 |-------|-----------|---------------|
-| Gas composition before / after | `CategoryBarChart` (grouped) | categories = `N2, O2, CO2, CO, H2O, H2`; series = `composition.before`, `composition.after` (mole fraction) |
-| Mass balance | `CategoryBarChart` (stacked) | column 1 = `mFuel_kgs` + `mAir_kgs` (stacked), column 2 = `mSmoke_kgs` — visual check of the balance |
-| Excess-air sweep | `XYLineChart` | x = `kExcessAir` (1.0–2.0, step 0.05, ≤ 21 points via `useQueries`); y1 = `tFlame_K` [K]; y2 (right) = `mSmoke_kgs`; vertical plot line at the entered α. Runs on "Sweep α" button, not on every Calculate |
+| Product composition | `CategoryBarChart` (grouped) | categories = `N2, O2, CO2, CO, H2O, H2, SO2`; series = mole fractions of each step result (modes 2, 4: `generator` and `burnout`) |
+| Mass balance | `CategoryBarChart` (stacked) | column 1 = `mFuel_kgs` + air (+ steam, mode 4) stacked, column 2 = `mGas_kgs` + char + ash of the last step — visual check of the balance |
+| Excess-air sweep | `XYLineChart` | x = `kExcessAir` (1.0–2.0, step 0.05, ≤ 21 points via `useQueries`); y1 = `tFlame_K` [K]; y2 (right) = `mGas_kgs` of the last step; vertical plot line at the entered α. Runs on "Sweep α" button, not on every Calculate; modes 1–3 only |
+| Bed profile (mode 4) | `XYLineChart` | x = `layers[].z_m`; y1 = `tGas_K`, `tSolid_K`; y2 (right) = mole fractions O2, CO2, CO |
 
-**Hand-off:** button "Use smoke in multilayer wall" pre-fills the wall form with `tFlame_K`, `mSmoke_kgs` and the product composition (passed via router state).
+**Hand-off:** button "Use smoke in multilayer wall" pre-fills the wall form with `tFlame_K`, `mGas_kgs` and the composition of the last step reduced to N2, O2, CO2, CO, H2O, H2 (passed via router state). Button "Use in recuperator" passes the current mode and its input as `combustion` of the recuperator form.
 
 ---
 
@@ -88,7 +86,7 @@ UI: required fields on top, optional ones in an "Advanced" accordion; results as
 | `mPerSecond_kgs` | Gas mass flow [kg/s] |
 | `tFlame_K`, `tAmbient_K` | K |
 | `innerEmissivity` | 0–1 |
-| `numberOfSteps?`, `endFactor?` | Solver options (Advanced) |
+| `numberOfSteps?` | Finite-difference steps through the wall (Advanced) |
 
 ### Layer editor
 
@@ -114,7 +112,7 @@ The temperature profile connects interface points with straight segments; the ca
 
 ## Acceptance criteria
 
-- [ ] Combustion example (5 kW, 35 MJ/kg, α = 1.2, 573 K) returns flame T and mass flows
+- [ ] All four combustion modes run with their Swagger examples and return flame T and mass flows
 - [ ] Optional combustion fields may be left empty
 - [ ] "Use smoke in multilayer wall" pre-fills the wall form
 - [ ] Layer picker lists both metals and refractories from the Materials catalogues (no hardcoded ids)

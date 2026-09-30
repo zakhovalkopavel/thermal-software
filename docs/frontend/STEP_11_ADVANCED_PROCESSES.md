@@ -54,7 +54,7 @@ Form in sections so it stays readable:
 
 | Section | Fields (examples) |
 |---------|-------------------|
-| Combustion | power, fuel LHV, excess air, air inlet T |
+| Combustion | mode selector (`solid-direct`, `solid-two-step`, `fluid`, `bed`) + the form of that mode from Step 10 (sent as `combustion: { mode, <modeInput> }`); air inlet T of the recuperator (`tAirStart_K`) |
 | Geometry | `holeForm`, `d0_m`, wall / channel counts, `surfaceArea_m2` |
 | Materials | wall and insulation materials (`MaterialPicker kinds={['metal', 'refractory']}`), λ / ε overrides |
 | Solver | grid-search limits |

@@ -60,8 +60,4 @@ export class MultilayerWallInputDto {
   @ApiPropertyOptional({ description: 'FD steps through wall (default 50)', example: 50, minimum: 5 })
   @IsOptional() @IsNumber() @Min(5)
   numberOfSteps?: number;
-
-  @ApiPropertyOptional({ description: 'Convergence criterion for binary search (default 0.001)', example: 0.001, minimum: 1e-6 })
-  @IsOptional() @IsNumber() @Min(1e-6)
-  endFactor?: number;
 }

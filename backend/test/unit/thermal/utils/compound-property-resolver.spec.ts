@@ -2,7 +2,7 @@
  * Unit tests for CompoundPropertyResolver.
  *
  * Verifies:
- *   - Default heatCapacity uses nasa7 when present (CO2, N2)
+ *   - Default heatCapacity / H / S / G use NASA-9 (N2), NASA-7 when there is no NASA-9 (CO2)
  *   - Explicit preferred index selects correct values[] entry
  *   - Explicit preferred RefKey selects correct values[] entry
  *   - Unknown preferred falls back to def
@@ -19,6 +19,9 @@ import { CO2 } from '../../../../src/common/thermal/compound/gas/co2';
 import { N2  } from '../../../../src/common/thermal/compound/gas/n2';
 import { CompoundValue } from '../../../../src/common/thermal/interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../../../src/common/thermal/dto/equation-type.dto';
+import { compoundNasa7, compoundNasa9 } from '../../../../src/common/thermal/utils/nasa-database';
+import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/nasa7-equation-method';
+import { Nasa9EquationMethod } from '../../../../src/common/thermal/utils/nasa9-equation-method';
 
 // ─── Helper — minimal CompoundValue without nasa7 ─────────────────────────────
 
@@ -103,10 +106,8 @@ describe('CompoundPropertyResolver — preferred by index (N2)', () => {
     expect(cp).toBeLessThan(31);
   });
 
-  it('preferred=99 (out of range) falls back to def', () => {
-    const def      = resolver.heatCapacity(300, N2.heatCapacity.def);
-    const fallback = resolver.heatCapacity(300, 99);
-    expect(fallback).toBeCloseTo(def, 8);
+  it('preferred=99 (out of range) falls back to the default', () => {
+    expect(resolver.heatCapacity(300, 99)).toBeCloseTo(resolver.heatCapacity(300), 8);
   });
 });
 
@@ -127,11 +128,33 @@ describe('CompoundPropertyResolver — preferred by RefKey (N2)', () => {
     expect(cp).toBeLessThan(31);
   });
 
-  it('preferred=RefKey that is absent falls back to def', () => {
+  it('preferred=RefKey that is absent falls back to the default', () => {
     // Asano2006 is not a ref for N2 heatCapacity entries
-    const def      = resolver.heatCapacity(300, N2.heatCapacity.def);
-    const fallback = resolver.heatCapacity(300, RefKey.Asano2006);
-    expect(fallback).toBeCloseTo(def, 8);
+    expect(resolver.heatCapacity(300, RefKey.Asano2006)).toBeCloseTo(resolver.heatCapacity(300), 8);
+  });
+});
+
+// ─── NASA-9 default, NASA-7 secondary ────────────────────────────────────────
+
+describe('CompoundPropertyResolver — NASA-9 default (N2)', () => {
+  const resolver = new CompoundPropertyResolver(N2);
+  const nasa9 = compoundNasa9(N2)!.nasa9;
+  const nasa7 = compoundNasa7(N2)!.nasa7;
+  const m9 = new Nasa9EquationMethod();
+  const m7 = new Nasa7EquationMethod();
+
+  it('heatCapacity() without preferred is NASA-9', () => {
+    expect(resolver.heatCapacity(1500)).toBeCloseTo(m9.calculate(1500, nasa9, 200, 20000), 10);
+  });
+
+  it('preferred=RefKey.NASA7 selects NASA-7', () => {
+    expect(resolver.heatCapacity(1500, RefKey.NASA7)).toBeCloseTo(m7.calculate(1500, nasa7, 200, 6000), 10);
+  });
+
+  it('enthalpy, entropy, gibbsEnergy are NASA-9', () => {
+    expect(resolver.enthalpy(1500)).toBeCloseTo(m9.enthalpy(1500, nasa9), 6);
+    expect(resolver.entropy(1500)).toBeCloseTo(m9.entropy(1500, nasa9), 8);
+    expect(resolver.gibbsEnergy(1500)).toBeCloseTo(m9.gibbsEnergy(1500, nasa9), 6);
   });
 });
 

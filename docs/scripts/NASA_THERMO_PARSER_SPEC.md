@@ -526,28 +526,27 @@ If `--nasa9` is omitted, `nasa9.json` is not written.
 
 ## Mapping to TypeScript compound files
 
-After generating the JSON, add a compound's `nasa9` field by copying from the JSON:
+The backend reads the JSON directly. `make nasa-install` copies `nasa7.json` and `nasa9.json`
+to `backend/data/nasa/`, where `backend/src/common/thermal/utils/nasa-database.ts` loads them.
+Coefficients are **not** copied into compound files — a compound references the species by its
+exact key:
 
 ```typescript
 // backend/src/common/thermal/compound/gas/n2.ts
-import { RefKey } from '../../enum/ref-key.enum';
-import type { CompoundValue } from '../../interfaces/compound-value.interface';
-
 export const N2: CompoundValue = {
   // ... other fields ...
-
-  // Sourced from shared/processed/nasa9.json → species["N2"]
-  nasa9: {
-    ranges: [
-      { Tmin: 200, Tmax: 1000, coeffs: { a1: ..., a2: ..., ..., a8: ..., a9: ... } },
-      { Tmin: 1000, Tmax: 6000, coeffs: { a1: ..., ... } },
-    ],
-  },
+  nasa7Key: 'N2',   // nasa7.json → species["N2"]
+  nasa9Key: 'N2',   // nasa9.json → species["N2"]
 };
 ```
 
-The `H0` field in the JSON range is **not** part of `Nasa9Coeffs` — it is metadata
-for reference and cross-validation only. Do not copy it into the TypeScript compound.
+The `H0` field in a JSON range is not part of `Nasa9Coeffs` — it is metadata for cross-validation
+and is ignored by the evaluator.
+
+**Known issue — Source 2 overwrites:** records from `nasa9-new.dat` replace same-named
+`nasa9-origin.dat` records. For `CO2`, `O2` and `NO2` the replacement is a different species
+(H(298) = +49.6, +94.4 and +351.7 kJ/mol), so those compounds have no `nasa9Key` until the
+parser keeps the RP-1311 record.
 
 ---
 

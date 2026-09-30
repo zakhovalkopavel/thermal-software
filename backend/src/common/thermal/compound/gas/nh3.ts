@@ -2,7 +2,7 @@ import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
 
-/** NH3 — Ammonia. NASA-7: ref BurRus05, LJ: ref Poling7, Sutherland: fit from NIST data */
+/** NH3 — Ammonia. LJ: ref Poling5, Sutherland: fit to ref NISTWebBook data */
 export const NH3: CompoundValue = {
   name: 'Ammonia',
   chemicalFormula: 'NH3',
@@ -12,11 +12,9 @@ export const NH3: CompoundValue = {
   collisionDiameter: 2.9,
   epsilonToKb: 558.3,
   sutherlandParams: { mu0: 9.82e-6, T0: 293, S: 503 },
-  nasa7: {
-    Tswitch: 1000,
-    low:  { a1:  4.30177808e+00, a2: -4.56296030e-03, a3:  2.17005433e-05, a4: -2.28198386e-08, a5:  8.26912560e-12, a6: -6.74847650e+03, a7: -6.93553953e-01 },
-    high: { a1:  2.63459404e+00, a2:  5.66582803e-03, a3: -1.72746311e-06, a4:  2.38750128e-10, a5: -1.25718478e-14, a6: -6.54030950e+03, a7:  6.56365403e+00 },
-  },
+  nasa7Key: 'NH3',
+  /** Burcat & Ruscic set (ATcT), 50–6000 K */
+  nasa9Key: 'NH3',
   heatCapacity: {
     def: 0,
     values: [

@@ -1,8 +1,6 @@
 /**
  * NASA 9-coefficient polynomial — one temperature range.
- * ref: NASA/TP-2002-211556 (McBride, Gordon, Reno — NASA TP-1993-003606 original;
- *      extended format: McBride & Gordon 1996, "Computer Program for Calculation
- *      of Complex Chemical Equilibrium Compositions and Applications", NASA RP-1311)
+ * ref: NASA9 (Burcat & Ruscic ANL-05/20; format of McBride & Gordon 1996, NASA RP-1311)
  *
  * Cp/R = a1·T⁻² + a2·T⁻¹ + a3 + a4·T + a5·T² + a6·T³ + a7·T⁴
  * H/RT = -a1·T⁻² + a2·ln(T)/T + a3 + a4·T/2 + a5·T²/3 + a6·T³/4 + a7·T⁴/5 + a8/T
@@ -24,7 +22,7 @@ export type Nasa9Coeffs = {
 
 /**
  * NASA 9-coefficient polynomial for a species — variable number of temperature ranges.
- * ref: NASA RP-1311 (McBride & Gordon 1996)
+ * ref: NASA9
  *
  * NASA-9 supports arbitrary range splits; common databases use 2–3 ranges, e.g.:
  *   200–1000 K / 1000–6000 K / 6000–20000 K

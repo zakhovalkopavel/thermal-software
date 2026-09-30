@@ -15,17 +15,22 @@ export class RecuperatorController {
     description:
       'Grid-search optimiser: sweeps wall thickness and channel dimension around the starting point ' +
       'to find the combination that minimises recuperator length while satisfying the energy-balance criterion. ' +
-      'Returns optimal geometry, heat transfer results and combustion conditions.',
+      'Returns optimal geometry, heat transfer results and combustion conditions. The smoke comes from the ' +
+      'selected combustion mode (`combustion.mode`: solid-direct, solid-two-step, fluid, bed).',
   })
   @ApiBody({
     type: RecuperatorInputDto,
     examples: {
       circleChannels: {
-        summary: '5 kW furnace — circular channels, 100 air / 81 smoke, α = 1.2',
+        summary: '5 kW natural-gas furnace (mode fluid) — circular channels, 100 air / 81 smoke, λ = 1.2',
         value: {
-          fPower_W: 5_000,
-          fuelQ_Jkg: 35_000_000,
-          kExcessAir: 1.2,
+          combustion: {
+            mode: 'fluid',
+            fluid: {
+              phase: 'gas', fuelGas: { CH4: 0.95, CO2: 0.01, N2: 0.04 },
+              fPower_W: 5_000, kExcessAir: 1.2, tAir_K: 573,
+            },
+          },
           tAirStart_K: 573,
           holeForm: 'circle',
           d0_m: 0.04,
@@ -41,11 +46,12 @@ export class RecuperatorController {
         },
       },
       squareChannelsHumid: {
-        summary: 'Square channels, humid air, turbulence correction on',
+        summary: 'Charcoal briquette (mode solid-direct), square channels, humid air, turbulence correction on',
         value: {
-          fPower_W: 5_000,
-          fuelQ_Jkg: 34_000_000,
-          kExcessAir: 1.4,
+          combustion: {
+            mode: 'solid-direct',
+            solidDirect: { fuelId: 'charcoal-briquette', fPower_W: 5_000, kExcessAir: 1.4, tAir_K: 623, wH2Om: 0.01 },
+          },
           tAirStart_K: 623,
           holeForm: 'square',
           d0_m: 0.035,
@@ -58,8 +64,28 @@ export class RecuperatorController {
           refractoryEmissivity: 0.82,
           surfaceEmissivity: 0.88,
           surfaceArea_m2: 3.0,
-          wH2Om: 0.01,
           smokeTurbulence: true,
+        },
+      },
+      bedGenerator: {
+        summary: 'Packed-bed charcoal generator (mode bed), 10 m³/h blast, λ = 1.3',
+        value: {
+          combustion: {
+            mode: 'bed',
+            bed: { fuelId: 'charcoal-briquette', airFlow_m3h: 10, tAirPrimary_K: 400, kExcessAir: 1.3, tAirSecondary_K: 400 },
+          },
+          tAirStart_K: 400,
+          holeForm: 'circle',
+          d0_m: 0.03,
+          refractoryThickness_m: 0.003,
+          nAir: 49,
+          nSmoke: 36,
+          wantedRecuperatorLength_m: 1.0,
+          thermalInsulationThickness_m: 0.05,
+          refractoryLambda_WmK: 1.2,
+          refractoryEmissivity: 0.85,
+          surfaceEmissivity: 0.9,
+          surfaceArea_m2: 2.0,
         },
       },
     },
