@@ -13,11 +13,8 @@ export const CO2: CompoundValue = {
   epsilonToKb: 195.2,
   /** ref: White3 — Sutherland parameters */
   sutherlandParams: { mu0: 1.370e-5, T0: 273, S: 222 },
-  nasa7: {
-    Tswitch: 1000,
-    low:  { a1:  2.35677352e+00, a2:  8.98459677e-03, a3: -7.12356269e-06, a4:  2.45919022e-09, a5: -1.43699548e-13, a6: -4.83719697e+04, a7:  9.90105222e+00 },
-    high: { a1:  4.63659493e+00, a2:  2.74131991e-03, a3: -9.95828542e-07, a4:  1.60373011e-10, a5: -9.16103468e-15, a6: -4.90249392e+04, a7: -1.93489550e+00 },
-  },
+  nasa7Key: 'CO2',
+  // no nasa9Key: nasa9.json "CO2" holds another species (H(298) = +49.6 kJ/mol)
   heatCapacity: {
     def: 0,
     values: [

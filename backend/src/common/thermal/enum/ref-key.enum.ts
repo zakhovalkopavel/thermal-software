@@ -33,5 +33,15 @@ export enum RefKey {
   NASA9         = 'NASA9',         // [23] Burcat & Ruscic — ANL-05/20 (2005) — NASA-9 polynomial coefficients
   CaltechSDT    = 'CaltechSDT',    // [24] Caltech EDL — Shock and Detonation Toolbox: Thermodynamic Data
   BurcatELTE    = 'BurcatELTE',   // [25] Burcat, Ruscic, Goos — Extended Thermodynamic Database (ELTE, updated)
+  Basu2006        = 'Basu2006',        // [26] Basu — Combustion and Gasification in Fluidized Beds (2006)
+  VanKrevelen1993 = 'VanKrevelen1993', // [27] Van Krevelen — Coal: Typology, Physics, Chemistry, Constitution 3rd ed. (1993)
+  Laurendeau1978  = 'Laurendeau1978',  // [28] Laurendeau — Heterogeneous Kinetics of Coal Char Gasification and Combustion (1978)
+  Turns2012       = 'Turns2012',       // [29] Turns — An Introduction to Combustion 3rd ed. (2012)
+  Higman2008      = 'Higman2008',      // [30] Higman & van der Burgt — Gasification 2nd ed. (2008)
+  IUPAC2021       = 'IUPAC2021',       // [31] Prohaska et al. — Standard Atomic Weights of the Elements 2021 (IUPAC)
+  NISTWebBook     = 'NISTWebBook',     // [32] NIST Chemistry WebBook, SRD 69
+  Ergun1952       = 'Ergun1952',       // [33] Ergun — Fluid Flow through Packed Columns (1952)
+  Perry8          = 'Perry8',          // [34] Perry's Chemical Engineers' Handbook 8th ed. (2008)
+  Eakin1963       = 'Eakin1963',       // [35] Eakin & Ellington — Predicting the Viscosity of Pure Light Hydrocarbons (1963)
 }
 

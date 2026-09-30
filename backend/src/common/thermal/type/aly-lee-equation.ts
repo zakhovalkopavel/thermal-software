@@ -1,6 +1,6 @@
 /**
  * Aly–Lee equation coefficients (DIPPR Equation 107).
- * Common refs: Perry7 (p. 2-150), NASA2002
+ * Common refs: Perry7 (p. 2-150), Perry9
  *
  * Cp = c1 + c2·[c3/T / sinh(c3/T)]² + c4·[c5/T / cosh(c5/T)]²
  */

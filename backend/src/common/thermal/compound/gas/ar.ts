@@ -13,17 +13,9 @@ export const Ar: CompoundValue = {
   epsilonToKb: 93.3,
   /** ref: White3 — Sutherland parameters, Appendix A */
   sutherlandParams: { mu0: 2.125e-5, T0: 273, S: 144 },
-  /**
-   * NASA-7 polynomial — McBride, Zehe, Gordon, NASA TM-2002-211556, p. 11.
-   * Monatomic ideal gas: Cp/R = 2.5 exactly for all T; both ranges identical.
-   * a6 = −h°f/R at 298 K (= 0 J/mol for reference element);
-   * a7 = S°/R integration constant.
-   */
-  nasa7: {
-    Tswitch: 1000,
-    low:  { a1:  2.50000000e+00, a2:  0.00000000e+00, a3:  0.00000000e+00, a4:  0.00000000e+00, a5:  0.00000000e+00, a6: -7.45375000e+02, a7:  4.37967491e+00 },
-    high: { a1:  2.50000000e+00, a2:  0.00000000e+00, a3:  0.00000000e+00, a4:  0.00000000e+00, a5:  0.00000000e+00, a6: -7.45375000e+02, a7:  4.37967491e+00 },
-  },
+  nasa7Key: 'Ar',
+  /** NASA RP-1311 set */
+  nasa9Key: 'Ar',
   heatCapacity: {
     def: 0,
     values: [

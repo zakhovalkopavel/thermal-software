@@ -25,8 +25,13 @@ export class DiffusionService {
     const sp1 = GAS_REGISTRY[A];
     const sp2 = GAS_REGISTRY[B];
     if (!sp1 || !sp2) throw new Error(`Unknown species: ${A} or ${B}`);
-    const sigma12   = (sp1.collisionDiameter + sp2.collisionDiameter) / 2;
-    const epsilon12 = Math.sqrt(sp1.epsilonToKb * sp2.epsilonToKb);
+    for (const [name, sp] of [[A, sp1], [B, sp2]] as const) {
+      if (sp.collisionDiameter === undefined || sp.epsilonToKb === undefined) {
+        throw new Error(`No Lennard-Jones parameters for ${name}`);
+      }
+    }
+    const sigma12   = (sp1.collisionDiameter! + sp2.collisionDiameter!) / 2;
+    const epsilon12 = Math.sqrt(sp1.epsilonToKb! * sp2.epsilonToKb!);
     const Omega_D   = this._omegaD(T_K / epsilon12);
     const D_cm2s    = 0.00266 * Math.pow(T_K, 1.5) / (P_atm * sigma12 * sigma12 * Omega_D);
     return D_cm2s * 1e-4; // cm²/s → m²/s

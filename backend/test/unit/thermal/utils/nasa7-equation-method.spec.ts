@@ -22,7 +22,7 @@
  */
 
 import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/nasa7-equation-method';
-import { Nasa7Equation } from '../../../../src/common/thermal/type/nasa7-equation';
+import { compoundNasa7 } from '../../../../src/common/thermal/utils/nasa-database';
 import { CO2 } from '../../../../src/common/thermal/compound/gas/co2';
 import { N2  } from '../../../../src/common/thermal/compound/gas/n2';
 import { Common } from '../../../../src/common/thermal/utils/common';
@@ -33,7 +33,7 @@ const R = Common.R;
 // ─── CO2 ─────────────────────────────────────────────────────────────────────
 
 describe('Nasa7EquationMethod — CO2', () => {
-  const vars = CO2.nasa7 as Nasa7Equation;
+  const vars = compoundNasa7(CO2)!.nasa7;
 
   // NIST JANAF: CO2 Cp at 300 K = 37.135 J/(mol·K)
   it('Cp at 300 K ≈ 37.1 J/(mol·K) (NIST JANAF)', () => {
@@ -97,7 +97,7 @@ describe('Nasa7EquationMethod — CO2', () => {
 // ─── N2 ──────────────────────────────────────────────────────────────────────
 
 describe('Nasa7EquationMethod — N2', () => {
-  const vars = N2.nasa7 as Nasa7Equation;
+  const vars = compoundNasa7(N2)!.nasa7;
 
   // NIST JANAF: N2 Cp at 300 K ≈ 29.12 J/(mol·K)
   it('Cp at 300 K ≈ 29.1 J/(mol·K)', () => {
@@ -140,7 +140,7 @@ describe('Nasa7EquationMethod — N2', () => {
 // ─── Edge cases ───────────────────────────────────────────────────────────────
 
 describe('Nasa7EquationMethod — edge cases', () => {
-  const vars = N2.nasa7 as Nasa7Equation;
+  const vars = compoundNasa7(N2)!.nasa7;
 
   it('clamps T below 200 K to 200 K', () => {
     expect(method.calculate(100, vars, 200, 6000)).toBeCloseTo(

@@ -13,11 +13,8 @@ export const O2: CompoundValue = {
   epsilonToKb: 106.7,
   /** ref: White3 — Sutherland parameters, Appendix A */
   sutherlandParams: { mu0: 1.919e-5, T0: 273, S: 127 },
-  nasa7: {
-    Tswitch: 1000,
-    low:  { a1: 3.78245636e+00, a2: -2.99673416e-03, a3:  9.84730201e-06, a4: -9.68129509e-09, a5:  3.24372837e-12, a6: -1.06394356e+03, a7:  3.65767573e+00 },
-    high: { a1: 3.28253784e+00, a2:  1.48308754e-03, a3: -7.57966669e-07, a4:  2.09470555e-10, a5: -2.16717794e-14, a6: -1.08845772e+03, a7:  5.45323129e+00 },
-  },
+  nasa7Key: 'O2',
+  // no nasa9Key: nasa9.json "O2" holds singlet O2 (H(298) = +94.4 kJ/mol)
   heatCapacity: {
     def: 0,
     values: [

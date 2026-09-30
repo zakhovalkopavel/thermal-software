@@ -13,11 +13,9 @@ export const H2O: CompoundValue = {
   epsilonToKb: 809.1,
   /** ref: White3 — Sutherland parameters */
   sutherlandParams: { mu0: 1.12e-5, T0: 350, S: 1064 },
-  nasa7: {
-    Tswitch: 1000,
-    low:  { a1:  4.19864056e+00, a2: -2.03643410e-03, a3:  6.52040211e-06, a4: -5.48797062e-09, a5:  1.77197817e-12, a6: -3.02937267e+04, a7: -8.49032208e-01 },
-    high: { a1:  3.03399249e+00, a2:  2.17691804e-03, a3: -1.64072518e-07, a4: -9.70419870e-11, a5:  1.68200992e-14, a6: -3.00042971e+04, a7:  4.96677010e+00 },
-  },
+  nasa7Key: 'H2O',
+  /** NASA RP-1311 set */
+  nasa9Key: 'H2O',
   heatCapacity: {
     def: 0,
     values: [

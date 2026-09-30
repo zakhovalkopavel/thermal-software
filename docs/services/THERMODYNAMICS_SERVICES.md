@@ -37,14 +37,14 @@ polynomial or NASA coefficient data stored in the compound registry.
 
 #### `cpSpecies(species, T_K, T0_K?) → number`
 Returns Cp [J/(mol·K)] for a pure species at temperature T_K using the compound's
-default (`def`) equation. If T0_K is supplied, returns the mean Cp over [T0_K, T_K].
+default equation — NASA-9, else NASA-7, else `heatCapacity.def`. If T0_K is supplied, returns the mean Cp over [T0_K, T_K].
 
 #### `cpSpeciesByIndex(species, equationIndex, T_K, T0_K?) → number`
-As above, but selects a specific entry from `heatCapacity.values[]` by index —
-used to compare different approximations.
+As above, but selects a specific entry of `heatCapacityEntries(compound)` by index
+(`heatCapacity.values[]`, then NASA-9, then NASA-7) — used to compare different approximations.
 
 #### `cpCompare(species, T_K) → CpComparisonEntryDto[]`
-Returns Cp from **every** equation in `heatCapacity.values[]` for cross-checking.
+Returns Cp from **every** entry of `heatCapacityEntries(compound)` (tabulated fits, NASA-9, NASA-7) for cross-checking.
 Each entry reports `{ index, type, ref, value, rangeValid }`.
 
 #### `cpMixture(composition: Record<Species, number>, T_K) → number`
@@ -67,6 +67,10 @@ S/R  = a1·ln(T) + a2·T + a3T²/2 + a4T³/3 + a5T⁴/4 + a7
 Switch temperature (`Tswitch`) selects low/high coefficient set.
 
 **Correlations in registry:** Aly-Lee (DIPPR-107), quartic polynomial (Yaws), NASA-7, NASA-9.
+NASA-7/NASA-9 coefficients come from `backend/data/nasa/*.json` via the compound's `nasa7Key` /
+`nasa9Key`. Default for Cp, H, S and G is **NASA-9, NASA-7 second** (`compoundNasaThermo`); outside
+the dataset range H and S are extrapolated with the boundary Cp. `enthalpy()` / `enthalpyMixture()`
+return the sensible enthalpy H(T) − H(298.15 K); `absoluteEnthalpy()` the formation-referenced one.
 
 ---
 

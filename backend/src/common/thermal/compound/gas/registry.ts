@@ -7,6 +7,14 @@ import { CO  } from './co';
 import { H2O } from './h2o';
 import { H2  } from './h2';
 import { CH4 } from './ch4';
+import { C2H6 } from './c2h6';
+import { C3H8 } from './c3h8';
+import { C4H10 } from './c4h10';
+import { iC4H10 } from './ic4h10';
+import { C2H2 } from './c2h2';
+import { C3H4 } from './c3h4';
+import { aC3H4 } from './ac3h4';
+import { C3H6 } from './c3h6';
 import { NH3 } from './nh3';
 import { SO2 } from './so2';
 import { SO3 } from './so3';
@@ -26,6 +34,14 @@ export const GAS_REGISTRY: Record<string, CompoundValue> = {
   H2O,
   H2,
   CH4,
+  C2H6,
+  C3H8,
+  C4H10,
+  iC4H10,
+  C2H2,
+  C3H4,
+  aC3H4,
+  C3H6,
   NH3,
   SO2,
   SO3,
