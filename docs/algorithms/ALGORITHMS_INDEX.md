@@ -372,14 +372,30 @@ Material Library (Composition Data)
 | File | Contents |
 |---|---|
 | [`RECUPERATOR_SPEC_00_Overview.md`](./recuperator/RECUPERATOR_SPEC_00_Overview.md) | Multi-module architecture, service map, API summary |
-| [`RECUPERATOR_SPEC_01_Combustion.md`](./recuperator/RECUPERATOR_SPEC_01_Combustion.md) | Flame temperature, carbon combustion, water-gas shift |
+| → [`combustion/07_RecuperatorFlueGas.md`](./combustion/07_RecuperatorFlueGas.md) | Combustion for the recuperator (selected mode, flue gas, smoke start temperature) — in the combustion docs |
 | [`RECUPERATOR_SPEC_02_Geometry.md`](./recuperator/RECUPERATOR_SPEC_02_Geometry.md) | Channel cross-sections for 4 hole forms, perimeters, ray lengths |
 | [`RECUPERATOR_SPEC_03_Materials.md`](./recuperator/RECUPERATOR_SPEC_03_Materials.md) | 21 materials: λ(T) and ε(T) split across refractory/metals modules |
 | [`RECUPERATOR_SPEC_04_HeatTransfer.md`](./recuperator/RECUPERATOR_SPEC_04_HeatTransfer.md) | Nu correlations, gas radiation (Hottel–Mikheev), overall wall HTC |
 | [`RECUPERATOR_SPEC_05_RecuperatorAlgorithm.md`](./recuperator/RECUPERATOR_SPEC_05_RecuperatorAlgorithm.md) | Counter-flow HX optimiser, 8-neighbour grid search, energy balance |
-| [`RECUPERATOR_SPEC_06_FurnaceAlgorithm.md`](./recuperator/RECUPERATOR_SPEC_06_FurnaceAlgorithm.md) | Multilayer radial FD, binary search, outer surface cooling |
+| [`RECUPERATOR_SPEC_06_FurnaceAlgorithm.md`](./recuperator/RECUPERATOR_SPEC_06_FurnaceAlgorithm.md) | Multilayer radial FD, brentq on inner surface temperature, outer surface cooling |
 | [`RECUPERATOR_SPEC_07_API.md`](./recuperator/RECUPERATOR_SPEC_07_API.md) | All 4 endpoint specs with full DTOs |
 | [`RECUPERATOR_SPEC_08_Bibliography.md`](./recuperator/RECUPERATOR_SPEC_08_Bibliography.md) | Mikheev 1977, Gnielinski, Hottel, Churchill–Chu |
+
+---
+
+### **combustion/** ⭐ NEW
+**Role:** Fuel combustion in four modes on one absolute-enthalpy balance and one product-equilibrium routine
+
+| File | Contents |
+|---|---|
+| [`README.md`](./combustion/README.md) | Modes at a glance, service map, units, known limitations |
+| [`01_SharedPhysics.md`](./combustion/01_SharedPhysics.md) | NASA-7 absolute enthalpy, fuel ΔHf ⇄ LHV, verified fuel data, element balance, WGS equilibrium, brentq flame solver, constants |
+| [`02_Mode1_SolidDirect.md`](./combustion/02_Mode1_SolidDirect.md) | One-step solid combustion (λ < 1, = 1, > 1) |
+| [`03_Mode2_TwoStep.md`](./combustion/03_Mode2_TwoStep.md) | Generator gas at computed T_step1 + secondary-air burnout |
+| [`04_Mode3_Fluid.md`](./combustion/04_Mode3_Fluid.md) | Gaseous (species, hydrocarbon gases, MAP-Pro preset) and liquid (elemental) fuels |
+| [`05_Mode4_Bed.md`](./combustion/05_Mode4_Bed.md) | Packed bed by layers: legacy kinetics, Thiele η, ignited char root, Gunn/Ergun, wall losses, steam |
+| [`06_API.md`](./combustion/06_API.md) | All endpoints with full request/response DTOs, defaults, errors |
+| [`07_RecuperatorFlueGas.md`](./combustion/07_RecuperatorFlueGas.md) | `CombustionService.flueGas()`: combustion mode selected by the recuperator, flue gas, air preheat offset, smoke start temperature |
 
 ---
 

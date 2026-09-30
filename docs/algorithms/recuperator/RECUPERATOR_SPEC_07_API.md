@@ -6,47 +6,26 @@
 
 | Method | Path | Module | Service method | Description |
 |---|---|---|---|---|
-| `POST` | `/combustion/calculate` | `combustion` | `CombustionService.calculate()` | Flame temp + smoke composition |
 | `GET`  | `/metals/thermal-properties` | `metals` | `MetalThermalService.getThermalProperties()` | λ(T) and ε(T) for metals |
 | `POST` | `/thermal-exchange/multilayer-wall` | `thermal-exchange` | `MultilayerWallService.calculate()` | Multilayer wall heat loss |
 | `POST` | `/recuperator/calculate` | `recuperator` | `RecuperatorService.calculate()` | Counter-flow HX optimisation |
 
+The combustion module also serves the four combustion modes (`/combustion/solid/direct`,
+`/combustion/solid/two-step`, `/combustion/fluid`, `/combustion/bed`, `GET /combustion/fuels`) —
+see [`docs/algorithms/combustion/06_API.md`](../combustion/06_API.md).
+
 ---
 
-## 7.2 Combustion Calculation
+## 7.2 Combustion (selected mode)
 
-### 7.2.1 Request — `CombustionInputDto`
+There is no separate combustion call. `RecuperatorInputDto.combustion` selects one of the four
+combustion modes and carries its input; `RecuperatorService` calls `CombustionService.flueGas()`
+in-process. Specified in the combustion docs:
 
-```typescript
-class CombustionInputDto {
-  fPower_W: number;              // Furnace power [W]
-  fuelQ_Jkg: number;             // Lower heating value [J/kg]
-  carbonQ_Jkg?: number;          // Carbon LHV [J/kg], default 32,900,000
-  kExcessAir: number;            // Excess air ratio (e.g. 1.3)
-  tAirStart_K: number;           // Inlet air temperature [K]
-  pO2?: number;                  // O₂ fraction in air, default 0.21
-  wH2Om?: number;                // Water mass fraction in air, default 0
-  generatorHeatLoss_W?: number;  // Generator surface heat loss [W]
-}
-```
+- `CombustionModeInputDto` and the mode inputs — [`combustion/06_API.md` §6.4–6.8](../combustion/06_API.md)
+- flue gas, air flow, air preheat offset, smoke start temperature — [`combustion/07_RecuperatorFlueGas.md`](../combustion/07_RecuperatorFlueGas.md)
 
-### 7.2.2 Response — `CombustionResultDto`
-
-```typescript
-class CombustionResultDto {
-  tFlame_K: number;              // Adiabatic flame temperature [K]
-  tSmokeStart_K: number;         // Smoke start temperature [K]
-  mFuel_kgs: number;             // Fuel mass flow [kg/s]
-  mAir_kgs: number;              // Air mass flow [kg/s]
-  mSmoke_kgs: number;            // Smoke mass flow [kg/s]
-  composition: {
-    before: { N2, O2, CO2, CO, H2O, H2: number };  // mole fractions
-    after:  { N2, O2, CO2, CO, H2O, H2: number };
-  };
-  pCO2: number;                  // CO₂ partial pressure (mole fraction)
-  pH2O: number;                  // H₂O partial pressure (mole fraction)
-}
-```
+The former `POST /combustion/calculate` (fuel given by `fPower_W` + `fuelQ_Jkg`, carbon equivalent) is removed.
 
 ---
 
@@ -109,7 +88,6 @@ class MultilayerWallInputDto {
   tAmbient_K: number;               // Ambient temperature [K]
   innerEmissivity: number;          // Inner surface emissivity
   numberOfSteps?: number;           // FD steps (default 50)
-  endFactor?: number;               // Convergence criterion (default 0.001)
 }
 ```
 
@@ -141,10 +119,8 @@ class MultilayerWallResultDto {
 
 ```typescript
 class RecuperatorInputDto {
-  fPower_W: number;
-  fuelQ_Jkg: number;
-  kExcessAir: number;
-  tAirStart_K: number;
+  combustion: CombustionModeInputDto;    // { mode, solidDirect | solidTwoStep | fluid | bed } — smoke source
+  tAirStart_K: number;                   // Air temperature at the recuperator inlet [K]
   holeForm: HoleForm;                    // 'square'|'circle'|'triangle'|'circle_in_ring'
   d0_m: number;                          // Nominal channel dimension [m]
   h0_m: number;                          // Air channel radial depth [m] (circle_in_ring)
@@ -159,8 +135,20 @@ class RecuperatorInputDto {
   refractoryEmissivity: number;
   surfaceEmissivity: number;
   surfaceArea_m2: number;
-  wH2Om?: number;
-  airPreheat_K?: number;
+  airPreheat_K?: number;                 // Offset added to the combustion air temperatures → maxFlameTemp_K [0]
+}
+```
+
+Air humidity (`wH2Om`), O2 fraction (`pO2`), power and excess air are fields of the selected mode input.
+Example (`circleChannels` in Swagger):
+
+```json
+{
+  "combustion": { "mode": "fluid", "fluid": { "phase": "gas", "fuelGas": { "CH4": 0.95, "CO2": 0.01, "N2": 0.04 },
+                  "fPower_W": 5000, "kExcessAir": 1.2, "tAir_K": 573 } },
+  "tAirStart_K": 573, "holeForm": "circle", "d0_m": 0.04, "refractoryThickness_m": 0.003,
+  "nAir": 100, "nSmoke": 81, "wantedRecuperatorLength_m": 1.5, "thermalInsulationThickness_m": 0.05,
+  "refractoryLambda_WmK": 1.2, "refractoryEmissivity": 0.85, "surfaceEmissivity": 0.9, "surfaceArea_m2": 5
 }
 ```
 
@@ -199,6 +187,6 @@ class RecuperatorResultDto {
 | Code | Meaning |
 |---|---|
 | 200 | Calculation succeeded |
-| 400 | Invalid input (validation error) |
+| 400 | Invalid input (validation error; combustion mode input missing or of another mode; mode-specific errors of combustion 06 §6.9) |
 | 422 | Calculation did not converge |
 | 500 | Internal server error |

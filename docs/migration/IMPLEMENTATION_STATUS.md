@@ -19,7 +19,7 @@
 | **Frontend** | ~2% | Skeleton only — no pages or components yet |
 | **Furnace** | 0% | Not started |
 | **Recuperator** | 100% | Implemented — 4 modules: combustion, metals, thermal-exchange, recuperator |
-| **Combustion** | 100% | `backend/src/modules/combustion/` — standalone module |
+| **Combustion** | 100% | `backend/src/modules/combustion/` — 4 modes (solid direct, two-step, fluid, kinetic bed) on one enthalpy/equilibrium core; hydrocarbon gases + MAP-gas preset |
 | **Metals** | 100% | `backend/src/modules/metals/` — MetalThermalService (AISI 304, mild steel); `GET /metals/list`; numeric `T_K` query fix |
 | **Thermal Exchange** | 100% | `backend/src/modules/thermal-exchange/` — MultilayerWallService + RecuperatorHtcService |
 | **Thermal Distribution** | 100% | Fully implemented, 31 test suites, 602 tests passing |
@@ -219,11 +219,19 @@ Spec: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md)
 
 ### `combustion/` — 100%
 **Path:** `backend/src/modules/combustion/`
-- [x] `combustion.module.ts`
-- [x] `services/combustion.service.ts` — flame temp, smoke composition (legacy findMaxFlameT)
-- [x] `dto/combustion-input.dto.ts`, `combustion-result.dto.ts`
-- [x] `constants/combustion.constants.ts`
-- [x] `controllers/combustion.controller.ts` → `POST /combustion/calculate`
+- [x] `combustion.module.ts` — imports `ThermodynamicsModule`, `ThermalExchangeModule`
+- [x] `services/combustion.service.ts` — facade; `flueGas()` runs the mode selected by the recuperator (`CombustionModeInputDto`); the carbon-equivalent `calculate()` and `POST /combustion/calculate` are removed (September 2026)
+- [x] Shared core: `combustion-enthalpy.service.ts` (absolute enthalpy, fuel ΔHf ⇄ LHV), `product-equilibrium.service.ts` (element balance + WGS Kp(T)), `flame-solver.service.ts` (brentq on H_prod + Q_loss − H_react)
+- [x] Mode 1/2 `solid-combustion.service.ts` (direct; two-step with computed T_step1, generator and furnace losses)
+- [x] Mode 3 `fluid-combustion.service.ts` (gaseous by species, liquid by elemental analysis)
+- [x] Mode 4 `bed-combustion.service.ts` + `chemical-kinetics.service.ts` (layer march, legacy kinetics, Gunn/Ergun, `MultilayerWallService` wall losses, steam injection, burnout)
+- [x] `data/fuels/` — `charcoal-briquette`, `charcoal-oak` (verbatim `FuelDatabase.js`), `map-pro`
+- [x] DTOs: `combustion-mode-input` (recuperator mode selection), `solid-direct`, `solid-two-step`, `fluid-fuel`, `bed-combustion`, `condensed-fuel`, `combustion-step-result`
+- [x] `constants/combustion.constants.ts` — verified legacy values + `BED_KINETICS` (legacy E/A/ΔH)
+- [x] `controllers/combustion.controller.ts` → `POST /combustion/solid/direct`, `/solid/two-step`, `/fluid`, `/bed`, `GET /combustion/fuels`
+- [x] `GasPropertiesService.absoluteEnthalpy/absoluteEnthalpyMixture`, NASA-7 `entropy`/`gibbsEnergy`; SO2/SO3 NASA-7 low/high sets fixed
+- [x] Gases C2H6, C3H8, C4H10, iC4H10, C2H2, C3H4, aC3H4, C3H6 + MAP-gas preset `map-pro` (composition to be confirmed)
+- Algorithms: [`docs/algorithms/combustion/`](../algorithms/combustion/README.md)
 
 ### `refractory/` extension — 100%
 - [x] `enums/refractory-thermal-material.enum.ts` — 19 refractory materials
@@ -245,7 +253,7 @@ Spec: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md)
 **Path:** `backend/src/modules/thermal-exchange/`
 - [x] `thermal-exchange.module.ts`
 - [x] `enums/wall-geometry.enum.ts` — FLAT, CYLINDER, SPHERE
-- [x] `services/multilayer-wall.service.ts` — binary search, FD traverse, outer cooling
+- [x] `services/multilayer-wall.service.ts` — inner surface temperature via `brentq` on Q_inner − Q_outer (September 2026, replaced binary search; `endFactor` input removed), FD traverse, outer cooling
 - [x] `services/recuperator-htc.service.ts` — overall HTC; air-side supports mixed compositions (air+steam, air+smoke); radiation via `gasRadiationHTC` when H₂O/CO₂ present
 - [x] `dto/layer.dto.ts`, `multilayer-wall-input.dto.ts`, `multilayer-wall-result.dto.ts`
 - [x] `dto/recuperator-htc-input.dto.ts` — optional `airComposition` (defaults to pure air)
