@@ -5,7 +5,7 @@
  * Integrates PSD calculation, packing models, and shrinkage prediction
  *
  * Date: February 2, 2026
- * Source: backend/src/modules/refractory/services/blend-optimizer.service.ts
+ * Source: backend/src/modules/refractory/services/particle-packing/blend-optimizer.service.ts
  */
 
 # Blend Optimizer Algorithm
@@ -491,7 +491,7 @@ Workflow:
 
 ## File Location
 
-**Service:** `backend/src/modules/refractory/services/blend-optimizer.service.ts`
+**Service:** `backend/src/modules/refractory/services/particle-packing/blend-optimizer.service.ts`
 **Constants:** `backend/src/modules/refractory/constants/blend-optimizer.constants.ts`
 **Interfaces:** `backend/src/modules/refractory/interfaces/blend-optimizer.interface.ts`
 

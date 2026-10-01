@@ -4,6 +4,7 @@ import { Species } from '../../../../src/modules/thermodynamics/enums/species.en
 import { compoundNasa7, compoundNasa9 } from '../../../../src/common/thermal/utils/nasa-database';
 import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/nasa7-equation-method';
 import { Nasa9EquationMethod } from '../../../../src/common/thermal/utils/nasa9-equation-method';
+import { GAS_CONSTANT_J_MOLK } from '../../../../src/common/thermal/constants/physical.constants';
 
 describe('GasPropertiesService — absolute enthalpy, entropy, Gibbs energy', () => {
   const gas = new GasPropertiesService();
@@ -84,7 +85,7 @@ describe('GasPropertiesService — absolute enthalpy, entropy, Gibbs energy', ()
     const Kp = (T: number): number => {
       const dG = gas.gibbsEnergy(Species.CO2, T) + gas.gibbsEnergy(Species.H2, T)
                - gas.gibbsEnergy(Species.CO, T) - gas.gibbsEnergy(Species.H2O, T);
-      return Math.exp(-dG / (8.314462618 * T));
+      return Math.exp(-dG / (GAS_CONSTANT_J_MOLK * T));
     };
     expect(Kp(1100)).toBeGreaterThan(0.8);
     expect(Kp(1100)).toBeLessThan(1.2);

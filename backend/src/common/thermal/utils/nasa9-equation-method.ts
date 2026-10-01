@@ -1,6 +1,7 @@
 import { Equation } from '../interfaces/equation.interface';
 import { Nasa9Equation, Nasa9Coeffs } from '../type/nasa9-equation';
 import { Common } from './common';
+import { GAS_CONSTANT_J_MOLK } from '../constants/physical.constants';
 
 /**
  * NASA 9-coefficient polynomial method.
@@ -31,7 +32,7 @@ export class Nasa9EquationMethod implements Equation<Nasa9Equation> {
   calculate(T: number, vars: Nasa9Equation, min: number, max: number, k = 1): number {
     T = Common.validInterval(T, min, max);
     const { a1, a2, a3, a4, a5, a6, a7 } = this._coeffs(T, vars);
-    return (a1/(T*T) + a2/T + a3 + a4*T + a5*T*T + a6*T*T*T + a7*Math.pow(T,4)) * Common.R * k;
+    return (a1/(T*T) + a2/T + a3 + a4*T + a5*T*T + a6*T*T*T + a7*Math.pow(T,4)) * GAS_CONSTANT_J_MOLK * k;
   }
 
   /**
@@ -42,7 +43,7 @@ export class Nasa9EquationMethod implements Equation<Nasa9Equation> {
     T = Common.validInterval(T, min, max);
     const { a1, a2, a3, a4, a5, a6, a7 } = this._coeffs(T, vars);
     return (-a1/T + a2*Math.log(T) + a3*T + a4*T*T/2 +
-            a5*Math.pow(T,3)/3 + a6*Math.pow(T,4)/4 + a7*Math.pow(T,5)/5) * Common.R * k;
+            a5*Math.pow(T,3)/3 + a6*Math.pow(T,4)/4 + a7*Math.pow(T,5)/5) * GAS_CONSTANT_J_MOLK * k;
   }
 
   calculateAverage(T1: number, T2: number, vars: Nasa9Equation, min: number, max: number, k = 1): number {
@@ -63,7 +64,7 @@ export class Nasa9EquationMethod implements Equation<Nasa9Equation> {
       const c = this._coeffs((lo + hi) / 2, vars);
       sum += this._integralAt(hi, c) - this._integralAt(lo, c);
     }
-    return sum * Common.R * k / (T2 - T1);
+    return sum * GAS_CONSTANT_J_MOLK * k / (T2 - T1);
   }
 
   private _integralAt(T: number, c: Nasa9Coeffs): number {
@@ -79,7 +80,7 @@ export class Nasa9EquationMethod implements Equation<Nasa9Equation> {
     const { a1, a2, a3, a4, a5, a6, a7, a8 } = this._coeffs(T, vars);
     const HoRT = -a1/(T*T) + a2*Math.log(T)/T + a3 + a4*T/2 +
                  a5*T*T/3 + a6*Math.pow(T,3)/4 + a7*Math.pow(T,4)/5 + a8/T;
-    return HoRT * Common.R * T;
+    return HoRT * GAS_CONSTANT_J_MOLK * T;
   }
 
   /**
@@ -89,7 +90,7 @@ export class Nasa9EquationMethod implements Equation<Nasa9Equation> {
   entropy(T: number, vars: Nasa9Equation): number {
     const { a1, a2, a3, a4, a5, a6, a7, a9 } = this._coeffs(T, vars);
     return (-a1/(2*T*T) - a2/T + a3*Math.log(T) + a4*T +
-            a5*T*T/2 + a6*Math.pow(T,3)/3 + a7*Math.pow(T,4)/4 + a9) * Common.R;
+            a5*T*T/2 + a6*Math.pow(T,3)/3 + a7*Math.pow(T,4)/4 + a9) * GAS_CONSTANT_J_MOLK;
   }
 
   /**
@@ -107,7 +108,7 @@ export class Nasa9EquationMethod implements Equation<Nasa9Equation> {
     const GoRT = -a1/(2*T*T) + a2*(1 + lnT)/T + a3*(1 - lnT)
                - a4*T/2 - a5*T*T/6 - a6*Math.pow(T,3)/12 - a7*Math.pow(T,4)/20
                + a8/T - a9;
-    return GoRT * Common.R * T;
+    return GoRT * GAS_CONSTANT_J_MOLK * T;
   }
 }
 

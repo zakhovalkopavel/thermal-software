@@ -11,16 +11,6 @@ import { Nasa7EquationMethod } from './nasa7-equation-method';
 import { Nasa9EquationMethod } from './nasa9-equation-method';
 
 export class Common {
-  static readonly kB = 1.380649e-23;
-  static readonly R  = 8.31446261815324;
-  static readonly Na = 6.02214076e23;
-  /** Standard gravitational acceleration [m/s²] — ISO 80000-3 */
-  static readonly g  = 9.80665;
-  static readonly pAtm = 101325;
-  static readonly Tstandart = 293.15;
-  /** Stefan–Boltzmann constant σ [W/(m²·K⁴)] — CODATA 2018 */
-  static readonly SIGMA = 5.67037441918e-8;
-
   static logarithmicAverage(x1: number, x2: number): number {
     if (x1 < 0 || x2 < 0) throw new Error('Both args must be ≥ 0');
     if (x1 === x2) return x1;

@@ -16,7 +16,7 @@
  */
 
 import { RadiationService } from '../../../../src/modules/thermodynamics/services/radiation.service';
-import { Common } from '../../../../src/common/thermal';
+import { STEFAN_BOLTZMANN_W_M2K4 } from '../../../../src/common/thermal';
 
 function build(): RadiationService {
   return new RadiationService();
@@ -89,7 +89,7 @@ describe('RadiationService.gasEmissivity()', () => {
 
 describe('RadiationService.gasRadiationHTC()', () => {
 
-  it('returns 0 when Tg = Ts (within DT_MIN)', () => {
+  it('returns 0 when Tg = Ts (within RADIATION_DT_MIN_K)', () => {
     const alpha = build().gasRadiationHTC(1000, 1000, 0.8, 0.15, 0.10, 0.5);
     expect(alpha).toBe(0);
   });
@@ -136,7 +136,7 @@ describe('RadiationService.gasRadiationHTC()', () => {
 
 describe('RadiationService.solidRadiationHTC()', () => {
 
-  it('returns 0 when T1 = T2 (within DT_MIN)', () => {
+  it('returns 0 when T1 = T2 (within RADIATION_DT_MIN_K)', () => {
     expect(build().solidRadiationHTC(1000, 1000)).toBe(0);
   });
 
@@ -153,7 +153,7 @@ describe('RadiationService.solidRadiationHTC()', () => {
   it('matches Stefan–Boltzmann linearisation for black bodies — 1000 K vs 500 K', () => {
     // α_rad = σ·(T1⁴ − T2⁴)/(T1 − T2) = σ·(T1²+T2²)·(T1+T2)
     const T1 = 1000; const T2 = 500;
-    const expected = Common.SIGMA * (Math.pow(T1, 4) - Math.pow(T2, 4)) / (T1 - T2);
+    const expected = STEFAN_BOLTZMANN_W_M2K4 * (Math.pow(T1, 4) - Math.pow(T2, 4)) / (T1 - T2);
     expect(build().solidRadiationHTC(T1, T2)).toBeCloseTo(expected, 8);
   });
 

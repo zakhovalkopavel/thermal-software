@@ -12,7 +12,7 @@
  *      otherwise.
  *
  * Rule of thumb used by the auto-selector:
- *   oscillating  ≡  more than OSCILLATION_THRESHOLD sign changes in PROBE_POINTS samples
+ *   oscillating  ≡  more than OSCILLATION_THRESHOLD sign changes in OSCILLATION_PROBE_POINTS samples
  *
  * References:
  *   Trefethen, L.N. — Spectral Methods in MATLAB, SIAM, 2000, Ch. 12.
@@ -21,6 +21,7 @@
  */
 
 import { gaussLegendre, type GaussNodeCount } from './gauss-legendre.util';
+import { OSCILLATION_PROBE_POINTS, OSCILLATION_THRESHOLD } from './quadrature.constants';
 
 export { gaussLegendre, type GaussNodeCount } from './gauss-legendre.util';
 export { simpson } from './simpson.util';
@@ -89,22 +90,15 @@ export function clenshawCurtis(
 
 // ─── Oscillation detector ─────────────────────────────────────────────────────
 
-const PROBE_POINTS = 20;
-/**
- * Sign-change count threshold above which the integrand is considered oscillating.
- * A purely smooth integrand typically has 0–1 sign changes; ≥ 3 suggests oscillation.
- */
-const OSCILLATION_THRESHOLD = 3;
-
 /**
  * Returns true if the integrand appears to oscillate on [a, b].
- * Counts zero-crossings on a coarse uniform mesh of PROBE_POINTS points.
+ * Counts zero-crossings on a coarse uniform mesh of OSCILLATION_PROBE_POINTS points.
  */
 function isOscillating(f: (x: number) => number, a: number, b: number): boolean {
-  const step = (b - a) / (PROBE_POINTS - 1);
+  const step = (b - a) / (OSCILLATION_PROBE_POINTS - 1);
   let signChanges = 0;
   let prev = f(a);
-  for (let i = 1; i < PROBE_POINTS; i++) {
+  for (let i = 1; i < OSCILLATION_PROBE_POINTS; i++) {
     const cur = f(a + i * step);
     if (prev * cur < 0) signChanges++;
     prev = cur;

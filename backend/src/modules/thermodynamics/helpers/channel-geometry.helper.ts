@@ -1,5 +1,5 @@
 import { FlowGeometry } from '../enums/flow-geometry.enum';
-import { GeometryDimsDto } from '../dto/geometry-dims.dto';
+import { GeometryDimsDto } from '../dto/geometry/geometry-dims.dto';
 
 /**
  * Channel and flow geometry helpers.

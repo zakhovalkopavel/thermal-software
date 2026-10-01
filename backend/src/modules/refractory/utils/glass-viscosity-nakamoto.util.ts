@@ -20,8 +20,7 @@ import { NAKAMOTO_2007, MILLS_LIQUIDUS } from '../constants/viscosity-parameters
 import { SlagViscosityResult } from '../interfaces/viscosity-parameters.interface';
 import { wtPctToMolPct } from './glass-composition.util';
 import { estimateLiquidusMills } from './glass-viscosity-iida.util';
-
-const R = NAKAMOTO_2007.R;
+import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
 
 // ─── Main export ─────────────────────────────────────────────────────────────
 
@@ -106,7 +105,7 @@ export function calcNakamotoViscosity(
   const A   = Math.exp(lnA);
 
   // ── η = A · T · exp(E / RT) ───────────────────────────────────────────────
-  const viscosity_Pas    = A * T_K * Math.exp(E_total / (R * T_K));
+  const viscosity_Pas    = A * T_K * Math.exp(E_total / (GAS_CONSTANT_J_MOLK * T_K));
   const logViscosity_Pas = Math.log10(viscosity_Pas);
 
   return {

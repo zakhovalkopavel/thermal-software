@@ -1,5 +1,5 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MultilayerWallService } from '../services/multilayer-wall.service';
 import { MultilayerWallInputDto } from '../dto/multilayer-wall-input.dto';
 import { MultilayerWallResultDto } from '../dto/multilayer-wall-result.dto';
@@ -58,6 +58,7 @@ export class ThermalExchangeController {
       },
     },
   })
+  @ApiCreatedResponse({ type: MultilayerWallResultDto })
   calculateWall(@Body() dto: MultilayerWallInputDto): MultilayerWallResultDto {
     return this.multilayerWallService.calculate(dto);
   }

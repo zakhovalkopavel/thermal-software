@@ -584,7 +584,7 @@ export const IIDA_MODEL = {
 //   E = Σ(eᵢ · Xᵢ)         (J/mol, Xᵢ = mole fractions)
 //   ln(A) = −20.5 + 0.025 · M_avg
 //   M_avg = Σ(Xᵢ · Mᵢ)     (g/mol, average molar mass)
-//   R = 8.314 J/(mol·K),  T in Kelvin
+//   R = GAS_CONSTANT_J_MOLK,  T in Kelvin
 //
 // Note on CaF₂: eᵢ = −108 200 J/mol is the 2007 revision (earlier 2004 = −72 800).
 // Note on Fe₂O₃: valid under oxidising conditions only; use FeO in reducing conditions.
@@ -594,7 +594,6 @@ export const IIDA_MODEL = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const NAKAMOTO_2007 = {
-  R: 8.314,
   lnA_intercept: -20.5,
   lnA_slope:       0.025,
   /** Activation energy coefficients eᵢ (J/mol) — from ISIJ Int. 47(11) Table */

@@ -20,9 +20,7 @@ import {
 } from './eigenvalues-bc3.util';
 import { besselJ0, besselJ1 } from '../../../common/utils/bessel.util';
 import { simpson } from '../../../common/utils/quadrature.util';
-
-const DEFAULT_N       = 100;
-const SIMPSON_DEFAULT = 128;
+import { SERIES_TERMS_DEFAULT, SIMPSON_INTERVALS_DEFAULT } from '../constants/thermal-distribution.constants';
 
 // ─── sinc limit ───────────────────────────────────────────────────────────────
 
@@ -62,7 +60,7 @@ export function plateLocalBC3Uniform(
   relDepth: number,
   Fo: number,
   Bi: number,
-  N = DEFAULT_N,
+  N = SERIES_TERMS_DEFAULT,
 ): number {
   const mus = plateEigenvaluesBC3(Bi, N);
   let sum = 0;
@@ -71,7 +69,7 @@ export function plateLocalBC3Uniform(
 }
 
 /** Plate BC III mean coefficient: Θ̄ = Σ Bₙ·exp(−μₙ²·Fo) */
-export function plateMeanBC3Uniform(Fo: number, Bi: number, N = DEFAULT_N): number {
+export function plateMeanBC3Uniform(Fo: number, Bi: number, N = SERIES_TERMS_DEFAULT): number {
   const mus = plateEigenvaluesBC3(Bi, N);
   let sum = 0;
   for (const mu of mus) sum += plateBn(mu, Bi) * Math.exp(-mu * mu * Fo);
@@ -88,13 +86,13 @@ export function plateTempBC3Uniform(
   Bi: number,
   T0: number,
   Tc: number,
-  N = DEFAULT_N,
+  N = SERIES_TERMS_DEFAULT,
 ): number {
   return Tc - (Tc - T0) * plateLocalBC3Uniform(relDepth, Fo, Bi, N);
 }
 
 export function plateMeanTempBC3Uniform(
-  Fo: number, Bi: number, T0: number, Tc: number, N = DEFAULT_N,
+  Fo: number, Bi: number, T0: number, Tc: number, N = SERIES_TERMS_DEFAULT,
 ): number {
   return Tc - (Tc - T0) * plateMeanBC3Uniform(Fo, Bi, N);
 }
@@ -112,7 +110,7 @@ export function plateTempBC3Parabolic(
   T0Ctr: number,
   T0Surf: number,
   Tc: number,
-  N = DEFAULT_N,
+  N = SERIES_TERMS_DEFAULT,
 ): number {
   const mus = plateEigenvaluesBC3(Bi, N);
   const vCtr  = Tc - T0Ctr;
@@ -126,7 +124,7 @@ export function plateTempBC3Parabolic(
 }
 
 export function plateMeanTempBC3Parabolic(
-  Fo: number, Bi: number, T0Ctr: number, T0Surf: number, Tc: number, N = DEFAULT_N,
+  Fo: number, Bi: number, T0Ctr: number, T0Surf: number, Tc: number, N = SERIES_TERMS_DEFAULT,
 ): number {
   const mus = plateEigenvaluesBC3(Bi, N);
   const vCtr  = Tc - T0Ctr;
@@ -146,8 +144,8 @@ export function plateTempBC3ArbitraryAbs(
   R: number,
   f1: (x: number) => number,
   Tc: number,
-  N = DEFAULT_N,
-  simpsonN = SIMPSON_DEFAULT,
+  N = SERIES_TERMS_DEFAULT,
+  simpsonN = SIMPSON_INTERVALS_DEFAULT,
 ): number {
   const mus = plateEigenvaluesBC3(Bi, N);
   let sum = 0;
@@ -161,7 +159,7 @@ export function plateTempBC3ArbitraryAbs(
 
 export function plateMeanTempBC3ArbitraryAbs(
   Fo: number, Bi: number, R: number, f1: (x: number) => number, Tc: number,
-  N = DEFAULT_N, simpsonN = SIMPSON_DEFAULT,
+  N = SERIES_TERMS_DEFAULT, simpsonN = SIMPSON_INTERVALS_DEFAULT,
 ): number {
   const mus = plateEigenvaluesBC3(Bi, N);
   let sum = 0;
@@ -195,14 +193,14 @@ function cylinderBn(mu: number, Bi: number): number {
   return 4 * Bi * Bi / (mu * mu * (mu * mu + Bi * Bi));
 }
 
-export function cylinderLocalBC3Uniform(relR: number, Fo: number, Bi: number, N = DEFAULT_N): number {
+export function cylinderLocalBC3Uniform(relR: number, Fo: number, Bi: number, N = SERIES_TERMS_DEFAULT): number {
   const mus = cylinderEigenvaluesBC3(Bi, N);
   let sum = 0;
   for (const mu of mus) sum += cylinderAn(mu, Bi) * besselJ0(mu * relR) * Math.exp(-mu * mu * Fo);
   return sum;
 }
 
-export function cylinderMeanBC3Uniform(Fo: number, Bi: number, N = DEFAULT_N): number {
+export function cylinderMeanBC3Uniform(Fo: number, Bi: number, N = SERIES_TERMS_DEFAULT): number {
   const mus = cylinderEigenvaluesBC3(Bi, N);
   let sum = 0;
   for (const mu of mus) sum += cylinderBn(mu, Bi) * Math.exp(-mu * mu * Fo);
@@ -210,13 +208,13 @@ export function cylinderMeanBC3Uniform(Fo: number, Bi: number, N = DEFAULT_N): n
 }
 
 export function cylinderTempBC3Uniform(
-  relR: number, Fo: number, Bi: number, T0: number, Tc: number, N = DEFAULT_N,
+  relR: number, Fo: number, Bi: number, T0: number, Tc: number, N = SERIES_TERMS_DEFAULT,
 ): number {
   return Tc - (Tc - T0) * cylinderLocalBC3Uniform(relR, Fo, Bi, N);
 }
 
 export function cylinderMeanTempBC3Uniform(
-  Fo: number, Bi: number, T0: number, Tc: number, N = DEFAULT_N,
+  Fo: number, Bi: number, T0: number, Tc: number, N = SERIES_TERMS_DEFAULT,
 ): number {
   return Tc - (Tc - T0) * cylinderMeanBC3Uniform(Fo, Bi, N);
 }
@@ -229,7 +227,7 @@ export function cylinderMeanTempBC3Uniform(
  */
 export function cylinderTempBC3Parabolic(
   relR: number, Fo: number, Bi: number,
-  T0Ctr: number, T0Surf: number, Tc: number, N = DEFAULT_N,
+  T0Ctr: number, T0Surf: number, Tc: number, N = SERIES_TERMS_DEFAULT,
 ): number {
   const mus = cylinderEigenvaluesBC3(Bi, N);
   const vCtr  = Tc - T0Ctr;
@@ -244,7 +242,7 @@ export function cylinderTempBC3Parabolic(
 }
 
 export function cylinderMeanTempBC3Parabolic(
-  Fo: number, Bi: number, T0Ctr: number, T0Surf: number, Tc: number, N = DEFAULT_N,
+  Fo: number, Bi: number, T0Ctr: number, T0Surf: number, Tc: number, N = SERIES_TERMS_DEFAULT,
 ): number {
   const mus = cylinderEigenvaluesBC3(Bi, N);
   const vCtr  = Tc - T0Ctr;
@@ -266,7 +264,7 @@ export function cylinderMeanTempBC3Parabolic(
 export function cylinderTempBC3ArbitraryAbs(
   relR: number, Fo: number, Bi: number, R: number,
   f1: (r: number) => number, Tc: number,
-  N = DEFAULT_N, simpsonN = SIMPSON_DEFAULT,
+  N = SERIES_TERMS_DEFAULT, simpsonN = SIMPSON_INTERVALS_DEFAULT,
 ): number {
   const mus = cylinderEigenvaluesBC3(Bi, N);
   let sum = 0;
@@ -283,7 +281,7 @@ export function cylinderTempBC3ArbitraryAbs(
 export function cylinderMeanTempBC3ArbitraryAbs(
   Fo: number, Bi: number, R: number,
   f1: (r: number) => number, Tc: number,
-  N = DEFAULT_N, simpsonN = SIMPSON_DEFAULT,
+  N = SERIES_TERMS_DEFAULT, simpsonN = SIMPSON_INTERVALS_DEFAULT,
 ): number {
   const mus = cylinderEigenvaluesBC3(Bi, N);
   let sum = 0;
@@ -320,7 +318,7 @@ function sphereBn(mu: number, Bi: number): number {
   return 6 * Bi * Bi / (mu * mu * (mu * mu + Bi * Bi - Bi));
 }
 
-export function sphereLocalBC3Uniform(relR: number, Fo: number, Bi: number, N = DEFAULT_N): number {
+export function sphereLocalBC3Uniform(relR: number, Fo: number, Bi: number, N = SERIES_TERMS_DEFAULT): number {
   const mus = sphereEigenvaluesBC3(Bi, N);
   let sum = 0;
   for (let n = 0; n < N; n++) {
@@ -330,7 +328,7 @@ export function sphereLocalBC3Uniform(relR: number, Fo: number, Bi: number, N = 
   return sum;
 }
 
-export function sphereMeanBC3Uniform(Fo: number, Bi: number, N = DEFAULT_N): number {
+export function sphereMeanBC3Uniform(Fo: number, Bi: number, N = SERIES_TERMS_DEFAULT): number {
   const mus = sphereEigenvaluesBC3(Bi, N);
   let sum = 0;
   for (const mu of mus) sum += sphereBn(mu, Bi) * Math.exp(-mu * mu * Fo);
@@ -338,13 +336,13 @@ export function sphereMeanBC3Uniform(Fo: number, Bi: number, N = DEFAULT_N): num
 }
 
 export function sphereTempBC3Uniform(
-  relR: number, Fo: number, Bi: number, T0: number, Tc: number, N = DEFAULT_N,
+  relR: number, Fo: number, Bi: number, T0: number, Tc: number, N = SERIES_TERMS_DEFAULT,
 ): number {
   return Tc - (Tc - T0) * sphereLocalBC3Uniform(relR, Fo, Bi, N);
 }
 
 export function sphereMeanTempBC3Uniform(
-  Fo: number, Bi: number, T0: number, Tc: number, N = DEFAULT_N,
+  Fo: number, Bi: number, T0: number, Tc: number, N = SERIES_TERMS_DEFAULT,
 ): number {
   return Tc - (Tc - T0) * sphereMeanBC3Uniform(Fo, Bi, N);
 }
@@ -357,7 +355,7 @@ export function sphereMeanTempBC3Uniform(
  */
 export function sphereTempBC3Parabolic(
   relR: number, Fo: number, Bi: number,
-  T0Ctr: number, T0Surf: number, Tc: number, N = DEFAULT_N,
+  T0Ctr: number, T0Surf: number, Tc: number, N = SERIES_TERMS_DEFAULT,
 ): number {
   const mus = sphereEigenvaluesBC3(Bi, N);
   const vCtr  = Tc - T0Ctr;
@@ -372,7 +370,7 @@ export function sphereTempBC3Parabolic(
 }
 
 export function sphereMeanTempBC3Parabolic(
-  Fo: number, Bi: number, T0Ctr: number, T0Surf: number, Tc: number, N = DEFAULT_N,
+  Fo: number, Bi: number, T0Ctr: number, T0Surf: number, Tc: number, N = SERIES_TERMS_DEFAULT,
 ): number {
   const mus = sphereEigenvaluesBC3(Bi, N);
   const vCtr  = Tc - T0Ctr;
@@ -393,7 +391,7 @@ export function sphereMeanTempBC3Parabolic(
 export function sphereTempBC3ArbitraryAbs(
   relR: number, Fo: number, Bi: number, R: number,
   f1: (r: number) => number, Tc: number,
-  N = DEFAULT_N, simpsonN = SIMPSON_DEFAULT,
+  N = SERIES_TERMS_DEFAULT, simpsonN = SIMPSON_INTERVALS_DEFAULT,
 ): number {
   const mus = sphereEigenvaluesBC3(Bi, N);
   let sum = 0;
@@ -413,7 +411,7 @@ export function sphereTempBC3ArbitraryAbs(
 export function sphereMeanTempBC3ArbitraryAbs(
   Fo: number, Bi: number, R: number,
   f1: (r: number) => number, Tc: number,
-  N = DEFAULT_N, simpsonN = SIMPSON_DEFAULT,
+  N = SERIES_TERMS_DEFAULT, simpsonN = SIMPSON_INTERVALS_DEFAULT,
 ): number {
   const mus = sphereEigenvaluesBC3(Bi, N);
   let sum = 0;

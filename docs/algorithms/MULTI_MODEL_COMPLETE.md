@@ -139,7 +139,7 @@ generateValidationReport(result): string
 **Physical Constants:**
 ```typescript
 STRESS = 0.2 MPa (EN ISO 1893 standard)
-GAS_CONSTANT = 8.314 J/(mol·K)
+GAS_CONSTANT_J_MOLK = 8.31446261815324 J/(mol·K)  // common/thermal/constants/physical.constants.ts
 ```
 
 **Temperature Range:**

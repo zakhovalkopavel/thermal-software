@@ -18,7 +18,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 1. PSDCalculatorService
 **File:** `psd-calculator.service.ts`  
-**Test File:** `test/unit/refractory/services/psd-calculator.service.spec.ts`
+**Test File:** `test/unit/refractory/services/particle-packing/psd-calculator.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -36,7 +36,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 2. PackingService
 **File:** `packing.service.ts`  
-**Test File:** `test/unit/refractory/services/packing.service.spec.ts`
+**Test File:** `test/unit/refractory/services/particle-packing/packing.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -60,7 +60,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 3. ShrinkageService
 **File:** `shrinkage.service.ts`  
-**Test File:** `test/unit/refractory/services/shrinkage.service.spec.ts`
+**Test File:** `test/unit/refractory/services/thermal/shrinkage.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -82,7 +82,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 4. BlendOptimizerService
 **File:** `blend-optimizer.service.ts`  
-**Test File:** `test/unit/refractory/services/blend-optimizer.service.spec.ts`
+**Test File:** `test/unit/refractory/services/particle-packing/blend-optimizer.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -116,7 +116,7 @@ This document lists all public methods in refractory services and tracks test im
 ---
 ### 5. WaterDemandService ⭐ NEW
 **File:** `water-demand.service.ts`  
-**Test File:** `test/unit/refractory/services/water-demand.service.spec.ts`
+**Test File:** `test/unit/refractory/services/particle-packing/water-demand.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -156,7 +156,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 7. GlassViscosityService
 **File:** `glass-viscosity.service.ts`  
-**Test File:** `test/unit/refractory/services/glass-viscosity.service.spec.ts`
+**Test File:** `test/unit/refractory/services/composition/glass-viscosity.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -172,7 +172,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 8. MineralPhaseService
 **File:** `mineral-phase.service.ts`  
-**Test File:** `test/unit/refractory/services/mineral-phase.service.spec.ts`
+**Test File:** `test/unit/refractory/services/composition/mineral-phase.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -188,7 +188,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 9. PhaseEquilibriumService
 **File:** `phase-equilibrium.service.ts`  
-**Test File:** `test/unit/refractory/services/phase-equilibrium.service.spec.ts`
+**Test File:** `test/unit/refractory/services/composition/phase-equilibrium.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -204,7 +204,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 10. ThermalPerformanceService
 **File:** `thermal-performance.service.ts`  
-**Test File:** `test/unit/refractory/services/thermal-performance.service.spec.ts`
+**Test File:** `test/unit/refractory/services/thermal/thermal-performance.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -220,7 +220,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 11. RefractorynessService
 **File:** `refractoriness.service.ts`  
-**Test File:** `test/unit/refractory/services/refractoriness.service.spec.ts`
+**Test File:** `test/unit/refractory/services/composition/refractoriness.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -236,7 +236,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 12. ParticipationService
 **File:** `participation.service.ts`  
-**Test File:** `test/unit/refractory/services/participation.service.spec.ts`
+**Test File:** `test/unit/refractory/services/particle-packing/participation.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -299,7 +299,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### Example: WaterDemandService
 ```
-backend/test/unit/refractory/services/water-demand.service.spec.ts
+backend/test/unit/refractory/services/particle-packing/water-demand.service.spec.ts
 ├── describe('WaterDemandService')
 │   ├── describe('calculateWaterDemand')
 │   │   ├── it('should calculate water demand for standard workability')

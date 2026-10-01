@@ -1,9 +1,9 @@
 # Mix Composition Algorithm
 
-**Service:** `backend/src/modules/refractory/services/mix-composition.service.ts` (`MixCompositionService`)  
+**Service:** `backend/src/modules/refractory/services/composition/mix-composition.service.ts` (`MixCompositionService`)  
 **Endpoint:** `POST /api/v1/refractory/mix/composition` ([API spec §15](../api/REFRACTORY_API_SPEC.md))  
 **Constants:** `constants/mix-composition.constants.ts` (`MIX_COMPOSITION_CONSTANTS`)  
-**Tests:** `backend/test/unit/refractory/services/mix-composition.service.spec.ts`
+**Tests:** `backend/test/unit/refractory/services/composition/mix-composition.service.spec.ts`
 
 ---
 

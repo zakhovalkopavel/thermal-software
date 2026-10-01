@@ -72,10 +72,11 @@ import {
 // ── Adaptive quadrature (auto-selects Gauss-Legendre vs Clenshaw-Curtis) ──────
 import { adaptiveIntegrate } from '../../../common/utils/quadrature.util';
 import type { GaussNodeCount } from '../../../common/utils/gauss-legendre.constants';
-
-const DEFAULT_SERIES_TERMS = 100;
-const DEFAULT_GAUSS_NODES: GaussNodeCount = 32;
-const DEFAULT_AVG_MODE = 'series' as const;
+import {
+  AVERAGE_MODE_DEFAULT,
+  GAUSS_NODES_DEFAULT,
+  SERIES_TERMS_DEFAULT,
+} from '../constants/thermal-distribution.constants';
 
 @Injectable()
 export class ThermalDistributionService {
@@ -85,21 +86,21 @@ export class ThermalDistributionService {
   /** Temperature at a single normalised depth (0 = centre, 1 = surface). */
   temperatureAtDepth(relDepth: number, opts: ProfileOptions): number {
     const { Fo, Bi, Rdist } = this.computeCriteria(opts);
-    const N = opts.seriesTerms ?? DEFAULT_SERIES_TERMS;
+    const N = opts.seriesTerms ?? SERIES_TERMS_DEFAULT;
     return this._tempAtDepth(relDepth, Fo, Bi, Rdist, opts, N);
   }
 
   /** Temperature profile along the primary spatial axis. */
   temperatureProfile(relativeDepths: number[], opts: ProfileOptions): number[] {
     const { Fo, Bi, Rdist } = this.computeCriteria(opts);
-    const N = opts.seriesTerms ?? DEFAULT_SERIES_TERMS;
+    const N = opts.seriesTerms ?? SERIES_TERMS_DEFAULT;
     return relativeDepths.map((d) => this._tempAtDepth(d, Fo, Bi, Rdist, opts, N));
   }
 
   /** Volume-average temperature T̄(τ). */
   averageTemperature(opts: ProfileOptions): number {
     const { Fo, Bi } = this.computeCriteria(opts);
-    const N = opts.seriesTerms ?? DEFAULT_SERIES_TERMS;
+    const N = opts.seriesTerms ?? SERIES_TERMS_DEFAULT;
     return this._averageTemp(Fo, Bi, opts, N);
   }
 
@@ -136,7 +137,7 @@ export class ThermalDistributionService {
     }
     const dt   = opts.timeStep ?? 1;
     const tEnd = opts.tau;
-    const N    = opts.seriesTerms ?? DEFAULT_SERIES_TERMS;
+    const N    = opts.seriesTerms ?? SERIES_TERMS_DEFAULT;
     const results: Array<{ tau: number; Tsurface: number; Tcenter: number; Taverage: number }> = [];
 
     let stepOpts: ProfileOptions = { ...opts };
@@ -314,8 +315,8 @@ export class ThermalDistributionService {
 
   private _averageTemp(Fo: number, Bi: number, opts: ProfileOptions, N: number): number {
     const { T0, Tc, shape } = opts;
-    const avgMode = opts.avg?.mode ?? DEFAULT_AVG_MODE;
-    const gaussN  = (opts.avg?.gaussNodes ?? DEFAULT_GAUSS_NODES) as GaussNodeCount;
+    const avgMode = opts.avg?.mode ?? AVERAGE_MODE_DEFAULT;
+    const gaussN  = (opts.avg?.gaussNodes ?? GAUSS_NODES_DEFAULT) as GaussNodeCount;
     const { Rdist } = this.computeCharacteristicLengths(
       shape, opts.rDistMode ?? 'true_dimension',
     );

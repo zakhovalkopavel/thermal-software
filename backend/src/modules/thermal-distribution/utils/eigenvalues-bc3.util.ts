@@ -12,8 +12,7 @@
  */
 import { besselJ0, besselJ1, besselJ0Roots } from '../../../common/utils/bessel.util';
 import { brentq, newtonPolish } from '../../../common/utils/root-finding.util';
-
-const DEFAULT_TOL = 1e-12;
+import { EIGENVALUE_TOL_BC3 } from '../constants/thermal-distribution.constants';
 
 // ─── Plate ────────────────────────────────────────────────────────────────────
 
@@ -31,7 +30,7 @@ function platef(mu: number, Bi: number): number {
 export function plateEigenvaluesBC3(
   Bi: number,
   N: number,
-  tol = DEFAULT_TOL,
+  tol = EIGENVALUE_TOL_BC3,
 ): number[] {
   const df = (mu: number) => (1 + Bi) * Math.sin(mu) + mu * Math.cos(mu);
   return Array.from({ length: N }, (_, i) => {
@@ -60,7 +59,7 @@ function cylinderf(mu: number, Bi: number): number {
 export function cylinderEigenvaluesBC3(
   Bi: number,
   N: number,
-  tol = DEFAULT_TOL,
+  tol = EIGENVALUE_TOL_BC3,
 ): number[] {
   const j0Zeros = besselJ0Roots(N + 1); // accurate zeros of J₀ for bracketing
   const df = (mu: number) => mu * besselJ0(mu) + Bi * besselJ1(mu);
@@ -89,7 +88,7 @@ function spheref(mu: number, Bi: number): number {
 export function sphereEigenvaluesBC3(
   Bi: number,
   N: number,
-  tol = DEFAULT_TOL,
+  tol = EIGENVALUE_TOL_BC3,
 ): number[] {
   const df = (mu: number) => Bi * Math.cos(mu) - mu * Math.sin(mu);
   return Array.from({ length: N }, (_, i) => {

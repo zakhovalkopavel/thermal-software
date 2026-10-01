@@ -9,7 +9,7 @@ import { MultilayerWallService } from '../../thermal-exchange/services/multilaye
 import { WallGeometry } from '../../thermal-exchange/enums/wall-geometry.enum';
 import { LayerDto } from '../../thermal-exchange/dto/layer.dto';
 import { SmokeCompositionDto } from '../../thermal-exchange/dto/smoke-composition.dto';
-import { Common } from '../../../common/thermal/utils/common';
+import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
 import { brentq } from '../../../common/utils/root-finding.util';
 import { ATOMIC_MASS, BED_KINETICS, COMBUSTION } from '../constants/combustion.constants';
 import { CondensedFuel } from '../data/fuels/fuel.interface';
@@ -197,7 +197,7 @@ export class BedCombustionService {
       o2_mols = dto.mAirPrimary_kgs / gasMassFlow(perO2);
     } else {
       const q_m3s = (dto.airFlow_m3h ?? BED_KINETICS.AIR_FLOW_DEFAULT_M3H) / 3600;
-      o2_mols = (COMBUSTION.ATMOSPHERIC_PRESSURE_PA * q_m3s / (Common.R * tAir_K)) / totalMoles(perO2);
+      o2_mols = (COMBUSTION.ATMOSPHERIC_PRESSURE_PA * q_m3s / (GAS_CONSTANT_J_MOLK * tAir_K)) / totalMoles(perO2);
     }
     if (!(o2_mols > 0)) throw new BadRequestException('Primary air flow must be positive');
     return airFlows(o2_mols, pO2, wH2Om);

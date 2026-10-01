@@ -162,7 +162,7 @@ No fluid resolution — accepts pre-resolved transport properties.
 | `rayleigh(T_hot, T_cold, L, ν, Pr, g?)` | Ra = Gr · Pr |
 | `htc(Nu, λ, L)` | h = Nu·λ / L  [W/(m²·K)] |
 
-All `g` parameters default to `Common.g = 9.80665 m/s²`; supply override for non-Earth conditions.
+All `g` parameters default to `STANDARD_GRAVITY_M_S2 = 9.80665 m/s²`; supply override for non-Earth conditions.
 
 ### Nusselt number correlations
 

@@ -1,35 +1,39 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { AlphaResult } from '../interfaces/alpha-result.interface';
+import { AlphaResultDto } from './alpha-result.dto';
 
 export class BetweenLayerDto {
+  @ApiProperty()
   name:     string;
+  @ApiProperty()
   tCelsius: number;
 }
 
 export class MultilayerWallResultDto {
-  /** Inner surface temperature [K] */
+  @ApiProperty({ description: 'Inner surface temperature [K]' })
   tInner_K: number;
-  /** Outer surface temperature [K] */
+  @ApiProperty({ description: 'Outer surface temperature [K]' })
   tOuter_K: number;
-  /** Log-mean gas temperature after furnace [K] */
+  @ApiProperty({ description: 'Log-mean gas temperature after furnace [K]' })
   tGasEnd_K: number;
-  /** Log-mean gas temperature inside furnace [K] */
+  @ApiProperty({ description: 'Log-mean gas temperature inside furnace [K]' })
   tGasAverage_K: number;
-  /** Temperatures at each layer interface */
+  @ApiProperty({ type: [BetweenLayerDto], description: 'Temperatures at each layer interface' })
   betweenLayers: BetweenLayerDto[];
-  /** Total heat flux entering from flame side [W] */
+  @ApiProperty({ description: 'Total heat flux entering from flame side [W]' })
   fluxInner_W: number;
-  /** Total heat flux leaving outer surface [W] */
+  @ApiProperty({ description: 'Total heat flux leaving outer surface [W]' })
   fluxOuter_W: number;
-  /** Inner surface heat flux density [W/m²] */
+  @ApiProperty({ description: 'Inner surface heat flux density [W/m²]' })
   fluxInnerDensity_Wm2: number;
-  /** Inner surface area [m²] */
+  @ApiProperty({ description: 'Inner surface area [m²]' })
   sInner_m2: number;
-  /** Outer surface area [m²] */
+  @ApiProperty({ description: 'Outer surface area [m²]' })
   sOuter_m2: number;
-  /** Inner HTC breakdown */
+  @ApiProperty({ type: AlphaResultDto, description: 'Inner HTC breakdown' })
   alphaInner: AlphaResult;
-  /** Outer surface HTC [W/(m²·K)] */
+  @ApiProperty({ description: 'Outer surface HTC [W/(m²·K)]' })
   alphaOuter_Wm2K: number;
-  /** Total wall thickness [mm] */
+  @ApiProperty({ description: 'Total wall thickness [mm]' })
   totalThickness_mm: number;
 }

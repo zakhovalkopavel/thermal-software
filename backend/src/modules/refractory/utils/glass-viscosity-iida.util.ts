@@ -16,8 +16,7 @@
 import { IIDA_MODEL, MILLS_LIQUIDUS, MOLAR_MASSES } from '../constants/viscosity-parameters';
 import { SlagViscosityResult } from '../interfaces/viscosity-parameters.interface';
 import { wtPctToMolPct } from './glass-composition.util';
-
-const R = 8.314; // J/(mol·K)
+import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
 
 // ─── Liquidus helper (shared between Iida and Nakamoto) ──────────────────────
 
@@ -58,7 +57,7 @@ function calcIdealComponentViscosity(key: string, T_K: number): number {
   if (!c) return 0;
   const { M, Tm, Vm, H } = c;
   // η₀ᵢ = 1.8×10⁻⁷ · √(M·Tm) / Vm^(2/3) · exp(H/RT)
-  return 1.8e-7 * Math.sqrt(M * Tm) / Math.pow(Vm * 1e-6, 2 / 3) * Math.exp(H / (R * T_K));
+  return 1.8e-7 * Math.sqrt(M * Tm) / Math.pow(Vm * 1e-6, 2 / 3) * Math.exp(H / (GAS_CONSTANT_J_MOLK * T_K));
 }
 
 // ─── Basicity index ───────────────────────────────────────────────────────────

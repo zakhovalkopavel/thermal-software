@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { RadiationService } from '../../thermodynamics/services/radiation.service';
 import { DimensionlessCalculationService } from '../../thermodynamics/services/dimensionless-calculation.service';
-import { RefractoryThermalService } from '../../refractory/services/refractory-thermal.service';
+import { RefractoryThermalService } from '../../refractory/services/catalog/refractory-thermal.service';
 import { RefractoryThermalMaterial } from '../../refractory/enums/refractory-thermal-material.enum';
 import { MetalThermalService } from '../../metals/services/metal-thermal.service';
 import { MetalMaterial } from '../../metals/enums/metal-material.enum';
@@ -16,10 +16,9 @@ import { WallMaterialKey } from '../dto/layer.dto';
 import { SmokeCompositionDto } from '../dto/smoke-composition.dto';
 import { logMean } from '../../../common/utils/math.util';
 import { brentq } from '../../../common/utils/root-finding.util';
+import { MULTILAYER_WALL } from '../constants/multilayer-wall.constants';
 
 const REFRACTORY_KEYS = new Set<string>(Object.values(RefractoryThermalMaterial));
-const LOW_TEMP_THRESHOLD_K = 423;
-const WALL_ROOT_TOL = 1e-6;
 
 /**
  * MultilayerWallService
@@ -126,7 +125,7 @@ export class MultilayerWallService {
       const b = wallBalance(tInner);
       return b.fluxInner_W - b.fluxOuter_W;
     };
-    const tInner = brentq(balanceResidual, tAmbient_K, tFlame_K, WALL_ROOT_TOL).root;
+    const tInner = brentq(balanceResidual, tAmbient_K, tFlame_K, MULTILAYER_WALL.ROOT_TOL_K).root;
     const { alphaInner, fluxInner_W, alphaOuter_Wm2K, fluxOuter_W, tOuter, betweenTemps } = wallBalance(tInner);
 
     // ── Gas cooling estimate (log-mean) ───────────────────────────────────────
@@ -210,8 +209,9 @@ export class MultilayerWallService {
     tOuter_K: number, tAmbient_K: number,
     lSurface_m: number, dSurface_m: number, emissivity: number,
   ): number {
-    if (tOuter_K <= LOW_TEMP_THRESHOLD_K) {
-      return 9.8 + 0.07 * (tOuter_K - tAmbient_K);
+    if (tOuter_K <= MULTILAYER_WALL.LOW_TEMP_THRESHOLD_K) {
+      return MULTILAYER_WALL.LOW_TEMP_ALPHA_BASE_W_M2K
+        + MULTILAYER_WALL.LOW_TEMP_ALPHA_SLOPE_W_M2K2 * (tOuter_K - tAmbient_K);
     }
 
     let convection_Wm2K = 0;

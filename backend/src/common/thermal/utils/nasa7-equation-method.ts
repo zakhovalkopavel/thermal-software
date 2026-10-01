@@ -1,6 +1,7 @@
 import { Equation } from '../interfaces/equation.interface';
 import { Nasa7Equation, Nasa7Coeffs } from '../type/nasa7-equation';
 import { Common } from './common';
+import { GAS_CONSTANT_J_MOLK } from '../constants/physical.constants';
 
 /**
  * NASA 7-coefficient polynomial method.
@@ -22,7 +23,7 @@ export class Nasa7EquationMethod implements Equation<Nasa7Equation> {
   calculate(T: number, vars: Nasa7Equation, min: number, max: number, k = 1): number {
     T = Common.validInterval(T, min, max);
     const { a1, a2, a3, a4, a5 } = this._coeffs(T, vars);
-    return (a1 + a2*T + a3*T*T + a4*T*T*T + a5*T*T*T*T) * Common.R * k;
+    return (a1 + a2*T + a3*T*T + a4*T*T*T + a5*T*T*T*T) * GAS_CONSTANT_J_MOLK * k;
   }
 
   /**
@@ -33,7 +34,7 @@ export class Nasa7EquationMethod implements Equation<Nasa7Equation> {
     T = Common.validInterval(T, min, max);
     const { a1, a2, a3, a4, a5 } = this._coeffs(T, vars);
     return (a1*T + a2*T*T/2 + a3*Math.pow(T,3)/3 +
-            a4*Math.pow(T,4)/4 + a5*Math.pow(T,5)/5) * Common.R * k;
+            a4*Math.pow(T,4)/4 + a5*Math.pow(T,5)/5) * GAS_CONSTANT_J_MOLK * k;
   }
 
   calculateAverage(T1: number, T2: number, vars: Nasa7Equation, min: number, max: number, k = 1): number {
@@ -44,7 +45,7 @@ export class Nasa7EquationMethod implements Equation<Nasa7Equation> {
     if (T1 < ts && T2 >= ts) {
       const iLow  = this._integralCoeffs(ts,  vars.low)  - this._integralCoeffs(T1, vars.low);
       const iHigh = this._integralCoeffs(T2,  vars.high) - this._integralCoeffs(ts, vars.high);
-      return (iLow + iHigh) * Common.R * k / (T2 - T1);
+      return (iLow + iHigh) * GAS_CONSTANT_J_MOLK * k / (T2 - T1);
     }
     return (this.integral(T2, vars, min, max, k) - this.integral(T1, vars, min, max, k)) / (T2 - T1);
   }
@@ -60,7 +61,7 @@ export class Nasa7EquationMethod implements Equation<Nasa7Equation> {
    */
   enthalpy(T: number, vars: Nasa7Equation): number {
     const { a1, a2, a3, a4, a5, a6 } = this._coeffs(T, vars);
-    return (a1 + a2*T/2 + a3*T*T/3 + a4*T*T*T/4 + a5*T*T*T*T/5 + a6/T) * Common.R * T;
+    return (a1 + a2*T/2 + a3*T*T/3 + a4*T*T*T/4 + a5*T*T*T*T/5 + a6/T) * GAS_CONSTANT_J_MOLK * T;
   }
 
   /**
@@ -70,7 +71,7 @@ export class Nasa7EquationMethod implements Equation<Nasa7Equation> {
    */
   entropy(T: number, vars: Nasa7Equation): number {
     const { a1, a2, a3, a4, a5, a7 } = this._coeffs(T, vars);
-    return (a1*Math.log(T) + a2*T + a3*T*T/2 + a4*T*T*T/3 + a5*T*T*T*T/4 + a7) * Common.R;
+    return (a1*Math.log(T) + a2*T + a3*T*T/2 + a4*T*T*T/3 + a5*T*T*T*T/4 + a7) * GAS_CONSTANT_J_MOLK;
   }
 
   /**
@@ -85,7 +86,7 @@ export class Nasa7EquationMethod implements Equation<Nasa7Equation> {
     const { a1, a2, a3, a4, a5, a6, a7 } = this._coeffs(T, vars);
     const GoRT = a1*(1 - Math.log(T)) - a2*T/2 - a3*T*T/6
                - a4*T*T*T/12 - a5*Math.pow(T,4)/20 + a6/T - a7;
-    return GoRT * Common.R * T;
+    return GoRT * GAS_CONSTANT_J_MOLK * T;
   }
 }
 

@@ -16,8 +16,7 @@ import {
   sphereEigenvaluesBC1,
 } from './eigenvalues-bc1.util';
 import { besselJ0, besselJ1 } from '../../../common/utils/bessel.util';
-
-const DEFAULT_N = 100;
+import { SERIES_TERMS_DEFAULT } from '../constants/thermal-distribution.constants';
 
 // ─── Amplitude coefficients ───────────────────────────────────────────────────
 
@@ -66,7 +65,7 @@ function sincMu(u: number): number {
  * @param Fo        Fourier number ā·τ/R²
  * @param N         Number of series terms (default 100)
  */
-export function plateLocalBC1(relDepth: number, Fo: number, N = DEFAULT_N): number {
+export function plateLocalBC1(relDepth: number, Fo: number, N = SERIES_TERMS_DEFAULT): number {
   const mus = plateEigenvaluesBC1(N);
   let sum = 0;
   for (let n = 0; n < N; n++) {
@@ -77,7 +76,7 @@ export function plateLocalBC1(relDepth: number, Fo: number, N = DEFAULT_N): numb
 }
 
 /** Volume-average dimensionless temperature Θ̄(τ) for infinite plate (BC I). */
-export function plateMeanBC1(Fo: number, N = DEFAULT_N): number {
+export function plateMeanBC1(Fo: number, N = SERIES_TERMS_DEFAULT): number {
   const mus = plateEigenvaluesBC1(N);
   let sum = 0;
   for (const mu of mus) sum += plateBnBC1(mu) * Math.exp(-mu * mu * Fo);
@@ -85,12 +84,12 @@ export function plateMeanBC1(Fo: number, N = DEFAULT_N): number {
 }
 
 /** Absolute temperature at normalised depth. T = Ts + (T0−Ts)·Θ */
-export function plateTempBC1(relDepth: number, Fo: number, T0: number, Ts: number, N = DEFAULT_N): number {
+export function plateTempBC1(relDepth: number, Fo: number, T0: number, Ts: number, N = SERIES_TERMS_DEFAULT): number {
   return Ts + (T0 - Ts) * plateLocalBC1(relDepth, Fo, N);
 }
 
 /** Volume-average absolute temperature for plate (BC I). */
-export function plateMeanTempBC1(Fo: number, T0: number, Ts: number, N = DEFAULT_N): number {
+export function plateMeanTempBC1(Fo: number, T0: number, Ts: number, N = SERIES_TERMS_DEFAULT): number {
   return Ts + (T0 - Ts) * plateMeanBC1(Fo, N);
 }
 
@@ -100,7 +99,7 @@ export function plateMeanTempBC1(Fo: number, T0: number, Ts: number, N = DEFAULT
  * Local dimensionless temperature Θ(r, τ) for infinite cylinder (BC I).
  * @param relR  r/R ∈ [0, 1]
  */
-export function cylinderLocalBC1(relR: number, Fo: number, N = DEFAULT_N): number {
+export function cylinderLocalBC1(relR: number, Fo: number, N = SERIES_TERMS_DEFAULT): number {
   const mus = cylinderEigenvaluesBC1(N);
   let sum = 0;
   for (const mu of mus) {
@@ -110,18 +109,18 @@ export function cylinderLocalBC1(relR: number, Fo: number, N = DEFAULT_N): numbe
 }
 
 /** Volume-average dimensionless temperature Θ̄(τ) for infinite cylinder (BC I). */
-export function cylinderMeanBC1(Fo: number, N = DEFAULT_N): number {
+export function cylinderMeanBC1(Fo: number, N = SERIES_TERMS_DEFAULT): number {
   const mus = cylinderEigenvaluesBC1(N);
   let sum = 0;
   for (const mu of mus) sum += cylinderBnBC1(mu) * Math.exp(-mu * mu * Fo);
   return sum;
 }
 
-export function cylinderTempBC1(relR: number, Fo: number, T0: number, Ts: number, N = DEFAULT_N): number {
+export function cylinderTempBC1(relR: number, Fo: number, T0: number, Ts: number, N = SERIES_TERMS_DEFAULT): number {
   return Ts + (T0 - Ts) * cylinderLocalBC1(relR, Fo, N);
 }
 
-export function cylinderMeanTempBC1(Fo: number, T0: number, Ts: number, N = DEFAULT_N): number {
+export function cylinderMeanTempBC1(Fo: number, T0: number, Ts: number, N = SERIES_TERMS_DEFAULT): number {
   return Ts + (T0 - Ts) * cylinderMeanBC1(Fo, N);
 }
 
@@ -131,7 +130,7 @@ export function cylinderMeanTempBC1(Fo: number, T0: number, Ts: number, N = DEFA
  * Local dimensionless temperature Θ(r, τ) for solid sphere (BC I).
  * @param relR  r/R ∈ [0, 1]  (at r=0: sinc limit applied)
  */
-export function sphereLocalBC1(relR: number, Fo: number, N = DEFAULT_N): number {
+export function sphereLocalBC1(relR: number, Fo: number, N = SERIES_TERMS_DEFAULT): number {
   const mus = sphereEigenvaluesBC1(N);
   let sum = 0;
   for (let n = 0; n < N; n++) {
@@ -142,17 +141,17 @@ export function sphereLocalBC1(relR: number, Fo: number, N = DEFAULT_N): number 
 }
 
 /** Volume-average dimensionless temperature Θ̄(τ) for solid sphere (BC I). */
-export function sphereMeanBC1(Fo: number, N = DEFAULT_N): number {
+export function sphereMeanBC1(Fo: number, N = SERIES_TERMS_DEFAULT): number {
   const mus = sphereEigenvaluesBC1(N);
   let sum = 0;
   for (const mu of mus) sum += sphereBnBC1(mu) * Math.exp(-mu * mu * Fo);
   return sum;
 }
 
-export function sphereTempBC1(relR: number, Fo: number, T0: number, Ts: number, N = DEFAULT_N): number {
+export function sphereTempBC1(relR: number, Fo: number, T0: number, Ts: number, N = SERIES_TERMS_DEFAULT): number {
   return Ts + (T0 - Ts) * sphereLocalBC1(relR, Fo, N);
 }
 
-export function sphereMeanTempBC1(Fo: number, T0: number, Ts: number, N = DEFAULT_N): number {
+export function sphereMeanTempBC1(Fo: number, T0: number, Ts: number, N = SERIES_TERMS_DEFAULT): number {
   return Ts + (T0 - Ts) * sphereMeanBC1(Fo, N);
 }

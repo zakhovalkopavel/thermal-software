@@ -2,7 +2,7 @@
 
 **Date:** February 2, 2026  
 **Algorithm Version:** 2.0 - Comprehensive Component Model  
-**Service:** `ThermalPerformanceService` (backend/src/modules/refractory/services/thermal-performance.service.ts)  
+**Service:** `ThermalPerformanceService` (backend/src/modules/refractory/services/thermal/thermal-performance.service.ts)  
 **Status:** Production-Ready
 
 ---

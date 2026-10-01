@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ThermalDistributionService } from '../services/thermal-distribution.service';
 import { ProfileRequestDto } from '../dto/profile-request.dto';
 import { ProfileAtDepthsRequestDto } from '../dto/profile-at-depths-request.dto';
@@ -20,6 +20,7 @@ export class ThermalDistributionController {
   @Post('criteria')
   @ApiOperation({ summary: 'Compute Bi, Fo, Rdist, Rbi for given configuration' })
   @ApiBody({ type: ProfileRequestDto })
+  @ApiCreatedResponse({ type: ThermalCriteriaDto })
   computeCriteria(@Body() dto: ProfileRequestDto): ThermalCriteriaDto {
     return this.service.computeCriteria(toOpts(dto));
   }
@@ -44,6 +45,7 @@ export class ThermalDistributionController {
       },
     },
   })
+  @ApiCreatedResponse({ type: TemperatureAtDepthResultDto })
   temperatureAtDepth(
     @Body() dto: ProfileRequestDto & { relDepth?: number },
   ): TemperatureAtDepthResultDto {
@@ -59,6 +61,7 @@ export class ThermalDistributionController {
   @Post('temperature/profile')
   @ApiOperation({ summary: 'Temperature distribution over an array of normalised depths' })
   @ApiBody({ type: ProfileAtDepthsRequestDto })
+  @ApiCreatedResponse({ type: TemperatureProfileResultDto })
   temperatureProfile(@Body() dto: ProfileAtDepthsRequestDto): TemperatureProfileResultDto {
     const opts = toOpts(dto);
     const temperatures = this.service.temperatureProfile(dto.relativeDepths, opts);
@@ -71,6 +74,7 @@ export class ThermalDistributionController {
   @Post('temperature/average')
   @ApiOperation({ summary: 'Volume-average temperature T̄(τ)' })
   @ApiBody({ type: ProfileRequestDto })
+  @ApiCreatedResponse({ type: AverageTemperatureResultDto })
   averageTemperature(@Body() dto: ProfileRequestDto): AverageTemperatureResultDto {
     const opts = toOpts(dto);
     const temperature = this.service.averageTemperature(opts);

@@ -645,7 +645,7 @@ Each phase calculation:
 
 ## File Location
 
-- **Service:** `backend/src/modules/refractory/services/mineral-phase.service.ts`
+- **Service:** `backend/src/modules/refractory/services/composition/mineral-phase.service.ts`
 - **Documentation:** `docs/algorithms/mineral-phase-identification.md`
 
 ---

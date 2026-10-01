@@ -20,9 +20,10 @@ import {
   hollowCylinderEigenvaluesBC3,
   hollowCylW0,
 } from './eigenvalues-hollow-bc3.util';
-
-const DEFAULT_N       = 50;
-const SIMPSON_DEFAULT = 128;
+import {
+  HOLLOW_SERIES_TERMS_DEFAULT,
+  SIMPSON_INTERVALS_DEFAULT,
+} from '../constants/thermal-distribution.constants';
 
 /**
  * Compute Fourier coefficient Eₙ for one eigenvalue pₙ.
@@ -83,8 +84,8 @@ export function hollowCylinderTempBC3(
   a: number,
   f1: (r: number) => number,
   Tc: number,
-  N = DEFAULT_N,
-  simpsonN = SIMPSON_DEFAULT,
+  N = HOLLOW_SERIES_TERMS_DEFAULT,
+  simpsonN = SIMPSON_INTERVALS_DEFAULT,
 ): number {
   const H1 = alpha1 / lambda;
   const H2 = alpha2 / lambda;
@@ -117,8 +118,8 @@ export function hollowCylinderMeanTempBC3(
   a: number,
   f1: (r: number) => number,
   Tc: number,
-  N = DEFAULT_N,
-  simpsonN = SIMPSON_DEFAULT,
+  N = HOLLOW_SERIES_TERMS_DEFAULT,
+  simpsonN = SIMPSON_INTERVALS_DEFAULT,
   nodes = 64,
 ): number {
   const H1 = alpha1 / lambda;

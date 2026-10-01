@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { GasPropertiesService } from '../../thermodynamics/services/gas-properties.service';
 import { Species } from '../../thermodynamics/enums/species.enum';
-import { Common } from '../../../common/thermal/utils/common';
+import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
 import { brentq } from '../../../common/utils/root-finding.util';
 import { COMBUSTION } from '../constants/combustion.constants';
 import { ElementFlows, EquilibriumProducts, GasFlows } from '../interfaces/combustion-streams.interface';
@@ -27,7 +27,7 @@ export class ProductEquilibriumService {
   wgsKp(T_K: number): number {
     const dG = this.gas.gibbsEnergy(Species.CO2, T_K) + this.gas.gibbsEnergy(Species.H2, T_K)
              - this.gas.gibbsEnergy(Species.CO, T_K)  - this.gas.gibbsEnergy(Species.H2O, T_K);
-    return Math.exp(-dG / (Common.R * T_K));
+    return Math.exp(-dG / (GAS_CONSTANT_J_MOLK * T_K));
   }
 
   solve(el: ElementFlows, T_K: number, inerts: GasFlows = {}): EquilibriumProducts {

@@ -1,11 +1,11 @@
-import { DimensionlessInputDto } from '../dto/dimensionless-input.dto';
-import { GeometryDimsDto } from '../dto/geometry-dims.dto';
+import { DimensionlessInputDto } from '../dto/dimensionless/dimensionless-input.dto';
+import { GeometryDimsDto } from '../dto/geometry/geometry-dims.dto';
 import { CorrelationName } from '../enums/correlation-name.enum';
 import { CorrelationFamily } from '../enums/correlation-family.enum';
 import { CORRELATION_NAME_TO_FAMILY } from '../constants/correlation-families.constant';
 import { FlowGeometry } from '../enums/flow-geometry.enum';
 import { FlowRegime } from '../types/flow-regime.type';
-import { ResolvedDimensionlessPropsDto } from '../dto/resolved-dimensionless-props.dto';
+import { ResolvedDimensionlessPropsDto } from '../dto/dimensionless/resolved-dimensionless-props.dto';
 import { CORRELATION_VALIDITY } from './correlation-validity.helper';
 import { pipeDuctNu } from './nu-formulas/pipe-duct.nu';
 import { flatPlateNu } from './nu-formulas/flat-plate.nu';

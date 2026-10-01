@@ -25,10 +25,10 @@ import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/nasa7-
 import { compoundNasa7 } from '../../../../src/common/thermal/utils/nasa-database';
 import { CO2 } from '../../../../src/common/thermal/compound/gas/co2';
 import { N2  } from '../../../../src/common/thermal/compound/gas/n2';
-import { Common } from '../../../../src/common/thermal/utils/common';
+import { GAS_CONSTANT_J_MOLK } from '../../../../src/common/thermal/constants/physical.constants';
 
 const method = new Nasa7EquationMethod();
-const R = Common.R;
+const R = GAS_CONSTANT_J_MOLK;
 
 // ─── CO2 ─────────────────────────────────────────────────────────────────────
 

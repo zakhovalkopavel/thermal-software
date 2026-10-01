@@ -87,7 +87,7 @@ inside the container.
 
 ```bash
 # Example: edit a service
-vim backend/src/modules/refractory/services/blend-optimizer.service.ts
+vim backend/src/modules/refractory/services/particle-packing/blend-optimizer.service.ts
 
 # Backend hot-reloads automatically (NestJS --watch mode)
 make logs-backend

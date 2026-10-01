@@ -1,5 +1,5 @@
 import { FlowRegime } from '../../types/flow-regime.type';
-import { GeometryDimsDto } from '../../dto/geometry-dims.dto';
+import { GeometryDimsDto } from '../../dto/geometry/geometry-dims.dto';
 
 /**
  * Nu correlations for internal pipe and duct flow.

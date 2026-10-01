@@ -8,23 +8,11 @@
  * Last Updated: February 2, 2026
  */
 
+import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
+
 // ============================================================
 // UNIVERSAL CONSTANTS (Physics & Chemistry)
 // ============================================================
-
-/**
- * Universal Gas Constant
- * Used in thermodynamic calculations for:
- * - Viscosity calculations (Arrhenius equation)
- * - Thermal property calculations
- * - Refractoriness estimations
- * - Shrinkage predictions
- *
- * References:
- * - CODATA 2018 recommended value
- * - Units: J/(mol·K)
- */
-export const GAS_CONSTANT = 8.314;
 
 /**
  * Absolute Zero Temperature (Kelvin to Celsius conversion)
@@ -282,7 +270,7 @@ export const MAX_CONE_NUMBER = 40;
  */
 export const CALCULATION_CONSTANTS = {
   physics: {
-    GAS_CONSTANT,
+    GAS_CONSTANT_J_MOLK,
     ABSOLUTE_ZERO_OFFSET,
   },
   testing: {

@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Common } from '../../../common/thermal';
-
-/** Minimum |ΔT| below which the linearised radiation coefficient returns 0. */
-const DT_MIN = 0.01; // K
+import { STEFAN_BOLTZMANN_W_M2K4 } from '../../../common/thermal';
+import { RADIATION_DT_MIN_K } from '../constants/radiation.constants';
 
 /**
  * RadiationService — radiation heat transfer for participating gases and surfaces.
@@ -62,7 +60,7 @@ export class RadiationService {
    * Result:
    *   α_rad = σ · ε_eff · (ε_g · Tg⁴ − ε_gs · Ts⁴) / (Tg − Ts)
    *
-   * Returns 0 when |Tg − Ts| < DT_MIN to avoid division by zero.
+   * Returns 0 when |Tg − Ts| < RADIATION_DT_MIN_K to avoid division by zero.
    *
    * @param T_gas_K      Gas bulk temperature [K]
    * @param T_surface_K  Surface temperature [K]
@@ -82,7 +80,7 @@ export class RadiationService {
     pCO2: number,
     L: number,
   ): number {
-    if (Math.abs(T_gas_K - T_surface_K) < DT_MIN) return 0;
+    if (Math.abs(T_gas_K - T_surface_K) < RADIATION_DT_MIN_K) return 0;
 
     // Gas emissivity at gas temperature
     const eps_g = this.gasEmissivity(pH2O, pCO2, L, T_gas_K);
@@ -100,7 +98,7 @@ export class RadiationService {
     const Tg4 = Math.pow(T_gas_K, 4);
     const Ts4 = Math.pow(T_surface_K, 4);
 
-    return Common.SIGMA * eps_eff * (eps_g * Tg4 - eps_gs * Ts4) / (T_gas_K - T_surface_K);
+    return STEFAN_BOLTZMANN_W_M2K4 * eps_eff * (eps_g * Tg4 - eps_gs * Ts4) / (T_gas_K - T_surface_K);
   }
 
   // ── Solid-surface radiation heat transfer coefficient ──────────────────────
@@ -112,7 +110,7 @@ export class RadiationService {
    *
    *   α_rad = |σ · (ε₁·T₁⁴ − ε₂·T₂⁴)| / |T₁ − T₂|
    *
-   * Returns 0 when |T₁ − T₂| < DT_MIN.
+   * Returns 0 when |T₁ − T₂| < RADIATION_DT_MIN_K.
    *
    * @param T1_K      Hot-side temperature [K]
    * @param T2_K      Cold-side temperature [K]
@@ -128,9 +126,9 @@ export class RadiationService {
     epsilon1 = 1.0,
     epsilon2 = 1.0,
   ): number {
-    if (Math.abs(T1_K - T2_K) < DT_MIN) return 0;
+    if (Math.abs(T1_K - T2_K) < RADIATION_DT_MIN_K) return 0;
     return Math.abs(
-      Common.SIGMA * (epsilon1 * Math.pow(T1_K, 4) - epsilon2 * Math.pow(T2_K, 4))
+      STEFAN_BOLTZMANN_W_M2K4 * (epsilon1 * Math.pow(T1_K, 4) - epsilon2 * Math.pow(T2_K, 4))
       / (T1_K - T2_K),
     );
   }

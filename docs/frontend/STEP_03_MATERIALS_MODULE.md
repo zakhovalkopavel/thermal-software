@@ -106,20 +106,20 @@ The existing `MaterialGroupType` union in `data/interfaces/material.interface.ts
 |------|--------|--------|
 | `common/thermal/dto/temperature-range.dto.ts` | `TemperatureRangeDto` | `min: number`, `max: number` (K). Re-exported from `common/thermal/dto/index.ts`. |
 | `modules/metals/dto/metal-summary.dto.ts` | `MetalSummaryDto` | `materialId: MetalMaterial`, `name`, `description`, `emissivityRange_K: TemperatureRangeDto` |
-| `modules/refractory/dto/refractory-product-summary.dto.ts` | `RefractoryProductSummaryDto` | `materialId: RefractoryThermalMaterial`, `name`, `description`, `emissivityRange_K: TemperatureRangeDto` |
-| `modules/refractory/dto/refractory-product-query.dto.ts` | `RefractoryProductQueryDto` | `material` — `@IsEnum(RefractoryThermalMaterial)`; `T_K` — `@Type(() => Number) @IsNumber() @Min(1)` |
-| `modules/refractory/dto/refractory-product-result.dto.ts` | `RefractoryProductResultDto` | `material`, `T_K`, `lambda_WmK`, `emissivity` |
-| `modules/refractory/dto/material-list-query.dto.ts` | `MaterialListQueryDto` | `type?` — `@IsOptional() @IsEnum(MaterialType)`; `search?` — `@IsOptional() @IsString() @MaxLength(MATERIAL_SEARCH_MAX_LENGTH)` |
-| `modules/refractory/dto/material-id-param.dto.ts` | `MaterialIdParamDto` | `materialId` — `@IsString() @IsNotEmpty()` |
-| `modules/refractory/dto/material-group-route-param.dto.ts` | `MaterialGroupRouteParamDto` | `groupRoute` — `@IsEnum(MaterialGroupRoute)` |
-| `modules/refractory/dto/material-group-summary.dto.ts` | `MaterialGroupSummaryDto` | `group: MaterialGroup`, `route: MaterialGroupRoute`, `label`, `count` |
-| `modules/refractory/dto/material-category.dto.ts` | `MaterialCategoryDto` | `group: MaterialGroup`, `label` (from `MATERIAL_GROUP_ROUTES`), `materials: MaterialEntryDto[]` — response of E9 and E10 |
-| `modules/refractory/dto/material-entry.dto.ts` | `MaterialEntryDto` | `materialId`, `name`, `type: MaterialType`, `materialGroup: MaterialGroup[]`, `orderNumber`, `description`, `composition: Record<string, number>` (wt%, as stored), `rho_true_after_firing_kgm3`, `availableParticleSizes?: string[]`, `particleSize?: MaterialParticleSizeDto`, `thermalProperties?: MaterialThermalPropertiesDto`, `mechanicalProperties?: MaterialMechanicalPropertiesDto`, `chemicalShrinkage_volFrac`, `activationEnergy_Jmol`, `meltingPoint_C`, `sourceUrl?`, `supplier?`, `grade?` |
-| `modules/refractory/dto/material-particle-size.dto.ts` | `MaterialParticleSizeDto` | `dMin_mm`, `dMax_mm`, `d50_mm` |
-| `modules/refractory/dto/material-thermal-properties.dto.ts` | `MaterialThermalPropertiesDto` | `thermalConductivity_WmK?`, `specificHeat_JkgK?`, `thermalExpansion_perK?` |
-| `modules/refractory/dto/material-mechanical-properties.dto.ts` | `MaterialMechanicalPropertiesDto` | `crushingStrength_MPa?`, `modulusOfRupture_MPa?`, `youngModulus_GPa?`, `hardness_HV?` |
-| `modules/refractory/dto/particle-size-range.dto.ts` | `ParticleSizeRangeDto` | `dMin_mm`, `dMax_mm`, `d50_mm`, `grade`, `description?`, `mesh?`, `name?` |
-| `modules/refractory/dto/particle-sizes.dto.ts` | `ParticleSizesDto` | `standard`, `classifications`, `cement`, `mesh`, `fepaF`, `fepaP` — each `Record<string, ParticleSizeRangeDto>` keyed by size code |
+| `modules/refractory/dto/refractory-products/refractory-product-summary.dto.ts` | `RefractoryProductSummaryDto` | `materialId: RefractoryThermalMaterial`, `name`, `description`, `emissivityRange_K: TemperatureRangeDto` |
+| `modules/refractory/dto/refractory-products/refractory-product-query.dto.ts` | `RefractoryProductQueryDto` | `material` — `@IsEnum(RefractoryThermalMaterial)`; `T_K` — `@Type(() => Number) @IsNumber() @Min(1)` |
+| `modules/refractory/dto/refractory-products/refractory-product-result.dto.ts` | `RefractoryProductResultDto` | `material`, `T_K`, `lambda_WmK`, `emissivity` |
+| `modules/refractory/dto/material-catalog/material-list-query.dto.ts` | `MaterialListQueryDto` | `type?` — `@IsOptional() @IsEnum(MaterialType)`; `search?` — `@IsOptional() @IsString() @MaxLength(MATERIAL_SEARCH_MAX_LENGTH)` |
+| `modules/refractory/dto/material-catalog/material-id-param.dto.ts` | `MaterialIdParamDto` | `materialId` — `@IsString() @IsNotEmpty()` |
+| `modules/refractory/dto/material-catalog/material-group-route-param.dto.ts` | `MaterialGroupRouteParamDto` | `groupRoute` — `@IsEnum(MaterialGroupRoute)` |
+| `modules/refractory/dto/material-catalog/material-group-summary.dto.ts` | `MaterialGroupSummaryDto` | `group: MaterialGroup`, `route: MaterialGroupRoute`, `label`, `count` |
+| `modules/refractory/dto/material-catalog/material-category.dto.ts` | `MaterialCategoryDto` | `group: MaterialGroup`, `label` (from `MATERIAL_GROUP_ROUTES`), `materials: MaterialEntryDto[]` — response of E9 and E10 |
+| `modules/refractory/dto/material-catalog/material-entry.dto.ts` | `MaterialEntryDto` | `materialId`, `name`, `type: MaterialType`, `materialGroup: MaterialGroup[]`, `orderNumber`, `description`, `composition: Record<string, number>` (wt%, as stored), `rho_true_after_firing_kgm3`, `availableParticleSizes?: string[]`, `particleSize?: MaterialParticleSizeDto`, `thermalProperties?: MaterialThermalPropertiesDto`, `mechanicalProperties?: MaterialMechanicalPropertiesDto`, `chemicalShrinkage_volFrac`, `activationEnergy_Jmol`, `meltingPoint_C`, `sourceUrl?`, `supplier?`, `grade?` |
+| `modules/refractory/dto/material-catalog/material-particle-size.dto.ts` | `MaterialParticleSizeDto` | `dMin_mm`, `dMax_mm`, `d50_mm` |
+| `modules/refractory/dto/material-catalog/material-thermal-properties.dto.ts` | `MaterialThermalPropertiesDto` | `thermalConductivity_WmK?`, `specificHeat_JkgK?`, `thermalExpansion_perK?` |
+| `modules/refractory/dto/material-catalog/material-mechanical-properties.dto.ts` | `MaterialMechanicalPropertiesDto` | `crushingStrength_MPa?`, `modulusOfRupture_MPa?`, `youngModulus_GPa?`, `hardness_HV?` |
+| `modules/refractory/dto/material-catalog/particle-size-range.dto.ts` | `ParticleSizeRangeDto` | `dMin_mm`, `dMax_mm`, `d50_mm`, `grade`, `description?`, `mesh?`, `name?` |
+| `modules/refractory/dto/material-catalog/particle-sizes.dto.ts` | `ParticleSizesDto` | `standard`, `classifications`, `cement`, `mesh`, `fepaF`, `fepaP` — each `Record<string, ParticleSizeRangeDto>` keyed by size code |
 
 The `search` length limit is `MATERIAL_CATALOG_CONSTANTS.SEARCH_MAX_LENGTH` (64) in `modules/refractory/constants/material-catalog.constants.ts`.
 
@@ -128,10 +128,10 @@ The `search` length limit is `MATERIAL_CATALOG_CONSTANTS.SEARCH_MAX_LENGTH` (64)
 | File | Class / change | Methods |
 |------|----------------|---------|
 | `modules/metals/services/metal-thermal.service.ts` | existing `MetalThermalService` — add one method | `listMaterials(): MetalSummaryDto[]` — maps `METAL_THERMAL_MATERIALS` (`emissivityRange_K` = `{ min: T_min_K, max: T_max_K }`) |
-| `modules/refractory/services/refractory-thermal.service.ts` | existing `RefractoryThermalService` — add two methods | `listProducts(): RefractoryProductSummaryDto[]`; `getProperties(dto: RefractoryProductQueryDto): RefractoryProductResultDto` (reuses existing `lambda()` / `emissivity()`) |
-| `modules/refractory/services/material-catalog.service.ts` | new `MaterialCatalogService` | `listMaterials(query: MaterialListQueryDto): MaterialEntryDto[]`; `getMaterial(materialId: string): MaterialEntryDto` (404 if unknown); `listGroups(): MaterialGroupSummaryDto[]`; `listByGroupRoute(route: MaterialGroupRoute): MaterialEntryDto[]`; `listCategories(): MaterialCategoryDto[]` (E10) |
-| `modules/refractory/services/particle-size-catalog.service.ts` | new `ParticleSizeCatalogService` | `getParticleSizes(): ParticleSizesDto` — from the six exported tables in `particle-sizes.data.ts` |
-| `modules/refractory/services/mix-component-catalog.service.ts` | new `MixComponentCatalogService` (injects `MaterialCatalogService`) | `listGroups(): MaterialCategoryDto[]` (E9); `getMixComponent(materialId: string): MaterialEntryDto` — 404 if unknown, 400 if not a mix component or excluded |
+| `modules/refractory/services/catalog/refractory-thermal.service.ts` | existing `RefractoryThermalService` — add two methods | `listProducts(): RefractoryProductSummaryDto[]`; `getProperties(dto: RefractoryProductQueryDto): RefractoryProductResultDto` (reuses existing `lambda()` / `emissivity()`) |
+| `modules/refractory/services/catalog/material-catalog.service.ts` | new `MaterialCatalogService` | `listMaterials(query: MaterialListQueryDto): MaterialEntryDto[]`; `getMaterial(materialId: string): MaterialEntryDto` (404 if unknown); `listGroups(): MaterialGroupSummaryDto[]`; `listByGroupRoute(route: MaterialGroupRoute): MaterialEntryDto[]`; `listCategories(): MaterialCategoryDto[]` (E10) |
+| `modules/refractory/services/catalog/particle-size-catalog.service.ts` | new `ParticleSizeCatalogService` | `getParticleSizes(): ParticleSizesDto` — from the six exported tables in `particle-sizes.data.ts` |
+| `modules/refractory/services/catalog/mix-component-catalog.service.ts` | new `MixComponentCatalogService` (injects `MaterialCatalogService`) | `listGroups(): MaterialCategoryDto[]` (E9); `getMixComponent(materialId: string): MaterialEntryDto` — 404 if unknown, 400 if not a mix component or excluded |
 
 `MixComponentCatalogService` is exported from `RefractoryModule` because the mix-composition calculation ([Step 9 §2](STEP_09_MINERAL_COMPOSITIONS.md)) resolves and validates materials through it.
 
@@ -153,14 +153,14 @@ Run inside Docker only: `docker compose exec backend npm run test -- <pattern>`.
 | File | Covers |
 |------|--------|
 | `test/unit/metals/services/metal-thermal.service.spec.ts` (extend) | `listMaterials`: 2 grades, ids match `MetalMaterial`, range = data `T_min_K` / `T_max_K` |
-| `test/unit/refractory/services/refractory-thermal.service.spec.ts` (extend) | `listProducts`: 19 items, ids = enum values; `getProperties`: λ/ε equal `lambda()` / `emissivity()`; ε clamped outside range |
-| `test/unit/refractory/services/material-catalog.service.spec.ts` (new) | 102 unique active materials; sort order; each duplicated id returned once; `type` and `search` filters and their AND; `getMaterial` found / 404; `listGroups` order = `MATERIAL_GROUP_ROUTES`, counts match `listByGroupRoute` lengths, no zero-count groups; every material of `listByGroupRoute(route)` contains the mapped group; `listCategories`: 102 materials in total, each exactly once, `materialGroup[0]` = category, `soda_lime_glass` only under glass |
-| `test/unit/refractory/services/mix-component-catalog.service.spec.ts` (new) | `listGroups`: order = `MIX_COMPONENT_GROUPS`; 60 materials with the per-group counts of §1.3; every material's `materialGroup[0]` equals its group; no glass, phosphate, boride, fluoride, borate, carbonate or hydroxide primary group; `paper_clay` absent; `getMixComponent`: `alumina_tabular` ok, `soda_lime_glass` → 400, `calcium_fluoride` → 400, `paper_clay` → 400, unknown → 404 |
-| `test/unit/refractory/services/particle-size-catalog.service.spec.ts` (new) | six tables present; each entry has `dMin_mm < dMax_mm` and `d50_mm` inside |
-| `test/unit/refractory/dto/refractory-product-query.dto.spec.ts` (new) | query-string `T_K` converted to number; missing / non-numeric / `< 1` rejected; unknown `material` rejected |
-| `test/unit/refractory/dto/material-list-query.dto.spec.ts` (new) | valid `type`; invalid `type` rejected; `search` length limit; unknown parameter rejected (`forbidNonWhitelisted`) |
-| `test/unit/refractory/dto/material-group-route-param.dto.spec.ts` (new) | every `MaterialGroupRoute` accepted; unknown value rejected |
-| `test/unit/refractory/dto/material-id-param.dto.spec.ts` (new) | empty string rejected |
+| `test/unit/refractory/services/catalog/refractory-thermal.service.spec.ts` (extend) | `listProducts`: 19 items, ids = enum values; `getProperties`: λ/ε equal `lambda()` / `emissivity()`; ε clamped outside range |
+| `test/unit/refractory/services/catalog/material-catalog.service.spec.ts` (new) | 102 unique active materials; sort order; each duplicated id returned once; `type` and `search` filters and their AND; `getMaterial` found / 404; `listGroups` order = `MATERIAL_GROUP_ROUTES`, counts match `listByGroupRoute` lengths, no zero-count groups; every material of `listByGroupRoute(route)` contains the mapped group; `listCategories`: 102 materials in total, each exactly once, `materialGroup[0]` = category, `soda_lime_glass` only under glass |
+| `test/unit/refractory/services/catalog/mix-component-catalog.service.spec.ts` (new) | `listGroups`: order = `MIX_COMPONENT_GROUPS`; 60 materials with the per-group counts of §1.3; every material's `materialGroup[0]` equals its group; no glass, phosphate, boride, fluoride, borate, carbonate or hydroxide primary group; `paper_clay` absent; `getMixComponent`: `alumina_tabular` ok, `soda_lime_glass` → 400, `calcium_fluoride` → 400, `paper_clay` → 400, unknown → 404 |
+| `test/unit/refractory/services/catalog/particle-size-catalog.service.spec.ts` (new) | six tables present; each entry has `dMin_mm < dMax_mm` and `d50_mm` inside |
+| `test/unit/refractory/dto/refractory-products/refractory-product-query.dto.spec.ts` (new) | query-string `T_K` converted to number; missing / non-numeric / `< 1` rejected; unknown `material` rejected |
+| `test/unit/refractory/dto/material-catalog/material-list-query.dto.spec.ts` (new) | valid `type`; invalid `type` rejected; `search` length limit; unknown parameter rejected (`forbidNonWhitelisted`) |
+| `test/unit/refractory/dto/material-catalog/material-group-route-param.dto.spec.ts` (new) | every `MaterialGroupRoute` accepted; unknown value rejected |
+| `test/unit/refractory/dto/material-catalog/material-id-param.dto.spec.ts` (new) | empty string rejected |
 | `test/unit/refractory/controllers/material-catalog.controller.spec.ts` (new) | boots `RefractoryModule` with `@nestjs/testing` and the production `ValidationPipe` options, listens on port 0, calls routes with `fetch` (supertest is not installed): E4 / E6 / E8 / E9 / E10 are **not** captured by E7; `/refractory/unknown` → 400; `/refractory/materials/unknown` → 404 |
 
 DTO specs validate with `plainToInstance` + `validate` using the same options as the global `ValidationPipe` in `main.ts`.

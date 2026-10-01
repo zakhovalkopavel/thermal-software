@@ -359,7 +359,7 @@ Relative Density:    0.40 - 0.98
 
 ## File Location
 
-**Service:** `backend/src/modules/refractory/services/shrinkage.service.ts`
+**Service:** `backend/src/modules/refractory/services/thermal/shrinkage.service.ts`
 **Interfaces:** `backend/src/modules/refractory/interfaces/shrinkage-calculator.interface.ts`
 
 ---

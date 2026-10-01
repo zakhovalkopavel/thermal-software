@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CombustionService } from '../services/combustion.service';
 import { SolidDirectInputDto, SolidDirectResultDto } from '../dto/solid-direct.dto';
 import { SolidTwoStepInputDto, SolidTwoStepResultDto } from '../dto/solid-two-step.dto';
@@ -55,6 +55,7 @@ export class CombustionController {
       },
     },
   })
+  @ApiCreatedResponse({ type: SolidDirectResultDto })
   solidDirect(@Body() dto: SolidDirectInputDto): SolidDirectResultDto {
     return this.combustionService.solidDirect(dto);
   }
@@ -86,6 +87,7 @@ export class CombustionController {
       },
     },
   })
+  @ApiCreatedResponse({ type: SolidTwoStepResultDto })
   solidTwoStep(@Body() dto: SolidTwoStepInputDto): SolidTwoStepResultDto {
     return this.combustionService.solidTwoStep(dto);
   }
@@ -114,6 +116,7 @@ export class CombustionController {
       },
     },
   })
+  @ApiCreatedResponse({ type: FluidFuelResultDto })
   fluid(@Body() dto: FluidFuelInputDto): FluidFuelResultDto {
     return this.combustionService.fluidFuel(dto);
   }
@@ -144,6 +147,7 @@ export class CombustionController {
       },
     },
   })
+  @ApiCreatedResponse({ type: BedCombustionResultDto })
   bed(@Body() dto: BedCombustionInputDto): BedCombustionResultDto {
     return this.combustionService.bedCombustion(dto);
   }

@@ -11,9 +11,6 @@ import { CombustionEnthalpyService } from '../services/combustion-enthalpy.servi
 import {
   elementsOfCondensed, elementsOfGas, gasMassFlow, speciesMolarMass, stoichiometricO2,
 } from './element-balance.util';
-
-const COMPOSITION_SUM_TOL = 1e-3;
-
 export function resolveCondensedFuel(
   fuelId: FuelId | undefined,
   custom: CondensedFuelDto | undefined,
@@ -30,7 +27,7 @@ export function resolveCondensedFuel(
   const c = custom!;
   const e = c.elementalComp;
   const sum = e.C + e.H + e.O + e.N + (e.S ?? 0) + e.ash + (e.moisture ?? 0);
-  if (Math.abs(sum - 1) > COMPOSITION_SUM_TOL) {
+  if (Math.abs(sum - 1) > COMBUSTION.COMPOSITION_SUM_TOL) {
     throw new BadRequestException(`Elemental composition must sum to 1 (got ${sum.toFixed(4)})`);
   }
   if (c.heatOfFormation_J_kg === undefined && c.lhv_J_kg === undefined) {

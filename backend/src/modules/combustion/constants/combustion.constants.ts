@@ -1,7 +1,12 @@
+import {
+  STANDARD_PRESSURE_PA,
+  THERMOCHEMICAL_REFERENCE_TEMPERATURE_K,
+} from '../../../common/thermal/constants/physical.constants';
+
 export const COMBUSTION = {
   FUEL_CAPACITY_J_KGK:    1_500,
   ASH_CAPACITY_J_KGK:     1_000,
-  ATMOSPHERIC_PRESSURE_PA: 101_325,
+  ATMOSPHERIC_PRESSURE_PA: STANDARD_PRESSURE_PA,
   FLAME_ROOT_TOL:          1e-6,
   /** Flame temperature search range [K]; the upper end exceeds the cp data range (no dissociation in the model) */
   FLAME_T_MIN_K:           50,
@@ -9,11 +14,13 @@ export const COMBUSTION = {
   DEFAULT_PO2:             0.21,
   DEFAULT_W_H2OM:          0,
   /** Reference temperature of formation enthalpies [K] */
-  T_REF_K:                 298.15,
+  T_REF_K:                 THERMOCHEMICAL_REFERENCE_TEMPERATURE_K,
   /** Relative tolerance of the water-gas shift extent root */
   WGS_ROOT_REL_TOL:        1e-12,
   /** Relative element-balance residual above which a step result is rejected */
   ELEMENT_BALANCE_TOL:     1e-9,
+  /** Allowed deviation of a custom fuel's mass-fraction sum from 1 */
+  COMPOSITION_SUM_TOL:     1e-3,
 } as const;
 
 /**

@@ -49,7 +49,7 @@ Recommended layout:
 ```
 backend/test/unit/            # Unit tests (fast, isolated)
   modules/refractory/services/
-    refractoriness.service.spec.ts   # Tests for ../../src/modules/refractory/services/refractoriness.service.ts
+    refractoriness.service.spec.ts   # Tests for ../../src/modules/refractory/services/composition/refractoriness.service.ts
 
 backend/test/e2e/             # E2E tests (integration/workflows)
   calculation-workflow.e2e-spec.ts

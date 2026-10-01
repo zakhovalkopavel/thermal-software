@@ -448,7 +448,7 @@ The water demand algorithm provides a **physics-based, literature-backed method*
 
 ---
 
-**Implementation:** `backend/src/modules/refractory/services/blend-optimizer.service.ts`  
+**Implementation:** `backend/src/modules/refractory/services/particle-packing/blend-optimizer.service.ts`  
 **Tests:** `backend/test/unit/refractory/services/blend-optimizer.water-demand.spec.ts`  
 **Related:** PACKING_MODELS.md, BLEND_OPTIMIZER_ALGORITHM.md
 

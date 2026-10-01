@@ -1,5 +1,5 @@
 import { FlowGeometry } from '../../enums/flow-geometry.enum';
-import { GeometryDimsDto } from '../../dto/geometry-dims.dto';
+import { GeometryDimsDto } from '../../dto/geometry/geometry-dims.dto';
 import { zukauskasCoeffs } from '../nu-coefficients.helper';
 
 /**

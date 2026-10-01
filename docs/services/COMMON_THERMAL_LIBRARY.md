@@ -208,15 +208,22 @@ outside `[Tmin, Tmax]` H and S are extrapolated with the boundary Cp and G = H �
 
 ---
 
-## Common Constants (`utils/common.ts`)
+## Physical Constants (`constants/physical.constants.ts`)
+
+Exported from `common/thermal` as named constants:
 
 ```typescript
-Common.R         = 8.31446   // Universal gas constant [J/(mol·K)]
-Common.g         = 9.80665   // Standard gravity [m/s²]
-Common.sigma     = 5.6704e-8 // Stefan-Boltzmann constant [W/(m²·K⁴)]
-Common.pAtm      = 101_325   // Standard atmospheric pressure [Pa]
-Common.Tstandart = 298.15    // Standard temperature [K]
+BOLTZMANN_CONSTANT_J_K    = 1.380649e-23        // Boltzmann constant [J/K]
+GAS_CONSTANT_J_MOLK       = 8.31446261815324    // Universal gas constant [J/(mol·K)]
+AVOGADRO_CONSTANT_PER_MOL = 6.02214076e23       // Avogadro constant [1/mol]
+STANDARD_GRAVITY_M_S2     = 9.80665             // Standard gravity [m/s²]
+STANDARD_PRESSURE_PA      = 101_325             // Standard atmospheric pressure [Pa]
+STANDARD_TEMPERATURE_K    = 293.15              // Standard reference temperature [K] (20 °C)
+THERMOCHEMICAL_REFERENCE_TEMPERATURE_K = 298.15 // Reference temperature of formation enthalpies [K] (25 °C)
+STEFAN_BOLTZMANN_W_M2K4   = 5.67037441918e-8    // Stefan–Boltzmann constant [W/(m²·K⁴)]
 ```
+
+`Common` (`utils/common.ts`) keeps only the helper methods (`logarithmicAverage`, `average`, `validInterval`, `isValidInterval`, `equation`).
 
 ---
 

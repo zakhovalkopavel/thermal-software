@@ -25,6 +25,7 @@ export class MetalsController {
       'Returns thermal conductivity [W/(m·K)] and emissivity at the given temperature. ' +
       'AISI 304 λ uses T in Kelvin; mild steel λ uses T in Celsius internally.',
   })
+  @ApiOkResponse({ type: MetalThermalResultDto })
   getThermalProperties(@Query() dto: MetalThermalQueryDto): MetalThermalResultDto {
     return this.metalThermalService.getThermalProperties(dto);
   }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Species } from '../../thermodynamics/enums/species.enum';
-import { Common } from '../../../common/thermal/utils/common';
+import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
 import { BED_KINETICS } from '../constants/combustion.constants';
 import { GasFlows } from '../interfaces/combustion-streams.interface';
 
@@ -48,7 +48,7 @@ export class ChemicalKineticsService {
 
   /** Arrhenius rate constant k = A·exp(−E/(R·T)) */
   arrhenius(A: number, E_Jmol: number, T_K: number): number {
-    return A * Math.exp(-E_Jmol / (Common.R * T_K));
+    return A * Math.exp(-E_Jmol / (GAS_CONSTANT_J_MOLK * T_K));
   }
 
   /**

@@ -29,7 +29,7 @@ Track progress against [README.md](README.md). Tick an item only when it works i
 - [x] Baseline: 670 architecture warnings (526 deep relative imports, 131 unit literals and `digits` props, 10 misplaced suffix files, 2 `.tsx` over 200 lines, 1 non-hook file in `hooks/`)
 - [x] `npm run verify` passes
 - [x] `RouteErrorBoundary` on root, materials and processes routes, with a component test
-- [ ] Commit made
+- [x] Commit made
 
 ## STEP 03 — Shared layer
 
@@ -40,16 +40,17 @@ Track progress against [README.md](README.md). Tick an item only when it works i
 - [x] Section routes lazy-loaded with `RouteFallback`
 - [x] `charts`, `charts-modules` and `mui` chunks; no chunk-size warning (largest 398 kB)
 - [x] `npm run verify` passes; `lint:refactor` 427 warnings (was 670)
-- [ ] Commit made
+- [x] Commit made
 
 ## STEP 04 — Backend Swagger responses
 
-- [ ] Backend Jest baseline recorded (passing, failing, names of failing tests)
-- [ ] Result DTO classes created or reused for all 55 operations
-- [ ] `@ApiOkResponse` or `@ApiCreatedResponse` with `type` on every operation
-- [ ] Backend build passes; no test that passed in the baseline fails
-- [ ] Swagger check prints `all operations documented`
-- [ ] Diff limited to DTOs and decorators
+- [x] Backend Jest baseline recorded: 925 passed, 0 failed (56 suites)
+- [x] Result DTO classes created or reused for all 55 operations
+- [x] `@ApiOkResponse`, `@ApiCreatedResponse` or `@ApiResponse` with `type` on every operation
+- [x] Backend build passes; Jest 925/925 after the change
+- [x] Swagger check prints `all operations documented`
+- [x] Diff limited to DTOs and decorators (plus one Swagger-only enum constant)
+- [x] Findings reported to the user (STEP_04 §6)
 - [ ] Commit made (`docs(backend): ...`)
 
 ## STEP 05 — Contract tests

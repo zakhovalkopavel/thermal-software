@@ -7,21 +7,21 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { RefractoryThermalService } from '../services/refractory-thermal.service';
-import { MaterialCatalogService } from '../services/material-catalog.service';
-import { ParticleSizeCatalogService } from '../services/particle-size-catalog.service';
-import { MixComponentCatalogService } from '../services/mix-component-catalog.service';
-import { RefractoryProductSummaryDto } from '../dto/refractory-product-summary.dto';
-import { RefractoryProductQueryDto } from '../dto/refractory-product-query.dto';
-import { RefractoryProductResultDto } from '../dto/refractory-product-result.dto';
-import { MaterialListQueryDto } from '../dto/material-list-query.dto';
-import { MaterialIdParamDto } from '../dto/material-id-param.dto';
-import { MaterialGroupRouteParamDto } from '../dto/material-group-route-param.dto';
-import { MaterialEntryDto } from '../dto/material-entry.dto';
-import { MaterialGroupSummaryDto } from '../dto/material-group-summary.dto';
-import { MaterialCategoryDto } from '../dto/material-category.dto';
-import { ParticleSizesDto } from '../dto/particle-sizes.dto';
-import { ParticleSizeRangeDto } from '../dto/particle-size-range.dto';
+import { RefractoryThermalService } from '../services/catalog/refractory-thermal.service';
+import { MaterialCatalogService } from '../services/catalog/material-catalog.service';
+import { ParticleSizeCatalogService } from '../services/catalog/particle-size-catalog.service';
+import { MixComponentCatalogService } from '../services/catalog/mix-component-catalog.service';
+import { RefractoryProductSummaryDto } from '../dto/refractory-products/refractory-product-summary.dto';
+import { RefractoryProductQueryDto } from '../dto/refractory-products/refractory-product-query.dto';
+import { RefractoryProductResultDto } from '../dto/refractory-products/refractory-product-result.dto';
+import { MaterialListQueryDto } from '../dto/material-catalog/material-list-query.dto';
+import { MaterialIdParamDto } from '../dto/material-catalog/material-id-param.dto';
+import { MaterialGroupRouteParamDto } from '../dto/material-catalog/material-group-route-param.dto';
+import { MaterialEntryDto } from '../dto/material-catalog/material-entry.dto';
+import { MaterialGroupSummaryDto } from '../dto/material-catalog/material-group-summary.dto';
+import { MaterialCategoryDto } from '../dto/material-catalog/material-category.dto';
+import { ParticleSizesDto } from '../dto/material-catalog/particle-sizes.dto';
+import { ParticleSizeRangeDto } from '../dto/material-catalog/particle-size-range.dto';
 
 /**
  * Read-only catalogue of materials already present in the refractory library.

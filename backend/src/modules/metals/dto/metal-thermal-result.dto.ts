@@ -1,8 +1,9 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { MetalMaterial } from '../enums/metal-material.enum';
 
 export class MetalThermalResultDto {
-  material: MetalMaterial;
-  T_K: number;
-  lambda_WmK: number;
-  emissivity: number;
+  @ApiProperty({ enum: MetalMaterial }) material: MetalMaterial;
+  @ApiProperty() T_K: number;
+  @ApiProperty() lambda_WmK: number;
+  @ApiProperty() emissivity: number;
 }

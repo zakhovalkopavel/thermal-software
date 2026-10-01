@@ -14,7 +14,7 @@ uses the **same flat fluid-identification fields** — never a nested object:
 | `fluid` | `KnownFluid` | Named species/alias. Source of truth: `KNOWN_FLUIDS` constant in `types/known-fluid.type.ts`. |
 | `composition` | `Record<Species, number>` | Mole fractions — required when `fluid = "gas_mix"` or `fluid` is absent. Must sum to 1. |
 | `T_fluid_K` | `number` | Bulk temperature [K]. Always explicit; no magic defaults in DTOs (defaults only where documented). |
-| `P_Pa` | `number` | Absolute pressure [Pa]. Default: `Common.pAtm` (101 325 Pa). |
+| `P_Pa` | `number` | Absolute pressure [Pa]. Default: `STANDARD_PRESSURE_PA` (101 325 Pa). |
 
 **Rule:** exactly one of `fluid` or `composition` must be provided; using both is allowed only
 when `fluid = "gas_mix"`.
@@ -84,7 +84,7 @@ pre-calculated `Nu` or `lambda`.
 ## 5. Gravity Override in Natural-Convection Endpoints
 
 All endpoints that compute Gr or Ra accept an optional `g_m_s2` field
-(default `Common.g = 9.80665 m/s²`). This allows simulation of non-standard
+(default `STANDARD_GRAVITY_M_S2 = 9.80665 m/s²`). This allows simulation of non-standard
 gravitational conditions without creating separate endpoint variants.
 
 ---

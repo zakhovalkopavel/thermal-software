@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { FlowGeometry } from '../enums/flow-geometry.enum';
 import { BodyGeometry } from '../enums/body-geometry.enum';
-import { DimensionlessInputDto } from '../dto/dimensionless-input.dto';
-import { GeometryDimsDto } from '../dto/geometry-dims.dto';
-import { ResolvedDimensionlessPropsDto } from '../dto/resolved-dimensionless-props.dto';
+import { DimensionlessInputDto } from '../dto/dimensionless/dimensionless-input.dto';
+import { GeometryDimsDto } from '../dto/geometry/geometry-dims.dto';
+import { ResolvedDimensionlessPropsDto } from '../dto/dimensionless/resolved-dimensionless-props.dto';
 import { CorrelationName } from '../enums/correlation-name.enum';
 import { FlowRegime } from '../types/flow-regime.type';
 import { NusseltResult } from '../interfaces/nusselt-result.interface';
@@ -16,7 +16,7 @@ import {
   resolveRegime, validatePreferredCorrelation,
 } from '../helpers/correlation-validity.helper';
 import { CorrelationSelectorHelper } from '../helpers/correlation-selector.helper';
-import { Common } from '../../../common/thermal/utils/common';
+import { STANDARD_GRAVITY_M_S2 } from '../../../common/thermal/constants/physical.constants';
 
 @Injectable()
 export class DimensionlessNumbersService {
@@ -42,15 +42,15 @@ export class DimensionlessNumbersService {
 
   /**
    * Gr = g·β·ΔT·L³ / ν²   β = 2/(T_hot+T_cold) (ideal gas)
-   * g defaults to Common.g (9.80665 m/s²); override for non-Earth conditions.
+   * g defaults to STANDARD_GRAVITY_M_S2 (9.80665 m/s²); override for non-Earth conditions.
    */
-  grashof(T_hot_K: number, T_cold_K: number, L: number, nu: number, g = Common.g): number {
+  grashof(T_hot_K: number, T_cold_K: number, L: number, nu: number, g = STANDARD_GRAVITY_M_S2): number {
     const beta = 2 / (T_hot_K + T_cold_K);
     return g * beta * Math.abs(T_hot_K - T_cold_K) * Math.pow(L, 3) / (nu * nu);
   }
 
   /** Ra = Gr · Pr */
-  rayleigh(T_hot_K: number, T_cold_K: number, L: number, nu: number, Pr: number, g = Common.g): number {
+  rayleigh(T_hot_K: number, T_cold_K: number, L: number, nu: number, Pr: number, g = STANDARD_GRAVITY_M_S2): number {
     return this.grashof(T_hot_K, T_cold_K, L, nu, g) * Pr;
   }
 

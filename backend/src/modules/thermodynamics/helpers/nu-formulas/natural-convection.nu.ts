@@ -1,4 +1,4 @@
-import { GeometryDimsDto } from '../../dto/geometry-dims.dto';
+import { GeometryDimsDto } from '../../dto/geometry/geometry-dims.dto';
 import { morganCoeffs, macGregorEmery } from '../nu-coefficients.helper';
 
 /**

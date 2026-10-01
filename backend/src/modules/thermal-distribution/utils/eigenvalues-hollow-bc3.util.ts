@@ -8,8 +8,7 @@
  */
 import { besselJ0, besselJ1, besselY0, besselY1 } from '../../../common/utils/bessel.util';
 import { brentq } from '../../../common/utils/root-finding.util';
-
-const DEFAULT_TOL = 1e-10;
+import { EIGENVALUE_TOL_HOLLOW_BC3 } from '../constants/thermal-distribution.constants';
 
 /** Evaluate the hollow-cylinder characteristic function F(p). */
 function hollowCylF(
@@ -50,7 +49,7 @@ export function hollowCylinderEigenvaluesBC3(
   H1: number,
   H2: number,
   N: number,
-  tol = DEFAULT_TOL,
+  tol = EIGENVALUE_TOL_HOLLOW_BC3,
 ): number[] {
   // Roots lie roughly π/(R2-R1) apart; scan with fine step
   const step = Math.PI / (R2 - R1) / 4;

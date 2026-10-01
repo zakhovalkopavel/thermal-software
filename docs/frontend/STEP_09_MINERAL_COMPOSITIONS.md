@@ -176,8 +176,8 @@ Inside Docker: `docker compose exec backend npm run test -- mix-composition`.
 
 | File | Covers |
 |------|--------|
-| `test/unit/refractory/services/mix-composition.service.spec.ts` | single oxide material (tabular alumina) → accepted oxides = its composition rescaled; kaolin: `LOI = 14`, `Al2O3`/`SiO2` rescaled to 100; repeated material rows add up; fractions not summing to 1 are rescaled; Σ = 0 → 400; `paper_clay`, `soda_lime_glass`, `calcium_fluoride` → 400; unknown id and `chamotte_solid` → 404; binder + oxide + silicate + clay + carbide + nitride in one mix; titanium carbide classification (carbide, TiO2, carbon, dropped Fe); silicon nitride → 100 % nitride; raku clay `Grog` → `other` + warning; warning threshold boundary (5 % exactly → no warning); `trueDensity_kgm3` for a two-material mix vs hand calculation; `acceptedOxides_normalized` sums to 100 |
-| `test/unit/refractory/dto/mix-composition-input.dto.spec.ts` | empty `fractions` rejected; `massFraction` < 0 or > 1 rejected; missing `materialId` rejected; nested unknown property rejected |
+| `test/unit/refractory/services/composition/mix-composition.service.spec.ts` | single oxide material (tabular alumina) → accepted oxides = its composition rescaled; kaolin: `LOI = 14`, `Al2O3`/`SiO2` rescaled to 100; repeated material rows add up; fractions not summing to 1 are rescaled; Σ = 0 → 400; `paper_clay`, `soda_lime_glass`, `calcium_fluoride` → 400; unknown id and `chamotte_solid` → 404; binder + oxide + silicate + clay + carbide + nitride in one mix; titanium carbide classification (carbide, TiO2, carbon, dropped Fe); silicon nitride → 100 % nitride; raku clay `Grog` → `other` + warning; warning threshold boundary (5 % exactly → no warning); `trueDensity_kgm3` for a two-material mix vs hand calculation; `acceptedOxides_normalized` sums to 100 |
+| `test/unit/refractory/dto/mix-composition/mix-composition-input.dto.spec.ts` | empty `fractions` rejected; `massFraction` < 0 or > 1 rejected; missing `materialId` rejected; nested unknown property rejected |
 
 ### 2.5 Backend documentation (Definition of Done)
 

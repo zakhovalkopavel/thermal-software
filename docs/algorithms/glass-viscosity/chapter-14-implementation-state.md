@@ -184,8 +184,8 @@ Swagger UI: `GET /api/docs`
 | `test/unit/refractory/utils/glass-composition.util.spec.ts` | ✅ Complete | `wtPctToMolPct`, `molPctToWtPct` |
 | `test/unit/refractory/utils/glass-viscosity-vtf.util.spec.ts` | ✅ Complete | `fitVtfThreePoints`, `evalVtf`, `temperatureAtLogViscosity` |
 | `test/unit/refractory/utils/glass-viscosity-isokom.spec.ts` | ✅ Complete | `predictIsokomsLakatos`, `predictIsokomsFluegel`, Hetherington self-check |
-| `test/unit/refractory/services/glass-viscosity-model-selection.spec.ts` | ✅ Complete | `selectModel` — all routing cases (Fluegel default, Lakatos reserve, slag/fluoride logic verified) |
-| `test/unit/refractory/services/glass-viscosity.service.spec.ts` | ✅ Complete | `calculateViscosity` integration — explicit-preference flow covered |
+| `test/unit/refractory/services/composition/glass-viscosity-model-selection.spec.ts` | ✅ Complete | `selectModel` — all routing cases (Fluegel default, Lakatos reserve, slag/fluoride logic verified) |
+| `test/unit/refractory/services/composition/glass-viscosity.service.spec.ts` | ✅ Complete | `calculateViscosity` integration — explicit-preference flow covered |
 
 ### Validation Data (split)
 

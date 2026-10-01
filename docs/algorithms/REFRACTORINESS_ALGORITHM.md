@@ -2,7 +2,7 @@
 
 **Date:** February 2, 2026  
 **Algorithm Version:** 2.0 - Comprehensive Component Model  
-**Service:** `RefractorinessService` (backend/src/modules/refractory/services/refractoriness.service.ts)  
+**Service:** `RefractorinessService` (backend/src/modules/refractory/services/composition/refractoriness.service.ts)  
 **Source:** Ported from `legacy/refractory/src/calculators/RefractorinessStandardsCalculator.ts`  
 **Status:** Production-Ready ✅
 
@@ -708,10 +708,10 @@ Use Case:           Industrial furnace, kiln
 ### Service Architecture
 
 **Service:** `RefractorinessService`
-**Location:** `backend/src/modules/refractory/services/refractoriness.service.ts`
+**Location:** `backend/src/modules/refractory/services/composition/refractoriness.service.ts`
 **Constants:** `backend/src/modules/refractory/constants/component-effects.ts`
 **Interfaces:** `backend/src/modules/refractory/interfaces/refractoriness.interface.ts`
-**DTOs:** `backend/src/modules/refractory/dto/refractoriness.dto.ts`
+**DTOs:** `backend/src/modules/refractory/dto/refractoriness/refractoriness.dto.ts`
 
 ### Input/Output Structure
 

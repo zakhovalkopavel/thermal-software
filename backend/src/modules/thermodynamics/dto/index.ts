@@ -1,36 +1,36 @@
 // ── Gas properties ────────────────────────────────────────────────────────────
-export { GasMixtureInputDto } from './gas-mixture-input.dto';
-export { GasPropertiesResultDto } from './gas-properties-result.dto';
-export { CpComparisonEntryDto } from './cp-comparison-entry.dto';
+export { GasMixtureInputDto } from './gas-properties/gas-mixture-input.dto';
+export { GasPropertiesResultDto } from './gas-properties/gas-properties-result.dto';
+export { CpComparisonEntryDto } from './gas-properties/cp-comparison-entry.dto';
 
 // ── Fluid property inputs ─────────────────────────────────────────────────────
-export { FluidBaseInputDto } from './fluid-base-input.dto';
+export { FluidBaseInputDto } from './fluid/fluid-base-input.dto';
 
 // ── Geometry ──────────────────────────────────────────────────────────────────
-export { GeometryDimsDto } from './geometry-dims.dto';
-export { BodyGeometryInputDto } from './body-geometry-input.dto';
-export { BodyGeometryResultDto } from './body-geometry-result.dto';
+export { GeometryDimsDto } from './geometry/geometry-dims.dto';
+export { BodyGeometryInputDto } from './geometry/body-geometry-input.dto';
+export { BodyGeometryResultDto } from './geometry/body-geometry-result.dto';
 
 // ── Dimensionless numbers (full set) ──────────────────────────────────────────
-export { DimensionlessInputDto } from './dimensionless-input.dto';
-export { DimensionlessResultDto } from './dimensionless-result.dto';
-export { ResolvedDimensionlessPropsDto } from './resolved-dimensionless-props.dto';
+export { DimensionlessInputDto } from './dimensionless/dimensionless-input.dto';
+export { DimensionlessResultDto } from './dimensionless/dimensionless-result.dto';
+export { ResolvedDimensionlessPropsDto } from './dimensionless/resolved-dimensionless-props.dto';
 
 // ── Scalar dimensionless numbers ──────────────────────────────────────────────
-export { FluidStateDto } from './fluid-state.dto';
-export { ReynoldsInputDto } from './reynolds-input.dto';
-export { PrandtlInputDto } from './prandtl-input.dto';
-export { GrashofInputDto } from './grashof-input.dto';
-export { RayleighInputDto } from './rayleigh-input.dto';
-export { HeatTransferCoefficientDto } from './heat-transfer-coefficient.dto';
-export { ScalarDimensionlessResultDto } from './scalar-dimensionless-result.dto';
+export { FluidStateDto } from './dimensionless/fluid-state.dto';
+export { ReynoldsInputDto } from './dimensionless/reynolds-input.dto';
+export { PrandtlInputDto } from './dimensionless/prandtl-input.dto';
+export { GrashofInputDto } from './dimensionless/grashof-input.dto';
+export { RayleighInputDto } from './dimensionless/rayleigh-input.dto';
+export { HeatTransferCoefficientDto } from './dimensionless/heat-transfer-coefficient.dto';
+export { ScalarDimensionlessResultDto } from './dimensionless/scalar-dimensionless-result.dto';
 
 // ── Numeric (root finding, optimisation, regression) ─────────────────────────
-export { BrentqInputDto } from './brentq-input.dto';
-export { XYInputDto } from './xy-input.dto';
-export { PolynomialFitInputDto } from './polynomial-fit-input.dto';
-export { LevenbergMarquardtInputDto } from './levenberg-marquardt-input.dto';
-export { NelderMeadInputDto } from './nelder-mead-input.dto';
+export { BrentqInputDto } from './numeric/brentq-input.dto';
+export { XYInputDto } from './numeric/xy-input.dto';
+export { PolynomialFitInputDto } from './numeric/polynomial-fit-input.dto';
+export { LevenbergMarquardtInputDto } from './numeric/levenberg-marquardt-input.dto';
+export { NelderMeadInputDto } from './numeric/nelder-mead-input.dto';
 
 // ── Types re-exported for convenience ────────────────────────────────────────
 export { CorrelationName } from '../types/correlation-name.type';

@@ -1,5 +1,5 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RecuperatorService } from '../services/recuperator.service';
 import { RecuperatorInputDto } from '../dto/recuperator-input.dto';
 import { RecuperatorResultDto } from '../dto/recuperator-result.dto';
@@ -90,6 +90,7 @@ export class RecuperatorController {
       },
     },
   })
+  @ApiCreatedResponse({ type: RecuperatorResultDto })
   calculate(@Body() dto: RecuperatorInputDto): RecuperatorResultDto {
     return this.recuperatorService.calculate(dto);
   }

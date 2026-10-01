@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { brentq } from '../../../common/utils/root-finding.util';
 import { brent, nelderMead } from '../../../common/utils/optimization.util';
 import {
@@ -24,6 +24,13 @@ import {
   LevenbergMarquardtInputDto,
   NelderMeadInputDto,
 } from '../dto';
+import { RootResultDto } from '../dto/numeric/root-result.dto';
+import { Minimum1dResultDto } from '../dto/numeric/minimum-1d-result.dto';
+import { NelderMeadResultDto } from '../dto/numeric/nelder-mead-result.dto';
+import { LinearRegressionResultDto } from '../dto/numeric/linear-regression-result.dto';
+import { PolynomialFitResultDto } from '../dto/numeric/polynomial-fit-result.dto';
+import { TwoParameterFitResultDto } from '../dto/numeric/two-parameter-fit-result.dto';
+import { LevenbergMarquardtResultDto } from '../dto/numeric/levenberg-marquardt-result.dto';
 
 // ── Controller ────────────────────────────────────────────────────────────────
 
@@ -51,6 +58,7 @@ export class NumericController {
       },
     },
   })
+  @ApiCreatedResponse({ type: RootResultDto })
   findRootBrentq(@Body() dto: BrentqInputDto) {
     // eslint-disable-next-line no-new-func
     const f = new Function('x', `return ${dto.expression};`) as (x: number) => number;
@@ -71,6 +79,7 @@ export class NumericController {
       },
     },
   })
+  @ApiCreatedResponse({ type: Minimum1dResultDto })
   minimise1d(@Body() dto: BrentqInputDto) {
     // eslint-disable-next-line no-new-func
     const f = new Function('x', `return ${dto.expression};`) as (x: number) => number;
@@ -113,6 +122,7 @@ export class NumericController {
       },
     },
   })
+  @ApiCreatedResponse({ type: NelderMeadResultDto })
   nelderMead(@Body() dto: NelderMeadInputDto) {
     // Sort keys to get a stable, reproducible variable-to-index mapping
     const keys = Object.keys(dto.variables).sort();
@@ -145,6 +155,7 @@ export class NumericController {
       },
     },
   })
+  @ApiCreatedResponse({ type: LinearRegressionResultDto })
   linearRegression(@Body() dto: XYInputDto) {
     const { slope, intercept, r2 } = linearRegression(dto.x, dto.y);
     return { slope, intercept, r2, formula: linearFormula(slope, intercept) };
@@ -170,6 +181,7 @@ export class NumericController {
       },
     },
   })
+  @ApiCreatedResponse({ type: PolynomialFitResultDto })
   polynomialFit(@Body() dto: PolynomialFitInputDto) {
     const { coefficients: raw, r2 } = polynomialFit(dto.x, dto.y, dto.degree);
     return {
@@ -193,6 +205,7 @@ export class NumericController {
       },
     },
   })
+  @ApiCreatedResponse({ type: TwoParameterFitResultDto })
   exponentialFit(@Body() dto: XYInputDto) {
     const { A, B, r2 } = exponentialFit(dto.x, dto.y);
     return { A, B, r2, formula: exponentialFormula(A, B) };
@@ -212,6 +225,7 @@ export class NumericController {
       },
     },
   })
+  @ApiCreatedResponse({ type: TwoParameterFitResultDto })
   powerFit(@Body() dto: XYInputDto) {
     const { A, B, r2 } = powerFit(dto.x, dto.y);
     return { A, B, r2, formula: powerFormula(A, B) };
@@ -257,6 +271,7 @@ export class NumericController {
       },
     },
   })
+  @ApiCreatedResponse({ type: LevenbergMarquardtResultDto })
   levenbergMarquardt(@Body() dto: LevenbergMarquardtInputDto) {
     // eslint-disable-next-line no-new-func
     const model = new Function('params', `return (${dto.modelExpression})(params);`) as
