@@ -41,7 +41,7 @@ frontend/
     main.tsx
     app/
       components/   Layout.tsx, SettingsMenu.tsx, LanguageSwitcher.tsx
-      config/       router.tsx, providers.tsx, query-client.ts, theme.ts
+      config/       router.tsx, app-routes.tsx, providers.tsx, query-client.ts, theme.ts
       constants/    app-nav.constants.ts
     locales/
       en/           common.json, home.json, materials.json, processes.json
@@ -106,7 +106,7 @@ frontend/
 
 ## 4. Naming
 
-- **Components:** `PascalCase.tsx`, one component per file, named like the file.
+- **Components:** `PascalCase.tsx`, one component per file, named like the file. The only lowercase `.tsx` files are the entry and route files: `main.tsx`, `router.tsx`, `app-routes.tsx`, `providers.tsx`, `routes.tsx`.
 - **Hooks:** `useXxx.ts`, one hook per file.
 - **Everything else:** `kebab-case` plus a suffix (`*.api.ts`, `*.type.ts`, `*.constants.ts`, `*.mapper.ts`, `*.schema.ts`).
 - **Props types:** `types/props/<component>-props.type.ts`.
@@ -194,7 +194,7 @@ Limits: at most 3 `useState` calls in a component, and at most 200 lines in a `.
 - **Declarative table columns:** `{ key, labelKey, variant: 'text' | 'number' | 'boolean-chip' | 'emphasis', digits? }` in `constants/*-columns.constants.ts`.
 - **Layout tokens:** `LAYOUT.grid.card | half | third | full` and `LAYOUT.field.narrow | medium`. Colours live in the theme and `chart.theme.ts`.
 - **Chart constants:** axis and series configuration in `constants/<chart>-chart.constants.ts`, with titles as keys.
-- **`RouteErrorBoundary`:** the `errorElement` on the root and module routes.
+- **`RouteErrorBoundary`:** the `errorElement` of the root route and of a pathless route wrapping the children of every layout route (root, materials, processes), so a crash keeps the surrounding layout.
 
 ### 5.6 Highcharts
 

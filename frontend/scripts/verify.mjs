@@ -9,6 +9,8 @@ const FAILURE_TAIL_LINES = 80;
 const DUPLICATION_REPORT = 'test-results/jscpd/jscpd-report.json';
 const BUILD_OUT_DIR = '/tmp/build-check';
 const CHUNK_LIMIT_KB = 500;
+const REFACTOR_LINT_PLUGIN = 'eslint-plugin-check-file';
+const NAME_COLUMN_WIDTH = 15;
 
 // eslint-disable-next-line no-control-regex
 const stripAnsi = (text) => text.replace(/\u001b\[[0-9;]*m/g, '');
@@ -35,6 +37,12 @@ function largestChunk(output) {
   return { details: `largest chunk ${Math.round(max.kb)} kB (${max.file.split('/').pop()})`, warn: max.kb > CHUNK_LIMIT_KB };
 }
 
+function refactorLintDetails(output) {
+  if (output.includes(`Cannot find package '${REFACTOR_LINT_PLUGIN}'`)) return `${REFACTOR_LINT_PLUGIN} not installed`;
+  const summary = output.match(/(\d+) problems? \((\d+) errors?, (\d+) warnings?\)/);
+  return `${summary ? summary[3] : 0} architecture warnings`;
+}
+
 function duplicationDetails() {
   if (!existsSync(DUPLICATION_REPORT)) return 'no report';
   const total = JSON.parse(readFileSync(DUPLICATION_REPORT, 'utf8')).statistics.total;
@@ -44,6 +52,7 @@ function duplicationDetails() {
 const STAGES = [
   { name: 'typecheck', command: 'npm run -s typecheck', rerun: 'npm run typecheck' },
   { name: 'lint', command: 'npm run -s lint', rerun: 'npm run lint' },
+  { name: 'lint:refactor', command: 'npm run -s lint:refactor', rerun: 'npm run lint:refactor', info: true, details: refactorLintDetails },
   { name: 'test', command: 'npm run -s test', rerun: 'npm test', details: vitestCounts },
   {
     name: 'build',
@@ -83,9 +92,9 @@ for (const stage of STAGES) {
 }
 
 const pad = (text, width) => String(text).padEnd(width);
-console.log(`\n${pad('STAGE', 12)}${pad('RESULT', 9)}${pad('TIME', 9)}DETAILS`);
+console.log(`\n${pad('STAGE', NAME_COLUMN_WIDTH)}${pad('RESULT', 9)}${pad('TIME', 9)}DETAILS`);
 for (const row of rows) {
-  console.log(`${pad(row.name, 12)}${pad(row.result, 9)}${pad(row.seconds ? `${row.seconds.toFixed(1)}s` : '', 9)}${row.details}`);
+  console.log(`${pad(row.name, NAME_COLUMN_WIDTH)}${pad(row.result, 9)}${pad(row.seconds ? `${row.seconds.toFixed(1)}s` : '', 9)}${row.details}`);
 }
 
 if (failed) {

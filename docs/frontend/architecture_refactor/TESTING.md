@@ -14,7 +14,8 @@ docker exec thermal-frontend sh -c 'cd /app && npm run <command>'
 
 | Command | What it runs | Needs backend |
 |---------|--------------|---------------|
-| `verify` | The full gate: typecheck, lint, test, build, duplication, contract, in that order | yes |
+| `verify` | The full gate: typecheck, lint, lint:refactor, test, build, duplication, contract, in that order | yes |
+| `lint:refactor` | Architecture rules from ARCHITECTURE §6 as warnings (information until Step 13) | no |
 | `duplication` | `jscpd` clone report (information until Step 13, then a threshold) | no |
 | `verify:offline` | The same without contract; the summary shows `contract: SKIPPED` | no |
 | `test` | Unit, component and route smoke tests | no |
@@ -36,13 +37,14 @@ The backend URL comes from `CONTRACT_API_URL`, default `http://backend:4000/api/
 `scripts/verify.mjs` runs each stage as a child process, captures its output and prints a summary:
 
 ```
-STAGE       RESULT  TIME    DETAILS
-typecheck   PASS    6.1s
-lint        PASS    9.4s
-test        PASS    14.2s   412 passed
-build       PASS    11.0s   largest chunk 412 kB
-duplication INFO    3.2s    2.4 % duplicated lines, 18 clones (baseline 4.1 %)
-contract    FAIL    8.7s    3 failed, 61 passed, 4 known backend issues
+STAGE          RESULT  TIME    DETAILS
+typecheck      PASS    6.1s
+lint           PASS    9.4s
+lint:refactor  INFO    9.8s    214 architecture warnings
+test           PASS    14.2s   412 passed
+build          PASS    11.0s   largest chunk 412 kB
+duplication    INFO    3.2s    2.4 % duplicated lines, 18 clones (baseline 4.1 %)
+contract       FAIL    8.7s    3 failed, 61 passed, 4 known backend issues
 
 FAILED: contract
   POST /recuperator/calculate [circle channels example] live response matches schema
@@ -52,7 +54,8 @@ Known backend issues (still open): 4, see tests/contract/known-backend-issues.ts
 ```
 
 - Stages run in order and the run stops at the first failure.
-- `typecheck` checks the app (`tsconfig.json`) and the tests (`tsconfig.test.json`, which adds Node types).
+- `typecheck` checks the app (`tsconfig.json`, test files excluded) and the tests (`tsconfig.test.json`, which adds Node and jest-dom types).
+- `lint:refactor` is `INFO`: it never fails the gate and reports the architecture warning count, which falls to zero by Step 13.
 - `build` reports `WARN`, not `FAIL`, when a chunk exceeds 500 kB. The chunk limit becomes a failure in Step 03.
 - Only the failing stage's errors are printed, followed by the command that reruns that stage.
 - The exit code is 0 only if every stage passes.

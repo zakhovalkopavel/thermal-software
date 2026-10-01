@@ -7,7 +7,7 @@ Track progress against [README.md](README.md). Tick an item only when it works i
 ## STEP 01 — Test infrastructure
 
 - [x] User installed `@testing-library/user-event jscpd`
-- [ ] User installed `@types/node@24` (needed by `tsconfig.test.json`)
+- [x] User installed `@types/node` (needed by `tsconfig.test.json`)
 - [x] `vitest.config.ts` with projects unit, component, smoke, contract; JUnit and JSON reporters into `test-results/`
 - [x] `tests/setup`: vitest setup, Highcharts stub, `render-app`, fixture adapter
 - [x] Scripts: `test`, `test:*`, `fixtures:record`, `duplication`, `verify`, `verify:offline`
@@ -18,15 +18,17 @@ Track progress against [README.md](README.md). Tick an item only when it works i
 - [x] Characterization tests for every chart and table mapper, using recorded responses
 - [x] Mapper coverage check (every `mappers/*.ts` has a test; 95 mappers)
 - [x] Route smoke tests for every route (15 routes)
-- [ ] `npm run verify` passes
-- [ ] Commit made
+- [x] `npm run verify` passes
+- [x] Commit made
 
 ## STEP 02 — Foundation
 
-- [ ] User installed `eslint-plugin-check-file`
-- [ ] `@/` alias in `tsconfig.json` and `vite.config.ts`
-- [ ] `eslint.refactor-rules.js` plus `lint:refactor`; baseline warning count recorded in the commit message
-- [ ] `RouteErrorBoundary` on root, materials and processes routes, with a component test
+- [x] User installed `eslint-plugin-check-file`
+- [x] `@/` alias in `tsconfig.json` and `vite.config.ts`
+- [x] `eslint.refactor-rules.js` plus `lint:refactor` (`INFO` stage in `verify`)
+- [x] Baseline: 670 architecture warnings (526 deep relative imports, 131 unit literals and `digits` props, 10 misplaced suffix files, 2 `.tsx` over 200 lines, 1 non-hook file in `hooks/`)
+- [x] `npm run verify` passes
+- [x] `RouteErrorBoundary` on root, materials and processes routes, with a component test
 - [ ] Commit made
 
 ## STEP 03 — Shared layer

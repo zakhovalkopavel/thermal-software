@@ -24,6 +24,7 @@ Run inside the container, for example `docker exec thermal-frontend sh -c 'cd /a
 | `npm run verify` | Full gate: typecheck, lint, tests, build, duplication report, contract tests. A commit needs exit code 0 |
 | `npm run verify:offline` | The same without the backend contract tests |
 | `npm test` | Unit, component and route smoke tests |
+| `npm run lint:refactor` | Architecture rules as warnings (information until the refactor ends) |
 | `npm run test:unit` / `test:component` / `test:smoke` / `test:contract` | One layer |
 | `npm run test:watch` | Watch mode while developing |
 | `npm run fixtures:record` | Records missing backend responses for the smoke tests (backend must run) |

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { RouteObject } from 'react-router-dom';
 import { ComingSoon } from '../../components/common/ComingSoon';
+import { RouteErrorBoundary } from '@/components/common/RouteErrorBoundary';
 import { PROCESSES_SECTIONS } from './constants/processes-sections.constants';
 import { ProcessesHub } from './ProcessesHub';
 import { ProcessesLayout } from './ProcessesLayout';
@@ -23,11 +24,16 @@ export const processesRoutes: RouteObject[] = [
     path: 'processes',
     element: <ProcessesLayout />,
     children: [
-      { index: true, element: <ProcessesHub /> },
-      ...PROCESSES_SECTIONS.map((section) => ({
-        path: section.route,
-        element: SECTION_ELEMENTS[section.route] ?? <ComingSoon title={section.label} step={section.step} />,
-      })),
+      {
+        errorElement: <RouteErrorBoundary />,
+        children: [
+          { index: true, element: <ProcessesHub /> },
+          ...PROCESSES_SECTIONS.map((section) => ({
+            path: section.route,
+            element: SECTION_ELEMENTS[section.route] ?? <ComingSoon title={section.label} step={section.step} />,
+          })),
+        ],
+      },
     ],
   },
 ];

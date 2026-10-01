@@ -7,6 +7,7 @@ import { createFixtureAdapter } from '../setup/fixture-adapter';
 import { renderApp } from '../setup/render-app';
 
 const UNKNOWN_PATH = '/this-route-does-not-exist';
+const ROUTE_ERROR_HEADING = 'Something went wrong';
 const ROUTE_PATHS = [...collectRoutePaths(appRoutes), UNKNOWN_PATH];
 const SETTLE_TIMEOUT_MS = 20_000;
 const API_URL = process.env.CONTRACT_API_URL ?? 'http://backend:4000/api/v1';
@@ -30,6 +31,7 @@ describe('smoke › routes', () => {
     await waitFor(() => expect(queryClient.isFetching()).toBe(0), { timeout: SETTLE_TIMEOUT_MS });
 
     expect(screen.queryByText(/Unexpected Application Error/i)).toBeNull();
+    expect(screen.queryByRole('heading', { name: ROUTE_ERROR_HEADING })).toBeNull();
     const missing = fixtures.takeMissing();
     if (missing.length > 0) {
       throw new Error(`no fixture for:\n  ${missing.join('\n  ')}\nRun: npm run fixtures:record`);
