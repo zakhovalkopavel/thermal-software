@@ -101,7 +101,7 @@ make python-shell       # bash into python container
 
 # Tests
 make test-backend       # Run backend tests
-make test-frontend      # Run frontend tests
+make test-frontend      # Full frontend gate (npm run verify; OFFLINE=1 skips contract)
 ```
 
 ---

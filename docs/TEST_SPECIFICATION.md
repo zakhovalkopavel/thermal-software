@@ -561,7 +561,7 @@ For reproducible results we prefer running tests inside the project's Docker Com
 Make targets added:
 
 - `make test-backend` — run the backend test suite inside the `backend` service container.
-- `make test-frontend` — run the frontend test suite inside the `frontend` service container.
+- `make test-frontend` — run the full frontend quality gate (`npm run verify`: typecheck, lint, tests, build, duplication, contract) inside the `frontend` service container. `OFFLINE=1` skips the contract stage.
 - `make test-service SERVICE=<service>` — generic runner for any named compose service.
 
 Examples

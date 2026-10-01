@@ -91,7 +91,7 @@ poetry add <pkg>
 
 ```bash
 make test-backend                                           # All backend tests
-make test-frontend                                         # All frontend tests
+make test-frontend                                         # Full frontend gate (npm run verify)
 docker compose exec backend npm run test:watch             # Watch mode
 docker compose exec backend npm run test:cov               # Coverage report
 docker compose exec backend npm run test -- <file>.spec    # Single file

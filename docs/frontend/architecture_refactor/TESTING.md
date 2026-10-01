@@ -23,7 +23,9 @@ docker exec thermal-frontend sh -c 'cd /app && npm run <command>'
 | `test:watch` | Vitest watch mode for development | no |
 | `api:generate` | Downloads Swagger, writes `src/shared/api/generated/` | yes |
 | `api:check` | Compares the live Swagger with the committed snapshot, writes nothing | yes |
-| `fixtures:record` | Records catalogue GET responses into `tests/fixtures/responses` | yes |
+| `fixtures:record` | Runs the smoke tests in record mode: every request without a fixture is fetched from the backend and saved into `tests/fixtures/responses` | yes |
+
+From the repository root, `make test-frontend` runs `verify` in the container, and `make test-frontend OFFLINE=1` runs `verify:offline`.
 
 The backend URL comes from `CONTRACT_API_URL`, default `http://backend:4000/api/v1`. The Swagger URL comes from `CONTRACT_SPEC_URL`, default `http://backend:4000/api/docs-json`.
 
@@ -49,7 +51,9 @@ Rerun only this stage: npm run test:contract
 Known backend issues (still open): 4, see tests/contract/known-backend-issues.ts
 ```
 
-- Stages run in order and the run stops at the first failure, except that `test` and `build` both run when `lint` passes.
+- Stages run in order and the run stops at the first failure.
+- `typecheck` checks the app (`tsconfig.json`) and the tests (`tsconfig.test.json`, which adds Node types).
+- `build` reports `WARN`, not `FAIL`, when a chunk exceeds 500 kB. The chunk limit becomes a failure in Step 03.
 - Only the failing stage's errors are printed, followed by the command that reruns that stage.
 - The exit code is 0 only if every stage passes.
 - If the backend is unreachable, `contract` fails with `backend not reachable at <url>`. It is never skipped silently.
@@ -61,7 +65,7 @@ The configuration lives in `vitest.config.ts`, which reuses `vite.config.ts` for
 
 | Project | Environment | Files | Purpose |
 |---------|-------------|-------|---------|
-| `unit` | node | `src/**/*.test.ts` | Pure logic |
+| `unit` | jsdom | `src/**/*.test.ts`, `tests/unit/**/*.test.ts` | Pure logic (jsdom because mappers import the charts barrel, which loads Highcharts) |
 | `component` | jsdom | `src/**/*.test.tsx` | Components and sections |
 | `smoke` | jsdom | `tests/smoke/**/*.test.tsx` | Every route renders |
 | `contract` | node | `tests/contract/**/*.contract.test.ts` | Backend consistency |
@@ -69,7 +73,8 @@ The configuration lives in `vitest.config.ts`, which reuses `vite.config.ts` for
 - **Setup** (`tests/setup/vitest.setup.ts`):
   - registers `@testing-library/jest-dom` and initialises i18n with English (from Step 09);
   - from Step 10, the render helpers wrap components in `AppSettingsProvider`, clear `localStorage` between tests, and accept explicit settings;
-  - replaces `highcharts-react-official` with a stub that records the options passed in (`tests/setup/highcharts.mock.ts`);
+  - installs `matchMedia`, `CSS.supports` and `ResizeObserver` polyfills (`tests/setup/browser-polyfills.ts`);
+  - replaces `highcharts-react-official` with a stub that records the options passed in (`tests/setup/highcharts-react.mock.tsx`, read through `chartStub.options`);
   - fails any test that logs `console.error`.
 - **Test placement:** tests sit next to the file they test, so `.ts` and `.tsx` folders stay separate.
 - **Test names** follow `<area> › <section> › <behaviour>`, for example `processes › htc › invalid velocity shows field error and sends no request`.
@@ -125,11 +130,14 @@ Rendered with Testing Library and `@testing-library/user-event`. API functions a
 ### 4.4 Route smoke tests (`tests/smoke/routes.smoke.test.tsx`)
 
 - The test renders the real router (`tests/setup/render-app.tsx`) once per route. The route list comes from the actual route configuration, so a new route is covered automatically.
-- HTTP goes through a fixture adapter on the axios client (`tests/setup/fixture-adapter.ts`). It looks up `tests/fixtures/responses/<METHOD>_<path-with-underscores>.json`.
-  - A missing fixture fails with `no fixture for GET /refractory/materials; run npm run fixtures:record or npm run test:contract`.
+- HTTP goes through a fixture adapter on the axios client (`tests/setup/fixture-adapter.ts`). It looks up the recorded file for the request key `<METHOD> <path>?<sorted query>`. The file name is `<METHOD>_<path-with-underscores>.json`; long keys are shortened and get a hash suffix.
+  - A missing fixture fails with `no fixture for GET /refractory/materials … Run: npm run fixtures:record`.
+  - Mapper tests read the same files through `recordedResponse<T>('GET /path')` (`tests/setup/recorded-response.ts`).
 - Each route must:
-  - show its heading;
-  - never render `RouteErrorBoundary`;
+  - show a heading;
+  - finish all queries within 20 s;
+  - never render an error page;
+  - request no endpoint without a fixture;
   - log no `console.error`.
 - From Step 05, each calculator route also submits its defaults and must show results. The POST fixtures are recorded by the live contract suite.
 

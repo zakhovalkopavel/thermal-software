@@ -29,12 +29,14 @@ flowchart TD
 
 ```
 frontend/
-  scripts/        verify.mjs, generate-api.mjs, check-api.mjs, record-fixtures.mjs
+  scripts/        verify.mjs, generate-api.mjs, check-api.mjs
   tests/
-    setup/        vitest.setup.ts, highcharts.mock.ts, render-app.tsx, fixture-adapter.ts
+    setup/        vitest.setup.ts, browser-polyfills.ts, highcharts-react.mock.tsx, render-app.tsx,
+                  fixture-adapter.ts, recorded-response.ts
+    unit/         mapper-coverage.test.ts
     smoke/        routes.smoke.test.tsx
     contract/     cases/  helpers/  *.contract.test.ts  known-backend-issues.ts
-    fixtures/     responses/*.json
+    fixtures/     responses/*.json (recorded), inputs/*.ts (typed test inputs)
   src/
     main.tsx
     app/

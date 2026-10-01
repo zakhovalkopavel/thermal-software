@@ -139,7 +139,7 @@ Same applies for `frontend/package.json` and `python/pyproject.toml`.
 # All backend tests
 make test-backend
 
-# All frontend tests
+# Full frontend gate (typecheck, lint, tests, build, duplication, contract)
 make test-frontend
 
 # Specific service

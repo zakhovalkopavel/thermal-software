@@ -200,7 +200,7 @@ make redis-shell        # redis-cli into redis
 
 # ── Tests ────────────────────────────────────────────────
 make test-backend       # Run backend Jest tests
-make test-frontend      # Run frontend tests
+make test-frontend      # Full frontend gate: typecheck, lint, tests, build, duplication, contract (OFFLINE=1 skips contract)
 
 # ── Direct docker compose ────────────────────────────────
 docker compose ps                       # Check container statuses
@@ -326,7 +326,7 @@ Tests live in `backend/test/` (not next to source files) — CI is configured to
 ```bash
 # Recommended — always inside Docker
 make test-backend               # Run all backend tests
-make test-frontend              # Run all frontend tests
+make test-frontend              # Full frontend gate (npm run verify)
 
 # Direct
 docker compose exec backend npm test

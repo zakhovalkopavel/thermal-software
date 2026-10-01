@@ -10,12 +10,14 @@ test-backend: ## Run backend tests inside the backend container
 		docker-compose -f compose.yml run --rm backend sh -lc 'cd /app && npm test --silent'; \
 	fi
 
-test-frontend: ## Run frontend tests inside the frontend container
-	@echo "🧪 Running frontend tests inside Docker Compose (service: frontend)"
+FRONTEND_VERIFY_SCRIPT = $(if $(OFFLINE),verify:offline,verify)
+
+test-frontend: ## Run the full frontend quality gate: typecheck, lint, tests, build, duplication, contract (OFFLINE=1 skips contract)
+	@echo "🧪 Running frontend quality gate inside Docker Compose (service: frontend, script: $(FRONTEND_VERIFY_SCRIPT))"
 	@if [ -n "$(shell docker-compose -f compose.yml ps -q frontend 2>/dev/null)" ]; then \
-		docker-compose -f compose.yml exec -T frontend sh -lc 'cd /app && npm test --silent'; \
+		docker-compose -f compose.yml exec -T frontend sh -lc 'cd /app && npm run -s $(FRONTEND_VERIFY_SCRIPT)'; \
 	else \
-		docker-compose -f compose.yml run --rm frontend sh -lc 'cd /app && npm test --silent'; \
+		docker-compose -f compose.yml run --rm frontend sh -lc 'cd /app && npm run -s $(FRONTEND_VERIFY_SCRIPT)'; \
 	fi
 
 # Generic service test runner: make test-service SERVICE=<service>

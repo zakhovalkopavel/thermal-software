@@ -6,17 +6,19 @@ Track progress against [README.md](README.md). Tick an item only when it works i
 
 ## STEP 01 — Test infrastructure
 
-- [ ] User installed `@testing-library/user-event jscpd`
-- [ ] `vitest.config.ts` with projects unit, component, smoke, contract; JUnit and JSON reporters into `test-results/`
-- [ ] `tests/setup`: vitest setup, Highcharts stub, `render-app`, fixture adapter
-- [ ] Scripts: `test`, `test:*`, `fixtures:record`, `duplication`, `verify`, `verify:offline`
-- [ ] `scripts/verify.mjs` prints the stage summary and the rerun command; build goes to `/tmp/build-check`
-- [ ] `.jscpd.json`; duplication baseline recorded: ____ %
-- [ ] Catalogue fixtures recorded
-- [ ] Characterization tests for every request mapper and the shared mappers
-- [ ] Characterization tests for every chart and table mapper, using recorded responses
-- [ ] Mapper coverage check (every `mappers/*.ts` has a test)
-- [ ] Route smoke tests for every route
+- [x] User installed `@testing-library/user-event jscpd`
+- [ ] User installed `@types/node@24` (needed by `tsconfig.test.json`)
+- [x] `vitest.config.ts` with projects unit, component, smoke, contract; JUnit and JSON reporters into `test-results/`
+- [x] `tests/setup`: vitest setup, Highcharts stub, `render-app`, fixture adapter
+- [x] Scripts: `test`, `test:*`, `fixtures:record`, `duplication`, `verify`, `verify:offline`
+- [x] `scripts/verify.mjs` prints the stage summary and the rerun command; build goes to `/tmp/build-check`
+- [x] `.jscpd.json`; duplication baseline recorded: 1.01 % (13 clones, exact match). Bundle baseline: one 1.55 MB chunk (`WARN`)
+- [x] Catalogue fixtures recorded (12 responses)
+- [x] Characterization tests for every request mapper and the shared mappers
+- [x] Characterization tests for every chart and table mapper, using recorded responses
+- [x] Mapper coverage check (every `mappers/*.ts` has a test; 95 mappers)
+- [x] Route smoke tests for every route (15 routes)
+- [ ] `npm run verify` passes
 - [ ] Commit made
 
 ## STEP 02 — Foundation

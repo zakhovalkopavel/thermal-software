@@ -151,6 +151,8 @@ Backend and frontend specs in these steps follow [`docs/CONVENTIONS.md`](../CONV
 
 | Doc | Role |
 |-----|------|
+| [architecture_refactor/TESTING.md](architecture_refactor/TESTING.md) | How the frontend is tested: `npm run verify`, test layers, fixtures, failure reports |
+| [architecture_refactor/README.md](architecture_refactor/README.md) | Frontend architecture refactor plan (Steps 01–13) |
 | [STEP_04_FRONTEND_PAGES.md](../migration/STEP_04_FRONTEND_PAGES.md) | Older legacy→React sketch (superseded by this guide) |
 | `legacy/refractory/public/` | UX reference: phase calculator, blend optimizer |
 | Swagger UI | `/api/docs` when the stack is running |

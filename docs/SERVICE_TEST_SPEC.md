@@ -372,7 +372,7 @@ Use the Jest + Nest TestingModule pattern for services that depend on Nest provi
 The repository includes Makefile shortcuts that run tests inside the project's Docker Compose services. These targets are recommended so tests run in the same environment as CI.
 
 - `make test-backend` — runs the backend test suite inside the `backend` service container. It will `exec` into a running container when available or run a one-off container otherwise.
-- `make test-frontend` — same for the `frontend` service.
+- `make test-frontend` — runs the full frontend quality gate (`npm run verify`) in the `frontend` service container, with the same exec-or-run behaviour. `OFFLINE=1` skips the contract stage.
 - `make test-service SERVICE=<service>` — generic runner for any named service in `compose.yml`.
 
 Examples:
