@@ -1,4 +1,4 @@
-import { api } from '../../../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { GlassProfileInput } from '../types/glass-profile-input.type';
 import type { GlassProfileResult } from '../types/glass-profile-result.type';
 import type { GlassTemperatureAtViscosityInput } from '../types/glass-temperature-at-viscosity-input.type';

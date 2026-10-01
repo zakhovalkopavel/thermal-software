@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Alert, Stack } from '@mui/material';
-import { ResultTable, apiErrorMessages } from '../../../../components/calc';
-import type { ResultTableColumn } from '../../../../components/calc';
+import { ResultTable, apiErrorMessages } from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
 import { GasPropertyChart } from './charts/GasPropertyChart';
 import { PURE_GAS_PROPERTIES } from './constants/pure-gas-properties.constants';
 import type { GasPropertyKey } from './types/gas-property-key.type';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, Button, Grid, Stack } from '@mui/material';
-import { NumberField, ResultCard, ResultPanel } from '../../../../../components/calc';
+import { NumberField, ResultCard, ResultPanel } from '@/shared/ui/calc';
 import { AverageTemperatureChart } from '../charts/AverageTemperatureChart';
 import { THERMAL_UI } from '../constants/thermal-ui.constants';
 import { useAverageSweep } from '../hooks/useAverageSweep';

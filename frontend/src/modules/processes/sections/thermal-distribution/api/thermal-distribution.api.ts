@@ -1,4 +1,4 @@
-import { api } from '../../../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { TemperatureProfileResult } from '../types/temperature-profile-result.type';
 import type { TemperatureValueResult } from '../types/temperature-value-result.type';
 import type { ThermalCriteria } from '../types/thermal-criteria.type';

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Alert, Box, Button, Checkbox, FormControlLabel, Stack, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
-import { CalculateButton, CalculatorPage, EnumSelect, ResultPanel } from '../../../../components/calc';
+import { CalculateButton, CalculatorPage, EnumSelect, ResultPanel } from '@/shared/ui/calc';
 import { AdvancedFields } from '../../components/AdvancedFields';
 import { MaterialPropertyLookup } from '../../components/MaterialPropertyLookup';
 import { NumberFieldGrid } from '../../components/NumberFieldGrid';

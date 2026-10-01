@@ -1,4 +1,4 @@
-import type { XYSeries } from '../../../../../components/charts';
+import type { XYSeries } from '@/shared/ui/charts';
 import type { GlassCurve } from '../types/glass-curve.type';
 import { toModelShortName } from './model-short-name.mapper';
 

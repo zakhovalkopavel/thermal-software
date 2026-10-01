@@ -1,5 +1,5 @@
 import { assertRequiredNumbers } from '../../../mappers/required-numbers.mapper';
-import { withoutNulls } from '../../../mappers/without-nulls.mapper';
+import { withoutNulls } from '@/shared/utils/without-nulls';
 import { GEOMETRY_DIMENSIONS } from '../constants/geometry-dimensions.constants';
 import { HTC_FIELDS } from '../constants/htc-fields.constants';
 import { HTC_UI } from '../constants/htc-ui.constants';

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { ResultTable, formatValue } from '../../../../components/calc';
-import type { ResultTableColumn } from '../../../../components/calc';
+import { ResultTable, formatValue } from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
 import { COMBUSTION_UI } from './constants/combustion-ui.constants';
 import { toProductRows } from './mappers/product-rows.mapper';
 import type { CombustionProductsTableProps } from './types/combustion-products-table-props.type';

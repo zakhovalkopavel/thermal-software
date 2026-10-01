@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, Button, Stack, TextField } from '@mui/material';
-import { ResultPanel } from '../../../../../components/calc';
+import { ResultPanel } from '@/shared/ui/calc';
 import { TemperatureProfileChart } from '../charts/TemperatureProfileChart';
 import { THERMAL_UI } from '../constants/thermal-ui.constants';
 import { useTemperatureProfiles } from '../hooks/useTemperatureProfiles';

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Box, Grid, Slider, Stack, Typography } from '@mui/material';
-import { NumberField, ResultTable, formatValue } from '../../../../../components/calc';
-import type { ResultTableColumn } from '../../../../../components/calc';
-import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
+import { NumberField, ResultTable, formatValue } from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
+import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import { CumulativePsdChart } from '../charts/CumulativePsdChart';
 import { FractionMassesChart } from '../charts/FractionMassesChart';
 import { ParticipationChart } from '../charts/ParticipationChart';

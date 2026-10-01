@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, Box, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
-import { CalculateButton, NumberField, ResultCard, formatValue } from '../../../../../components/calc';
+import { CalculateButton, NumberField, ResultCard, formatValue } from '@/shared/ui/calc';
 import { toCelsiusGrid } from '../../../mappers/celsius-grid.mapper';
 import { ConductivitySweepChart } from '../charts/ConductivitySweepChart';
 import { LiquidFractionChart } from '../charts/LiquidFractionChart';

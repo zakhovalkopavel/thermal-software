@@ -1,4 +1,4 @@
-import type { XYSeries } from '../../../components/charts';
+import type { XYSeries } from '@/shared/ui/charts';
 import type { TemperatureRange } from '../types/temperature-range.type';
 
 /** Line zones along x: dotted outside the ε validity range, `inside` style within it. `toX` maps K to the chart's x unit. */

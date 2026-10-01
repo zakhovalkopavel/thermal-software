@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHART_THEME } from '../../../components/charts';
+import { CHART_THEME } from '@/shared/ui/charts';
 import { toClampedBands } from './clamped-bands.mapper';
 
 const RANGE = { min: 600, max: 1400 };

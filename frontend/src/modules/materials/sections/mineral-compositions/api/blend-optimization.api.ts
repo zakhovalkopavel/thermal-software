@@ -1,4 +1,4 @@
-import { api } from '../../../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { BlendOptimizationInput } from '../types/blend-optimization-input.type';
 import type { BlendResult } from '../types/blend-result.type';
 

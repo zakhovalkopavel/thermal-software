@@ -1,5 +1,5 @@
 import { Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { NumberField } from '../../../../../components/calc';
+import { NumberField } from '@/shared/ui/calc';
 import { NumberFieldGrid } from '../../../components/NumberFieldGrid';
 import { WallLayersEditor } from '../../../components/WallLayersEditor';
 import { COMBUSTION_FIELDS } from '../constants/combustion-fields.constants';

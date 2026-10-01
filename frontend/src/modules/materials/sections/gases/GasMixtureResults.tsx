@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Grid, Stack, Typography } from '@mui/material';
-import { ResultCard, ResultTable } from '../../../../components/calc';
-import type { ResultTableColumn } from '../../../../components/calc';
+import { ResultCard, ResultTable } from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
 import { GasMixturePieChart } from './charts/GasMixturePieChart';
 import { GasPropertyChart } from './charts/GasPropertyChart';
 import type { GasMixtureResultsProps } from './types/gas-mixture-results-props.type';

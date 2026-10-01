@@ -1,4 +1,4 @@
-import type { XYSeries } from '../../../../../components/charts';
+import type { XYSeries } from '@/shared/ui/charts';
 import type { TimedProfile } from '../types/timed-profile.type';
 
 export function toProfileSeries(depths: number[], profiles: TimedProfile[]): XYSeries[] {

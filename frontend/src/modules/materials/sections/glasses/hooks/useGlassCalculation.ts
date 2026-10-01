@@ -1,5 +1,5 @@
 import { useQueries, useQuery } from '@tanstack/react-query';
-import { compositionApi } from '../../../../../services/api/composition.api';
+import { compositionApi } from '@/shared/api/composition.api';
 import { MATERIALS_QUERY_KEYS } from '../../../constants/materials-query-keys.constants';
 import { glassViscosityApi } from '../api/glass-viscosity.api';
 import type { GlassCalculationRequest } from '../types/glass-calculation-request.type';

@@ -1,5 +1,5 @@
 import { Chip, Stack, Table, TableBody, TableCell, TableRow, Typography } from '@mui/material';
-import { formatValue } from '../../../../components/calc';
+import { formatValue } from '@/shared/ui/calc';
 import { toReferencePropertyRows } from './mappers/reference-property-rows.mapper';
 import type { ReferencePropertiesCardProps } from './types/reference-properties-card-props.type';
 

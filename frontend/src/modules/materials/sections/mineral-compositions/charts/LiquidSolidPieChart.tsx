@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { PieChart } from '../../../../../components/charts';
+import { PieChart } from '@/shared/ui/charts';
 import type { PhaseResultProps } from '../types/phase-result-props.type';
 
 export function LiquidSolidPieChart({ result }: PhaseResultProps) {

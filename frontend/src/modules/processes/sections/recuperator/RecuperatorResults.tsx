@@ -1,6 +1,6 @@
 import { Alert, Grid, Stack } from '@mui/material';
-import { ResultCard, formatValue } from '../../../../components/calc';
-import { kelvinToCelsius } from '../../mappers/kelvin-to-celsius.mapper';
+import { ResultCard, formatValue } from '@/shared/ui/calc';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import { CounterFlowChart } from './charts/CounterFlowChart';
 import { EnergyBalanceChart } from './charts/EnergyBalanceChart';
 import { FlameTemperatureChart } from './charts/FlameTemperatureChart';

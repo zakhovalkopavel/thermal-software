@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Alert, Box, Grid, Paper, Stack, Tab, Tabs, Typography } from '@mui/material';
-import { useSearchParamsPatch } from '../../hooks/useSearchParamsPatch';
+import { useSearchParamsPatch } from '@/shared/hooks/useSearchParamsPatch';
 import { BlendOptimizerTab } from './analyses/BlendOptimizerTab';
 import { ChemicalTab } from './analyses/ChemicalTab';
 import { GranulometryTab } from './analyses/GranulometryTab';

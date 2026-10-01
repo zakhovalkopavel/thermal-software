@@ -87,15 +87,19 @@ Implement in order. Step 3 contains small **backend** additions (read-only catal
 
 ```
 frontend/src/
-├── app/                        # router, layout, theme, providers
-├── components/calc/            # shared calculator building blocks (Step 2)
-├── components/charts/          # Highcharts setup + reusable chart components (Step 2)
-├── services/api/client.ts      # axios instance (Step 1)
-├── pages/Home.tsx              # entry: two module tiles + health
+├── app/                        # components/ (Layout), config/ (router, routes, providers, theme), constants/
+├── shared/
+│   ├── api/                    # axios client, health and composition APIs
+│   ├── ui/calc/                # shared calculator building blocks (Step 2)
+│   ├── ui/charts/              # Highcharts setup + reusable chart components (Step 2)
+│   ├── ui/feedback/            # ComingSoon, RouteErrorBoundary, RouteFallback
+│   ├── hooks/                  # URL-state and debounce hooks
+│   └── utils/                  # unit conversions, without-nulls
+├── pages/home/Home.tsx         # entry: two module tiles + health
 └── modules/
     ├── materials/
-    │   ├── routes.tsx
-    │   ├── MaterialsLayout.tsx # section tabs / side nav
+    │   ├── routes.tsx          # sections are lazy-loaded
+    │   ├── components/MaterialsLayout.tsx # section tabs / side nav
     │   ├── api/                # one API object per file (Step 3 §2.4)
     │   ├── types/              # one type per file
     │   ├── hooks/              # one hook per file
@@ -139,7 +143,7 @@ Backend and frontend specs in these steps follow [`docs/CONVENTIONS.md`](../CONV
 ## UX rules (fixed)
 
 - **Layout** = inputs left / results right (mirror `legacy/refractory/public/` calculators).
-- **Charts** = every calculated series (property vs T, profiles, distributions) is shown as a Highcharts chart above the numeric table, with CSV/PNG export. Viscosity is always plotted on a **logarithmic** axis together with 1–3 reference glasses from the library (see Step 8). Chart components live in `components/charts/` (Step 2).
+- **Charts** = every calculated series (property vs T, profiles, distributions) is shown as a Highcharts chart above the numeric table, with CSV/PNG export. Viscosity is always plotted on a **logarithmic** axis together with 1–3 reference glasses from the library (see Step 8). Chart components live in `shared/ui/charts/` (Step 2).
 - **Composition units**: any oxide composition editor offers **wt% / mol%**; conversion goes through `POST /refractory/utils/convert-composition`. Endpoints that require wt% always receive wt%.
 - **No auth** in v1; Nest validation errors are shown in the results panel.
 - **API calls** use relative `/api/v1/...` (or `import.meta.env.VITE_API_URL`). No hardcoded host/port.

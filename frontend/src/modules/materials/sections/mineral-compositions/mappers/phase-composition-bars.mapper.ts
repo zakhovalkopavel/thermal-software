@@ -1,4 +1,4 @@
-import type { CategorySeries } from '../../../../../components/charts';
+import type { CategorySeries } from '@/shared/ui/charts';
 import type { PhaseEquilibriumResult } from '../types/phase-equilibrium-result.type';
 
 export function toPhaseCompositionBars(result: PhaseEquilibriumResult): { categories: string[]; series: CategorySeries[] } {

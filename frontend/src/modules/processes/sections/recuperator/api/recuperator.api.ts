@@ -1,4 +1,4 @@
-import { api } from '../../../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { RecuperatorInput } from '../types/recuperator-input.type';
 import type { RecuperatorResult } from '../types/recuperator-result.type';
 

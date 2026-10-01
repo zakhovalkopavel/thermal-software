@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { XYLineChart } from '../../../../../components/charts';
-import type { ChartAxis, XYLineChartProps, XYSeries } from '../../../../../components/charts';
+import { XYLineChart } from '@/shared/ui/charts';
+import type { ChartAxis, XYLineChartProps, XYSeries } from '@/shared/ui/charts';
 import type { ConductivitySweepChartProps } from '../types/conductivity-sweep-chart-props.type';
 
 const X_AXIS: XYLineChartProps['xAxis'] = { title: 'T', unit: '°C' };

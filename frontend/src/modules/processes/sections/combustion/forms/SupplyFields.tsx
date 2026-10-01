@@ -1,5 +1,5 @@
 import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { NumberField } from '../../../../../components/calc';
+import { NumberField } from '@/shared/ui/calc';
 import type { SupplyBasis } from '../types/supply-basis.type';
 import type { SupplyFieldsProps } from '../types/supply-fields-props.type';
 

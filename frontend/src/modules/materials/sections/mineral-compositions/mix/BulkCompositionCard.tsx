@@ -14,9 +14,9 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import { JsonErrorAlert, OxideCompositionInput, REFRACTORY_OXIDES, formatValue } from '../../../../../components/calc';
-import type { CompositionUnit } from '../../../../../components/calc';
-import { compositionApi } from '../../../../../services/api/composition.api';
+import { JsonErrorAlert, OxideCompositionInput, REFRACTORY_OXIDES, formatValue } from '@/shared/ui/calc';
+import type { CompositionUnit } from '@/shared/ui/calc';
+import { compositionApi } from '@/shared/api/composition.api';
 import { MATERIALS_QUERY_KEYS } from '../../../constants/materials-query-keys.constants';
 import { BulkCompositionPieChart } from '../charts/BulkCompositionPieChart';
 import { useMix } from '../hooks/useMix';

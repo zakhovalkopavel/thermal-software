@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { formatValue } from '../../../../../components/calc';
-import { XYLineChart } from '../../../../../components/charts';
-import type { ChartAxis, XYLineChartProps, XYSeries } from '../../../../../components/charts';
+import { formatValue } from '@/shared/ui/calc';
+import { XYLineChart } from '@/shared/ui/charts';
+import type { ChartAxis, XYLineChartProps, XYSeries } from '@/shared/ui/charts';
 import { MIX_OPTION_LABELS } from '../constants/mix-option-labels.constants';
 import { toCumulativePsd } from '../mappers/cumulative-psd.mapper';
 import type { PsdChartsProps } from '../types/psd-charts-props.type';

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { XYLineChart } from '../../../../../components/charts';
-import type { ChartAxis, XYLineChartProps, XYSeries } from '../../../../../components/charts';
+import { XYLineChart } from '@/shared/ui/charts';
+import type { ChartAxis, XYLineChartProps, XYSeries } from '@/shared/ui/charts';
 import { toReLimitPlotLines } from '../mappers/re-limit-plot-lines.mapper';
 import { toVelocitySweepSeries } from '../mappers/velocity-sweep-series.mapper';
 import type { HtcVelocityChartProps } from '../types/htc-velocity-chart-props.type';

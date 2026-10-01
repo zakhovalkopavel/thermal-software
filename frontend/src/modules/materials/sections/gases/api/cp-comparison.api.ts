@@ -1,4 +1,4 @@
-import { api } from '../../../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { CpComparisonEntry } from '../types/cp-comparison-entry.type';
 
 export const cpComparisonApi = {

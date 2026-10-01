@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { formatValue } from '../../../../../components/calc';
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { CategorySeries, ChartAxis } from '../../../../../components/charts';
+import { formatValue } from '@/shared/ui/calc';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { CategorySeries, ChartAxis } from '@/shared/ui/charts';
 import type { WallResultChartProps } from '../types/wall-result-chart-props.type';
 
 const CATEGORIES = ['Into the wall (inner)', 'Out of the wall (outer)'];

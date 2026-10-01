@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { ChartAxis } from '../../../../../components/charts';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { ChartAxis } from '@/shared/ui/charts';
 import { toCpComparisonBars } from '../mappers/cp-comparison-bars.mapper';
 import type { CpComparisonChartProps } from '../types/cp-comparison-chart-props.type';
 

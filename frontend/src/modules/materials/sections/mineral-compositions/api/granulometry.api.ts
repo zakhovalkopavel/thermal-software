@@ -1,4 +1,4 @@
-import { api } from '../../../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { ParticipationInput } from '../types/participation-input.type';
 import type { ParticipationResult } from '../types/participation-result.type';
 import type { PsdInput } from '../types/psd-input.type';

@@ -1,6 +1,6 @@
 import { Stack, Typography } from '@mui/material';
-import { ResultTable, formatValue } from '../../../../components/calc';
-import type { ResultTableColumn } from '../../../../components/calc';
+import { ResultTable, formatValue } from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
 import { MaterialCompositionPieChart } from './charts/MaterialCompositionPieChart';
 import type { MaterialCompositionProps } from './types/material-composition-props.type';
 

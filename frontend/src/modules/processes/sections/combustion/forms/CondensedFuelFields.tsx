@@ -1,5 +1,5 @@
 import { MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { NumberField, formatValue } from '../../../../../components/calc';
+import { NumberField, formatValue } from '@/shared/ui/calc';
 import { NumberFieldGrid } from '../../../components/NumberFieldGrid';
 import { COMBUSTION_FIELDS } from '../constants/combustion-fields.constants';
 import { COMBUSTION_UI } from '../constants/combustion-ui.constants';

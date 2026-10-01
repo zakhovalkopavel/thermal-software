@@ -1,5 +1,5 @@
 import { assertRequiredNumbers } from '../../../mappers/required-numbers.mapper';
-import { withoutNulls } from '../../../mappers/without-nulls.mapper';
+import { withoutNulls } from '@/shared/utils/without-nulls';
 import type { FuelSummary } from '../../../types/fuel-summary.type';
 import type { SolidDirectInput } from '../../../types/solid-direct-input.type';
 import { COMBUSTION_FIELDS } from '../constants/combustion-fields.constants';

@@ -1,5 +1,5 @@
-import { formatPowerOfTen } from '../../../../../components/calc';
-import type { PlotLine } from '../../../../../components/charts';
+import { formatPowerOfTen } from '@/shared/ui/calc';
+import type { PlotLine } from '@/shared/ui/charts';
 import { VISCOSITY_LEVELS } from '../constants/viscosity-levels.constants';
 
 export function toViscosityLevelPlotLines(): PlotLine[] {

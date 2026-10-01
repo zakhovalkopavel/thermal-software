@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Alert, Box, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
-import { CalculateButton, CalculatorPage, ResultPanel } from '../../../../components/calc';
+import { CalculateButton, CalculatorPage, ResultPanel } from '@/shared/ui/calc';
 import { useFuels } from '../../hooks/useFuels';
 import type { CombustionMode } from '../../types/combustion-mode.type';
 import type { CombustionRequest } from '../../types/combustion-request.type';

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { ChartAxis } from '../../../../../components/charts';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { ChartAxis } from '@/shared/ui/charts';
 import type { MineralPhasesChartProps } from '../types/mineral-phases-chart-props.type';
 
 const Y_AXIS: ChartAxis = { title: 'Amount', unit: '%', min: 0 };

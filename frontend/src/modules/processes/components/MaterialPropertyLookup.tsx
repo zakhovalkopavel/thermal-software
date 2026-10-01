@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Paper, Stack, Typography } from '@mui/material';
-import { NumberField, formatValue } from '../../../components/calc';
+import { NumberField, formatValue } from '@/shared/ui/calc';
 import { MaterialPicker, useMaterialThermalProperties } from '../../materials';
 import type { MaterialPickerKind, MaterialPickerSelection } from '../../materials';
 import { PROCESSES_UI } from '../constants/processes-ui.constants';
-import { celsiusToKelvin } from '../mappers/celsius-to-kelvin.mapper';
+import { celsiusToKelvin } from '@/shared/utils/celsius-to-kelvin';
 import type { MaterialPropertyLookupProps } from '../types/material-property-lookup-props.type';
 
 const LOOKUP_KINDS: MaterialPickerKind[] = ['metal', 'refractory'];

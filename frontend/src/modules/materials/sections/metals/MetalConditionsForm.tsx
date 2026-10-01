@@ -1,7 +1,7 @@
 import { Alert, Box, Button, IconButton, Stack, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { CalculateButton } from '../../../../components/calc';
+import { CalculateButton } from '@/shared/ui/calc';
 import { MaterialPicker } from '../../components/MaterialPicker';
 import { TemperatureSweepFields } from '../../components/TemperatureSweepFields';
 import { METALS_UI } from './constants/metals-ui.constants';

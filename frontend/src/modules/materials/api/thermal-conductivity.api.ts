@@ -1,4 +1,4 @@
-import { api } from '../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { ThermalConductivityInput } from '../types/thermal-conductivity-input.type';
 import type { ThermalConductivityResult } from '../types/thermal-conductivity-result.type';
 

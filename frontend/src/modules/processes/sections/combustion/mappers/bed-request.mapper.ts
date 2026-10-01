@@ -1,6 +1,6 @@
 import { assertRequiredNumbers } from '../../../mappers/required-numbers.mapper';
 import { toWallLayers } from '../../../mappers/wall-layers-request.mapper';
-import { withoutNulls } from '../../../mappers/without-nulls.mapper';
+import { withoutNulls } from '@/shared/utils/without-nulls';
 import type { BedCombustionInput } from '../../../types/bed-combustion-input.type';
 import type { FuelSummary } from '../../../types/fuel-summary.type';
 import { COMBUSTION_FIELDS } from '../constants/combustion-fields.constants';

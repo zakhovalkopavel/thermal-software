@@ -1,5 +1,5 @@
 import { assertRequiredNumbers } from '../../../mappers/required-numbers.mapper';
-import { withoutNulls } from '../../../mappers/without-nulls.mapper';
+import { withoutNulls } from '@/shared/utils/without-nulls';
 import { THERMAL_FIELDS } from '../constants/thermal-fields.constants';
 import { THERMAL_SHAPES } from '../constants/thermal-shapes.constants';
 import type { ThermalDraft } from '../types/thermal-draft.type';

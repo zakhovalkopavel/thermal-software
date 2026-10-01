@@ -1,7 +1,7 @@
 import { Grid, Stack, Tooltip, Typography } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { ResultCard, ResultTable, formatValue } from '../../../../components/calc';
-import type { ResultTableColumn } from '../../../../components/calc';
+import { ResultCard, ResultTable, formatValue } from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
 import { TEMPERATURE_SWEEP } from '../../constants/temperature-sweep.constants';
 import { isEmissivityClamped } from '../../mappers/is-emissivity-clamped.mapper';
 import { RefractoryEmissivityChart } from './charts/RefractoryEmissivityChart';

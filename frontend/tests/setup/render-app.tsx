@@ -2,8 +2,8 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
-import { appRoutes } from '../../src/app/app-routes';
-import { theme } from '../../src/app/theme';
+import { appRoutes } from '@/app/config/app-routes';
+import { theme } from '@/app/config/theme';
 
 /** Renders the whole app at `path` with a fresh query client that never retries. */
 export function renderApp(path: string) {

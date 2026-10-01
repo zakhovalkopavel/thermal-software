@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, Box, Grid, Stack, TextField, Typography } from '@mui/material';
-import { CalculateButton, EnumSelect, NumberField, ResultCard } from '../../../../../components/calc';
+import { CalculateButton, EnumSelect, NumberField, ResultCard } from '@/shared/ui/calc';
 import { ShrinkageChart } from '../charts/ShrinkageChart';
 import { WaterRangeChart } from '../charts/WaterRangeChart';
 import { MINERAL_COMPOSITIONS_UI } from '../constants/mineral-compositions-ui.constants';

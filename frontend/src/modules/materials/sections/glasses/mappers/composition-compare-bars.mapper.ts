@@ -1,4 +1,4 @@
-import type { CategorySeries } from '../../../../../components/charts';
+import type { CategorySeries } from '@/shared/ui/charts';
 
 /** One stacked series per oxide over the glasses, oxides ordered by their largest content. */
 export function toCompositionCompareBars(glasses: { name: string; composition: Record<string, number> }[]): {

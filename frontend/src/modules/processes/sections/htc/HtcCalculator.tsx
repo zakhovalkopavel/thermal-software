@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Alert, Box, Checkbox, FormControlLabel, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { CalculateButton, CalculatorPage, GasCompositionInput, ResultPanel } from '../../../../components/calc';
+import { CalculateButton, CalculatorPage, GasCompositionInput, ResultPanel } from '@/shared/ui/calc';
 import { useGasList } from '../../../materials';
 import { AdvancedFields } from '../../components/AdvancedFields';
 import { NumberFieldGrid } from '../../components/NumberFieldGrid';

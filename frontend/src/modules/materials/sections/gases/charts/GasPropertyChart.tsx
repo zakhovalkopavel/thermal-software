@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { MenuItem, TextField } from '@mui/material';
-import { XYLineChart, chartFormat } from '../../../../../components/charts';
-import type { ChartAxis, XYLineChartProps } from '../../../../../components/charts';
+import { XYLineChart, chartFormat } from '@/shared/ui/charts';
+import type { ChartAxis, XYLineChartProps } from '@/shared/ui/charts';
 import { TEMPERATURE_SWEEP } from '../../../constants/temperature-sweep.constants';
 import { GAS_PROPERTY_AXES } from '../constants/gas-property-axes.constants';
 import { toGasPropertySeries } from '../mappers/gas-property-series.mapper';

@@ -1,5 +1,5 @@
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { ChartAxis } from '../../../../../components/charts';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { ChartAxis } from '@/shared/ui/charts';
 import type { RecuperatorChartProps } from '../types/recuperator-chart-props.type';
 
 const CATEGORIES = ['Smoke', 'Air'];

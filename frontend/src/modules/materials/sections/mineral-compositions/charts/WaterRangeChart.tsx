@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { CategorySeries, ChartAxis, PlotLine } from '../../../../../components/charts';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { CategorySeries, ChartAxis, PlotLine } from '@/shared/ui/charts';
 import { MIX_OPTION_LABELS } from '../constants/mix-option-labels.constants';
 import type { WaterRangeChartProps } from '../types/water-range-chart-props.type';
 

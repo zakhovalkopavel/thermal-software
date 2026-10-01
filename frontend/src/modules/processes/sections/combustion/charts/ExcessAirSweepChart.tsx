@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { XYLineChart } from '../../../../../components/charts';
-import type { ChartAxis, PlotLine, XYLineChartProps, XYSeries } from '../../../../../components/charts';
+import { XYLineChart } from '@/shared/ui/charts';
+import type { ChartAxis, PlotLine, XYLineChartProps, XYSeries } from '@/shared/ui/charts';
 import type { ExcessAirSweepChartProps } from '../types/excess-air-sweep-chart-props.type';
 
 const X_AXIS: XYLineChartProps['xAxis'] = { title: 'Excess air λ' };

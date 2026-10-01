@@ -1,4 +1,4 @@
-import type { PieSlice } from '../../../../../components/charts';
+import type { PieSlice } from '@/shared/ui/charts';
 import type { MixCompositionResult } from '../../../types/mix-composition-result.type';
 
 const OTHER_OXIDES_LABEL = 'Other oxides';

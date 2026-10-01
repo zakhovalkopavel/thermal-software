@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import { NumberField } from '../../../../../components/calc';
+import { NumberField } from '@/shared/ui/calc';
 import { MINERAL_COMPOSITIONS_UI } from '../constants/mineral-compositions-ui.constants';
 import { MIX_OPTION_LABELS } from '../constants/mix-option-labels.constants';
 import type { BlendOptionsFormProps } from '../types/blend-options-form-props.type';

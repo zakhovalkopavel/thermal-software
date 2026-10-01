@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { formatValue } from '../../../../../components/calc';
-import { PieChart } from '../../../../../components/charts';
+import { formatValue } from '@/shared/ui/calc';
+import { PieChart } from '@/shared/ui/charts';
 import { toBulkCompositionSlices } from '../mappers/bulk-composition-slices.mapper';
 import type { BulkCompositionPieProps } from '../types/bulk-composition-pie-props.type';
 

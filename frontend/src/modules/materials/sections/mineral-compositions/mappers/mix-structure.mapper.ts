@@ -1,4 +1,4 @@
-import type { CategorySeries } from '../../../../../components/charts';
+import type { CategorySeries } from '@/shared/ui/charts';
 import type { MaterialEntry } from '../../../types/material-entry.type';
 import type { CompleteMixFraction } from '../types/complete-mix-fraction.type';
 import { toSizeLabel } from './size-label.mapper';

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { CategorySeries, ChartAxis } from '../../../../../components/charts';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { CategorySeries, ChartAxis } from '@/shared/ui/charts';
 import type { SelectedFormulationChartProps } from '../types/selected-formulation-chart-props.type';
 
 const Y_AXIS: ChartAxis = { title: 'Mass', unit: '%' };

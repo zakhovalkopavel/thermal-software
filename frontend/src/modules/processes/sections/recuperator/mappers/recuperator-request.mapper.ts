@@ -1,6 +1,6 @@
 import type { CombustionModeInput } from '../../../types/combustion-mode-input.type';
 import { assertRequiredNumbers } from '../../../mappers/required-numbers.mapper';
-import { withoutNulls } from '../../../mappers/without-nulls.mapper';
+import { withoutNulls } from '@/shared/utils/without-nulls';
 import { RECUPERATOR_FIELDS } from '../constants/recuperator-fields.constants';
 import type { RecuperatorDraft } from '../types/recuperator-draft.type';
 import type { RecuperatorInput } from '../types/recuperator-input.type';

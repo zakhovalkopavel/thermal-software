@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { formatPowerOfTen, formatValue } from '../../../../../components/calc';
-import { XYLineChart, chartFormat } from '../../../../../components/charts';
-import type { ChartAxis, PlotLine, XYLineChartProps } from '../../../../../components/charts';
+import { formatPowerOfTen, formatValue } from '@/shared/ui/calc';
+import { XYLineChart, chartFormat } from '@/shared/ui/charts';
+import type { ChartAxis, PlotLine, XYLineChartProps } from '@/shared/ui/charts';
 import { TEMPERATURE_SWEEP } from '../../../constants/temperature-sweep.constants';
 import { GLASSES_UI } from '../constants/glasses-ui.constants';
 import { toFixedPointMarkers } from '../mappers/fixed-point-markers.mapper';

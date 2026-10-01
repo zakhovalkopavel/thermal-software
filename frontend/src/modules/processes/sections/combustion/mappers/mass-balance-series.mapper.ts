@@ -1,4 +1,4 @@
-import type { CategorySeries } from '../../../../../components/charts';
+import type { CategorySeries } from '@/shared/ui/charts';
 import type { CombustionSummary } from '../types/combustion-summary.type';
 
 /** Stacked columns: [in, out] per flow; each flow is one series with a value in one column only. */

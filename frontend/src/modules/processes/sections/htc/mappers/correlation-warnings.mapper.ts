@@ -1,4 +1,4 @@
-import { formatValue } from '../../../../../components/calc';
+import { formatValue } from '@/shared/ui/calc';
 import type { CorrelationInfo } from '../types/correlation-info.type';
 import type { DimensionlessResult } from '../types/dimensionless-result.type';
 import { toRangeBounds } from './correlation-range-bounds.mapper';

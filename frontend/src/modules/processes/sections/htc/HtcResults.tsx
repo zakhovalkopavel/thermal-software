@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Alert, Box, Button, Chip, Grid, LinearProgress, Stack, Typography } from '@mui/material';
-import { NumberField, ResultCard, ResultTable } from '../../../../components/calc';
-import type { ResultTableColumn } from '../../../../components/calc';
+import { NumberField, ResultCard, ResultTable } from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
 import { HtcVelocityChart } from './charts/HtcVelocityChart';
 import { NusseltReynoldsChart } from './charts/NusseltReynoldsChart';
 import { HTC_DEFAULTS } from './constants/htc-defaults.constants';

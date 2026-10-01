@@ -1,4 +1,4 @@
-import type { XYSeries } from '../../../../../components/charts';
+import type { XYSeries } from '@/shared/ui/charts';
 import { TEMPERATURE_SWEEP } from '../../../constants/temperature-sweep.constants';
 import { toClampedZones } from '../../../mappers/clamped-zones.mapper';
 import type { RefractoryProductResult } from '../../../types/refractory-product-result.type';

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Alert, Box, Button, Chip, Grid, Radio, Stack, Typography } from '@mui/material';
-import { CalculateButton, JsonErrorAlert, ResultTable, formatValue } from '../../../../../components/calc';
-import type { ResultTableColumn } from '../../../../../components/calc';
+import { CalculateButton, JsonErrorAlert, ResultTable, formatValue } from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
 import { BlendResultMapChart } from '../charts/BlendResultMapChart';
 import { SelectedFormulationChart } from '../charts/SelectedFormulationChart';
 import { MINERAL_COMPOSITIONS_UI } from '../constants/mineral-compositions-ui.constants';

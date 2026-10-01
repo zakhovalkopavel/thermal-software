@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { XYLineChart } from '../../../../../components/charts';
-import type { ChartAxis, XYLineChartProps } from '../../../../../components/charts';
+import { XYLineChart } from '@/shared/ui/charts';
+import type { ChartAxis, XYLineChartProps } from '@/shared/ui/charts';
 import { toNuReSeries } from '../mappers/nu-re-series.mapper';
 import { toReValidityBand } from '../mappers/re-validity-band.mapper';
 import type { NusseltReynoldsChartProps } from '../types/nusselt-reynolds-chart-props.type';

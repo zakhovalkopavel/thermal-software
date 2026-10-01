@@ -1,4 +1,4 @@
-import { api } from '../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { MultilayerWallInput } from '../types/multilayer-wall-input.type';
 import type { MultilayerWallResult } from '../types/multilayer-wall-result.type';
 

@@ -1,5 +1,5 @@
-import { CHART_THEME } from '../../../components/charts';
-import type { PlotBand } from '../../../components/charts';
+import { CHART_THEME } from '@/shared/ui/charts';
+import type { PlotBand } from '@/shared/ui/charts';
 import type { TemperatureRange } from '../types/temperature-range.type';
 
 /** Shaded x-bands where ε is clamped, limited to the plotted range [xMin, xMax] (chart x unit). */

@@ -1,5 +1,5 @@
-import { CHART_THEME } from '../../../../../components/charts';
-import type { XYSeries } from '../../../../../components/charts';
+import { CHART_THEME } from '@/shared/ui/charts';
+import type { XYSeries } from '@/shared/ui/charts';
 import { toClampedZones } from '../../../mappers/clamped-zones.mapper';
 import type { MetalSummary } from '../../../types/metal-summary.type';
 import type { MetalThermalResult } from '../types/metal-thermal-result.type';

@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Alert, Box, Divider, Stack } from '@mui/material';
 import { ValidationError } from 'yup';
-import { CalculateButton, CalculatorPage, GLASS_OXIDES, ResultPanel, pickOxides } from '../../../../components/calc';
-import type { CompositionUnit } from '../../../../components/calc';
+import { CalculateButton, CalculatorPage, GLASS_OXIDES, ResultPanel, pickOxides } from '@/shared/ui/calc';
+import type { CompositionUnit } from '@/shared/ui/calc';
 import { useMaterialsByGroup } from '../../hooks/useMaterialsByGroup';
 import type { MaterialEntry } from '../../types/material-entry.type';
 import { GLASS_REFERENCES } from './constants/glass-references.constants';

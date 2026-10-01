@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { NumberField, formatValue } from '../../../../../components/calc';
+import { NumberField, formatValue } from '@/shared/ui/calc';
 import { MaterialPicker } from '../../../components/MaterialPicker';
 import { useParticleSizes } from '../../../hooks/useParticleSizes';
 import type { MaterialPickerKind } from '../../../types/material-picker-kind.type';

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { formatValue } from '../../../../../components/calc';
-import { XYLineChart } from '../../../../../components/charts';
-import type { ChartAxis, PlotLine, XYLineChartProps } from '../../../../../components/charts';
+import { formatValue } from '@/shared/ui/calc';
+import { XYLineChart } from '@/shared/ui/charts';
+import type { ChartAxis, PlotLine, XYLineChartProps } from '@/shared/ui/charts';
 import { toShrinkageSeries } from '../mappers/shrinkage-series.mapper';
 import type { ShrinkageChartProps } from '../types/shrinkage-chart-props.type';
 

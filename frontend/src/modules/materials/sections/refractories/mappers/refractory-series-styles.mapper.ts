@@ -1,4 +1,4 @@
-import { Highcharts } from '../../../../../components/charts';
+import { Highcharts } from '@/shared/ui/charts';
 import { toRefractoryGroups } from '../../../mappers/refractory-groups.mapper';
 import type { RefractoryProductSummary } from '../../../types/refractory-product-summary.type';
 import { REFRACTORIES_UI } from '../constants/refractories-ui.constants';

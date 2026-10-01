@@ -1,5 +1,5 @@
 import { MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import { GasCompositionInput } from '../../../../../components/calc';
+import { GasCompositionInput } from '@/shared/ui/calc';
 import { NumberFieldGrid } from '../../../components/NumberFieldGrid';
 import { COMBUSTION_FIELDS } from '../constants/combustion-fields.constants';
 import type { FluidDraft } from '../types/fluid-draft.type';

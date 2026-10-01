@@ -132,14 +132,16 @@ Rendered with Testing Library and `@testing-library/user-event`. API functions a
 
 ### 4.4 Route smoke tests (`tests/smoke/routes.smoke.test.tsx`)
 
-- The test renders the real router (`tests/setup/render-app.tsx`) once per route. The route list comes from the actual route configuration, so a new route is covered automatically.
+- The test renders the real router (`tests/setup/render-app.tsx`) once per route. The route list comes from the actual route configuration (`collectRoutePaths`, which counts `element`, `Component` and `lazy` routes and lists each path once), so a new route is covered automatically.
+- A guard test pins the number of routes (`EXPECTED_ROUTE_COUNT`, 15 including the unknown path). Adding or removing a page means updating it, so the route list can never shrink silently.
 - HTTP goes through a fixture adapter on the axios client (`tests/setup/fixture-adapter.ts`). It looks up the recorded file for the request key `<METHOD> <path>?<sorted query>`. The file name is `<METHOD>_<path-with-underscores>.json`; long keys are shortened and get a hash suffix.
   - A missing fixture fails with `no fixture for GET /refractory/materials … Run: npm run fixtures:record`.
   - Mapper tests read the same files through `recordedResponse<T>('GET /path')` (`tests/setup/recorded-response.ts`).
 - Each route must:
+  - finish loading its lazy section: the router is idle and `RouteFallback` ("Loading page") is gone;
   - show a heading;
   - finish all queries within 20 s;
-  - never render an error page;
+  - never render an error page (neither React Router's default page nor `RouteErrorBoundary`);
   - request no endpoint without a fixture;
   - log no `console.error`.
 - From Step 05, each calculator route also submits its defaults and must show results. The POST fixtures are recorded by the live contract suite.

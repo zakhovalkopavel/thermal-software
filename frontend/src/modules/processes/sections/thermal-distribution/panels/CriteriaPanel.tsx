@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import { ResultCard, ResultPanel } from '../../../../../components/calc';
+import { ResultCard, ResultPanel } from '@/shared/ui/calc';
 import { useThermalCriteria } from '../hooks/useThermalCriteria';
 import type { ThermalPanelProps } from '../types/thermal-panel-props.type';
 

@@ -1,4 +1,4 @@
-import type { PlotBand } from '../../../../../components/charts';
+import type { PlotBand } from '@/shared/ui/charts';
 import type { WallCalculation } from '../types/wall-calculation.type';
 
 export function toWallBands({ input, layerNames }: WallCalculation): PlotBand[] {

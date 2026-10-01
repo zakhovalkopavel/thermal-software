@@ -1,5 +1,5 @@
-import { ResultTable, formatValue } from '../../../../components/calc';
-import type { ResultTableColumn } from '../../../../components/calc';
+import { ResultTable, formatValue } from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
 import type { BedLayerResult } from '../../types/bed-layer-result.type';
 import type { BedLayersTableProps } from './types/bed-layers-table-props.type';
 

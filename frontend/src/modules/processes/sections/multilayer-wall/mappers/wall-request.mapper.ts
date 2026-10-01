@@ -1,6 +1,6 @@
 import { assertRequiredNumbers } from '../../../mappers/required-numbers.mapper';
 import { toWallLayers } from '../../../mappers/wall-layers-request.mapper';
-import { withoutNulls } from '../../../mappers/without-nulls.mapper';
+import { withoutNulls } from '@/shared/utils/without-nulls';
 import type { MultilayerWallInput } from '../../../types/multilayer-wall-input.type';
 import type { SmokeComposition } from '../../../types/smoke-composition.type';
 import { WALL_FIELDS } from '../constants/wall-fields.constants';

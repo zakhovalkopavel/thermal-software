@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Alert, Button, Grid, Stack, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { ResultCard, formatValue } from '../../../../components/calc';
+import { ResultCard, formatValue } from '@/shared/ui/calc';
 import { PROCESSES_UI } from '../../constants/processes-ui.constants';
-import { kelvinToCelsius } from '../../mappers/kelvin-to-celsius.mapper';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import type { CombustionHandOff } from '../../types/combustion-hand-off.type';
 import type { CombustionRequest } from '../../types/combustion-request.type';
 import type { SmokeHandOff } from '../../types/smoke-hand-off.type';

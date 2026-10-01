@@ -9,8 +9,8 @@ import {
   ResultPanel,
   ResultTable,
   formatValue,
-} from '../../../../components/calc';
-import type { ResultTableColumn } from '../../../../components/calc';
+} from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
 import { TemperatureSweepFields } from '../../components/TemperatureSweepFields';
 import { TEMPERATURE_SWEEP } from '../../constants/temperature-sweep.constants';
 import { toTemperatureGrid } from '../../mappers/temperature-grid.mapper';

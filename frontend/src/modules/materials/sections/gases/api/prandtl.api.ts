@@ -1,4 +1,4 @@
-import { api } from '../../../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { PrandtlInput } from '../types/prandtl-input.type';
 import type { ScalarDimensionlessResult } from '../types/scalar-dimensionless-result.type';
 

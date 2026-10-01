@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { formatValue } from '../../../../../components/calc';
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { ChartAxis } from '../../../../../components/charts';
+import { formatValue } from '@/shared/ui/calc';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { ChartAxis } from '@/shared/ui/charts';
 import { toFixedPointsBars } from '../mappers/fixed-points-bars.mapper';
 import type { GlassCurvesProps } from '../types/glass-curves-props.type';
 

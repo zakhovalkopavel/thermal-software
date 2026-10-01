@@ -4,7 +4,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { NumberField } from '../../../components/calc';
+import { NumberField } from '@/shared/ui/calc';
 import { MaterialPicker } from '../../materials';
 import type { MaterialPickerKind, MaterialPickerSelection } from '../../materials';
 import { PROCESSES_UI } from '../constants/processes-ui.constants';

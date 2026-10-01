@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { XYLineChart } from '../../../../../components/charts';
-import type { ChartAxis, XYLineChartProps } from '../../../../../components/charts';
-import { formatValue } from '../../../../../components/calc';
+import { XYLineChart } from '@/shared/ui/charts';
+import type { ChartAxis, XYLineChartProps } from '@/shared/ui/charts';
+import { formatValue } from '@/shared/ui/calc';
 import { toCounterFlowSeries } from '../mappers/counter-flow-series.mapper';
 import type { RecuperatorChartProps } from '../types/recuperator-chart-props.type';
 

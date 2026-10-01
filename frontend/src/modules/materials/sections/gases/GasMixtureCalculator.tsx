@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CalculatorPage, ResultPanel } from '../../../../components/calc';
+import { CalculatorPage, ResultPanel } from '@/shared/ui/calc';
 import { useGasList } from '../../hooks/useGasList';
 import { toTemperatureGrid } from '../../mappers/temperature-grid.mapper';
 import type { TemperatureSweep } from '../../types/temperature-sweep.type';

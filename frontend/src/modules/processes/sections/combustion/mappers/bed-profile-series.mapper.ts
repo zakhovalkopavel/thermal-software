@@ -1,4 +1,4 @@
-import type { XYSeries } from '../../../../../components/charts';
+import type { XYSeries } from '@/shared/ui/charts';
 import type { BedLayerResult } from '../../../types/bed-layer-result.type';
 import { COMBUSTION_UI } from '../constants/combustion-ui.constants';
 

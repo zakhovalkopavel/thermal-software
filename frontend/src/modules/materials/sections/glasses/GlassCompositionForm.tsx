@@ -1,5 +1,5 @@
 import { Alert, MenuItem, Stack, TextField, Typography } from '@mui/material';
-import { GLASS_OXIDES, OxideCompositionInput } from '../../../../components/calc';
+import { GLASS_OXIDES, OxideCompositionInput } from '@/shared/ui/calc';
 import { GLASS_MODELS } from './constants/glass-models.constants';
 import { GLASSES_UI } from './constants/glasses-ui.constants';
 import type { GlassCompositionFormProps } from './types/glass-composition-form-props.type';

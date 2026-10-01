@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Typography } from '@mui/material';
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { ChartAxis } from '../../../../../components/charts';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { ChartAxis } from '@/shared/ui/charts';
 import { toPhaseCompositionBars } from '../mappers/phase-composition-bars.mapper';
 import type { PhaseResultProps } from '../types/phase-result-props.type';
 

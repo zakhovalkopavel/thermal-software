@@ -1,5 +1,5 @@
-import { formatPowerOfTen } from '../../../../../components/calc';
-import type { CategorySeries } from '../../../../../components/charts';
+import { formatPowerOfTen } from '@/shared/ui/calc';
+import type { CategorySeries } from '@/shared/ui/charts';
 import { VISCOSITY_LEVELS } from '../constants/viscosity-levels.constants';
 import type { GlassCurve } from '../types/glass-curve.type';
 import type { GlassFixedPoints } from '../types/glass-fixed-points.type';

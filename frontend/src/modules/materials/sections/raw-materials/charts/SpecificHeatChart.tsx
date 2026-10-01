@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { XYLineChart, chartFormat } from '../../../../../components/charts';
-import type { ChartAxis, XYLineChartProps } from '../../../../../components/charts';
+import { XYLineChart, chartFormat } from '@/shared/ui/charts';
+import type { ChartAxis, XYLineChartProps } from '@/shared/ui/charts';
 import { TEMPERATURE_SWEEP } from '../../../constants/temperature-sweep.constants';
 import { toRawMaterialThermalSeries } from '../mappers/raw-material-thermal-series.mapper';
 import type { RawMaterialThermalChartProps } from '../types/raw-material-thermal-chart-props.type';

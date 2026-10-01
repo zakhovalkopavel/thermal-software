@@ -1,4 +1,4 @@
-import type { XYSeries } from '../../../../../components/charts';
+import type { XYSeries } from '@/shared/ui/charts';
 import type { RecuperatorInput } from '../types/recuperator-input.type';
 import type { RecuperatorResult } from '../types/recuperator-result.type';
 

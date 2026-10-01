@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Box, Stack, Tab, Tabs } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
-import { CalculatorPage, ResultPanel } from '../../../../components/calc';
+import { CalculatorPage, ResultPanel } from '@/shared/ui/calc';
 import { ThermalInputsForm } from './ThermalInputsForm';
 import { THERMAL_DEFAULTS } from './constants/thermal-defaults.constants';
 import { THERMAL_OPTIONS } from './constants/thermal-options.constants';

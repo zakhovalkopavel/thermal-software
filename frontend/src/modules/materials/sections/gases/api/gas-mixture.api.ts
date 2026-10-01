@@ -1,4 +1,4 @@
-import { api } from '../../../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { GasMixtureInput } from '../types/gas-mixture-input.type';
 import type { GasPropertiesResult } from '../types/gas-properties-result.type';
 

@@ -1,4 +1,4 @@
-import { api } from '../../../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { BodyGeometryInput } from '../types/body-geometry-input.type';
 import type { BodyGeometryResult } from '../types/body-geometry-result.type';
 import type { CorrelationInfo } from '../types/correlation-info.type';

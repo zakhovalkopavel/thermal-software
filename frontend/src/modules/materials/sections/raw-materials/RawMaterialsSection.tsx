@@ -1,10 +1,10 @@
 import { useMemo, useState } from 'react';
 import { Alert, Box, Chip, CircularProgress, Grid, Paper, Stack, Typography } from '@mui/material';
-import { CalculatorPage, JsonErrorAlert } from '../../../../components/calc';
+import { CalculatorPage, JsonErrorAlert } from '@/shared/ui/calc';
 import { useMaterial } from '../../hooks/useMaterial';
 import { useMaterialCategories } from '../../hooks/useMaterialCategories';
 import { useMixComponents } from '../../hooks/useMixComponents';
-import { useSearchParamsPatch } from '../../hooks/useSearchParamsPatch';
+import { useSearchParamsPatch } from '@/shared/hooks/useSearchParamsPatch';
 import type { MaterialEntry } from '../../types/material-entry.type';
 import type { MaterialGroup } from '../../types/material-group.type';
 import { CalculatedThermalCard } from './CalculatedThermalCard';

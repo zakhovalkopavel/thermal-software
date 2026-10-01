@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { PieChart } from '../../../../../components/charts';
+import { PieChart } from '@/shared/ui/charts';
 import type { GasMixturePieChartProps } from '../types/gas-mixture-pie-chart-props.type';
 
 export function GasMixturePieChart({ composition, fractionType }: GasMixturePieChartProps) {

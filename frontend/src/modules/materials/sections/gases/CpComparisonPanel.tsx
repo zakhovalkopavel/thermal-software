@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Button, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { EnumSelect, JsonErrorAlert, NumberField } from '../../../../components/calc';
+import { EnumSelect, JsonErrorAlert, NumberField } from '@/shared/ui/calc';
 import { CpComparisonChart } from './charts/CpComparisonChart';
 import { GASES_UI } from './constants/gases-ui.constants';
 import { useCpComparison } from './hooks/useCpComparison';

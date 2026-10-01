@@ -60,15 +60,15 @@ frontend/
         schemas/    build-number-fields-schema.ts, sweep-range-schema.ts, points-sweep-schema.ts, yup-locale.ts
         types/      number-field-spec.type.ts, ...
       ui/
-        calc/       components/  constants/  formatters/  types/  index.ts
+        calc/       components/  constants/  formatters/  mappers/  types/  index.ts
         charts/     components/  config/  constants/  mappers/  types/  index.ts
-        feedback/   ComingSoon.tsx, RouteErrorBoundary.tsx, HealthWidget.tsx
+        feedback/   ComingSoon.tsx, RouteErrorBoundary.tsx, RouteFallback.tsx
       hooks/        useSearchParamTab.ts, useSearchParamsPatch.ts, useSearchParamState.ts,
                     useDebouncedValue.ts, useCalculationQuery.ts, useCatalogueQuery.ts
       constants/    layout.constants.ts, grid.constants.ts
       utils/        linspace.ts, range-by-step.ts, without-nulls.ts
     pages/
-      home/         Home.tsx, components/, constants/
+      home/         Home.tsx, components/ (HealthWidget.tsx), constants/
       not-found/    NotFound.tsx
     modules/<module>/
       index.ts, routes.tsx

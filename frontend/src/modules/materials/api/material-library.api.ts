@@ -1,4 +1,4 @@
-import { api } from '../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { MaterialCategory } from '../types/material-category.type';
 import type { MaterialEntry } from '../types/material-entry.type';
 import type { MaterialGroupRoute } from '../types/material-group-route.type';

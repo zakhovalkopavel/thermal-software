@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Alert, Grid, Paper, Stack, Typography } from '@mui/material';
-import { ResultCard, ResultTable, formatValue } from '../../../../components/calc';
-import type { ResultTableColumn } from '../../../../components/calc';
+import { ResultCard, ResultTable, formatValue } from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
 import { CompositionCompareChart } from './charts/CompositionCompareChart';
 import { FixedPointsChart } from './charts/FixedPointsChart';
 import { ViscosityCurveChart } from './charts/ViscosityCurveChart';

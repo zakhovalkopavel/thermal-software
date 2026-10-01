@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { ScatterChart } from '../../../../../components/charts';
-import type { ChartAxis } from '../../../../../components/charts';
+import { ScatterChart } from '@/shared/ui/charts';
+import type { ChartAxis } from '@/shared/ui/charts';
 import { toBlendMapSeries } from '../mappers/blend-map-series.mapper';
 import type { BlendResultMapChartProps } from '../types/blend-result-map-chart-props.type';
 

@@ -1,6 +1,6 @@
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { ChartAxis } from '../../../../../components/charts';
-import { formatValue } from '../../../../../components/calc';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { ChartAxis } from '@/shared/ui/charts';
+import { formatValue } from '@/shared/ui/calc';
 import type { RecuperatorChartProps } from '../types/recuperator-chart-props.type';
 
 const CATEGORIES = ['Smoke total energy', 'Smoke energy decrease', 'Air energy increase'];

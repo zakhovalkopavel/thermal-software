@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { XYLineChart } from '../../../../../components/charts';
-import type { ChartAxis, XYLineChartProps } from '../../../../../components/charts';
+import { XYLineChart } from '@/shared/ui/charts';
+import type { ChartAxis, XYLineChartProps } from '@/shared/ui/charts';
 import { toBedProfileSeries } from '../mappers/bed-profile-series.mapper';
 import type { BedProfileChartProps } from '../types/bed-profile-chart-props.type';
 

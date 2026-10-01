@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Alert, Box, Stack, Typography } from '@mui/material';
-import { CalculateButton, CalculatorPage, ResultPanel } from '../../../../components/calc';
+import { CalculateButton, CalculatorPage, ResultPanel } from '@/shared/ui/calc';
 import { TemperatureSweepFields } from '../../components/TemperatureSweepFields';
 import { useRefractoryProducts } from '../../hooks/useRefractoryProducts';
-import { useSearchParamState } from '../../hooks/useSearchParamState';
+import { useSearchParamState } from '@/shared/hooks/useSearchParamState';
 import { toRefractoryGroups } from '../../mappers/refractory-groups.mapper';
 import { toTemperatureGrid } from '../../mappers/temperature-grid.mapper';
 import type { TemperatureSweep } from '../../types/temperature-sweep.type';

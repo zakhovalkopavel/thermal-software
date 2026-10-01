@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { ChartAxis } from '../../../../../components/charts';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { ChartAxis } from '@/shared/ui/charts';
 import { REFRACTORIES_UI } from '../constants/refractories-ui.constants';
 import { toRefractoryRanking } from '../mappers/refractory-ranking.mapper';
 import type { RefractoryChartProps } from '../types/refractory-chart-props.type';

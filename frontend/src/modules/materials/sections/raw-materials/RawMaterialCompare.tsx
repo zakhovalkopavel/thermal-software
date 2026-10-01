@@ -1,6 +1,6 @@
 import { Stack, Typography } from '@mui/material';
-import { ResultTable, formatValue } from '../../../../components/calc';
-import type { ResultTableColumn } from '../../../../components/calc';
+import { ResultTable, formatValue } from '@/shared/ui/calc';
+import type { ResultTableColumn } from '@/shared/ui/calc';
 import { ReferenceComparisonChart } from './charts/ReferenceComparisonChart';
 import { REFERENCE_PROPERTY_FIELDS } from './constants/reference-property-fields.constants';
 import type { RawMaterialCompareProps } from './types/raw-material-compare-props.type';

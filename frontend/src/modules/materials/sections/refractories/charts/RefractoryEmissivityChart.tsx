@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { XYLineChart, chartFormat } from '../../../../../components/charts';
-import type { ChartAxis, XYLineChartProps } from '../../../../../components/charts';
+import { XYLineChart, chartFormat } from '@/shared/ui/charts';
+import type { ChartAxis, XYLineChartProps } from '@/shared/ui/charts';
 import { TEMPERATURE_SWEEP } from '../../../constants/temperature-sweep.constants';
 import { toRefractoryPropertySeries } from '../mappers/refractory-property-series.mapper';
 import type { RefractoryChartProps } from '../types/refractory-chart-props.type';

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { PieChart } from '../../../../../components/charts';
+import { PieChart } from '@/shared/ui/charts';
 import type { MaterialCompositionProps } from '../types/material-composition-props.type';
 
 export function MaterialCompositionPieChart({ composition }: MaterialCompositionProps) {

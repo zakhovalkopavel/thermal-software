@@ -1,5 +1,5 @@
 import { Alert, Box, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { COMPOSITION_INPUT, CalculateButton, EnumSelect, GasCompositionInput, NumberField } from '../../../../components/calc';
+import { COMPOSITION_INPUT, CalculateButton, EnumSelect, GasCompositionInput, NumberField } from '@/shared/ui/calc';
 import { TemperatureSweepFields } from '../../components/TemperatureSweepFields';
 import { GAS_MIXTURE_PRESETS } from './constants/gas-mixture-presets.constants';
 import type { GasMixtureFormProps } from './types/gas-mixture-form-props.type';

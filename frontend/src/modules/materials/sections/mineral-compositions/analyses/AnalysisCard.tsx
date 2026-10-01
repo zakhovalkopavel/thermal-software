@@ -1,5 +1,5 @@
 import { Paper, Stack, Typography } from '@mui/material';
-import { ResultPanel } from '../../../../../components/calc';
+import { ResultPanel } from '@/shared/ui/calc';
 import type { AnalysisCardProps } from '../types/analysis-card-props.type';
 
 export function AnalysisCard({ title, loading, error, hasResult, idleText, children }: AnalysisCardProps) {

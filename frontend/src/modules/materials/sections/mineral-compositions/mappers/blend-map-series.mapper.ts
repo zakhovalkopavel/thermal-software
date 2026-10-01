@@ -1,4 +1,4 @@
-import type { ScatterSeries } from '../../../../../components/charts';
+import type { ScatterSeries } from '@/shared/ui/charts';
 import { MIX_OPTION_LABELS } from '../constants/mix-option-labels.constants';
 import type { BlendResult } from '../types/blend-result.type';
 import type { PsdMethod } from '../types/psd-method.type';

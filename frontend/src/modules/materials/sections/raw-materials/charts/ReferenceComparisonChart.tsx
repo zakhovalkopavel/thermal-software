@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { MenuItem, TextField } from '@mui/material';
-import { CategoryBarChart } from '../../../../../components/charts';
+import { CategoryBarChart } from '@/shared/ui/charts';
 import { REFERENCE_PROPERTY_FIELDS } from '../constants/reference-property-fields.constants';
 import type { ReferenceComparisonProps } from '../types/reference-comparison-props.type';
 import type { ReferencePropertyKey } from '../types/reference-property-key.type';

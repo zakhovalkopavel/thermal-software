@@ -1,4 +1,4 @@
-import type { PlotLine } from '../../../../../components/charts';
+import type { PlotLine } from '@/shared/ui/charts';
 import type { ThermalRequest } from '../types/thermal-request.type';
 
 export function toBoundaryPlotLines(request: ThermalRequest): PlotLine[] {

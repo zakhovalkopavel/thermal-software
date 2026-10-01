@@ -1,4 +1,4 @@
-import { api } from '../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { RefractoryProductQuery } from '../types/refractory-product-query.type';
 import type { RefractoryProductResult } from '../types/refractory-product-result.type';
 import type { RefractoryProductSummary } from '../types/refractory-product-summary.type';

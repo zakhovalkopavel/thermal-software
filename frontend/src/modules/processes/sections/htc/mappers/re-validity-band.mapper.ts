@@ -1,4 +1,4 @@
-import type { PlotBand } from '../../../../../components/charts';
+import type { PlotBand } from '@/shared/ui/charts';
 import type { CorrelationInfo } from '../types/correlation-info.type';
 import { toRangeBounds } from './correlation-range-bounds.mapper';
 

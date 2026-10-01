@@ -1,4 +1,4 @@
-import type { XYSeries } from '../../../../../components/charts';
+import type { XYSeries } from '@/shared/ui/charts';
 import type { ShrinkageResult } from '../types/shrinkage-result.type';
 import type { ShrinkageStage } from '../types/shrinkage-stage.type';
 

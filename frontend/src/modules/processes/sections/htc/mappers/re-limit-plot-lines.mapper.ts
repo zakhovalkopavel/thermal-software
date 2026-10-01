@@ -1,5 +1,5 @@
-import { formatValue } from '../../../../../components/calc';
-import type { PlotLine } from '../../../../../components/charts';
+import { formatValue } from '@/shared/ui/calc';
+import type { PlotLine } from '@/shared/ui/charts';
 import type { CorrelationInfo } from '../types/correlation-info.type';
 import type { VelocitySweepPoint } from '../types/velocity-sweep-point.type';
 import { toRangeBounds } from './correlation-range-bounds.mapper';

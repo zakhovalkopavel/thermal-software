@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { CategorySeries, ChartAxis } from '../../../../../components/charts';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { CategorySeries, ChartAxis } from '@/shared/ui/charts';
 import { COMBUSTION_UI } from '../constants/combustion-ui.constants';
 import type { ProductCompositionChartProps } from '../types/product-composition-chart-props.type';
 

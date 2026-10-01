@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { mixCompositionApi } from '../../../api/mix-composition.api';
 import { MATERIALS_QUERY_KEYS } from '../../../constants/materials-query-keys.constants';
-import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
+import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
 import type { MixCompositionInput } from '../../../types/mix-composition-input.type';
 import { MIX_COMPOSITION_UI } from '../constants/mix-composition-ui.constants';
 import { toMixCompositionInput } from '../mappers/mix-composition-request.mapper';

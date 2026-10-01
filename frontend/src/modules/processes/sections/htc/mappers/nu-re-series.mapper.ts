@@ -1,4 +1,4 @@
-import type { XYSeries } from '../../../../../components/charts';
+import type { XYSeries } from '@/shared/ui/charts';
 import type { VelocitySweepPoint } from '../types/velocity-sweep-point.type';
 
 /** One series per correlation the backend picked, so switches between correlations are visible. */

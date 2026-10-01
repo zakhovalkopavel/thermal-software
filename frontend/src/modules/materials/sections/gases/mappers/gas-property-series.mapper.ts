@@ -1,4 +1,4 @@
-import type { XYSeries } from '../../../../../components/charts';
+import type { XYSeries } from '@/shared/ui/charts';
 import type { GasPropertyKey } from '../types/gas-property-key.type';
 
 type PropertyRow = { T_K: number } & Partial<Record<GasPropertyKey, number>>;

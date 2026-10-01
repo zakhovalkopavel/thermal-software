@@ -1,5 +1,5 @@
 import { assertRequiredNumbers } from '../../../mappers/required-numbers.mapper';
-import { withoutNulls } from '../../../mappers/without-nulls.mapper';
+import { withoutNulls } from '@/shared/utils/without-nulls';
 import type { CondensedFuel } from '../../../types/condensed-fuel.type';
 import type { ElementalComposition } from '../../../types/elemental-composition.type';
 import { COMBUSTION_FIELDS } from '../constants/combustion-fields.constants';

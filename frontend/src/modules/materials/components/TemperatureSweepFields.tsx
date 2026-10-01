@@ -1,5 +1,5 @@
 import { Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { NumberField } from '../../../components/calc';
+import { NumberField } from '@/shared/ui/calc';
 import { TEMPERATURE_SWEEP } from '../constants/temperature-sweep.constants';
 import { toTemperatureGrid } from '../mappers/temperature-grid.mapper';
 import type { TemperatureSweep } from '../types/temperature-sweep.type';

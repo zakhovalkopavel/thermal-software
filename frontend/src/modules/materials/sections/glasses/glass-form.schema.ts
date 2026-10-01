@@ -1,5 +1,5 @@
 import * as yup from 'yup';
-import { GLASS_OXIDES } from '../../../../components/calc';
+import { GLASS_OXIDES } from '@/shared/ui/calc';
 import { GLASSES_UI } from './constants/glasses-ui.constants';
 import type { GlassTask } from './types/glass-task.type';
 

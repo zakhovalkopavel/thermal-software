@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { CategorySeries, ChartAxis } from '../../../../../components/charts';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { CategorySeries, ChartAxis } from '@/shared/ui/charts';
 import { MIX_OPTION_LABELS } from '../constants/mix-option-labels.constants';
 import type { PackingModel } from '../types/packing-model.type';
 import type { PackingModelsChartProps } from '../types/packing-models-chart-props.type';

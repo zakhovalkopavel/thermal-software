@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { XYLineChart } from '../../../../../components/charts';
-import type { ChartAxis, PlotLine, XYLineChartProps, XYSeries } from '../../../../../components/charts';
-import { formatValue } from '../../../../../components/calc';
-import { kelvinToCelsius } from '../../../mappers/kelvin-to-celsius.mapper';
+import { XYLineChart } from '@/shared/ui/charts';
+import type { ChartAxis, PlotLine, XYLineChartProps, XYSeries } from '@/shared/ui/charts';
+import { formatValue } from '@/shared/ui/calc';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import { toWallBands } from '../mappers/wall-bands.mapper';
 import { toWallProfile } from '../mappers/wall-profile.mapper';
 import type { WallTemperatureChartProps } from '../types/wall-temperature-chart-props.type';

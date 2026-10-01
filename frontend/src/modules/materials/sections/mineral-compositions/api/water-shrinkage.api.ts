@@ -1,4 +1,4 @@
-import { api } from '../../../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { ShrinkageInput } from '../types/shrinkage-input.type';
 import type { ShrinkageResult } from '../types/shrinkage-result.type';
 import type { WaterDemandInput } from '../types/water-demand-input.type';

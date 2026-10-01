@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert, Button, Grid, Stack, Typography } from '@mui/material';
-import { NumberField, ResultCard, formatValue } from '../../../../../components/calc';
+import { NumberField, ResultCard, formatValue } from '@/shared/ui/calc';
 import { PackingModelsChart } from '../charts/PackingModelsChart';
 import { MINERAL_COMPOSITIONS_UI } from '../constants/mineral-compositions-ui.constants';
 import { MIX_OPTION_LABELS } from '../constants/mix-option-labels.constants';

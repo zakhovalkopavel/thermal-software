@@ -1,4 +1,4 @@
-import { api } from '../../../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { MineralPhase } from '../types/mineral-phase.type';
 import type { MineralPhaseInput } from '../types/mineral-phase-input.type';
 import type { PhaseEquilibriumInput } from '../types/phase-equilibrium-input.type';

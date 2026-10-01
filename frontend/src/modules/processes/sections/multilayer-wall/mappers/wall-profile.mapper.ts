@@ -1,4 +1,4 @@
-import { kelvinToCelsius } from '../../../mappers/kelvin-to-celsius.mapper';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import type { MultilayerWallInput } from '../../../types/multilayer-wall-input.type';
 import type { MultilayerWallResult } from '../../../types/multilayer-wall-result.type';
 

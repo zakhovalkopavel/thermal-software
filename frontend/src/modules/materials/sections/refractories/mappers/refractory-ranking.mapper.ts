@@ -1,4 +1,4 @@
-import type { CategorySeries } from '../../../../../components/charts';
+import type { CategorySeries } from '@/shared/ui/charts';
 import type { RefractoryProductResult } from '../../../types/refractory-product-result.type';
 import type { RefractoryProductSummary } from '../../../types/refractory-product-summary.type';
 import { toRefractorySeriesStyles } from './refractory-series-styles.mapper';

@@ -1,4 +1,4 @@
-import { api } from '../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { MetalSummary } from '../types/metal-summary.type';
 
 export const metalsCatalogApi = {

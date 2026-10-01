@@ -1,4 +1,4 @@
-import { api } from '../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { MixCompositionInput } from '../types/mix-composition-input.type';
 import type { MixCompositionResult } from '../types/mix-composition-result.type';
 

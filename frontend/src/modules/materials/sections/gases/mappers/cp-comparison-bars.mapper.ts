@@ -1,5 +1,5 @@
-import { CHART_THEME } from '../../../../../components/charts';
-import type { CategorySeries } from '../../../../../components/charts';
+import { CHART_THEME } from '@/shared/ui/charts';
+import type { CategorySeries } from '@/shared/ui/charts';
 import type { CpComparisonEntry } from '../types/cp-comparison-entry.type';
 
 /** Categories "type (ref)", one series; entries outside their validity range greyed. Mean for deviation tooltips. */

@@ -1,5 +1,5 @@
 import { Alert, Box, Stack, Typography } from '@mui/material';
-import { CalculateButton, EnumSelect } from '../../../../components/calc';
+import { CalculateButton, EnumSelect } from '@/shared/ui/calc';
 import { AdvancedFields } from '../../components/AdvancedFields';
 import { MaterialPropertyLookup } from '../../components/MaterialPropertyLookup';
 import { NumberFieldGrid } from '../../components/NumberFieldGrid';

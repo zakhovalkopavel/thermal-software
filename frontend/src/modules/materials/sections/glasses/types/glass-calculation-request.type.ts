@@ -1,4 +1,4 @@
-import type { CompositionUnit } from '../../../../../components/calc';
+import type { CompositionUnit } from '@/shared/ui/calc';
 import type { GlassModel } from './glass-model.type';
 import type { GlassReference } from './glass-reference.type';
 import type { GlassTask } from './glass-task.type';

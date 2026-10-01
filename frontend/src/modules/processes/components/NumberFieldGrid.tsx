@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import { NumberField } from '../../../components/calc';
+import { NumberField } from '@/shared/ui/calc';
 import type { NumberFieldGridProps } from '../types/number-field-grid-props.type';
 
 const GRID_COLUMNS = 12;

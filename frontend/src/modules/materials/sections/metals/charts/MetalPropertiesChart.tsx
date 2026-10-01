@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { XYLineChart, chartFormat } from '../../../../../components/charts';
-import type { ChartAxis, XYLineChartProps } from '../../../../../components/charts';
+import { XYLineChart, chartFormat } from '@/shared/ui/charts';
+import type { ChartAxis, XYLineChartProps } from '@/shared/ui/charts';
 import { TEMPERATURE_SWEEP } from '../../../constants/temperature-sweep.constants';
 import { toClampedBands } from '../../../mappers/clamped-bands.mapper';
 import { toMetalPropertySeries } from '../mappers/metal-property-series.mapper';

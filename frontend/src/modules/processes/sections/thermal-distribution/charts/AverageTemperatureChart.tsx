@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { XYLineChart } from '../../../../../components/charts';
-import type { ChartAxis, XYLineChartProps, XYSeries } from '../../../../../components/charts';
+import { XYLineChart } from '@/shared/ui/charts';
+import type { ChartAxis, XYLineChartProps, XYSeries } from '@/shared/ui/charts';
 import { toBoundaryPlotLines } from '../mappers/boundary-plot-lines.mapper';
 import type { AverageTemperatureChartProps } from '../types/average-temperature-chart-props.type';
 

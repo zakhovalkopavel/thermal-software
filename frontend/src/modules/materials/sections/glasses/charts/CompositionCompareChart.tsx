@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { CategoryBarChart } from '../../../../../components/charts';
+import { CategoryBarChart } from '@/shared/ui/charts';
 import { GLASSES_UI } from '../constants/glasses-ui.constants';
 import { toCompositionCompareBars } from '../mappers/composition-compare-bars.mapper';
 import type { CompositionCompareChartProps } from '../types/composition-compare-chart-props.type';

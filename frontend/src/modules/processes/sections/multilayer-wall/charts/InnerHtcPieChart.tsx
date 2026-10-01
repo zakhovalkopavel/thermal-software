@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { formatValue } from '../../../../../components/calc';
-import { PieChart } from '../../../../../components/charts';
-import type { PieSlice } from '../../../../../components/charts';
+import { formatValue } from '@/shared/ui/calc';
+import { PieChart } from '@/shared/ui/charts';
+import type { PieSlice } from '@/shared/ui/charts';
 import type { WallResultChartProps } from '../types/wall-result-chart-props.type';
 
 export function InnerHtcPieChart({ result }: WallResultChartProps) {

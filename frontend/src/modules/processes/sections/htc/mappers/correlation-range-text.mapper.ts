@@ -1,4 +1,4 @@
-import { formatValue } from '../../../../../components/calc';
+import { formatValue } from '@/shared/ui/calc';
 import type { CorrelationRange } from '../types/correlation-range.type';
 import { toRangeBounds } from './correlation-range-bounds.mapper';
 

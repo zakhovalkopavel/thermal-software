@@ -25,7 +25,7 @@
 | `modules/materials/hooks/useDebouncedValue.ts`, `useSearchParamsPatch.ts`, `useSearchParamState.ts` | `shared/hooks/` |
 | `modules/processes/mappers/celsius-to-kelvin.mapper.ts`, `kelvin-to-celsius.mapper.ts`, `without-nulls.mapper.ts` | `shared/utils/celsius-to-kelvin.ts`, `kelvin-to-celsius.ts`, `without-nulls.ts` |
 | `app/Layout.tsx` | `app/components/Layout.tsx` |
-| `app/router.tsx`, `providers.tsx`, `query-client.ts`, `theme.ts` | `app/config/` |
+| `app/router.tsx`, `app-routes.tsx`, `providers.tsx`, `query-client.ts`, `theme.ts` | `app/config/` |
 | `app/app-nav.constants.ts` | `app/constants/` |
 | `pages/Home.tsx` | `pages/home/Home.tsx` |
 | `pages/home-modules.constants.ts` | `pages/home/constants/` |
@@ -48,8 +48,8 @@ The production build currently emits one chunk of about 1.5 MB.
 - **Section routes load on demand:**
   - `SECTION_ELEMENTS` in both `routes.tsx` files use the route `lazy` property (React Router 7), loading each `<Name>Section` on first visit;
   - module hubs stay eager;
-  - a `RouteFallback` (`shared/ui/feedback/RouteFallback.tsx`, a centred `CircularProgress`) shows while a section loads.
-- **Highcharts gets its own chunk:** `build.rollupOptions.output.manualChunks` in `vite.config.ts` puts `highcharts` and `highcharts-react-official` into a `charts` chunk, and MUI into a `mui` chunk.
+  - a `RouteFallback` (`shared/ui/feedback/RouteFallback.tsx`, a centred `CircularProgress` labelled "Loading page") shows while a section loads. It is the `hydrateFallbackElement` of the pathless route that wraps each module's children, so the AppBar and the module tabs stay visible. On later client-side navigation React Router keeps the current page until the section chunk arrives.
+- **Highcharts gets its own chunks:** `build.rollupOptions.output.manualChunks` in `vite.config.ts` puts `highcharts` core and `highcharts-react-official` into `charts`, the Highcharts add-on modules (`highcharts/modules/*`, `highcharts-more`) into `charts-modules`, and MUI with Emotion into `mui`. One `charts` chunk would be 581 kB, over the limit.
 - The build stage of `verify` prints chunk sizes. The Vite chunk-size warning must be gone, so the largest chunk stays under 500 kB.
 
 This is a loading change only. Section components are unchanged, and the smoke tests wait for each lazy route.
@@ -58,10 +58,17 @@ This is a loading change only. Section components are unchanged, and the smoke t
 
 - Colocated tests move with their files.
 - Smoke tests, unit tests and component tests must pass unchanged. Only their import paths change.
+- **Test changes that the moves required:**
+  - `api-error-messages.ts` now lives in a `mappers/` folder, so the mapper coverage check requires a test. The new characterization test records one quirk: an `Error` also has a `message`, so it gets the title `Request failed` like a body without status (the `instanceof Error` branch is never reached).
+  - `collectRoutePaths` counts `lazy` and `Component` routes (lazy sections have no `element`) and lists each path once. Since the Step 02 pathless wrappers, `/` and `/materials` had been listed twice.
+  - A guard test pins the route count (15 including the unknown path).
+  - The smoke test waits until the router is idle and `RouteFallback` is gone before it checks the page.
+  - Test count: 237 in Step 02, 240 now (+5 `api-error-messages`, +1 route guard, duplicate smoke routes removed).
 
 ## 5. Acceptance
 
-- `npm run verify` passes. Test count is unchanged since Step 02.
+- `npm run verify` passes. The test count changes only as listed in §4.
+- Result: largest chunk `mui` 398 kB, `index` 357 kB, `charts-modules` 292 kB, `charts` 284 kB; sections 7–51 kB each; build `PASS`. `lint:refactor` fell from 670 to 427 warnings.
 - The build shows separate `charts` and `mui` chunks and one chunk per section, with no chunk-size warning.
 - `src/components`, `src/services` and the generic hooks inside `modules/materials/hooks` no longer exist.
 - `rg "\.\./\.\./\.\./" src` finds no matches in moved files.

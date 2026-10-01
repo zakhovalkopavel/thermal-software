@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
-import { formatValue } from '../../../../../components/calc';
-import { CategoryBarChart } from '../../../../../components/charts';
-import type { ChartAxis } from '../../../../../components/charts';
+import { formatValue } from '@/shared/ui/calc';
+import { CategoryBarChart } from '@/shared/ui/charts';
+import type { ChartAxis } from '@/shared/ui/charts';
 import type { ParticipationChartProps } from '../types/participation-chart-props.type';
 
 const Y_AXIS: ChartAxis = { title: 'Participation share', unit: '%', min: 0 };

@@ -1,5 +1,5 @@
 import { Chip, Stack, Tab, Tabs } from '@mui/material';
-import { NumberField } from '../../../../components/calc';
+import { NumberField } from '@/shared/ui/calc';
 import { GLASSES_UI } from './constants/glasses-ui.constants';
 import { VISCOSITY_LEVELS } from './constants/viscosity-levels.constants';
 import type { GlassTask } from './types/glass-task.type';

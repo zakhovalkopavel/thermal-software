@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Alert, Stack } from '@mui/material';
-import { CalculatorPage, ResultPanel } from '../../../../components/calc';
+import { CalculatorPage, ResultPanel } from '@/shared/ui/calc';
 import { useGasList } from '../../hooks/useGasList';
-import { useSearchParamState } from '../../hooks/useSearchParamState';
+import { useSearchParamState } from '@/shared/hooks/useSearchParamState';
 import { toTemperatureGrid } from '../../mappers/temperature-grid.mapper';
 import type { TemperatureSweep } from '../../types/temperature-sweep.type';
 import { CpComparisonPanel } from './CpComparisonPanel';

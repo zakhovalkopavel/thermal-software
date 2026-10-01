@@ -1,4 +1,4 @@
-import type { XYSeries } from '../../../../../components/charts';
+import type { XYSeries } from '@/shared/ui/charts';
 import { RAW_MATERIALS_UI } from '../constants/raw-materials-ui.constants';
 import type { RawMaterialThermalPoint } from '../types/raw-material-thermal-point.type';
 

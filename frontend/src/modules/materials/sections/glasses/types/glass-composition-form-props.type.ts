@@ -1,4 +1,4 @@
-import type { CompositionUnit } from '../../../../../components/calc';
+import type { CompositionUnit } from '@/shared/ui/calc';
 import type { MaterialEntry } from '../../../types/material-entry.type';
 import type { GlassModel } from './glass-model.type';
 

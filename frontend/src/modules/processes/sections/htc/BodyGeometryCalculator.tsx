@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Alert, Box, Grid, Stack } from '@mui/material';
-import { CalculateButton, CalculatorPage, EnumSelect, NumberField, ResultCard, ResultPanel } from '../../../../components/calc';
+import { CalculateButton, CalculatorPage, EnumSelect, NumberField, ResultCard, ResultPanel } from '@/shared/ui/calc';
 import type { NumberFieldSpec } from '../../types/number-field-spec.type';
 import { NumberFieldGrid } from '../../components/NumberFieldGrid';
 import { BODY_SHAPES } from './constants/body-shapes.constants';

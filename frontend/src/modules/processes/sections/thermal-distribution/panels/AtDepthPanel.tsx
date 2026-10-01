@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Grid, Stack } from '@mui/material';
-import { NumberField, ResultCard, ResultPanel, formatValue } from '../../../../../components/calc';
+import { NumberField, ResultCard, ResultPanel, formatValue } from '@/shared/ui/calc';
 import { THERMAL_UI } from '../constants/thermal-ui.constants';
 import { useTemperatureAtDepth } from '../hooks/useTemperatureAtDepth';
 import type { ThermalPanelProps } from '../types/thermal-panel-props.type';

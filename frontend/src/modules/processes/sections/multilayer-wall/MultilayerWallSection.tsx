@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Alert, Box, Button, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
-import { CalculateButton, CalculatorPage, EnumSelect, GasCompositionInput, ResultCard, ResultPanel, formatValue } from '../../../../components/calc';
+import { CalculateButton, CalculatorPage, EnumSelect, GasCompositionInput, ResultCard, ResultPanel, formatValue } from '@/shared/ui/calc';
 import { NumberFieldGrid } from '../../components/NumberFieldGrid';
 import { WallLayersEditor } from '../../components/WallLayersEditor';
 import { PROCESSES_UI } from '../../constants/processes-ui.constants';
 import { useWallMaterialNames } from '../../hooks/useWallMaterialNames';
-import { kelvinToCelsius } from '../../mappers/kelvin-to-celsius.mapper';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import type { SmokeHandOff } from '../../types/smoke-hand-off.type';
 import { HeatFluxChart } from './charts/HeatFluxChart';
 import { InnerHtcPieChart } from './charts/InnerHtcPieChart';

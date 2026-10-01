@@ -1,4 +1,4 @@
-import { api } from '../../../services/api/client';
+import { api } from '@/shared/api/client';
 import type { BedCombustionInput } from '../types/bed-combustion-input.type';
 import type { BedCombustionResult } from '../types/bed-combustion-result.type';
 import type { FluidFuelInput } from '../types/fluid-fuel-input.type';

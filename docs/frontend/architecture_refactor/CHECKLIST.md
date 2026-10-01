@@ -33,12 +33,13 @@ Track progress against [README.md](README.md). Tick an item only when it works i
 
 ## STEP 03 — Shared layer
 
-- [ ] `shared/api`, `shared/ui/{calc,charts,feedback}`, `shared/hooks`, `shared/utils` created by moves
-- [ ] `app/{components,config,constants}`, `pages/{home,not-found}`, module hubs and layouts in `components/`
-- [ ] `src/components` and `src/services` removed
-- [ ] Moved imports use `@/`
-- [ ] Section routes lazy-loaded with `RouteFallback`
-- [ ] `charts` and `mui` chunks; no chunk-size warning
+- [x] `shared/api`, `shared/ui/{calc,charts,feedback}`, `shared/hooks`, `shared/utils` created by moves
+- [x] `app/{components,config,constants}`, `pages/{home,not-found}`, module hubs and layouts in `components/`
+- [x] `src/components` and `src/services` removed
+- [x] Moved imports use `@/`
+- [x] Section routes lazy-loaded with `RouteFallback`
+- [x] `charts`, `charts-modules` and `mui` chunks; no chunk-size warning (largest 398 kB)
+- [x] `npm run verify` passes; `lint:refactor` 427 warnings (was 670)
 - [ ] Commit made
 
 ## STEP 04 — Backend Swagger responses
