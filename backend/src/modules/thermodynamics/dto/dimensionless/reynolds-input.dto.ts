@@ -4,9 +4,9 @@ import { Type, Transform } from 'class-transformer';
 import { FlowGeometry } from '../../enums/flow-geometry.enum';
 import { GeometryDimsDto } from '../geometry/geometry-dims.dto';
 import { KnownFluid, KNOWN_FLUID_DESCRIPTION } from '../../types/known-fluid.type';
-import { STANDARD_PRESSURE_PA } from '../../../../common/thermal';
+import { STANDARD_CONDITIONS } from '../../../../common/thermal';
 
-const P_DEFAULT = STANDARD_PRESSURE_PA;
+const P_DEFAULT = STANDARD_CONDITIONS.PRESSURE_PA;
 
 /**
  * Input for Re = ρ·w·L / μ.

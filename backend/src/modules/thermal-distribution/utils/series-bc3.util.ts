@@ -18,8 +18,8 @@ import {
   cylinderEigenvaluesBC3,
   sphereEigenvaluesBC3,
 } from './eigenvalues-bc3.util';
-import { besselJ0, besselJ1 } from '../../../common/utils/bessel.util';
-import { simpson } from '../../../common/utils/quadrature.util';
+import { besselJ0, besselJ1 } from '../../../common/utils/bessel';
+import { simpson } from '../../../common/utils/quadrature';
 import { SERIES_TERMS_DEFAULT, SIMPSON_INTERVALS_DEFAULT } from '../constants/thermal-distribution.constants';
 
 // ─── sinc limit ───────────────────────────────────────────────────────────────

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { GasPropertiesService } from './gas-properties.service';
 import { TransportService } from './transport.service';
 import { Species } from '../enums';
-import { GAS_CONSTANT_J_MOLK, STANDARD_PRESSURE_PA } from '../../../common/thermal';
+import { PHYSICAL_CONSTANTS, STANDARD_CONDITIONS } from '../../../common/thermal';
 import { GAS_REGISTRY } from '../../../common/thermal/compound/gas';
 import { Air } from '../../../common/thermal/compound/gas';
 import { AIR_MOLE_COMPOSITION } from '../../../common/thermal/compound/composition';
@@ -54,7 +54,7 @@ export class FluidPropertyService {
         T,
       );
       const Cp_J_kgK = Cp_mol / M;
-      const Cv_J_kgK = Cp_J_kgK - GAS_CONSTANT_J_MOLK / M;
+      const Cv_J_kgK = Cp_J_kgK - PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK / M;
       return { Cp_J_kgK, Cv_J_kgK, gamma: Cp_J_kgK / Cv_J_kgK, molecularWeight_kg_mol: M, species: 'air', T_K: T };
     }
 
@@ -62,7 +62,7 @@ export class FluidPropertyService {
       const { sp, M } = this._resolveSpecies(dto.fluid);
       const Cp_mol    = this.gasProps.cpSpecies(sp, T);
       const Cp_J_kgK  = Cp_mol / M;
-      const Cv_J_kgK  = Cp_J_kgK - GAS_CONSTANT_J_MOLK / M;
+      const Cv_J_kgK  = Cp_J_kgK - PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK / M;
       return { Cp_J_kgK, Cv_J_kgK, gamma: Cp_J_kgK / Cv_J_kgK, molecularWeight_kg_mol: M, species: sp, T_K: T };
     }
 
@@ -70,7 +70,7 @@ export class FluidPropertyService {
     const M        = this.gasProps.molecularWeight(mole);
     const Cp_mol   = this.gasProps.cpMixture(mole, T);
     const Cp_J_kgK = Cp_mol / M;
-    const Cv_J_kgK = Cp_J_kgK - GAS_CONSTANT_J_MOLK / M;
+    const Cv_J_kgK = Cp_J_kgK - PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK / M;
     return { Cp_J_kgK, Cv_J_kgK, gamma: Cp_J_kgK / Cv_J_kgK, molecularWeight_kg_mol: M, T_K: T };
   }
 
@@ -79,7 +79,7 @@ export class FluidPropertyService {
   getViscosity(dto: FluidBaseInputDto): FluidViscosityResultDto {
     this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
-    const P = dto.P_Pa ?? STANDARD_PRESSURE_PA;
+    const P = dto.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
 
     let mu: number;
     let M: number;
@@ -104,7 +104,7 @@ export class FluidPropertyService {
   getDensity(dto: FluidBaseInputDto): FluidDensityResultDto {
     this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
-    const P = dto.P_Pa ?? STANDARD_PRESSURE_PA;
+    const P = dto.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
 
     let M: number;
 

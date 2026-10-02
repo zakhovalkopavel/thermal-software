@@ -21,14 +21,14 @@
  *   - clamping, scaling, and T1=T2 edge cases
  */
 
-import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/nasa7-equation-method';
-import { compoundNasa7 } from '../../../../src/common/thermal/utils/nasa-database';
+import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa7-equation-method';
+import { compoundNasa7 } from '../../../../src/common/thermal/utils/nasa';
 import { CO2 } from '../../../../src/common/thermal/compound/gas/co2';
 import { N2  } from '../../../../src/common/thermal/compound/gas/n2';
-import { GAS_CONSTANT_J_MOLK } from '../../../../src/common/thermal/constants/physical.constants';
+import { PHYSICAL_CONSTANTS } from '../../../../src/common/thermal/constants/physical.constants';
 
 const method = new Nasa7EquationMethod();
-const R = GAS_CONSTANT_J_MOLK;
+const R = PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK;
 
 // ─── CO2 ─────────────────────────────────────────────────────────────────────
 

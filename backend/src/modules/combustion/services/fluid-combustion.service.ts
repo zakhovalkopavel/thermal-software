@@ -1,14 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { COMBUSTION } from '../constants/combustion.constants';
-import { FuelPhase } from '../data/fuels/fuel.interface';
-import { FluidFuelInputDto, FluidFuelResultDto } from '../dto/fluid-fuel.dto';
-import {
-  airFlows, elementsOfGas, gasMassFlow, scaleFlows, stoichiometricO2,
-} from '../utils/element-balance.util';
-import {
-  resolveCondensedFuel, resolveFuelFlow, resolveGaseousFuel, summarizeCondensedFuel, summarizeGaseousFuel,
-} from '../utils/fuel-resolver.util';
-import { toStepResult } from '../utils/step-result.mapper';
+import { COMBUSTION } from '../constants';
+import { FuelPhase } from '../enums/fuel-phase.enum';
+import { FluidFuelInputDto, FluidFuelResultDto } from '../dto/fluid';
+import { airFlows, gasMassFlow, scaleFlows } from '../utils/gas-flows';
+import { elementsOfGas, stoichiometricO2 } from '../utils/element-balance';
+import { resolveCondensedFuel, resolveFuelFlow, resolveGaseousFuel, summarizeCondensedFuel, summarizeGaseousFuel } from '../utils/fuel-resolver';
+import { toStepResult } from '../utils/step-result';
 import { CombustionEnthalpyService } from './combustion-enthalpy.service';
 import { FlameSolverService } from './flame-solver.service';
 

@@ -8,7 +8,7 @@ import { RecuperatorHtcResultDto } from '../dto/recuperator-htc-result.dto';
 import { AlphaResult } from '../interfaces/alpha-result.interface';
 import { SmokeCompositionDto } from '../dto/smoke-composition.dto';
 import { MultilayerWallService } from './multilayer-wall.service';
-import { logMean } from '../../../common/utils/math.util';
+import { logMean } from '../../../common/utils/math';
 
 const PURE_AIR: SmokeCompositionDto = {
   N2: 0.79, O2: 0.21, CO2: 0, CO: 0, H2O: 0, H2: 0,

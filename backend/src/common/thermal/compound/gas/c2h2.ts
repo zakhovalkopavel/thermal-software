@@ -1,6 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
  * C2H2 — Acetylene.
@@ -12,7 +13,7 @@ import { RefKey } from '../../enum/ref-key.enum';
 export const C2H2: CompoundValue = {
   name: 'Acetylene',
   chemicalFormula: 'C2H2',
-  Mr: 0.026038,
+  Mr: COMPOUND_LIBRARY.C2H2.molarMass_kg_mol,
   /** ref: Perry9 Table 2-95, p. 2-167, no. 7 — 22.82, 21.068 (J/kmol × 1E-07) */
   enthalpyFormation298: 228200,
   gibbsEnergy298: 210680,

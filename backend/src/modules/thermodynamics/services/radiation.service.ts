@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { STEFAN_BOLTZMANN_W_M2K4 } from '../../../common/thermal';
+import { PHYSICAL_CONSTANTS } from '../../../common/thermal';
 import { RADIATION_DT_MIN_K } from '../constants/radiation.constants';
 
 /**
@@ -98,7 +98,7 @@ export class RadiationService {
     const Tg4 = Math.pow(T_gas_K, 4);
     const Ts4 = Math.pow(T_surface_K, 4);
 
-    return STEFAN_BOLTZMANN_W_M2K4 * eps_eff * (eps_g * Tg4 - eps_gs * Ts4) / (T_gas_K - T_surface_K);
+    return PHYSICAL_CONSTANTS.STEFAN_BOLTZMANN_W_M2K4 * eps_eff * (eps_g * Tg4 - eps_gs * Ts4) / (T_gas_K - T_surface_K);
   }
 
   // ── Solid-surface radiation heat transfer coefficient ──────────────────────
@@ -128,7 +128,7 @@ export class RadiationService {
   ): number {
     if (Math.abs(T1_K - T2_K) < RADIATION_DT_MIN_K) return 0;
     return Math.abs(
-      STEFAN_BOLTZMANN_W_M2K4 * (epsilon1 * Math.pow(T1_K, 4) - epsilon2 * Math.pow(T2_K, 4))
+      PHYSICAL_CONSTANTS.STEFAN_BOLTZMANN_W_M2K4 * (epsilon1 * Math.pow(T1_K, 4) - epsilon2 * Math.pow(T2_K, 4))
       / (T1_K - T2_K),
     );
   }

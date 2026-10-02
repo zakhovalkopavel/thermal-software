@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Common } from '../../../common/thermal/utils/common';
-import {
-  GAS_CONSTANT_J_MOLK,
-  STANDARD_PRESSURE_PA,
-  THERMOCHEMICAL_REFERENCE_TEMPERATURE_K,
-} from '../../../common/thermal/constants/physical.constants';
-import { heatCapacityEntries } from '../../../common/thermal/utils/heat-capacity-entries';
-import { compoundNasaThermo, NasaThermo } from '../../../common/thermal/utils/nasa-thermo';
+import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
+import { STANDARD_CONDITIONS } from '../../../common/thermal/constants/standard-conditions.constants';
+import { heatCapacityEntries } from '../../../common/thermal/utils/compound-properties/heat-capacity-entries.util';
+import { compoundNasaThermo, NasaThermo } from '../../../common/thermal/utils/nasa';
 import { GAS_REGISTRY } from '../../../common/thermal/compound/gas/registry';
 import { CompoundValue } from '../../../common/thermal/interfaces/compound-value.interface';
 import { EquationValue } from '../../../common/thermal/interfaces/equation-value.interface';
@@ -57,13 +54,13 @@ export class GasPropertiesService {
   enthalpy(species: Species, T_K: number): number {
     const compound = this._compound(species);
     const nasa = compoundNasaThermo(compound);
-    if (nasa) return nasa.enthalpy(T_K) - nasa.enthalpy(THERMOCHEMICAL_REFERENCE_TEMPERATURE_K);
+    if (nasa) return nasa.enthalpy(T_K) - nasa.enthalpy(STANDARD_CONDITIONS.THERMOCHEMICAL_REFERENCE_TEMPERATURE_K);
     const { def, values } = heatCapacityEntries(compound);
     const entry = values[def];
     const eq = Common.equation(entry.type);
     const k = entry.k ?? 1;
     return eq.integral(T_K, entry.vars as never, entry.min, entry.max, k)
-         - eq.integral(THERMOCHEMICAL_REFERENCE_TEMPERATURE_K, entry.vars as never, entry.min, entry.max, k);
+         - eq.integral(STANDARD_CONDITIONS.THERMOCHEMICAL_REFERENCE_TEMPERATURE_K, entry.vars as never, entry.min, entry.max, k);
   }
 
   /**
@@ -141,8 +138,8 @@ export class GasPropertiesService {
   }
 
   /** Ideal-gas density [kg/m³] */
-  density(M_kg_mol: number, T_K: number, P_Pa = STANDARD_PRESSURE_PA): number {
-    return (P_Pa * M_kg_mol) / (GAS_CONSTANT_J_MOLK * T_K);
+  density(M_kg_mol: number, T_K: number, P_Pa = STANDARD_CONDITIONS.PRESSURE_PA): number {
+    return (P_Pa * M_kg_mol) / (PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK * T_K);
   }
 
   /** Mixture basic properties (Cp, H, ρ, M) — transport comes from TransportService */
@@ -155,7 +152,7 @@ export class GasPropertiesService {
     const Cp_J_molK = this.cpMixture(moleFractions, T_K);
     const Cp_J_kgK  = Cp_J_molK / M;
     const H_J_mol   = this.enthalpyMixture(moleFractions, T_K);
-    const rho_kg_m3 = this.density(M, T_K, P_atm * STANDARD_PRESSURE_PA);
+    const rho_kg_m3 = this.density(M, T_K, P_atm * STANDARD_CONDITIONS.PRESSURE_PA);
     return { Cp_J_kgK, H_J_mol, rho_kg_m3, molecularWeight_kg_mol: M };
   }
 

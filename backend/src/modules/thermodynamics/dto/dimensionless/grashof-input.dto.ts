@@ -4,10 +4,10 @@ import { Type, Transform } from 'class-transformer';
 import { FlowGeometry } from '../../enums/flow-geometry.enum';
 import { GeometryDimsDto } from '../geometry/geometry-dims.dto';
 import { KnownFluid, KNOWN_FLUID_DESCRIPTION } from '../../types/known-fluid.type';
-import { STANDARD_GRAVITY_M_S2, STANDARD_PRESSURE_PA } from '../../../../common/thermal';
+import { PHYSICAL_CONSTANTS, STANDARD_CONDITIONS } from '../../../../common/thermal';
 
-const P_DEFAULT = STANDARD_PRESSURE_PA;
-const G_DEFAULT = STANDARD_GRAVITY_M_S2;
+const P_DEFAULT = STANDARD_CONDITIONS.PRESSURE_PA;
+const G_DEFAULT = PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2;
 
 /**
  * Input for Gr = g·β·ΔT·L³ / ν²  (β = 2/(T_hot + T_cold) for ideal gas).

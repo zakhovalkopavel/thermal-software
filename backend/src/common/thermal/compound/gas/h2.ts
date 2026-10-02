@@ -1,12 +1,13 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /** H2 — Hydrogen */
 export const H2: CompoundValue = {
   name: 'Hydrogen',
   chemicalFormula: 'H2',
-  Mr: 0.002016,
+  Mr: COMPOUND_LIBRARY.H2.molarMass_kg_mol,
   enthalpyFormation298: 0,
   gibbsEnergy298: 0,
   collisionDiameter: 2.827,

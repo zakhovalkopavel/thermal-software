@@ -18,8 +18,8 @@ import { plateEigenvaluesBC3, cylinderEigenvaluesBC3, sphereEigenvaluesBC3 }
 import { hollowCylinderEigenvaluesBC3 }
   from '../../../../src/modules/thermal-distribution/utils/eigenvalues-hollow-bc3.util';
 import { besselJ0, besselJ1, besselY0, besselY1 }
-  from '../../../../src/common/utils/bessel.util';
-import { brentq } from '../../../../src/common/utils/root-finding.util';
+  from '../../../../src/common/utils/bessel';
+import { brentq } from '../../../../src/common/utils/root-finding';
 
 // ─── BC I (closed-form) ───────────────────────────────────────────────────────
 

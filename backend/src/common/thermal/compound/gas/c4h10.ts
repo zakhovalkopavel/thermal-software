@@ -1,6 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
  * C4H10 — n-Butane.
@@ -12,7 +13,7 @@ import { RefKey } from '../../enum/ref-key.enum';
 export const C4H10: CompoundValue = {
   name: 'n-Butane',
   chemicalFormula: 'C4H10',
-  Mr: 0.058124,
+  Mr: COMPOUND_LIBRARY.C4H10.molarMass_kg_mol,
   /** ref: Perry9 Table 2-95, p. 2-167, no. 31 (Butane) — −12.579, −1.67 (J/kmol × 1E-07) */
   enthalpyFormation298: -125790,
   gibbsEnergy298: -16700,

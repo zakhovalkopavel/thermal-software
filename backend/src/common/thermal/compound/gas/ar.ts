@@ -1,12 +1,13 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /** Ar — Argon (monatomic noble gas) */
 export const Ar: CompoundValue = {
   name: 'Argon',
   chemicalFormula: 'Ar',
-  Mr: 0.039948,
+  Mr: COMPOUND_LIBRARY.Ar.molarMass_kg_mol,
   enthalpyFormation298: 0,
   gibbsEnergy298: 0,
   collisionDiameter: 3.542,

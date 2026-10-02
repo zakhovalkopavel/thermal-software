@@ -1,12 +1,13 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /** SO2 — Sulfur dioxide */
 export const SO2: CompoundValue = {
   name: 'Sulfur dioxide',
   chemicalFormula: 'SO2',
-  Mr: 0.064065,
+  Mr: COMPOUND_LIBRARY.SO2.molarMass_kg_mol,
   enthalpyFormation298: -296.8e3,
   gibbsEnergy298: -300.1e3,
   collisionDiameter: 4.112,

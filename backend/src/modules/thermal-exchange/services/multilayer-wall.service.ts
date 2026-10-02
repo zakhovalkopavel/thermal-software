@@ -14,8 +14,8 @@ import { WallBalance } from '../interfaces/wall-balance.interface';
 import { WallGeometry } from '../enums/wall-geometry.enum';
 import { WallMaterialKey } from '../dto/layer.dto';
 import { SmokeCompositionDto } from '../dto/smoke-composition.dto';
-import { logMean } from '../../../common/utils/math.util';
-import { brentq } from '../../../common/utils/root-finding.util';
+import { logMean } from '../../../common/utils/math';
+import { brentq } from '../../../common/utils/root-finding';
 import { MULTILAYER_WALL } from '../constants/multilayer-wall.constants';
 
 const REFRACTORY_KEYS = new Set<string>(Object.values(RefractoryThermalMaterial));

@@ -1,12 +1,13 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /** H2O — Water vapour */
 export const H2O: CompoundValue = {
   name: 'Water',
   chemicalFormula: 'H2O',
-  Mr: 0.018015,
+  Mr: COMPOUND_LIBRARY.H2O.molarMass_kg_mol,
   enthalpyFormation298: -241.83e3,
   gibbsEnergy298: -228.59e3,
   collisionDiameter: 2.641,

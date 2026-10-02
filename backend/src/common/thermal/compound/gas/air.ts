@@ -1,6 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
  * Air — dry atmospheric air treated as a pseudo-pure compound.
@@ -19,7 +20,7 @@ import { RefKey } from '../../enum/ref-key.enum';
 export const Air: CompoundValue = {
   name: 'Air',
   chemicalFormula: '78.084%(v) N2, 20.946%(v) O2, 0.934%(v) Ar, 0.040%(v) CO2',
-  Mr: 0.028951,
+  Mr: COMPOUND_LIBRARY.Air.molarMass_kg_mol,
   isComposition: true,
   enthalpyFormation298: 0,
   gibbsEnergy298: 0,

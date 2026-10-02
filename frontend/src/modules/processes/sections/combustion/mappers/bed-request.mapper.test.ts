@@ -16,6 +16,7 @@ describe('combustion › bed-request', () => {
         "bedHeight_m": 0.5,
         "diameter_m": 0.3,
         "fuelId": "charcoal-briquette",
+        "generatorWallEmissivity": 0.85,
         "generatorWallLayers": [
           {
             "material": "chamotte_solid",
@@ -30,6 +31,7 @@ describe('combustion › bed-request', () => {
         "nLayers": 25,
         "tAirPrimary_K": 400,
         "tAirSecondary_K": 573,
+        "tAmbient_K": 293,
       }
     `);
   });
@@ -49,9 +51,11 @@ describe('combustion › bed-request', () => {
     expect(input).toMatchObject({
       mAirPrimary_kgs: 0.004,
       mAirSecondary_kgs: 0.006,
-      furnace: { diameter_m: 0.4, length_m: 1, wallLayers: [{ material: 'chamotte_1000', thicknessMm: 115 }] },
+      tAmbient_K: 293,
+      furnace: { diameter_m: 0.4, length_m: 1, emissivity: 0.85, wallLayers: [{ material: 'chamotte_1000', thicknessMm: 115 }] },
     });
     expect(input).not.toHaveProperty('generatorWallLayers');
+    expect(input).not.toHaveProperty('generatorWallEmissivity');
     expect(input).not.toHaveProperty('airFlow_m3h');
   });
 
@@ -68,5 +72,32 @@ describe('combustion › bed-request', () => {
     expect(() =>
       toBedInput({ ...DRAFT, furnaceMode: 'walls', furnaceWallLayers: [toNewWallLayerDraft()] }, SOLID),
     ).toThrow('Furnace wall: choose the material of layer 1.');
+  });
+
+  it('requires the geometry and the primary air', () => {
+    expect(() => toBedInput({ ...DRAFT, values: { ...DRAFT.values, diameter_m: null } }, SOLID)).toThrow('Enter Generator diameter.');
+    expect(() => toBedInput({ ...DRAFT, primaryAir: { basis: 'flow', value: null } }, SOLID)).toThrow('Enter the primary air flow.');
+  });
+
+  it('sends and requires the steam temperature only with steam injection', () => {
+    expect(toBedInput({ ...DRAFT, values: { ...DRAFT.values, steamInjectionPercent: 10 } }, SOLID)).toMatchObject({
+      steamInjectionPercent: 10,
+      steamT_K: 500,
+    });
+    expect(toBedInput(DRAFT, SOLID)).not.toHaveProperty('steamT_K');
+    expect(() => toBedInput({ ...DRAFT, values: { ...DRAFT.values, steamInjectionPercent: 10, steamT_K: null } }, SOLID)).toThrow(
+      'Enter Steam T.',
+    );
+  });
+
+  it('requires the surroundings only with generator or furnace walls', () => {
+    const noWalls = { ...DRAFT, generatorWallLayers: [], values: { ...DRAFT.values, generatorWallEmissivity: null, tAmbient_K: null } };
+    expect(toBedInput(noWalls, SOLID)).not.toHaveProperty('tAmbient_K');
+    expect(() => toBedInput({ ...DRAFT, values: { ...DRAFT.values, generatorWallEmissivity: null } }, SOLID)).toThrow(
+      'Enter Generator wall emissivity.',
+    );
+    expect(() =>
+      toBedInput({ ...noWalls, furnaceMode: 'walls', furnaceWallLayers: [toNewWallLayerDraft({ material: 'chamotte_1000', thicknessMm: 115 })] }, SOLID),
+    ).toThrow('Enter Ambient T.');
   });
 });

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { GasPropertiesService } from '../../thermodynamics/services/gas-properties.service';
-import { Species } from '../../thermodynamics/enums/species.enum';
-import { ATOMIC_MASS, COMBUSTION } from '../constants/combustion.constants';
-import { CondensedFuel, ElementalComposition } from '../data/fuels/fuel.interface';
-import { ElementFlows, GasFlows } from '../interfaces/combustion-streams.interface';
-import { elementsOfCondensed, elementsOfGas, gasMassFlow } from '../utils/element-balance.util';
+import { Species } from '../../thermodynamics/enums';
+import { ATOMIC_MASS, COMBUSTION } from '../constants';
+import { CondensedFuel, ElementalComposition } from '../interfaces';
+import { ElementFlows, GasFlows } from '../types';
+import { elementsOfCondensed, elementsOfGas } from '../utils/element-balance';
+import { gasMassFlow } from '../utils/gas-flows';
 
 /**
  * Absolute (formation-referenced) enthalpies of combustion streams.

@@ -6,8 +6,9 @@ import { ProductEquilibriumService } from '../../../../src/modules/combustion/se
 import { FlameSolverService } from '../../../../src/modules/combustion/services/flame-solver.service';
 import { ChemicalKineticsService } from '../../../../src/modules/combustion/services/chemical-kinetics.service';
 import { BedCombustionService } from '../../../../src/modules/combustion/services/bed-combustion.service';
-import { BedCombustionInputDto, BedCombustionResultDto } from '../../../../src/modules/combustion/dto/bed-combustion.dto';
+import { BedCombustionInputDto, BedCombustionResultDto } from '../../../../src/modules/combustion/dto/bed';
 import { CHARCOAL_BRIQUETTE } from '../../../../src/modules/combustion/data/fuels';
+import { COMBUSTION_EXAMPLES } from '../../../../src/modules/combustion/constants';
 import { FuelId } from '../../../../src/modules/combustion/enums/fuel-id.enum';
 import { LayerDto } from '../../../../src/modules/thermal-exchange/dto/layer.dto';
 import { RefractoryThermalMaterial } from '../../../../src/modules/refractory/enums/refractory-thermal-material.enum';
@@ -30,7 +31,7 @@ describe('BedCombustionService (mode 4)', () => {
   const { id: _id, ref: _ref, page: _page, phase: _phase, ...briquette } = CHARCOAL_BRIQUETTE;
   const charcoal = { ...briquette, heatOfFormation_J_kg: undefined, lhv_J_kg: 30_000_000 };
 
-  const base: BedCombustionInputDto = { fuel: charcoal, airFlow_m3h: 10, tAirPrimary_K: 400, nLayers: 20 };
+  const base: BedCombustionInputDto = { fuel: charcoal, ...COMBUSTION_EXAMPLES.BED, nLayers: 20 };
   const wallLayers: LayerDto[] = [
     { material: RefractoryThermalMaterial.CHAMOTTE_SOLID, thicknessMm: 60 },
     { material: RefractoryThermalMaterial.CHAMOTTE_600,   thicknessMm: 60 },
@@ -101,7 +102,7 @@ describe('BedCombustionService (mode 4)', () => {
   });
 
   it('generator walls lose heat and cool the gas', () => {
-    const r = bed.calculate({ ...base, generatorWallLayers: wallLayers });
+    const r = bed.calculate({ ...base, ...COMBUSTION_EXAMPLES.BED_WALL, generatorWallLayers: wallLayers });
     expect(r.generatorHeatLoss_W).toBeGreaterThan(0);
     expect(r.layers.some(l => l.tWallInner_K !== null)).toBe(true);
     expect(r.tStep1_K).toBeLessThan(adiabatic.tStep1_K);
@@ -111,14 +112,15 @@ describe('BedCombustionService (mode 4)', () => {
   it('furnace wall loss lowers the flame temperature', () => {
     const noLoss = bed.calculate({ ...base, kExcessAir: 1.2 });
     const withWall = bed.calculate({
-      ...base, kExcessAir: 1.2, furnace: { diameter_m: 0.4, length_m: 1, wallLayers },
+      ...base, kExcessAir: 1.2, tAmbient_K: COMBUSTION_EXAMPLES.BED_WALL.tAmbient_K,
+      furnace: { ...COMBUSTION_EXAMPLES.FURNACE, wallLayers },
     });
     expect(withWall.burnout.heatLoss_W).toBeGreaterThan(0);
     expect(withWall.tFlame_K).toBeLessThan(noLoss.tFlame_K);
   });
 
   it('steam injection adds H2O after the max-CO2 layer and raises H2 in the generator gas', () => {
-    const r = bed.calculate({ ...base, steamInjectionPercent: 10, steamT_K: 500 });
+    const r = bed.calculate({ ...base, steamInjectionPercent: 10, steamT_K: COMBUSTION_EXAMPLES.STEAM_T_K });
     expect(r.mSteam_kgs).toBeGreaterThan(0);
     expect(r.layers.filter(l => l.steamInjected)).toHaveLength(1);
     expect(r.generatorGasMoleFractions.H2).toBeGreaterThan(adiabatic.generatorGasMoleFractions.H2);
@@ -137,7 +139,8 @@ describe('BedCombustionService (mode 4)', () => {
   });
 
   it('rejects inconsistent input', () => {
-    expect(() => bed.calculate({ ...base, mAirPrimary_kgs: 0.003 })).toThrow('at most one');
+    expect(() => bed.calculate({ ...base, mAirPrimary_kgs: 0.003 })).toThrow('exactly one');
+    expect(() => bed.calculate({ ...base, airFlow_m3h: undefined })).toThrow('exactly one');
     expect(() => bed.calculate({ ...base, kExcessAir: 1.2, mAirSecondary_kgs: 0.01 })).toThrow('at most one');
     expect(() => bed.calculate({ ...base, fuel: { ...charcoal, porosity: undefined } })).toThrow('porosity');
     expect(() => bed.calculate({
@@ -145,8 +148,15 @@ describe('BedCombustionService (mode 4)', () => {
     })).toThrow('sulphur');
   });
 
+  it('requires the inputs of the optional sub-models', () => {
+    expect(() => bed.calculate({ ...base, steamInjectionPercent: 10 })).toThrow('steamT_K');
+    expect(() => bed.calculate({ ...base, tAmbient_K: 293, generatorWallLayers: wallLayers })).toThrow('generatorWallEmissivity');
+    expect(() => bed.calculate({ ...base, kExcessAir: 1.2, furnace: { ...COMBUSTION_EXAMPLES.FURNACE, wallLayers } }))
+      .toThrow('tAmbient_K');
+  });
+
   it('runs with the verified briquette preset', () => {
-    const r = bed.calculate({ fuelId: FuelId.CharcoalBriquette, nLayers: 20 });
+    const r = bed.calculate({ fuelId: FuelId.CharcoalBriquette, ...COMBUSTION_EXAMPLES.BED, nLayers: 20 });
     expect(r.mFuel_kgs).toBeGreaterThan(0);
     expect(r.elementBalanceResidual).toBeLessThan(1e-9);
     expect(energyResidual_K(r)).toBeLessThan(0.01);

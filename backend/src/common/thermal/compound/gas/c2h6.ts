@@ -1,6 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
  * C2H6 — Ethane.
@@ -12,7 +13,7 @@ import { RefKey } from '../../enum/ref-key.enum';
 export const C2H6: CompoundValue = {
   name: 'Ethane',
   chemicalFormula: 'C2H6',
-  Mr: 0.030070,
+  Mr: COMPOUND_LIBRARY.C2H6.molarMass_kg_mol,
   /** ref: Perry9 Table 2-95, p. 2-169, no. 125 — −8.382, −3.192 (J/kmol × 1E-07) */
   enthalpyFormation298: -83820,
   gibbsEnergy298: -31920,

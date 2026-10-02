@@ -1,7 +1,7 @@
 # 07 — Flue Gas for the Recuperator (`CombustionService.flueGas()`)
 
 **Consumer:** `RecuperatorService` (`POST /recuperator/calculate`) · **Input:** `CombustionModeInputDto` ([06 §6.8](06_API.md))
-**Output:** `FlueGas` (`interfaces/combustion-streams.interface.ts`) · no own endpoint
+**Output:** `FlueGas` (`interfaces/flue-gas.interface.ts`) · no own endpoint
 
 The recuperator does not have its own fuel model. The request selects one of the four combustion
 modes and passes that mode's input; the recuperator takes the flue gas of the last reacting step.
@@ -52,7 +52,7 @@ mode input and re-runs the mode:
 |---|---|
 | `solid-direct`, `fluid` | `tAir_K` |
 | `solid-two-step` | `tAirPrimary_K`; `tAirSecondary_K` if given (otherwise it follows the primary air) |
-| `bed` | `tAirPrimary_K` (default 400 K = `BED_KINETICS.AIR_T_DEFAULT_K`); `tAirSecondary_K` if given |
+| `bed` | `tAirPrimary_K` (required); `tAirSecondary_K` if given |
 
 The fuel temperature is not shifted.
 

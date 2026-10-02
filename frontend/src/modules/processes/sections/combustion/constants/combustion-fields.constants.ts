@@ -61,17 +61,17 @@ export const COMBUSTION_FIELDS = {
   } satisfies Record<string, NumberFieldSpec<FluidFieldKey>[]>,
   bed: {
     main: [
-      { key: 'bedHeight_m', label: 'Bed height', unit: 'm', min: 0.01, helperText: 'Default 0.5' },
-      { key: 'diameter_m', label: 'Generator diameter', unit: 'm', min: 0.01, helperText: 'Default 0.3' },
-      { key: 'nLayers', label: 'Layers', min: 1, max: 500, helperText: 'Default 25' },
-      { key: 'tAirPrimary_K', label: 'Primary air T', unit: 'K', min: T_MIN_K, helperText: 'Default 400' },
+      { key: 'bedHeight_m', label: 'Bed height', unit: 'm', min: 0.01, required: true },
+      { key: 'diameter_m', label: 'Generator diameter', unit: 'm', min: 0.01, required: true },
+      { key: 'nLayers', label: 'Layers', min: 1, max: 500, required: true },
+      { key: 'tAirPrimary_K', label: 'Primary air T', unit: 'K', min: T_MIN_K, required: true },
       { key: 'tAirSecondary_K', label: 'Secondary air T', unit: 'K', min: T_MIN_K, helperText: 'Default = primary' },
     ],
     advanced: [
       { key: 'steamInjectionPercent', label: 'Steam injection', unit: '%', min: 0, helperText: 'Of the gas molar flow at max CO₂' },
-      { key: 'steamT_K', label: 'Steam T', unit: 'K', min: 373, helperText: 'Default 500' },
-      { key: 'generatorWallEmissivity', label: 'Generator wall emissivity', min: 0, max: 1, helperText: 'Default 0.85' },
-      { key: 'tAmbient_K', label: 'Ambient T', unit: 'K', min: T_MIN_K, helperText: 'Default 293' },
+      { key: 'steamT_K', label: 'Steam T', unit: 'K', min: 373, helperText: 'Required with steam injection' },
+      { key: 'generatorWallEmissivity', label: 'Generator wall emissivity', min: 0, max: 1, helperText: 'Required with generator walls' },
+      { key: 'tAmbient_K', label: 'Ambient T', unit: 'K', min: T_MIN_K, helperText: 'Required with generator or furnace walls' },
       T_FUEL,
       P_O2,
       W_H2O,
@@ -80,6 +80,6 @@ export const COMBUSTION_FIELDS = {
   furnace: [
     { key: 'diameter_m', label: 'Furnace diameter', unit: 'm', min: 0.01, required: true },
     { key: 'length_m', label: 'Furnace length', unit: 'm', min: 0.01, required: true },
-    { key: 'emissivity', label: 'Wall emissivity', min: 0, max: 1, helperText: 'Default 0.85' },
+    { key: 'emissivity', label: 'Wall emissivity', min: 0, max: 1, required: true },
   ] satisfies NumberFieldSpec<FurnaceFieldKey>[],
 };

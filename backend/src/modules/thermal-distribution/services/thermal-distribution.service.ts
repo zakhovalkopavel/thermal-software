@@ -70,8 +70,8 @@ import {
 } from '../utils/series-hollow-bc3.util';
 
 // ── Adaptive quadrature (auto-selects Gauss-Legendre vs Clenshaw-Curtis) ──────
-import { adaptiveIntegrate } from '../../../common/utils/quadrature.util';
-import type { GaussNodeCount } from '../../../common/utils/gauss-legendre.constants';
+import { adaptiveIntegrate } from '../../../common/utils/quadrature';
+import type { GaussNodeCount } from '../../../common/utils/quadrature';
 import {
   AVERAGE_MODE_DEFAULT,
   GAUSS_NODES_DEFAULT,

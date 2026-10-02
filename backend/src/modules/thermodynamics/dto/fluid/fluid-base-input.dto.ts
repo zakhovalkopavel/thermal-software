@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
 import { KnownFluid, KNOWN_FLUID_DESCRIPTION } from '../../types';
-import { STANDARD_PRESSURE_PA, STANDARD_TEMPERATURE_K } from '../../../../common/thermal';
+import { STANDARD_CONDITIONS } from '../../../../common/thermal';
 
 /**
  * Shared base for all single-fluid property requests.
@@ -29,11 +29,11 @@ export class FluidBaseInputDto {
   @IsOptional() @IsObject()
   composition?: Record<string, number>;
 
-  @ApiPropertyOptional({ description: 'Fluid bulk temperature [K]', minimum: 1, example: STANDARD_TEMPERATURE_K })
+  @ApiPropertyOptional({ description: 'Fluid bulk temperature [K]', minimum: 1, example: STANDARD_CONDITIONS.TEMPERATURE_K })
   @IsOptional() @IsNumber() @Min(1)
   T_fluid_K?: number;
 
-  @ApiPropertyOptional({ description: `Pressure [Pa], default ${STANDARD_PRESSURE_PA}` })
+  @ApiPropertyOptional({ description: `Pressure [Pa], default ${STANDARD_CONDITIONS.PRESSURE_PA}` })
   @IsOptional() @IsNumber()
   P_Pa?: number;
 

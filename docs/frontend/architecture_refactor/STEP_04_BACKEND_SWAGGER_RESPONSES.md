@@ -101,9 +101,67 @@ Step 05 then validates real responses against these schemas. A DTO that document
   - `thermal-exchange/constants/multilayer-wall.constants.ts` (root tolerance and the low-temperature outer α correlation);
   - `thermodynamics/constants/radiation.constants.ts` (`RADIATION_DT_MIN_K`);
   - `thermal-distribution/constants/thermal-distribution.constants.ts` (series terms, Simpson intervals, eigenvalue tolerances, Gauss nodes, average mode);
-  - `common/utils/quadrature.constants.ts` (oscillation detector);
+  - `common/utils/quadrature/quadrature.constants.ts` (oscillation detector);
   - `refractory/constants/phase-equilibrium.constants.ts` (eutectic temperature and composition);
   - `ThermalPerformanceService` now uses the existing `calculation-constants.ts` values instead of private duplicates; the unused `BASE_CP` was dropped.
+
+### Follow-up: one export per file (requested by the user)
+
+Files with several exports are split into one construct per file, grouped into subfolders with an `index.ts` barrel. Consumers import from the folder; files inside a folder import their siblings directly. Constants become one grouped object per file. Delivered in phases: 1 `common` and the chemistry library, 2 combustion, 3 thermodynamics / thermal-distribution / thermal-exchange / metals, 4 refractory.
+
+Module shape (decided by the user):
+
+- **Viscosity models** (Iida, Nakamoto, VTF, Arrhenius) become one class per model. The public calculation is the only public method, and the helpers become private methods.
+- **Pure helper toolboxes** (e.g. combustion `element-balance`) become one exported function per file:
+  - a helper used only inside its own file is not exported;
+  - a helper shared by several files gets its own file;
+  - unused exports are deleted.
+- **Everywhere:** interfaces go to `interfaces/`, and inline numeric coefficients go to the model's constants.
+
+**Phase 1 — `common`:**
+
+- `common/utils` is split into `bessel/`, `root-finding/`, `linear-algebra/`, `math/`, `numeric-format/`, `optimization/`, `regression/`, `quadrature/`. GL8–GL64 tables are private and exposed only through `GAUSS_LEGENDRE_TABLES`. The specs mirror the folders under `test/unit/common/utils/`.
+- `common/thermal/constants`: `PHYSICAL_CONSTANTS` and `STANDARD_CONDITIONS` replace the named constants (values unchanged).
+- `common/thermal/utils` is grouped into `equation-methods/`, `nasa/` (with `NASA_DATABASE` paths) and `compound-properties/`; `type/` has one alias per file.
+- New `common/chemistry` library:
+  - `PERIODIC_TABLE` (118 elements, CIAAW 2024 abridged atomic weights) and `atomicMass`;
+  - `parseFormula` (nested groups, decimal counts, hydrates) and `calculateMolarMass`;
+  - `COMPOUND_LIBRARY` with the molar mass of every compound used by the application, and `molarMass(formula)`, which falls back to the formula for compounds missing from the library.
+- Links to the library:
+  - gas compounds: `Mr: COMPOUND_LIBRARY.<formula>.molarMass_kg_mol`;
+  - refractory `MOLAR_MASSES`, `NAKAMOTO_2007.molarMass` and the Iida η₀ᵢ molar masses list only component keys;
+  - combustion `ATOMIC_MASS` is built from `atomicMass()`, and the unused `MOLAR_MASS` was deleted;
+  - the combustion element balance uses the common `parseFormula`.
+- Existing molar masses moved unchanged. The only conflict was SO₃: refractory used 80.06 g/mol, gases used 80.064, and the library keeps 80.064. That shifts SO₃ in the refractory wt% → mol% conversion by 0.005 %.
+
+**Phase 2 — combustion:**
+
+- **`constants/`** has one object per file:
+  - `COMBUSTION`, `BED_KINETICS`, `ATOMIC_MASS`, `ELEMENTS`;
+  - `PRODUCT_SPECIES` (from the step-result mapper);
+  - `BED_REACTIONS` (stoichiometry, carbon per extent, activation energies, pre-exponential factors and reaction enthalpies; stoichiometry was previously private in `BedCombustionService`, the kinetic data was in `BED_KINETICS`);
+  - `MODE_INPUT_KEY` (previously private in `CombustionService`);
+  - `COMBUSTION_EXAMPLES` (Swagger examples, previously in the controller; also the bed inputs `BED`, `BED_WALL`, `STEAM_T_K`, `FURNACE`).
+- **New folders:**
+  - `types/`: `Element`, `ElementFlows`, `GasFlows`, `FuelDefinition`, `SpeciesValues`, `ReactionId`, `ReactionExtents`;
+  - `interfaces/`: fuel, stream and step interfaces, the kinetics rate interfaces, and the bed march interfaces;
+  - `enums/fuel-phase.enum.ts`;
+  - `data/fuels/fuel-registry.data.ts`.
+- **Utils**, one function per file:
+  - `utils/element-balance/` and `utils/gas-flows/` (from `element-balance.util.ts`);
+  - `utils/fuel-resolver/`;
+  - `utils/step-result/`.
+
+  Removed or hidden: `isInert` and `massFlows` are no longer exported, `dryAirMass` is not in the barrel, and the unused `elementsMass` was deleted.
+- **Private methods:** `smokeComposition` (`BedCombustionService`) and `flueGasOf` (`CombustionService`).
+- **DTOs** are grouped into `dto/common`, `dto/solid-direct`, `dto/solid-two-step`, `dto/fluid`, `dto/bed` and `dto/combustion-mode`, one class per file. The Swagger schemas are unchanged.
+- **Inline numbers moved to constants:**
+  - particle-size ratio at the grate, oxidation-zone limits, limiter and water-gas shift tolerances → `BED_KINETICS`;
+  - `DIVISION_FLOOR` and `SULFUR_OXYGEN_REL_TOL` → `COMBUSTION`;
+  - unit conversions → new `common/thermal/constants/unit-conversion.constants.ts` (`UNIT_CONVERSION`) and `CHEMISTRY.GRAMS_PER_KILOGRAM`.
+
+  All values are unchanged.
+- **Bed inputs without hidden defaults (API change):** `bedHeight_m`, `diameter_m`, `nLayers`, `tAirPrimary_K` and `furnace.emissivity` are required, and exactly one of `airFlow_m3h` / `mAirPrimary_kgs` must be given. `steamT_K` is required with steam injection, `generatorWallEmissivity` with generator walls, and `tAmbient_K` with generator or furnace walls; a missing input returns 400. The former defaults are now only example values in `COMBUSTION_EXAMPLES`, used by the Swagger examples (bed and recuperator) and the frontend initial bed form.
 
 ### Findings (reported, not fixed)
 

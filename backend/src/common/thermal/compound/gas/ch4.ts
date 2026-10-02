@@ -1,12 +1,13 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /** CH4 — Methane */
 export const CH4: CompoundValue = {
   name: 'Methane',
   chemicalFormula: 'CH4',
-  Mr: 0.016043,
+  Mr: COMPOUND_LIBRARY.CH4.molarMass_kg_mol,
   enthalpyFormation298: -74.87e3,
   gibbsEnergy298: -50.76e3,
   collisionDiameter: 3.758,

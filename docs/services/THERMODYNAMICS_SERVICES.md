@@ -285,7 +285,7 @@ Iterative solution for settling velocity in fluid.
 
 Controller: `numeric.controller.ts`  
 DTOs: `backend/src/modules/thermodynamics/dto/` — all exported from `dto/index.ts`  
-Response formatting: `backend/src/common/utils/numeric-format.util.ts`
+Response formatting: `backend/src/common/utils/numeric-format/`
 
 | Endpoint | Method / Algorithm | Response shape |
 |---|---|---|

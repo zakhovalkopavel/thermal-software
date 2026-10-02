@@ -1,4 +1,4 @@
-import type { GaussNodeCount } from '../../../common/utils/gauss-legendre.constants';
+import type { GaussNodeCount } from '../../../common/utils/quadrature';
 import type { AverageOptions } from '../type/average-options.type';
 
 /** Default number of Fourier series terms (BC I, BC III solid bodies) */

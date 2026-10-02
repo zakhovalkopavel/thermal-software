@@ -1,6 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
  * aC3H4 — Propadiene (allene).
@@ -12,7 +13,7 @@ import { RefKey } from '../../enum/ref-key.enum';
 export const aC3H4: CompoundValue = {
   name: 'Propadiene (allene)',
   chemicalFormula: 'C3H4',
-  Mr: 0.040065,
+  Mr: COMPOUND_LIBRARY.C3H4.molarMass_kg_mol,
   /** ref: Perry9 Table 2-95, p. 2-172, no. 294 (Propadiene) — 19.05, 20.08 (J/kmol × 1E-07) */
   enthalpyFormation298: 190500,
   gibbsEnergy298: 200800,

@@ -1,15 +1,14 @@
 import { GasPropertiesService } from '../../../../src/modules/thermodynamics/services/gas-properties.service';
-import { Species } from '../../../../src/modules/thermodynamics/enums/species.enum';
+import { Species } from '../../../../src/modules/thermodynamics/enums';
 import { CombustionEnthalpyService } from '../../../../src/modules/combustion/services/combustion-enthalpy.service';
 import { ProductEquilibriumService } from '../../../../src/modules/combustion/services/product-equilibrium.service';
 import { FlameSolverService } from '../../../../src/modules/combustion/services/flame-solver.service';
-import {
-  CHARCOAL_BRIQUETTE, CHARCOAL_OAK, CondensedFuel, FUEL_REGISTRY, FuelPhase,
-} from '../../../../src/modules/combustion/data/fuels';
-import {
-  airFlows, elementsOfCondensed, elementsOfGas, gasMassFlow, parseFormula, stoichiometricO2,
-} from '../../../../src/modules/combustion/utils/element-balance.util';
-import { ATOMIC_MASS, COMBUSTION } from '../../../../src/modules/combustion/constants/combustion.constants';
+import { CHARCOAL_BRIQUETTE, CHARCOAL_OAK, FUEL_REGISTRY } from '../../../../src/modules/combustion/data/fuels';
+import { CondensedFuel } from '../../../../src/modules/combustion/interfaces';
+import { FuelPhase } from '../../../../src/modules/combustion/enums/fuel-phase.enum';
+import { airFlows, gasMassFlow } from '../../../../src/modules/combustion/utils/gas-flows';
+import { elementsOfCondensed, elementsOfGas, stoichiometricO2 } from '../../../../src/modules/combustion/utils/element-balance';
+import { ATOMIC_MASS, COMBUSTION } from '../../../../src/modules/combustion/constants';
 import { RefKey } from '../../../../src/common/thermal/enum/ref-key.enum';
 
 describe('Combustion core', () => {
@@ -43,13 +42,6 @@ describe('Combustion core', () => {
   });
 
   describe('element balance utils', () => {
-    it('parseFormula', () => {
-      expect(parseFormula('C3H8')).toEqual({ C: 3, H: 8 });
-      expect(parseFormula('SO2')).toEqual({ S: 1, O: 2 });
-      expect(parseFormula('Ar')).toEqual({ Ar: 1 });
-      expect(() => parseFormula('c2')).toThrow();
-    });
-
     it('elementsOfGas separates inert argon', () => {
       const { elements, inerts } = elementsOfGas({ [Species.CH4]: 1, [Species.Ar]: 0.5 });
       expect(elements).toEqual({ C: 1, H: 4, O: 0, N: 0, S: 0 });

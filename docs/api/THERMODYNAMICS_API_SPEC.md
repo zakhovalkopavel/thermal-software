@@ -14,7 +14,7 @@ uses the **same flat fluid-identification fields** — never a nested object:
 | `fluid` | `KnownFluid` | Named species/alias. Source of truth: `KNOWN_FLUIDS` constant in `types/known-fluid.type.ts`. |
 | `composition` | `Record<Species, number>` | Mole fractions — required when `fluid = "gas_mix"` or `fluid` is absent. Must sum to 1. |
 | `T_fluid_K` | `number` | Bulk temperature [K]. Always explicit; no magic defaults in DTOs (defaults only where documented). |
-| `P_Pa` | `number` | Absolute pressure [Pa]. Default: `STANDARD_PRESSURE_PA` (101 325 Pa). |
+| `P_Pa` | `number` | Absolute pressure [Pa]. Default: `STANDARD_CONDITIONS.PRESSURE_PA` (101 325 Pa). |
 
 **Rule:** exactly one of `fluid` or `composition` must be provided; using both is allowed only
 when `fluid = "gas_mix"`.
@@ -142,7 +142,7 @@ Input DTOs live in the shared `dto/` folder and are exported from `dto/index.ts`
 | `levenberg-marquardt-input.dto.ts` | `POST /numeric/regression/levenberg-marquardt` |
 
 Response shaping (formula strings, coefficient objects) is handled in
-`src/common/utils/numeric-format.util.ts` — import helpers from there, **never**
+`src/common/utils/numeric-format/` — import helpers from there, **never**
 build formula strings directly in the controller.
 
 ### Nelder-Mead — named variables
@@ -166,7 +166,7 @@ The response mirrors the same named-variable format:
 ```
 
 **Never use `x[0]`, `x[1]` notation** in expressions sent to this endpoint.
-The internal `nelderMead` wrapper in `numeric.util.ts` still takes a plain array — the
+The internal `nelderMead` wrapper in `common/utils/optimization/nelder-mead.util.ts` still takes a plain array — the
 name↔index mapping is performed in the controller and is transparent to the utility.
 
 ### Regression responses — formula and named coefficients

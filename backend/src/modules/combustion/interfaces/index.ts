@@ -1,0 +1,17 @@
+export type { ElementalComposition } from './elemental-composition.interface';
+export type { CondensedFuel } from './condensed-fuel.interface';
+export type { GaseousFuel } from './gaseous-fuel.interface';
+export type { GasStream } from './gas-stream.interface';
+export type { CondensedStream } from './condensed-stream.interface';
+export type { EquilibriumProducts } from './equilibrium-products.interface';
+export type { ReactionStepInput } from './reaction-step-input.interface';
+export type { ReactionStepOutcome } from './reaction-step-outcome.interface';
+export type { FlueGas } from './flue-gas.interface';
+export type { SurfaceRates } from './surface-rates.interface';
+export type { GasPhaseRates } from './gas-phase-rates.interface';
+export type { EffectiveDiffusion } from './effective-diffusion.interface';
+export type { BedGeometry } from './bed-geometry.interface';
+export type { BedConditions } from './bed-conditions.interface';
+export type { SteamInjection } from './steam-injection.interface';
+export type { LayerState } from './layer-state.interface';
+export type { MarchResult } from './march-result.interface';

@@ -1,12 +1,13 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /** O2 — Oxygen */
 export const O2: CompoundValue = {
   name: 'Oxygen',
   chemicalFormula: 'O2',
-  Mr: 0.031999,
+  Mr: COMPOUND_LIBRARY.O2.molarMass_kg_mol,
   enthalpyFormation298: 0,
   gibbsEnergy298: 0,
   collisionDiameter: 3.467,

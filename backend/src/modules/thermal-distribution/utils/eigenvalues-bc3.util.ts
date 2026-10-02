@@ -10,8 +10,8 @@
  *   Cylinder: Luikov, Ch. VI §6, p. 240, Eq. 8/9     — μ·J₁(μ) − Bi·J₀(μ) = 0
  *   Sphere:  Luikov, Ch. VI §5, p. 224, Eq. 6.5.12   — tan(μ) = μ/(1−Bi)
  */
-import { besselJ0, besselJ1, besselJ0Roots } from '../../../common/utils/bessel.util';
-import { brentq, newtonPolish } from '../../../common/utils/root-finding.util';
+import { besselJ0, besselJ1, besselJ0Roots } from '../../../common/utils/bessel';
+import { brentq, newtonPolish } from '../../../common/utils/root-finding';
 import { EIGENVALUE_TOL_BC3 } from '../constants/thermal-distribution.constants';
 
 // ─── Plate ────────────────────────────────────────────────────────────────────

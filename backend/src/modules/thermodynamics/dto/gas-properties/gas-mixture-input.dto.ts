@@ -1,7 +1,7 @@
 import { IsEnum, IsNumber, IsObject, IsOptional, IsString, Min, Max } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Species } from '../../enums/species.enum';
-import { STANDARD_TEMPERATURE_K } from '../../../../common/thermal';
+import { STANDARD_CONDITIONS } from '../../../../common/thermal';
 
 export class GasMixtureInputDto {
   @ApiProperty({
@@ -11,7 +11,7 @@ export class GasMixtureInputDto {
   @IsObject()
   composition: Partial<Record<Species, number>>;
 
-  @ApiProperty({ description: 'Temperature [K]', minimum: 100, maximum: 6000, example: STANDARD_TEMPERATURE_K })
+  @ApiProperty({ description: 'Temperature [K]', minimum: 100, maximum: 6000, example: STANDARD_CONDITIONS.TEMPERATURE_K })
   @IsNumber() @Min(100) @Max(6000)
   T_K: number;
 

@@ -1,14 +1,14 @@
 import { GasPropertiesService } from '../../../../src/modules/thermodynamics/services/gas-properties.service';
 import { TransportService } from '../../../../src/modules/thermodynamics/services/transport.service';
-import { Species } from '../../../../src/modules/thermodynamics/enums/species.enum';
+import { Species } from '../../../../src/modules/thermodynamics/enums';
 import { CombustionEnthalpyService } from '../../../../src/modules/combustion/services/combustion-enthalpy.service';
 import { ProductEquilibriumService } from '../../../../src/modules/combustion/services/product-equilibrium.service';
 import { FlameSolverService } from '../../../../src/modules/combustion/services/flame-solver.service';
 import { FluidCombustionService } from '../../../../src/modules/combustion/services/fluid-combustion.service';
-import { FuelPhase } from '../../../../src/modules/combustion/data/fuels/fuel.interface';
+import { FuelPhase } from '../../../../src/modules/combustion/enums/fuel-phase.enum';
 import { FuelId } from '../../../../src/modules/combustion/enums/fuel-id.enum';
-import { GAS_REGISTRY } from '../../../../src/common/thermal/compound/gas/registry';
-import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-property-resolver';
+import { GAS_REGISTRY } from '../../../../src/common/thermal/compound/gas';
+import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-properties';
 
 describe('Fuel gases (ethane … propylene) and MAP gas', () => {
   const gas = new GasPropertiesService();

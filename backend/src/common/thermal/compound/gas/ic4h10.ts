@@ -1,6 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
  * iC4H10 — Isobutane (2-methylpropane).
@@ -12,7 +13,7 @@ import { RefKey } from '../../enum/ref-key.enum';
 export const iC4H10: CompoundValue = {
   name: 'Isobutane',
   chemicalFormula: 'C4H10',
-  Mr: 0.058124,
+  Mr: COMPOUND_LIBRARY.C4H10.molarMass_kg_mol,
   /** ref: Perry9 Table 2-95, p. 2-171, no. 236 (2-Methylpropane) — −13.499, −2.144 (J/kmol × 1E-07) */
   enthalpyFormation298: -134990,
   gibbsEnergy298: -21440,

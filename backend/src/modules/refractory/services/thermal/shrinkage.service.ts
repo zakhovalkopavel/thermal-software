@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { GAS_CONSTANT_J_MOLK } from '../../../../common/thermal/constants/physical.constants';
+import { PHYSICAL_CONSTANTS } from '../../../../common/thermal/constants/physical.constants';
 import { ShrinkageStage, DryingShrinkage, FiringShrinkage, } from '../../interfaces';
 
 /**
@@ -146,7 +146,7 @@ export class ShrinkageService {
   private calculateMSCTheta(temperature_C: number, time_hours: number, activationEnergy_Jmol: number): number {
     const T_K = temperature_C + 273.15;
     const time_s = time_hours * 3600;
-    return time_s * Math.exp(-activationEnergy_Jmol / (GAS_CONSTANT_J_MOLK * T_K));
+    return time_s * Math.exp(-activationEnergy_Jmol / (PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK * T_K));
   }
 
   /**
@@ -325,7 +325,7 @@ export class ShrinkageService {
 
     // Calculate work of sintering parameter Θ
     // For constant temperature: Θ = t × exp(-Q/RT)
-    const theta = time_s * Math.exp(-activationEnergy_Jmol / (GAS_CONSTANT_J_MOLK * T_K));
+    const theta = time_s * Math.exp(-activationEnergy_Jmol / (PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK * T_K));
 
     // Material constants (calibrated for alumina-silicate systems)
     const C = 15.0; // Empirical constant

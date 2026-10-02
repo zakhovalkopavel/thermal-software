@@ -2,7 +2,7 @@ import { IsBoolean, IsEnum, IsNumber, IsOptional, Min, ValidateNested } from 'cl
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { HoleForm } from '../enums/hole-form.enum';
-import { CombustionModeInputDto } from '../../combustion/dto/combustion-mode-input.dto';
+import { CombustionModeInputDto } from '../../combustion/dto/combustion-mode';
 
 export class RecuperatorInputDto {
   @ApiProperty({

@@ -159,27 +159,29 @@ class FluidFuelResultDto {
 
 ```typescript
 class BedCombustionInputDto extends CondensedFuelSelectionDto {
-  bedHeight_m?: number;          // [0.5]
-  diameter_m?: number;           // generator inner diameter [0.3]
-  nLayers?: number;              // [25], 1–500
-  mAirPrimary_kgs?: number;      // at most one of mAirPrimary_kgs / airFlow_m3h
-  airFlow_m3h?: number;          // at tAirPrimary_K, 1 atm [10]
-  tAirPrimary_K?: number;        // [400]
+  bedHeight_m: number;
+  diameter_m: number;            // generator inner diameter
+  nLayers: number;               // 1–500
+  mAirPrimary_kgs?: number;      // exactly one of mAirPrimary_kgs / airFlow_m3h
+  airFlow_m3h?: number;          // at tAirPrimary_K, 1 atm
+  tAirPrimary_K: number;
   steamInjectionPercent?: number;// % of the gas molar flow at the max-CO2 layer [0]
-  steamT_K?: number;             // [500], ≥ 373
+  steamT_K?: number;             // ≥ 373; required when steamInjectionPercent > 0
   generatorWallLayers?: LayerDto[];   // inside → outside; omit → adiabatic generator
-  generatorWallEmissivity?: number;   // [0.85]
-  tAmbient_K?: number;           // [293]
+  generatorWallEmissivity?: number;   // required with generatorWallLayers
+  tAmbient_K?: number;           // required with generatorWallLayers or furnace
   kExcessAir?: number;           // total λ vs. burned fuel; at most one of kExcessAir / mAirSecondary_kgs
   mAirSecondary_kgs?: number;
   tAirSecondary_K?: number;      // [tAirPrimary_K]
-  furnace?: { diameter_m: number; length_m: number; wallLayers: LayerDto[]; emissivity?: number };
+  furnace?: { diameter_m: number; length_m: number; wallLayers: LayerDto[]; emissivity: number };
   furnaceHeatLoss_W?: number;    // at most one of furnace / furnaceHeatLoss_W
 }
 ```
 
 `LayerDto` = `{ material, thicknessMm }` from `thermal-exchange` (any refractory or metal material key).
 The fuel must carry `porosity`, `particleSize_m` and `activityFactor` (presets do) and no sulphur.
+The bed model has no hidden defaults: the example values (`COMBUSTION_EXAMPLES.BED`, `BED_WALL`, `STEAM_T_K`, `FURNACE`)
+are what the Swagger examples and the frontend initial form send.
 
 ```typescript
 class BedCombustionResultDto {
@@ -215,10 +217,10 @@ class BedLayerResultDto {
 }
 ```
 
-Example: `{ "fuelId": "charcoal-briquette", "airFlow_m3h": 10, "tAirPrimary_K": 400, "bedHeight_m": 0.5,
-"diameter_m": 0.3, "nLayers": 25, "generatorWallLayers": [{ "material": "chamotte_solid", "thicknessMm": 65 },
-{ "material": "chamotte_600", "thicknessMm": 65 }], "kExcessAir": 1.3, "tAirSecondary_K": 573,
-"furnace": { "diameter_m": 0.4, "length_m": 1, "wallLayers": [ … ] } }`.
+Example: `{ "fuelId": "charcoal-briquette", "bedHeight_m": 0.5, "diameter_m": 0.3, "nLayers": 25, "airFlow_m3h": 10,
+"tAirPrimary_K": 400, "tAmbient_K": 293, "generatorWallEmissivity": 0.85,
+"generatorWallLayers": [{ "material": "chamotte_solid", "thicknessMm": 65 }, { "material": "chamotte_600", "thicknessMm": 65 }],
+"kExcessAir": 1.3, "tAirSecondary_K": 573, "furnace": { "diameter_m": 0.4, "length_m": 1, "emissivity": 0.85, "wallLayers": [ … ] } }`.
 
 ## 6.8 `CombustionModeInputDto` — mode selection (recuperator)
 
@@ -246,6 +248,6 @@ Example: `{ "mode": "fluid", "fluid": { "phase": "gas", "fuelGas": { "CH4": 0.95
 | 400 | both/neither of `fuelId`/`fuel`; solid preset for gas or gas preset for solid; both/neither of `fuelId`/`fuelGas` for gas; `fuelGas` missing, unknown species, negative or all-zero fractions |
 | 400 | composition sum ≠ 1 ± 0.001; custom fuel without ΔHf and LHV; both/neither of `mFuel_kgs`/`fPower_W`; LHV ≤ 0 with `fPower_W` |
 | 400 | mode 2: fuel without O2 demand; primary λ above total λ |
-| 400 | mode 4: missing bed properties; porosity outside (0, 1); sulphur in fuel; no carbon; both `mAirPrimary_kgs` and `airFlow_m3h`; non-positive primary air; both `kExcessAir` and `mAirSecondary_kgs`; both `furnace` and `furnaceHeatLoss_W` |
+| 400 | mode 4: missing bed properties; porosity outside (0, 1); sulphur in fuel; no carbon; none or both of `mAirPrimary_kgs` / `airFlow_m3h`; non-positive primary air; `steamT_K` missing with steam injection; `generatorWallEmissivity` missing with generator walls; `tAmbient_K` missing with generator or furnace walls; both `kExcessAir` and `mAirSecondary_kgs`; both `furnace` and `furnaceHeatLoss_W` |
 | 400 | mode selection: input of the selected mode missing (``Combustion mode `bed` needs `bed` ``); input of another mode given (``Give only `fluid` for mode `fluid` (also got bed)``) |
 | 422 | energy balance without root (outlet below 50 K or above 20 000 K), also per bed layer; bed consumes no fuel |

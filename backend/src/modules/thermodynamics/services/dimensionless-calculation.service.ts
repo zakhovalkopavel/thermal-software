@@ -8,7 +8,8 @@ import { GeometryDimsDto } from '../dto/geometry/geometry-dims.dto';
 import { ResolvedDimensionlessPropsDto } from '../dto/dimensionless/resolved-dimensionless-props.dto';
 import { ScalarDimensionlessResultDto } from '../dto/dimensionless/scalar-dimensionless-result.dto';
 import { Species } from '../enums/species.enum';
-import { STANDARD_GRAVITY_M_S2, STANDARD_PRESSURE_PA, STANDARD_TEMPERATURE_K } from '../../../common/thermal/constants/physical.constants';
+import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
+import { STANDARD_CONDITIONS } from '../../../common/thermal/constants/standard-conditions.constants';
 import { GrashofInputDto } from '../dto/dimensionless/grashof-input.dto';
 import { RayleighInputDto } from '../dto/dimensionless/rayleigh-input.dto';
 import { ReynoldsInputDto } from '../dto/dimensionless/reynolds-input.dto';
@@ -51,7 +52,7 @@ export class DimensionlessCalculationService {
   // ── Scalar calculations ──────────────────────────────────────────────
 
   reynolds(dto: ReynoldsInputDto): ScalarDimensionlessResultDto {
-    const T = dto.T_fluid_K ?? STANDARD_TEMPERATURE_K;
+    const T = dto.T_fluid_K ?? STANDARD_CONDITIONS.TEMPERATURE_K;
     const fluid = this.resolveFluid({ fluid: dto.fluid, composition: dto.composition, T_fluid_K: T, P_Pa: dto.P_Pa });
     if (!fluid)
       throw new Error('Could not resolve fluid properties — supply fluid name or composition + T_fluid_K');
@@ -81,7 +82,7 @@ export class DimensionlessCalculationService {
       throw new Error('Could not resolve fluid properties — supply fluid name or composition + T_fluid_K');
     const L = this.numbers.characteristicLength(dto.geometry, dto.dimensions);
     return {
-      value: this.numbers.grashof(dto.T_hot_K, dto.T_cold_K, L, fluid.nu_m2s, dto.g_m_s2 ?? STANDARD_GRAVITY_M_S2),
+      value: this.numbers.grashof(dto.T_hot_K, dto.T_cold_K, L, fluid.nu_m2s, dto.g_m_s2 ?? PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2),
       symbol: 'Gr', L_m: L,
       resolvedFluid: fluid,
     };
@@ -95,7 +96,7 @@ export class DimensionlessCalculationService {
     const Pr = this.numbers.prandtl(fluid.mu_Pa_s, fluid.Cp_J_kgK, fluid.lambda);
     const L  = this.numbers.characteristicLength(dto.geometry, dto.dimensions);
     return {
-      value: this.numbers.rayleigh(dto.T_hot_K, dto.T_cold_K, L, fluid.nu_m2s, Pr, dto.g_m_s2 ?? STANDARD_GRAVITY_M_S2),
+      value: this.numbers.rayleigh(dto.T_hot_K, dto.T_cold_K, L, fluid.nu_m2s, Pr, dto.g_m_s2 ?? PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2),
       symbol: 'Ra', L_m: L,
       resolvedFluid: fluid,
     };
@@ -120,7 +121,7 @@ export class DimensionlessCalculationService {
     const T = input.T_fluid_K;
     if (!T || T <= 0) return null;
 
-    const P = input.P_Pa ?? STANDARD_PRESSURE_PA;
+    const P = input.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
 
     let mu: number, Cp: number, lambda: number, rho: number;
 
@@ -161,9 +162,9 @@ export class DimensionlessCalculationService {
    * @throws when fluid/composition cannot be resolved or T_fluid_K is missing.
    */
   resolveDimensionlessProperties(dto: DimensionlessInputDto): ResolvedDimensionlessPropsDto {
-    const T  = dto.T_fluid_K ?? STANDARD_TEMPERATURE_K;
+    const T  = dto.T_fluid_K ?? STANDARD_CONDITIONS.TEMPERATURE_K;
     const Ts = dto.T_surface_K;
-    const P  = dto.P_Pa ?? STANDARD_PRESSURE_PA;
+    const P  = dto.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
     // w = 0 is the default → natural convection; undefined is also treated as 0.
     const w  = dto.w_m_s ?? 0;
 
@@ -213,7 +214,7 @@ export class DimensionlessCalculationService {
     let Ra = 0;
     if (Ts !== undefined && dto.dimensions) {
       const L = this.numbers.characteristicLength(dto.geometry, dto.dimensions as GeometryDimsDto);
-      Gr = this.numbers.grashof(Ts, T, L, nu_f, dto.g_m_s2 ?? STANDARD_GRAVITY_M_S2);
+      Gr = this.numbers.grashof(Ts, T, L, nu_f, dto.g_m_s2 ?? PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2);
       Ra = Gr * Pr;
     }
 

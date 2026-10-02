@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, UnprocessableEntityException } from '@nestjs/common';
-import { Species } from '../../thermodynamics/enums/species.enum';
+import { Species } from '../../thermodynamics/enums';
 import { GasPropertiesService } from '../../thermodynamics/services/gas-properties.service';
 import { TransportService } from '../../thermodynamics/services/transport.service';
 import { DiffusionService } from '../../thermodynamics/services/diffusion.service';
@@ -9,65 +9,24 @@ import { MultilayerWallService } from '../../thermal-exchange/services/multilaye
 import { WallGeometry } from '../../thermal-exchange/enums/wall-geometry.enum';
 import { LayerDto } from '../../thermal-exchange/dto/layer.dto';
 import { SmokeCompositionDto } from '../../thermal-exchange/dto/smoke-composition.dto';
-import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
-import { brentq } from '../../../common/utils/root-finding.util';
-import { ATOMIC_MASS, BED_KINETICS, COMBUSTION } from '../constants/combustion.constants';
-import { CondensedFuel } from '../data/fuels/fuel.interface';
+import { PHYSICAL_CONSTANTS, UNIT_CONVERSION } from '../../../common/thermal/constants';
+import { CHEMISTRY } from '../../../common/chemistry';
+import { brentq } from '../../../common/utils/root-finding';
+import { ATOMIC_MASS, BED_KINETICS, BED_REACTIONS, COMBUSTION } from '../constants';
 import {
-  BedCombustionInputDto, BedCombustionResultDto, BedLayerResultDto, FurnaceWallDto, ReactionExtentsDto,
-} from '../dto/bed-combustion.dto';
-import { ElementFlows, GasFlows, GasStream, ReactionStepOutcome } from '../interfaces/combustion-streams.interface';
-import {
-  addElements, airFlows, elementResidual, elementsOfCondensed, elementsOfGas, gasMassFlow, moleFractions,
-  stoichiometricO2, sumFlows, totalMoles,
-} from '../utils/element-balance.util';
-import { resolveCondensedFuel, summarizeCondensedFuel } from '../utils/fuel-resolver.util';
-import { toSpeciesValues, toStepResult } from '../utils/step-result.mapper';
-import { ChemicalKineticsService, EffectiveDiffusion } from './chemical-kinetics.service';
+  BedConditions, BedGeometry, CondensedFuel, EffectiveDiffusion, GasStream, LayerState, MarchResult, ReactionStepOutcome,
+  SteamInjection,
+} from '../interfaces';
+import { BedCombustionInputDto, BedCombustionResultDto, BedLayerResultDto, FurnaceWallDto, ReactionExtentsDto } from '../dto/bed';
+import { ElementFlows, GasFlows, ReactionExtents, ReactionId } from '../types';
+import { addElements, elementResidual, elementsOfCondensed, elementsOfGas, stoichiometricO2 } from '../utils/element-balance';
+import { airFlows, gasMassFlow, moleFractions, sumFlows, totalMoles } from '../utils/gas-flows';
+import { resolveCondensedFuel, summarizeCondensedFuel } from '../utils/fuel-resolver';
+import { toSpeciesValues, toStepResult } from '../utils/step-result';
+import { ChemicalKineticsService } from './chemical-kinetics.service';
 import { CombustionEnthalpyService } from './combustion-enthalpy.service';
 import { FlameSolverService } from './flame-solver.service';
 import { ProductEquilibriumService } from './product-equilibrium.service';
-
-type ReactionId = 'r1' | 'r2' | 'r3' | 'r31' | 'r32' | 'r33' | 'r4' | 'r41' | 'r42';
-type Extents = Record<ReactionId, number>;
-
-/** Stoichiometry of the gas species (char carbon is implicit) */
-const STOICH: Record<ReactionId, GasFlows> = {
-  r1:  { [Species.O2]: -1, [Species.CO2]: 1 },
-  r2:  { [Species.O2]: -1, [Species.CO]: 2 },
-  r3:  { [Species.CO2]: -1, [Species.CO]: 2 },
-  r31: { [Species.H2O]: -1, [Species.CO]: 1, [Species.H2]: 1 },
-  r32: { [Species.H2O]: -2, [Species.CO2]: 1, [Species.H2]: 2 },
-  r33: { [Species.H2]: -2, [Species.CH4]: 1 },
-  r4:  { [Species.CO]: -2, [Species.O2]: -1, [Species.CO2]: 2 },
-  r41: { [Species.H2]: -2, [Species.O2]: -1, [Species.H2O]: 2 },
-  r42: { [Species.CH4]: -1, [Species.O2]: -2, [Species.CO2]: 1, [Species.H2O]: 2 },
-};
-const REACTIONS = Object.keys(STOICH) as ReactionId[];
-/** Char carbon consumed per unit extent */
-const CARBON_PER_EXTENT: Partial<Record<ReactionId, number>> = { r1: 1, r2: 2, r3: 1, r31: 1, r32: 1, r33: 1 };
-
-interface BedGeometry {
-  diameter_m: number; area_m2: number; dz_m: number; volume_m3: number; nLayers: number;
-}
-interface BedConditions {
-  fuel: CondensedFuel; porosity: number; particleSize_m: number; activityFactor: number;
-  tFuel_K: number; tAmbient_K: number;
-  wallLayers?: LayerDto[]; wallEmissivity: number;
-}
-interface SteamInjection { layer: number; percent: number; T_K: number }
-
-interface LayerState {
-  flows: GasFlows; T_K: number; result: BedLayerResultDto;
-  fuel_kgs: number; carbon_mols: number; ash_kgs: number; ashEnthalpy_W: number; wallLoss_W: number;
-  steam: GasFlows;
-}
-interface MarchResult {
-  layers: LayerState[];
-  outlet: GasStream;
-  fuel_kgs: number; carbon_mols: number; ash_kgs: number; ashEnthalpy_W: number;
-  wallLoss_W: number; pressureDrop_Pa: number; steam: GasFlows;
-}
 
 /**
  * Mode 4 — packed-bed generator by layers with chemical kinetics, then burnout with
@@ -102,12 +61,11 @@ export class BedCombustionService {
     const cond = this.conditions(dto, fuel);
     const pO2   = dto.pO2   ?? COMBUSTION.DEFAULT_PO2;
     const wH2Om = dto.wH2Om ?? COMBUSTION.DEFAULT_W_H2OM;
-    const tAir_K = dto.tAirPrimary_K ?? BED_KINETICS.AIR_T_DEFAULT_K;
+    const tAir_K = dto.tAirPrimary_K;
 
-    const diameter_m = dto.diameter_m ?? 0.3;
-    const nLayers = dto.nLayers ?? 25;
+    const { diameter_m, nLayers } = dto;
     const area_m2 = Math.PI * diameter_m ** 2 / 4;
-    const dz_m = (dto.bedHeight_m ?? 0.5) / nLayers;
+    const dz_m = dto.bedHeight_m / nLayers;
     const geo: BedGeometry = { diameter_m, area_m2, dz_m, volume_m3: area_m2 * dz_m, nLayers };
 
     const air = this.primaryAir(dto, pO2, wH2Om, tAir_K);
@@ -115,9 +73,10 @@ export class BedCombustionService {
 
     let march = this.march(geo, cond, { flows: air, T_K: tAir_K });
     const steamPercent = dto.steamInjectionPercent ?? 0;
+    if (steamPercent > 0 && dto.steamT_K === undefined) throw new BadRequestException('`steamT_K` is required with steam injection');
     if (steamPercent > 0) {
       const layer = this.maxCo2Layer(march.layers);
-      march = this.march(geo, cond, { flows: air, T_K: tAir_K }, { layer, percent: steamPercent, T_K: dto.steamT_K ?? 500 });
+      march = this.march(geo, cond, { flows: air, T_K: tAir_K }, { layer, percent: steamPercent, T_K: dto.steamT_K });
     }
     if (!(march.fuel_kgs > 0)) {
       throw new UnprocessableEntityException('The bed does not burn: no fuel is consumed under these conditions');
@@ -131,7 +90,7 @@ export class BedCombustionService {
     );
 
     const steamEnthalpy_W = march.layers.reduce(
-      (s, l) => s + this.enthalpy.gasEnthalpy_W(l.steam, dto.steamT_K ?? 500), 0,
+      (s, l) => s + this.enthalpy.gasEnthalpy_W(l.steam, dto.steamT_K), 0,
     );
     const energyResidual_W = this.enthalpy.gasEnthalpy_W(air, tAir_K) + steamEnthalpy_W
       + this.enthalpy.condensedEnthalpy_W(fuel, march.fuel_kgs, cond.tFuel_K)
@@ -178,26 +137,33 @@ export class BedCombustionService {
       throw new BadRequestException('Bed kinetics has no sulphur chemistry; use a sulphur-free fuel');
     }
     if (!(fuel.elementalComp.C > 0)) throw new BadRequestException('Bed model needs a carbon-containing fuel');
+    const wallLayers = dto.generatorWallLayers?.length ? dto.generatorWallLayers : undefined;
+    if (wallLayers && dto.generatorWallEmissivity === undefined) {
+      throw new BadRequestException('`generatorWallEmissivity` is required with `generatorWallLayers`');
+    }
+    if ((wallLayers || dto.furnace) && dto.tAmbient_K === undefined) {
+      throw new BadRequestException('`tAmbient_K` is required with `generatorWallLayers` or `furnace`');
+    }
     return {
       fuel, porosity, particleSize_m, activityFactor,
       tFuel_K:    dto.tFuel_K ?? COMBUSTION.T_REF_K,
-      tAmbient_K: dto.tAmbient_K ?? 293,
-      wallLayers: dto.generatorWallLayers?.length ? dto.generatorWallLayers : undefined,
-      wallEmissivity: dto.generatorWallEmissivity ?? BED_KINETICS.WALL_EMISSIVITY_DEFAULT,
+      tAmbient_K: dto.tAmbient_K,
+      wallLayers,
+      wallEmissivity: dto.generatorWallEmissivity,
     };
   }
 
   private primaryAir(dto: BedCombustionInputDto, pO2: number, wH2Om: number, tAir_K: number): GasFlows {
-    if (dto.mAirPrimary_kgs !== undefined && dto.airFlow_m3h !== undefined) {
-      throw new BadRequestException('Specify at most one of `mAirPrimary_kgs` or `airFlow_m3h`');
+    if ((dto.mAirPrimary_kgs === undefined) === (dto.airFlow_m3h === undefined)) {
+      throw new BadRequestException('Specify exactly one of `mAirPrimary_kgs` or `airFlow_m3h`');
     }
     const perO2 = airFlows(1, pO2, wH2Om);
     let o2_mols: number;
     if (dto.mAirPrimary_kgs !== undefined) {
       o2_mols = dto.mAirPrimary_kgs / gasMassFlow(perO2);
     } else {
-      const q_m3s = (dto.airFlow_m3h ?? BED_KINETICS.AIR_FLOW_DEFAULT_M3H) / 3600;
-      o2_mols = (COMBUSTION.ATMOSPHERIC_PRESSURE_PA * q_m3s / (GAS_CONSTANT_J_MOLK * tAir_K)) / totalMoles(perO2);
+      const q_m3s = dto.airFlow_m3h / UNIT_CONVERSION.SECONDS_PER_HOUR;
+      o2_mols = (COMBUSTION.ATMOSPHERIC_PRESSURE_PA * q_m3s / (PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK * tAir_K)) / totalMoles(perO2);
     }
     if (!(o2_mols > 0)) throw new BadRequestException('Primary air flow must be positive');
     return airFlows(o2_mols, pO2, wH2Om);
@@ -249,8 +215,8 @@ export class BedCombustionService {
   ): LayerState {
     const { fuel, porosity } = cond;
     const V = geo.volume_m3;
-    // particles shrink as the fuel descends: fresh size at the top, 0.6 at the grate
-    const R_p = cond.particleSize_m * (0.6 + 0.4 * (i + 1) / geo.nLayers) / 2;
+    const grate = BED_KINETICS.PARTICLE_SIZE_GRATE_RATIO;
+    const R_p = cond.particleSize_m * (grate + (1 - grate) * (i + 1) / geo.nLayers) / 2;
     const D_p = 2 * R_p;
 
     const y = moleFractions(flowsIn);
@@ -272,14 +238,14 @@ export class BedCombustionService {
 
     const a_s = 3 * (1 - porosity) / R_p;
     const hAs = h * a_s * V;
-    const evaluate = (Ts: number): { ext: Extents; q: number; D: EffectiveDiffusion } => {
+    const evaluate = (Ts: number): { ext: ReactionExtents; q: number; D: EffectiveDiffusion } => {
       const D: EffectiveDiffusion = {
         O2:  this.diffusion.effectiveDiffusion(Species.O2,  y, Ts),
         CO2: this.diffusion.effectiveDiffusion(Species.CO2, y, Ts),
         H2O: this.diffusion.effectiveDiffusion(Species.H2O, y, Ts),
       };
       const s = this.kinetics.surfaceRates(y, T_in, Ts, cond, D, R_p);
-      const raw: Extents = {
+      const raw: ReactionExtents = {
         r1: s.r1 * V, r2: s.r2 * V, r3: s.r3 * V, r31: s.r31 * V, r32: s.r32 * V, r33: s.r33 * V,
         r4: gasRates.r4 * V, r41: gasRates.r41 * V, r42: gasRates.r42 * V,
       };
@@ -294,7 +260,7 @@ export class BedCombustionService {
     const r43 = this.shiftExtent(flows, gasRates.r43 * V, Kp);
     flows = sumFlows(flows, { [Species.CO]: -r43, [Species.H2O]: -r43, [Species.CO2]: r43, [Species.H2]: r43 });
 
-    const carbon_mols = REACTIONS.reduce((s, r) => s + (CARBON_PER_EXTENT[r] ?? 0) * ext[r], 0);
+    const carbon_mols = BED_REACTIONS.IDS.reduce((s, r) => s + (BED_REACTIONS.CARBON_PER_EXTENT[r] ?? 0) * ext[r], 0);
     const fuel_kgs = carbon_mols * ATOMIC_MASS.C / fuel.elementalComp.C;
     const el = elementsOfCondensed(fuel.elementalComp, fuel_kgs);
     flows = sumFlows(flows, this.volatiles(el));
@@ -328,7 +294,7 @@ export class BedCombustionService {
         carbonBurnRate_kgs: carbon_mols * ATOMIC_MASS.C,
         fuelBurnRate_kgs: fuel_kgs,
         // external char surface in the layer = a_s·V [m²] → g/(s·cm²)
-        burnRatePerArea_g_s_cm2: carbon_mols * ATOMIC_MASS.C * 1000 / (a_s * V * 1e4),
+        burnRatePerArea_g_s_cm2: carbon_mols * ATOMIC_MASS.C * CHEMISTRY.GRAMS_PER_KILOGRAM / (a_s * V * UNIT_CONVERSION.CM2_PER_M2),
         extents,
         wallLoss_W: wall.loss_W,
         tWallInner_K: wall.tInner_K,
@@ -363,24 +329,24 @@ export class BedCombustionService {
   }
 
   /** Scale extents so no inlet species is consumed beyond its available flow */
-  private limitExtents(raw: Extents, available: GasFlows): Extents {
+  private limitExtents(raw: ReactionExtents, available: GasFlows): ReactionExtents {
     const ext = { ...raw };
-    for (const r of REACTIONS) ext[r] = Math.max(0, ext[r]);
+    for (const r of BED_REACTIONS.IDS) ext[r] = Math.max(0, ext[r]);
     for (let it = 0; it < BED_KINETICS.LIMITER_ITERATIONS; it++) {
       let changed = false;
       for (const sp of Object.keys(available) as Species[]) {
         const avail = (available[sp] ?? 0) * BED_KINETICS.MAX_CONSUMPTION_FRACTION;
         let use = 0;
-        for (const r of REACTIONS) use += Math.max(0, -(STOICH[r][sp] ?? 0)) * ext[r];
-        if (use > avail * (1 + 1e-12) && use > 0) {
+        for (const r of BED_REACTIONS.IDS) use += Math.max(0, -(BED_REACTIONS.STOICH[r][sp] ?? 0)) * ext[r];
+        if (use > avail * (1 + BED_KINETICS.LIMITER_REL_TOL) && use > 0) {
           const f = avail / use;
-          for (const r of REACTIONS) if ((STOICH[r][sp] ?? 0) < 0) ext[r] *= f;
+          for (const r of BED_REACTIONS.IDS) if ((BED_REACTIONS.STOICH[r][sp] ?? 0) < 0) ext[r] *= f;
           changed = true;
         }
       }
       // species absent from the inlet cannot be consumed at all
-      for (const r of REACTIONS) {
-        for (const [sp, nu] of Object.entries(STOICH[r]) as [Species, number][]) {
+      for (const r of BED_REACTIONS.IDS) {
+        for (const [sp, nu] of Object.entries(BED_REACTIONS.STOICH[r]) as [Species, number][]) {
           if (nu < 0 && !((available[sp] ?? 0) > 0) && ext[r] > 0) { ext[r] = 0; changed = true; }
         }
       }
@@ -389,11 +355,11 @@ export class BedCombustionService {
     return ext;
   }
 
-  private applyExtents(flows: GasFlows, ext: Extents): GasFlows {
+  private applyExtents(flows: GasFlows, ext: ReactionExtents): GasFlows {
     const out: GasFlows = { ...flows };
-    for (const r of REACTIONS) {
+    for (const r of BED_REACTIONS.IDS) {
       if (!ext[r]) continue;
-      for (const [sp, nu] of Object.entries(STOICH[r]) as [Species, number][]) {
+      for (const [sp, nu] of Object.entries(BED_REACTIONS.STOICH[r]) as [Species, number][]) {
         out[sp] = (out[sp] ?? 0) + nu * ext[r];
       }
     }
@@ -411,7 +377,7 @@ export class BedCombustionService {
     if (!(hi > lo) || kinetic === 0) return 0;
     const f = (x: number): number => (co2 + x) * (h2 + x) - Kp * (co - x) * (h2o - x);
     const fl = f(lo), fh = f(hi);
-    const xEq = fl >= 0 ? lo : fh <= 0 ? hi : brentq(f, lo, hi, 1e-15 + 1e-12 * (hi - lo)).root;
+    const xEq = fl >= 0 ? lo : fh <= 0 ? hi : brentq(f, lo, hi, BED_KINETICS.WGS_EXTENT_ABS_TOL + BED_KINETICS.WGS_EXTENT_REL_TOL * (hi - lo)).root;
     if (kinetic > 0) return xEq > 0 ? Math.min(kinetic, xEq) : 0;
     return xEq < 0 ? Math.max(kinetic, xEq) : 0;
   }
@@ -445,7 +411,7 @@ export class BedCombustionService {
       b_m: geo.dz_m,
       layers: cond.wallLayers,
       w_ms: v,
-      composition: smokeComposition(y),
+      composition: this.smokeComposition(y),
       mPerSecond_kgs: mGas,
       tFlame_K: T_gas,
       tAmbient_K: cond.tAmbient_K,
@@ -468,7 +434,7 @@ export class BedCombustionService {
   private oxidationZoneHeight(layers: LayerState[]): number | null {
     for (let i = layers.length - 1; i >= 0; i--) {
       const y = layers[i].result.moleFractions;
-      if ((y[Species.CO] ?? 0) < 0.01 && (y[Species.O2] ?? 0) > 0.01) return layers[i].result.z_m;
+      if ((y[Species.CO] ?? 0) < BED_KINETICS.OXIDATION_ZONE_CO_MAX && (y[Species.O2] ?? 0) > BED_KINETICS.OXIDATION_ZONE_O2_MIN) return layers[i].result.z_m;
     }
     return null;
   }
@@ -496,11 +462,11 @@ export class BedCombustionService {
         b_m: furnace.length_m,
         layers: furnace.wallLayers,
         w_ms: mGas / (rho * area),
-        composition: smokeComposition(y),
+        composition: this.smokeComposition(y),
         mPerSecond_kgs: mGas,
         tFlame_K: step.T_K,
         tAmbient_K,
-        innerEmissivity: furnace.emissivity ?? BED_KINETICS.WALL_EMISSIVITY_DEFAULT,
+        innerEmissivity: furnace.emissivity,
       });
       const Qnext = Q + BED_KINETICS.FURNACE_DAMPING * (wall.fluxInner_W - Q);
       const next = this.solver.burnGasStream(genGas, air, Qnext);
@@ -511,15 +477,15 @@ export class BedCombustionService {
     }
     return step;
   }
-}
 
-function smokeComposition(y: GasFlows): SmokeCompositionDto {
-  return {
-    N2:  y[Species.N2]  ?? 0,
-    O2:  y[Species.O2]  ?? 0,
-    CO2: y[Species.CO2] ?? 0,
-    CO:  y[Species.CO]  ?? 0,
-    H2O: y[Species.H2O] ?? 0,
-    H2:  y[Species.H2]  ?? 0,
-  };
+  private smokeComposition(y: GasFlows): SmokeCompositionDto {
+    return {
+      N2:  y[Species.N2]  ?? 0,
+      O2:  y[Species.O2]  ?? 0,
+      CO2: y[Species.CO2] ?? 0,
+      CO:  y[Species.CO]  ?? 0,
+      H2O: y[Species.H2O] ?? 0,
+      H2:  y[Species.H2]  ?? 0,
+    };
+  }
 }

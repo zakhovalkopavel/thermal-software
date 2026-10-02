@@ -16,7 +16,7 @@
  */
 
 import { RadiationService } from '../../../../src/modules/thermodynamics/services/radiation.service';
-import { STEFAN_BOLTZMANN_W_M2K4 } from '../../../../src/common/thermal';
+import { PHYSICAL_CONSTANTS } from '../../../../src/common/thermal';
 
 function build(): RadiationService {
   return new RadiationService();
@@ -153,7 +153,7 @@ describe('RadiationService.solidRadiationHTC()', () => {
   it('matches Stefan–Boltzmann linearisation for black bodies — 1000 K vs 500 K', () => {
     // α_rad = σ·(T1⁴ − T2⁴)/(T1 − T2) = σ·(T1²+T2²)·(T1+T2)
     const T1 = 1000; const T2 = 500;
-    const expected = STEFAN_BOLTZMANN_W_M2K4 * (Math.pow(T1, 4) - Math.pow(T2, 4)) / (T1 - T2);
+    const expected = PHYSICAL_CONSTANTS.STEFAN_BOLTZMANN_W_M2K4 * (Math.pow(T1, 4) - Math.pow(T2, 4)) / (T1 - T2);
     expect(build().solidRadiationHTC(T1, T2)).toBeCloseTo(expected, 8);
   });
 

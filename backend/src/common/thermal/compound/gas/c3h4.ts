@@ -1,6 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
  * C3H4 — Propyne (methylacetylene).
@@ -12,7 +13,7 @@ import { RefKey } from '../../enum/ref-key.enum';
 export const C3H4: CompoundValue = {
   name: 'Propyne (methylacetylene)',
   chemicalFormula: 'C3H4',
-  Mr: 0.040065,
+  Mr: COMPOUND_LIBRARY.C3H4.molarMass_kg_mol,
   /** ref: Perry9 Table 2-95, p. 2-170, no. 197 (Methyl acetylene) — 18.49, 19.384 (J/kmol × 1E-07) */
   enthalpyFormation298: 184900,
   gibbsEnergy298: 193840,

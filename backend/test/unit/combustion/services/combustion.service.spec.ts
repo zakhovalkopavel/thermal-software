@@ -2,13 +2,13 @@ import { Test } from '@nestjs/testing';
 import { CombustionModule } from '../../../../src/modules/combustion/combustion.module';
 import { CombustionService } from '../../../../src/modules/combustion/services/combustion.service';
 import { FuelId } from '../../../../src/modules/combustion/enums/fuel-id.enum';
-import { FuelPhase } from '../../../../src/modules/combustion/data/fuels/fuel.interface';
+import { FuelPhase } from '../../../../src/modules/combustion/enums/fuel-phase.enum';
 import { CombustionMode } from '../../../../src/modules/combustion/enums/combustion-mode.enum';
-import { BED_KINETICS } from '../../../../src/modules/combustion/constants/combustion.constants';
-import { FluidFuelInputDto } from '../../../../src/modules/combustion/dto/fluid-fuel.dto';
-import { SolidDirectInputDto } from '../../../../src/modules/combustion/dto/solid-direct.dto';
-import { SolidTwoStepInputDto } from '../../../../src/modules/combustion/dto/solid-two-step.dto';
-import { BedCombustionInputDto } from '../../../../src/modules/combustion/dto/bed-combustion.dto';
+import { COMBUSTION_EXAMPLES } from '../../../../src/modules/combustion/constants';
+import { FluidFuelInputDto } from '../../../../src/modules/combustion/dto/fluid';
+import { SolidDirectInputDto } from '../../../../src/modules/combustion/dto/solid-direct';
+import { SolidTwoStepInputDto } from '../../../../src/modules/combustion/dto/solid-two-step';
+import { BedCombustionInputDto } from '../../../../src/modules/combustion/dto/bed';
 
 describe('CombustionService (facade)', () => {
   let service: CombustionService;
@@ -23,7 +23,7 @@ describe('CombustionService (facade)', () => {
   const twoStep: SolidTwoStepInputDto = {
     fuelId: FuelId.CharcoalOak, mFuel_kgs: 0.001, kExcessAir: 1.3, tAirPrimary_K: 673, tAirSecondary_K: 573,
   };
-  const bed: BedCombustionInputDto = { fuelId: FuelId.CharcoalBriquette, nLayers: 10, kExcessAir: 1.3 };
+  const bed: BedCombustionInputDto = { fuelId: FuelId.CharcoalBriquette, ...COMBUSTION_EXAMPLES.BED, nLayers: 10, kExcessAir: 1.3 };
 
   describe('flueGas() — flue gas of the selected mode', () => {
     it('fluid / solid-direct: flame, flows and composition of the mode result', () => {
@@ -61,7 +61,7 @@ describe('CombustionService (facade)', () => {
       expect(service.flueGas({ mode: CombustionMode.SolidTwoStep, solidTwoStep: twoStep }, dT).tFlame_K)
         .toBe(service.solidTwoStep({ ...twoStep, tAirPrimary_K: 773, tAirSecondary_K: 673 }).tFlame_K);
       expect(service.flueGas({ mode: CombustionMode.Bed, bed }, dT).tFlame_K)
-        .toBeCloseTo(service.bedCombustion({ ...bed, tAirPrimary_K: BED_KINETICS.AIR_T_DEFAULT_K + dT }).tFlame_K, 9);
+        .toBeCloseTo(service.bedCombustion({ ...bed, tAirPrimary_K: bed.tAirPrimary_K + dT }).tFlame_K, 9);
       expect(service.flueGas({ mode: CombustionMode.Fluid, fluid }, dT).tFlame_K)
         .toBeGreaterThan(service.flueGas({ mode: CombustionMode.Fluid, fluid }).tFlame_K);
     });
@@ -92,7 +92,7 @@ describe('CombustionService (facade)', () => {
       expect(service.fluidFuel({
         phase: FuelPhase.Gas, fuelGas: { CH4: 1 }, fPower_W: 10_000, kExcessAir: 1.1, tAir_K: 293,
       }).tFlame_K).toBeGreaterThan(1800);
-      expect(service.bedCombustion({ fuelId: FuelId.CharcoalBriquette, nLayers: 10, kExcessAir: 1.3 }).tFlame_K)
+      expect(service.bedCombustion(bed).tFlame_K)
         .toBeGreaterThan(1000);
     });
   });

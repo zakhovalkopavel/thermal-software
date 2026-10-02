@@ -15,7 +15,7 @@
  *   - clamping behaviour
  */
 
-import { AlyLeeEquationMethod } from '../../../../src/common/thermal/utils/aly-lee-equation-method';
+import { AlyLeeEquationMethod } from '../../../../src/common/thermal/utils/equation-methods/aly-lee-equation-method';
 
 describe('AlyLeeEquationMethod', () => {
   const m = new AlyLeeEquationMethod();

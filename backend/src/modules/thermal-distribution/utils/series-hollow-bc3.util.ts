@@ -14,8 +14,8 @@
 import {
   besselJ0,
   besselJ1,
-} from '../../../common/utils/bessel.util';
-import { adaptiveIntegrate, simpson } from '../../../common/utils/quadrature.util';
+} from '../../../common/utils/bessel';
+import { adaptiveIntegrate, simpson } from '../../../common/utils/quadrature';
 import {
   hollowCylinderEigenvaluesBC3,
   hollowCylW0,

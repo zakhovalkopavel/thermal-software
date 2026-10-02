@@ -1,6 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
  * SO3 — Sulfur trioxide.
@@ -11,7 +12,7 @@ import { RefKey } from '../../enum/ref-key.enum';
 export const SO3: CompoundValue = {
   name: 'Sulfur trioxide',
   chemicalFormula: 'SO3',
-  Mr: 0.080064,
+  Mr: COMPOUND_LIBRARY.SO3.molarMass_kg_mol,
   enthalpyFormation298: -395.7e3,
   gibbsEnergy298: -371.1e3,
   collisionDiameter: 4.19,

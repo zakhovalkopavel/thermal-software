@@ -6,9 +6,10 @@ import { RecuperatorInputDto } from '../../../../src/modules/recuperator/dto/rec
 import { HoleForm } from '../../../../src/modules/recuperator/enums/hole-form.enum';
 import { RECUPERATOR } from '../../../../src/modules/recuperator/constants/recuperator.constants';
 import { CombustionMode } from '../../../../src/modules/combustion/enums/combustion-mode.enum';
-import { CombustionModeInputDto } from '../../../../src/modules/combustion/dto/combustion-mode-input.dto';
-import { FuelPhase } from '../../../../src/modules/combustion/data/fuels/fuel.interface';
+import { CombustionModeInputDto } from '../../../../src/modules/combustion/dto/combustion-mode';
+import { FuelPhase } from '../../../../src/modules/combustion/enums/fuel-phase.enum';
 import { FuelId } from '../../../../src/modules/combustion/enums/fuel-id.enum';
+import { COMBUSTION_EXAMPLES } from '../../../../src/modules/combustion/constants';
 
 describe('RecuperatorService — smoke from the selected combustion mode', () => {
   let service: RecuperatorService;
@@ -52,7 +53,7 @@ describe('RecuperatorService — smoke from the selected combustion mode', () =>
   it.each([
     ['solid-direct', { mode: CombustionMode.SolidDirect, solidDirect: { fuelId: FuelId.CharcoalBriquette, fPower_W: 5_000, kExcessAir: 1.4, tAir_K: 293 } }],
     ['solid-two-step', { mode: CombustionMode.SolidTwoStep, solidTwoStep: { fuelId: FuelId.CharcoalOak, fPower_W: 5_000, kExcessAir: 1.3, tAirPrimary_K: 673, tAirSecondary_K: 293 } }],
-    ['bed', { mode: CombustionMode.Bed, bed: { fuelId: FuelId.CharcoalBriquette, nLayers: 10, kExcessAir: 1.3, tAirSecondary_K: 293 } }],
+    ['bed', { mode: CombustionMode.Bed, bed: { fuelId: FuelId.CharcoalBriquette, ...COMBUSTION_EXAMPLES.BED, nLayers: 10, kExcessAir: 1.3, tAirSecondary_K: 293 } }],
   ] as [string, CombustionModeInputDto][])('runs with mode %s', (_label, input) => {
     const r = service.calculate({ ...geometry, combustion: input, tAirStart_K: 293 });
     expect(r.tFlame_K).toBe(combustion.flueGas(input).tFlame_K);

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
+import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 import { GAS_REGISTRY } from '../../../common/thermal/compound/gas/registry';
 import { Species } from '../enums/species.enum';
 
@@ -52,7 +52,7 @@ export class TransportService {
   thermalConductivity(species: Species, T_K: number, Cp_J_molK: number): number {
     const mu = this.viscosity(species, T_K);
     const M  = GAS_REGISTRY[species].Mr;
-    return (Cp_J_molK + 1.25 * GAS_CONSTANT_J_MOLK) * mu / M;
+    return (Cp_J_molK + 1.25 * PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK) * mu / M;
   }
 
   /**

@@ -16,7 +16,7 @@ import {
   resolveRegime, validatePreferredCorrelation,
 } from '../helpers/correlation-validity.helper';
 import { CorrelationSelectorHelper } from '../helpers/correlation-selector.helper';
-import { STANDARD_GRAVITY_M_S2 } from '../../../common/thermal/constants/physical.constants';
+import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 
 @Injectable()
 export class DimensionlessNumbersService {
@@ -42,15 +42,15 @@ export class DimensionlessNumbersService {
 
   /**
    * Gr = g·β·ΔT·L³ / ν²   β = 2/(T_hot+T_cold) (ideal gas)
-   * g defaults to STANDARD_GRAVITY_M_S2 (9.80665 m/s²); override for non-Earth conditions.
+   * g defaults to PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2 (9.80665 m/s²); override for non-Earth conditions.
    */
-  grashof(T_hot_K: number, T_cold_K: number, L: number, nu: number, g = STANDARD_GRAVITY_M_S2): number {
+  grashof(T_hot_K: number, T_cold_K: number, L: number, nu: number, g = PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2): number {
     const beta = 2 / (T_hot_K + T_cold_K);
     return g * beta * Math.abs(T_hot_K - T_cold_K) * Math.pow(L, 3) / (nu * nu);
   }
 
   /** Ra = Gr · Pr */
-  rayleigh(T_hot_K: number, T_cold_K: number, L: number, nu: number, Pr: number, g = STANDARD_GRAVITY_M_S2): number {
+  rayleigh(T_hot_K: number, T_cold_K: number, L: number, nu: number, Pr: number, g = PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2): number {
     return this.grashof(T_hot_K, T_cold_K, L, nu, g) * Pr;
   }
 

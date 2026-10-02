@@ -1,14 +1,14 @@
 import { EquationTypeDto } from '../dto/equation-type.dto';
-import { LinearEquationMethod } from './linear-equation-method';
-import { QuadraticEquationMethod } from './quadratic-equation-method';
-import { CubicEquationMethod } from './cubic-equation-method';
-import { QuarticEquationMethod } from './quartic-equation-method';
-import { LinearHyperbolicEquationMethod } from './linear-hyperbolic-equation-method';
-import { LinearHyperbolicLogarithmicEquationMethod } from './linear-hyperbolic-logarithmic-equation-method';
-import { AlyLeeEquationMethod } from './aly-lee-equation-method';
-import { DipprEquation102Method } from './dippr-equation-102-method';
-import { Nasa7EquationMethod } from './nasa7-equation-method';
-import { Nasa9EquationMethod } from './nasa9-equation-method';
+import { LinearEquationMethod } from './equation-methods/linear-equation-method';
+import { QuadraticEquationMethod } from './equation-methods/quadratic-equation-method';
+import { CubicEquationMethod } from './equation-methods/cubic-equation-method';
+import { QuarticEquationMethod } from './equation-methods/quartic-equation-method';
+import { LinearHyperbolicEquationMethod } from './equation-methods/linear-hyperbolic-equation-method';
+import { LinearHyperbolicLogarithmicEquationMethod } from './equation-methods/linear-hyperbolic-logarithmic-equation-method';
+import { AlyLeeEquationMethod } from './equation-methods/aly-lee-equation-method';
+import { DipprEquation102Method } from './equation-methods/dippr-equation-102-method';
+import { Nasa7EquationMethod } from './equation-methods/nasa7-equation-method';
+import { Nasa9EquationMethod } from './equation-methods/nasa9-equation-method';
 
 export class Common {
   static logarithmicAverage(x1: number, x2: number): number {

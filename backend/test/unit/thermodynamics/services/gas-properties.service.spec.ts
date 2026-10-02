@@ -1,10 +1,10 @@
 import { GasPropertiesService } from '../../../../src/modules/thermodynamics/services/gas-properties.service';
 import { GAS_REGISTRY } from '../../../../src/common/thermal/compound/gas/registry';
 import { Species } from '../../../../src/modules/thermodynamics/enums/species.enum';
-import { compoundNasa7, compoundNasa9 } from '../../../../src/common/thermal/utils/nasa-database';
-import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/nasa7-equation-method';
-import { Nasa9EquationMethod } from '../../../../src/common/thermal/utils/nasa9-equation-method';
-import { GAS_CONSTANT_J_MOLK } from '../../../../src/common/thermal/constants/physical.constants';
+import { compoundNasa7, compoundNasa9 } from '../../../../src/common/thermal/utils/nasa';
+import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa7-equation-method';
+import { Nasa9EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa9-equation-method';
+import { PHYSICAL_CONSTANTS } from '../../../../src/common/thermal/constants/physical.constants';
 
 describe('GasPropertiesService — absolute enthalpy, entropy, Gibbs energy', () => {
   const gas = new GasPropertiesService();
@@ -85,7 +85,7 @@ describe('GasPropertiesService — absolute enthalpy, entropy, Gibbs energy', ()
     const Kp = (T: number): number => {
       const dG = gas.gibbsEnergy(Species.CO2, T) + gas.gibbsEnergy(Species.H2, T)
                - gas.gibbsEnergy(Species.CO, T) - gas.gibbsEnergy(Species.H2O, T);
-      return Math.exp(-dG / (GAS_CONSTANT_J_MOLK * T));
+      return Math.exp(-dG / (PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK * T));
     };
     expect(Kp(1100)).toBeGreaterThan(0.8);
     expect(Kp(1100)).toBeLessThan(1.2);

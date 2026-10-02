@@ -8,10 +8,10 @@ import { RecuperatorGeometryService } from './recuperator-geometry.service';
 import { RecuperatorInputDto } from '../dto/recuperator-input.dto';
 import { RecuperatorResultDto } from '../dto/recuperator-result.dto';
 import { RECUPERATOR } from '../constants/recuperator.constants';
-import { COMBUSTION } from '../../combustion/constants/combustion.constants';
+import { COMBUSTION } from '../../combustion/constants';
 import { SmokeCompositionDto } from '../../thermal-exchange/dto/smoke-composition.dto';
 import { HoleForm } from '../enums/hole-form.enum';
-import { logMean } from '../../../common/utils/math.util';
+import { logMean } from '../../../common/utils/math';
 
 type GasMoleFractions = SmokeCompositionDto;
 

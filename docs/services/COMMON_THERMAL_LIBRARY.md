@@ -39,15 +39,19 @@ backend/src/common/thermal/
 ├── dto/
 │   ├── equation-type.dto.ts    ← EquationTypeDto enum
 │   └── ref-key.dto.ts          ← (legacy path, kept for compat)
-└── utils/
-    ├── common.ts               ← Common constants (R, g, σ, pAtm, …)
-    ├── compound-property-resolver.ts  ← CompoundPropertyResolver
-    ├── nasa-database.ts        ← nasa7Species / nasa9Species / compoundNasa7 / compoundNasa9
-    ├── heat-capacity-entries.ts ← heatCapacityEntries (tabulated fits + NASA-9 + NASA-7)
-    ├── nasa7-equation-method.ts
-    ├── gauss-legendre.util.ts
-    ├── numeric-format.util.ts
-    └── numeric.util.ts
+├── constants/
+│   ├── physical.constants.ts           ← PHYSICAL_CONSTANTS (R, k_B, N_A, σ, g)
+│   ├── standard-conditions.constants.ts ← STANDARD_CONDITIONS (p, T, T_ref)
+│   └── index.ts
+└── utils/                      ← one export per file, each folder has an index.ts
+    ├── common.ts               ← Common helper methods
+    ├── equation-methods/       ← one class per correlation (NASA-7/9, DIPPR, Aly-Lee, …)
+    ├── nasa/                   ← NASA database loader, nasa7Species / nasa9Species, compoundNasa*
+    └── compound-properties/    ← CompoundPropertyResolver, heatCapacityEntries
+
+backend/src/common/chemistry/   ← elements, formulas, compound molar masses (see below)
+backend/src/common/utils/       ← numerics: bessel/, root-finding/, optimization/, regression/,
+                                   linear-algebra/, quadrature/, math/, numeric-format/
 ```
 
 ---
@@ -208,38 +212,72 @@ outside `[Tmin, Tmax]` H and S are extrapolated with the boundary Cp and G = H �
 
 ---
 
-## Physical Constants (`constants/physical.constants.ts`)
+## Physical Constants (`constants/`)
 
-Exported from `common/thermal` as named constants:
+Exported from `common/thermal` as two grouped objects:
 
 ```typescript
-BOLTZMANN_CONSTANT_J_K    = 1.380649e-23        // Boltzmann constant [J/K]
-GAS_CONSTANT_J_MOLK       = 8.31446261815324    // Universal gas constant [J/(mol·K)]
-AVOGADRO_CONSTANT_PER_MOL = 6.02214076e23       // Avogadro constant [1/mol]
-STANDARD_GRAVITY_M_S2     = 9.80665             // Standard gravity [m/s²]
-STANDARD_PRESSURE_PA      = 101_325             // Standard atmospheric pressure [Pa]
-STANDARD_TEMPERATURE_K    = 293.15              // Standard reference temperature [K] (20 °C)
-THERMOCHEMICAL_REFERENCE_TEMPERATURE_K = 298.15 // Reference temperature of formation enthalpies [K] (25 °C)
-STEFAN_BOLTZMANN_W_M2K4   = 5.67037441918e-8    // Stefan–Boltzmann constant [W/(m²·K⁴)]
+PHYSICAL_CONSTANTS = {                     // CODATA 2018
+  GAS_CONSTANT_J_MOLK:     8.31446261815324, // Universal gas constant [J/(mol·K)]
+  BOLTZMANN_J_K:           1.380649e-23,     // Boltzmann constant [J/K]
+  AVOGADRO_PER_MOL:        6.02214076e23,    // Avogadro constant [1/mol]
+  STEFAN_BOLTZMANN_W_M2K4: 5.67037441918e-8, // Stefan–Boltzmann constant [W/(m²·K⁴)]
+  STANDARD_GRAVITY_M_S2:   9.80665,          // Standard gravity [m/s²]
+}
+STANDARD_CONDITIONS = {
+  PRESSURE_PA:    101_325,                   // Standard atmospheric pressure [Pa]
+  TEMPERATURE_K:  293.15,                    // Standard reference temperature [K] (20 °C)
+  THERMOCHEMICAL_REFERENCE_TEMPERATURE_K: 298.15, // Reference temperature of formation enthalpies [K]
+}
 ```
+
+The objects are not `as const`: a literal type would break default parameters such as
+`P_Pa = STANDARD_CONDITIONS.PRESSURE_PA`.
 
 `Common` (`utils/common.ts`) keeps only the helper methods (`logarithmicAverage`, `average`, `validInterval`, `isValidInterval`, `equation`).
 
 ---
 
-## Numeric Utilities
+## Chemistry Library (`backend/src/common/chemistry/`)
 
-### `gauss-legendre.util.ts`
-Gauss-Legendre quadrature for numerical integration.  
+| Folder | Exports |
+|---|---|
+| `elements/` | `PERIODIC_TABLE` (118 elements, CIAAW Abridged Standard Atomic Weights 2024; `null` for elements without a standard atomic weight), `ElementSymbol`, `atomicMass(symbol)` [kg/mol] |
+| `formula/` | `parseFormula(formula)` — nested `()`/`[]` groups, decimal counts, `·`/`*` adducts; `calculateMolarMass(formula)` [kg/mol] |
+| `compounds/` | `COMPOUND_LIBRARY` — every compound the application uses, keyed by formula, with its molar mass [kg/mol]; `molarMass(formula)` (library value, else calculated from the formula); `molarMassGramsPerMol`, `molarMassTableGramsPerMol` for models that work in g/mol |
+| `constants/` | `CHEMISTRY.GRAMS_PER_KILOGRAM` |
+
+`COMPOUND_LIBRARY` is the single source of molar masses:
+
+- gas compounds link to it (`Mr: COMPOUND_LIBRARY.CO2.molarMass_kg_mol`);
+- the refractory viscosity tables (`MOLAR_MASSES`, `NAKAMOTO_2007.molarMass`, Iida η₀ᵢ) list
+  only their component keys and take the values from the library;
+- combustion `ATOMIC_MASS` is built from `atomicMass()`.
+
+A new compound (e.g. a new equilibrium species) gets its molar mass from `molarMass(formula)`
+without a library entry; add an entry only when a tabulated value must be used.
+
+---
+
+## Numeric Utilities (`backend/src/common/utils/`)
+
+One function per `*.util.ts` file, grouped by topic; import from the folder (`index.ts`).
+
+### `quadrature/`
+Gauss-Legendre (`gaussLegendre`, `gaussLegendre20`, `GAUSS_LEGENDRE_TABLES`), Simpson,
+Clenshaw-Curtis and `adaptiveIntegrate`.  
 Used only when no closed-form antiderivative exists (e.g., `dipprN102` with non-integer
 exponent — see [CONVENTIONS.md §4](../CONVENTIONS.md)).
 
-### `numeric.util.ts`
-Internal wrappers for Brent root-finding (`brentq`) and Nelder-Mead optimisation.  
+### `root-finding/`, `optimization/`, `regression/`, `linear-algebra/`
+Wrappers named after their SciPy equivalents (`brentq`, `brent`, `nelderMead`, `luSolve`, …).  
 **Never import these directly in business logic** — use the `/api/v1/numeric` endpoints
 or the approved service-layer wrappers (see [NUMERICAL_METHODS_CONVENTION.md](../NUMERICAL_METHODS_CONVENTION.md)).
 
-### `numeric-format.util.ts`
+### `bessel/`, `math/`
+Bessel functions J₀, J₁, Y₀, Y₁ and J₀ roots; `logMean`.
+
+### `numeric-format/`
 Formula-string builders for regression responses.  
 All `/numeric/regression/*` endpoints must use these helpers — never construct formula
 strings inline in a controller.

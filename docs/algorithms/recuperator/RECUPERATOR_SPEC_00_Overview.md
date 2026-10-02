@@ -35,7 +35,7 @@ backend/src/modules/
 ├── combustion/                    — Flame temperature & smoke composition (4 combustion modes;
 │                                    see docs/algorithms/combustion/)
 │   ├── services/combustion.service.ts               (facade; flueGas() = selected mode for the recuperator)
-│   ├── dto/combustion-mode-input.dto.ts             (mode + input of that mode)
+│   ├── dto/combustion-mode/combustion-mode-input.dto.ts (mode + input of that mode)
 │   └── combustion.module.ts
 │
 ├── refractory/ (extended)         — Add temperature-dependent thermal props

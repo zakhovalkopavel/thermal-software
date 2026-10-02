@@ -1,7 +1,7 @@
 # 01 — Shared Physics
 
 **Services:** `CombustionEnthalpyService`, `ProductEquilibriumService`, `FlameSolverService`
-**Utils:** `utils/element-balance.util.ts`, `utils/fuel-resolver.util.ts`
+**Utils:** `utils/element-balance/`, `utils/gas-flows/`, `utils/fuel-resolver/`, `utils/step-result/` (one function per file)
 
 ## 1.1 Enthalpy reference
 
@@ -65,7 +65,8 @@ O2_stoich          = C + H/4 + S − O/2       [mol O2]
 air(O2)            : N2 = O2·(1 − pO2)/pO2,  H2O = wH2Om · m_dry_air / M_H2O
 ```
 
-Atomic weights: `IUPAC2021` conventional values (`ATOMIC_MASS`). Species molar masses come from the
+Atomic weights: `ATOMIC_MASS`, built from `PERIODIC_TABLE` in `common/chemistry` (CIAAW 2024 abridged
+values, equal to the `IUPAC2021` conventional values for C, H, O, N, S). Species molar masses come from the
 compound registry.
 
 ## 1.4 Product equilibrium (`ProductEquilibriumService.solve(elements, T, inerts)`)
@@ -112,7 +113,7 @@ Entry points:
 
 `excessAir` in step results = O2 supplied / O2 needed by the step's element inventory.
 
-**Root finding.** `brentq` (`common/utils/root-finding.util.ts`, wrapper of `brent-zero-generator`)
+**Root finding.** `brentq` (`common/utils/root-finding/brentq.util.ts`, wrapper of `brent-zero-generator`)
 takes an **absolute** x-tolerance, like `scipy.optimize.brentq(xtol=tol)`; the library adds
 `2·ε·|x|`, so every step moves at least one ulp and the search always terminates.
 
@@ -128,6 +129,13 @@ takes an **absolute** x-tolerance, like `scipy.optimize.brentq(xtol=tol)`; the l
 | `T_REF_K` | 298.15 | formation enthalpy reference, default fuel temperature |
 | `WGS_ROOT_REL_TOL` | 1e-12 | WGS extent tolerance relative to its bracket |
 | `ELEMENT_BALANCE_TOL` | 1e-9 | target relative element residual (reported as `elementBalanceResidual`, checked in tests) |
+| `COMPOSITION_SUM_TOL` | 1e-3 | allowed deviation of a custom fuel's mass-fraction sum from 1 |
+| `SULFUR_OXYGEN_REL_TOL` | 1e-12 | relative oxygen deficit tolerated when binding S as SO2 |
+| `DIVISION_FLOOR` | 1e-300 | lower bound of divisors that may be zero |
+
+Other constants in `constants/` (one object per file): `ATOMIC_MASS` and `ELEMENTS` (reacting elements),
+`PRODUCT_SPECIES` (fixed keys of species maps in responses), `BED_KINETICS` and `BED_REACTIONS` (mode 4),
+`MODE_INPUT_KEY` (flue-gas facade), `COMBUSTION_EXAMPLES` (Swagger examples).
 
 ## 1.7 Validation (unit tests)
 

@@ -3,6 +3,7 @@ import { ApiBody, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swag
 import { RecuperatorService } from '../services/recuperator.service';
 import { RecuperatorInputDto } from '../dto/recuperator-input.dto';
 import { RecuperatorResultDto } from '../dto/recuperator-result.dto';
+import { COMBUSTION_EXAMPLES } from '../../combustion/constants';
 
 @ApiTags('recuperator')
 @Controller('recuperator')
@@ -72,7 +73,7 @@ export class RecuperatorController {
         value: {
           combustion: {
             mode: 'bed',
-            bed: { fuelId: 'charcoal-briquette', airFlow_m3h: 10, tAirPrimary_K: 400, kExcessAir: 1.3, tAirSecondary_K: 400 },
+            bed: { fuelId: 'charcoal-briquette', ...COMBUSTION_EXAMPLES.BED, kExcessAir: 1.3, tAirSecondary_K: 400 },
           },
           tAirStart_K: 400,
           holeForm: 'circle',

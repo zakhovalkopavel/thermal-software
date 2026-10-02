@@ -16,7 +16,8 @@
 import { IIDA_MODEL, MILLS_LIQUIDUS, MOLAR_MASSES } from '../constants/viscosity-parameters';
 import { SlagViscosityResult } from '../interfaces/viscosity-parameters.interface';
 import { wtPctToMolPct } from './glass-composition.util';
-import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
+import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
+import { molarMassGramsPerMol } from '../../../common/chemistry';
 
 // ─── Liquidus helper (shared between Iida and Nakamoto) ──────────────────────
 
@@ -40,7 +41,7 @@ function toMoleFractions(comp_wt_pct: Record<string, number>): Record<string, nu
   const mols: Record<string, number> = {};
   for (const [k, wt] of Object.entries(comp_wt_pct)) {
     if (wt > 0) {
-      const M = MOLAR_MASSES[k] ?? (IIDA_MODEL.components[k]?.M);
+      const M = MOLAR_MASSES[k] ?? (IIDA_MODEL.components[k] ? molarMassGramsPerMol(k) : undefined);
       if (M) { mols[k] = wt / M; molSum += mols[k]; }
     }
   }
@@ -55,9 +56,10 @@ function toMoleFractions(comp_wt_pct: Record<string, number>): Record<string, nu
 function calcIdealComponentViscosity(key: string, T_K: number): number {
   const c = IIDA_MODEL.components[key];
   if (!c) return 0;
-  const { M, Tm, Vm, H } = c;
+  const { Tm, Vm, H } = c;
+  const M = molarMassGramsPerMol(key);
   // η₀ᵢ = 1.8×10⁻⁷ · √(M·Tm) / Vm^(2/3) · exp(H/RT)
-  return 1.8e-7 * Math.sqrt(M * Tm) / Math.pow(Vm * 1e-6, 2 / 3) * Math.exp(H / (GAS_CONSTANT_J_MOLK * T_K));
+  return 1.8e-7 * Math.sqrt(M * Tm) / Math.pow(Vm * 1e-6, 2 / 3) * Math.exp(H / (PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK * T_K));
 }
 
 // ─── Basicity index ───────────────────────────────────────────────────────────

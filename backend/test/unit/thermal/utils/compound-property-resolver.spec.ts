@@ -13,15 +13,15 @@
  *   - G = H − T·S via resolver
  */
 
-import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-property-resolver';
+import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-properties/compound-property-resolver';
 import { RefKey } from '../../../../src/common/thermal/enum/ref-key.enum';
 import { CO2 } from '../../../../src/common/thermal/compound/gas/co2';
 import { N2  } from '../../../../src/common/thermal/compound/gas/n2';
 import { CompoundValue } from '../../../../src/common/thermal/interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../../../src/common/thermal/dto/equation-type.dto';
-import { compoundNasa7, compoundNasa9 } from '../../../../src/common/thermal/utils/nasa-database';
-import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/nasa7-equation-method';
-import { Nasa9EquationMethod } from '../../../../src/common/thermal/utils/nasa9-equation-method';
+import { compoundNasa7, compoundNasa9 } from '../../../../src/common/thermal/utils/nasa';
+import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa7-equation-method';
+import { Nasa9EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa9-equation-method';
 
 // ─── Helper — minimal CompoundValue without nasa7 ─────────────────────────────
 

@@ -6,8 +6,8 @@
  *   [α₁/λ · J₀(p·R₁) + p·J₁(p·R₁)] · [α₂/λ · Y₀(p·R₂) − p·Y₁(p·R₂)]
  *   − [α₂/λ · J₀(p·R₂) − p·J₁(p·R₂)] · [α₁/λ · Y₀(p·R₁) + p·Y₁(p·R₁)] = 0
  */
-import { besselJ0, besselJ1, besselY0, besselY1 } from '../../../common/utils/bessel.util';
-import { brentq } from '../../../common/utils/root-finding.util';
+import { besselJ0, besselJ1, besselY0, besselY1 } from '../../../common/utils/bessel';
+import { brentq } from '../../../common/utils/root-finding';
 import { EIGENVALUE_TOL_HOLLOW_BC3 } from '../constants/thermal-distribution.constants';
 
 /** Evaluate the hollow-cylinder characteristic function F(p). */

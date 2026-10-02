@@ -1,12 +1,13 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /** CO — Carbon monoxide */
 export const CO: CompoundValue = {
   name: 'Carbon monoxide',
   chemicalFormula: 'CO',
-  Mr: 0.02801,
+  Mr: COMPOUND_LIBRARY.CO.molarMass_kg_mol,
   enthalpyFormation298: -110.53e3,
   gibbsEnergy298: -137.17e3,
   collisionDiameter: 3.690,

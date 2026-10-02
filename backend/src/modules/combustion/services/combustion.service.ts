@@ -1,27 +1,20 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { SolidDirectInputDto, SolidDirectResultDto } from '../dto/solid-direct.dto';
-import { SolidTwoStepInputDto, SolidTwoStepResultDto } from '../dto/solid-two-step.dto';
-import { FluidFuelInputDto, FluidFuelResultDto } from '../dto/fluid-fuel.dto';
-import { BedCombustionInputDto, BedCombustionResultDto } from '../dto/bed-combustion.dto';
-import { CombustionModeInputDto } from '../dto/combustion-mode-input.dto';
-import { FuelSummaryDto } from '../dto/condensed-fuel.dto';
-import { BED_KINETICS, COMBUSTION } from '../constants/combustion.constants';
+import { SolidDirectInputDto, SolidDirectResultDto } from '../dto/solid-direct';
+import { SolidTwoStepInputDto, SolidTwoStepResultDto } from '../dto/solid-two-step';
+import { FluidFuelInputDto, FluidFuelResultDto } from '../dto/fluid';
+import { BedCombustionInputDto, BedCombustionResultDto } from '../dto/bed';
+import { CombustionModeInputDto } from '../dto/combustion-mode';
+import { FuelSummaryDto } from '../dto/common';
+import { COMBUSTION, MODE_INPUT_KEY } from '../constants';
 import { FUEL_REGISTRY } from '../data/fuels';
-import { FuelPhase } from '../data/fuels/fuel.interface';
+import { FuelPhase } from '../enums/fuel-phase.enum';
 import { CombustionMode } from '../enums/combustion-mode.enum';
-import { FlueGas } from '../interfaces/combustion-streams.interface';
-import { resolveFuelGas, summarizeCondensedFuel, summarizeGaseousFuel } from '../utils/fuel-resolver.util';
+import { FlueGas } from '../interfaces';
+import { resolveFuelGas, summarizeCondensedFuel, summarizeGaseousFuel } from '../utils/fuel-resolver';
 import { CombustionEnthalpyService } from './combustion-enthalpy.service';
 import { SolidCombustionService } from './solid-combustion.service';
 import { FluidCombustionService } from './fluid-combustion.service';
 import { BedCombustionService } from './bed-combustion.service';
-
-const MODE_INPUT: Record<CombustionMode, keyof Omit<CombustionModeInputDto, 'mode'>> = {
-  [CombustionMode.SolidDirect]:  'solidDirect',
-  [CombustionMode.SolidTwoStep]: 'solidTwoStep',
-  [CombustionMode.Fluid]:        'fluid',
-  [CombustionMode.Bed]:          'bed',
-};
 
 /** Combustion facade: the four modes, fuel presets and the flue gas of a selected mode */
 @Injectable()
@@ -54,9 +47,9 @@ export class CombustionService {
    * of the mode input (primary and, when given, secondary).
    */
   flueGas(input: CombustionModeInputDto, airPreheat_K = 0): FlueGas {
-    const key = MODE_INPUT[input.mode];
+    const key = MODE_INPUT_KEY[input.mode];
     if (!input[key]) throw new BadRequestException(`Combustion mode \`${input.mode}\` needs \`${key}\``);
-    const extra = Object.values(MODE_INPUT).filter(k => k !== key && input[k] !== undefined);
+    const extra = Object.values(MODE_INPUT_KEY).filter(k => k !== key && input[k] !== undefined);
     if (extra.length) throw new BadRequestException(`Give only \`${key}\` for mode \`${input.mode}\` (also got ${extra.join(', ')})`);
 
     const dT = airPreheat_K;
@@ -66,26 +59,26 @@ export class CombustionService {
       case CombustionMode.SolidDirect: {
         const dto = input.solidDirect!;
         const r = this.solid.direct({ ...dto, tAir_K: dto.tAir_K + dT });
-        return flueGasOf(input.mode, r.tFlame_K, r.mFuel_kgs, r.fPower_W, r.mAir_kgs, r.combustion, dto.pO2);
+        return this.flueGasOf(input.mode, r.tFlame_K, r.mFuel_kgs, r.fPower_W, r.mAir_kgs, r.combustion, dto.pO2);
       }
       case CombustionMode.SolidTwoStep: {
         const dto = input.solidTwoStep!;
         const r = this.solid.twoStep({ ...dto, tAirPrimary_K: dto.tAirPrimary_K + dT, tAirSecondary_K: shift(dto.tAirSecondary_K) });
-        return flueGasOf(input.mode, r.tFlame_K, r.mFuel_kgs, r.fPower_W, r.mAirPrimary_kgs + r.mAirSecondary_kgs, r.burnout, dto.pO2);
+        return this.flueGasOf(input.mode, r.tFlame_K, r.mFuel_kgs, r.fPower_W, r.mAirPrimary_kgs + r.mAirSecondary_kgs, r.burnout, dto.pO2);
       }
       case CombustionMode.Fluid: {
         const dto = input.fluid!;
         const r = this.fluid.calculate({ ...dto, tAir_K: dto.tAir_K + dT });
-        return flueGasOf(input.mode, r.tFlame_K, r.mFuel_kgs, r.fPower_W, r.mAir_kgs, r.combustion, dto.pO2);
+        return this.flueGasOf(input.mode, r.tFlame_K, r.mFuel_kgs, r.fPower_W, r.mAir_kgs, r.combustion, dto.pO2);
       }
       case CombustionMode.Bed: {
         const dto = input.bed!;
         const r = this.bed.calculate({
           ...dto,
-          tAirPrimary_K:   (dto.tAirPrimary_K ?? BED_KINETICS.AIR_T_DEFAULT_K) + dT,
+          tAirPrimary_K:   dto.tAirPrimary_K + dT,
           tAirSecondary_K: shift(dto.tAirSecondary_K),
         });
-        return flueGasOf(input.mode, r.tFlame_K, r.mFuel_kgs, r.fPower_W, r.mAirPrimary_kgs + r.mAirSecondary_kgs, r.burnout, dto.pO2);
+        return this.flueGasOf(input.mode, r.tFlame_K, r.mFuel_kgs, r.fPower_W, r.mAirPrimary_kgs + r.mAirSecondary_kgs, r.burnout, dto.pO2);
       }
     }
   }
@@ -97,16 +90,16 @@ export class CombustionService {
       ? summarizeGaseousFuel(f.id, f.name, resolveFuelGas(f.moleFractions), pO2, this.enthalpy)
       : summarizeCondensedFuel(f, pO2, this.enthalpy));
   }
-}
 
-function flueGasOf(
-  mode: CombustionMode, tFlame_K: number, mFuel_kgs: number, fPower_W: number, mAir_kgs: number,
-  lastStep: { mGas_kgs: number; products: { moleFractions: Record<string, number> } }, pO2?: number,
-): FlueGas {
-  return {
-    mode, tFlame_K, mFuel_kgs, fPower_W, mAir_kgs,
-    mFlueGas_kgs:  lastStep.mGas_kgs,
-    moleFractions: lastStep.products.moleFractions,
-    pO2: pO2 ?? COMBUSTION.DEFAULT_PO2,
-  };
+  private flueGasOf(
+    mode: CombustionMode, tFlame_K: number, mFuel_kgs: number, fPower_W: number, mAir_kgs: number,
+    lastStep: { mGas_kgs: number; products: { moleFractions: Record<string, number> } }, pO2?: number,
+  ): FlueGas {
+    return {
+      mode, tFlame_K, mFuel_kgs, fPower_W, mAir_kgs,
+      mFlueGas_kgs:  lastStep.mGas_kgs,
+      moleFractions: lastStep.products.moleFractions,
+      pO2: pO2 ?? COMBUSTION.DEFAULT_PO2,
+    };
+  }
 }

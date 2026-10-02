@@ -7,7 +7,7 @@ The fuel burn rate is an **output**: blast air enters at the grate, the bed is d
 `nLayers` layers of height `dz = H / n`, and the gas is marched upward on species molar flows [mol/s].
 The bed outlet gas is burned with secondary air exactly as step 2 of mode 2.
 
-## 5.1 Kinetics (constants verbatim from legacy, `BED_KINETICS`)
+## 5.1 Kinetics (constants verbatim from legacy, `BED_REACTIONS`)
 
 Refs ([REFERENCES](../../REFERENCES.md)): `Laurendeau1978` pp. 221–270 (char surface reactions),
 `Turns2012` pp. 120–145 (gas phase), `Higman2008` pp. 78–95 (Boudouard, water-gas).
@@ -41,7 +41,7 @@ Heats for the char balance (legacy): ΔH1 −393.5, ΔH2 −110.5 (×2 per O2), 
 
 For layer i (centre `z = (i + ½)·dz`):
 
-1. **Particle size** shrinks toward the grate: `R_p = d_p·(0.6 + 0.4·(i + 1)/n)/2` (legacy had the
+1. **Particle size** shrinks toward the grate: `R_p = d_p·(g + (1 − g)·(i + 1)/n)/2` with `g = BED_KINETICS.PARTICLE_SIZE_GRATE_RATIO` = 0.6 (legacy had the
    reverse, largest at the grate).
 2. **Gas state** at the layer inlet: ρ, μ (`TransportService.viscosityMix`), k, cp; superficial velocity
    `v = m_gas/(ρ·A)`; `h = Nu_Gunn(Re_p, Pr, ε)·k/d_p`; Ergun `ΔP = (dP/dz)·dz`.

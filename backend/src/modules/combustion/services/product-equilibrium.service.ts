@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { GasPropertiesService } from '../../thermodynamics/services/gas-properties.service';
-import { Species } from '../../thermodynamics/enums/species.enum';
-import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
-import { brentq } from '../../../common/utils/root-finding.util';
-import { COMBUSTION } from '../constants/combustion.constants';
-import { ElementFlows, EquilibriumProducts, GasFlows } from '../interfaces/combustion-streams.interface';
-import { sumFlows } from '../utils/element-balance.util';
+import { Species } from '../../thermodynamics/enums';
+import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants';
+import { brentq } from '../../../common/utils/root-finding';
+import { COMBUSTION } from '../constants';
+import { ElementFlows, GasFlows } from '../types';
+import { EquilibriumProducts } from '../interfaces';
+import { sumFlows } from '../utils/gas-flows';
 
 /**
  * One-step product distribution from the element inventory.
@@ -27,13 +28,13 @@ export class ProductEquilibriumService {
   wgsKp(T_K: number): number {
     const dG = this.gas.gibbsEnergy(Species.CO2, T_K) + this.gas.gibbsEnergy(Species.H2, T_K)
              - this.gas.gibbsEnergy(Species.CO, T_K)  - this.gas.gibbsEnergy(Species.H2O, T_K);
-    return Math.exp(-dG / (GAS_CONSTANT_J_MOLK * T_K));
+    return Math.exp(-dG / (PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK * T_K));
   }
 
   solve(el: ElementFlows, T_K: number, inerts: GasFlows = {}): EquilibriumProducts {
     const { C, H, N, S } = el;
     const oFree = el.O - 2 * S;
-    if (oFree < -1e-12 * Math.max(el.O, 1e-300)) {
+    if (oFree < -COMBUSTION.SULFUR_OXYGEN_REL_TOL * Math.max(el.O, COMBUSTION.DIVISION_FLOOR)) {
       throw new Error('Product equilibrium: not enough oxygen to bind sulfur as SO2');
     }
     const O = Math.max(oFree, 0);

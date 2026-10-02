@@ -5,10 +5,10 @@ import { FlameSolverService } from '../../../../src/modules/combustion/services/
 import { SolidCombustionService } from '../../../../src/modules/combustion/services/solid-combustion.service';
 import { FluidCombustionService } from '../../../../src/modules/combustion/services/fluid-combustion.service';
 import { FuelId } from '../../../../src/modules/combustion/enums/fuel-id.enum';
-import { FuelPhase } from '../../../../src/modules/combustion/data/fuels/fuel.interface';
-import { CombustionStepResultDto } from '../../../../src/modules/combustion/dto/combustion-step-result.dto';
+import { FuelPhase } from '../../../../src/modules/combustion/enums/fuel-phase.enum';
+import { CombustionStepResultDto } from '../../../../src/modules/combustion/dto/common';
 import { CHARCOAL_BRIQUETTE } from '../../../../src/modules/combustion/data/fuels';
-import { ATOMIC_MASS } from '../../../../src/modules/combustion/constants/combustion.constants';
+import { ATOMIC_MASS } from '../../../../src/modules/combustion/constants';
 
 describe('Solid and fluid combustion (modes 1–3)', () => {
   const gas = new GasPropertiesService();

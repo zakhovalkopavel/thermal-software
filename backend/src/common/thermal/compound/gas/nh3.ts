@@ -1,12 +1,13 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /** NH3 — Ammonia. LJ: ref Poling5, Sutherland: fit to ref NISTWebBook data */
 export const NH3: CompoundValue = {
   name: 'Ammonia',
   chemicalFormula: 'NH3',
-  Mr: 0.017031,
+  Mr: COMPOUND_LIBRARY.NH3.molarMass_kg_mol,
   enthalpyFormation298: -45.9e3,
   gibbsEnergy298: -16.4e3,
   collisionDiameter: 2.9,

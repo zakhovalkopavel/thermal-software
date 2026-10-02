@@ -6,7 +6,7 @@
  *   Cylinder: Luikov, Ch. IV §5, p. 122; McMahon expansion (AMS-55 §9.5.12)
  *   Sphere:  Luikov, Ch. IV §4, p. 107, Eq. 4.4.19
  */
-import { besselJ0Roots } from '../../../common/utils/bessel.util';
+import { besselJ0Roots } from '../../../common/utils/bessel';
 
 /**
  * Eigenvalues μₙ = (2n−1)·π/2 for an infinite plate under BC I.

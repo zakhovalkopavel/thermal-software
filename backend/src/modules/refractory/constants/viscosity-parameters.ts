@@ -1,3 +1,4 @@
+import { molarMassTableGramsPerMol } from '../../../common/chemistry';
 import { ViscosityModel } from '../enums/viscosity-model.enum';
 
 /**
@@ -391,71 +392,28 @@ export const FLUEGEL_2007_BOUNDS = {
   SiO2_max: [89.2,  87.10,  91.97 ],  // mol% SiO₂ maximum
 } as const;
 
-/** Molar masses (g/mol) for wt% → mol% conversion */
-export const MOLAR_MASSES: Record<string, number> = {
+/** Molar masses (g/mol) for wt% → mol% conversion — values from COMPOUND_LIBRARY */
+export const MOLAR_MASSES: Record<string, number> = molarMassTableGramsPerMol([
   // ── Major glass-forming / modifying oxides ────────────────────────────────
-  SiO2:   60.08,
-  Al2O3: 101.96,
-  B2O3:   69.62,
-  P2O5:  141.94,
+  'SiO2', 'Al2O3', 'B2O3', 'P2O5',
   // ── Alkali oxides ─────────────────────────────────────────────────────────
-  Li2O:   29.88,
-  Na2O:   61.98,
-  K2O:    94.20,
-  Cs2O:  281.81,  // 2×132.905 + 16
-  Rb2O:  186.94,  // 2×85.468 + 16
+  'Li2O', 'Na2O', 'K2O', 'Cs2O', 'Rb2O',
   // ── Alkaline-earth oxides ─────────────────────────────────────────────────
-  MgO:    40.30,
-  CaO:    56.08,
-  SrO:   103.62,
-  BaO:   153.33,
+  'MgO', 'CaO', 'SrO', 'BaO',
   // ── Transition-metal oxides ───────────────────────────────────────────────
-  TiO2:   79.87,
-  ZrO2:  123.22,
-  MnO2:   86.94,
-  Fe2O3: 159.69,
-  Co3O4: 240.80,  // 3×58.933 + 4×16
-  NiO:    74.69,
-  CuO:    79.55,
-  ZnO:    81.38,
-  Ga2O3: 187.44,  // 2×69.723 + 3×16
-  Nb2O5: 265.81,  // 2×92.906 + 5×16
-  MoO3:  143.94,  // 95.96 + 3×16
-  RuO2:  133.07,  // 101.07 + 2×16
-  Rh2O3: 253.81,  // 2×102.906 + 3×16
-  PdO:   122.42,  // 106.42 + 16
-  SnO2:  150.71,  // 118.71 + 2×16
-  Sb2O3: 291.52,  // 2×121.76 + 3×16
-  TeO2:  159.60,  // 127.60 + 2×16
-  ReO2:  218.21,  // 186.21 + 2×16
-  WO3:   231.84,  // 183.84 + 3×16
+  'TiO2', 'ZrO2', 'MnO2', 'Fe2O3', 'Co3O4', 'NiO', 'CuO', 'ZnO',
+  'Ga2O3', 'Nb2O5', 'MoO3', 'RuO2', 'Rh2O3', 'PdO', 'SnO2', 'Sb2O3',
+  'TeO2', 'ReO2', 'WO3',
   // ── Post-transition / main-group oxides ───────────────────────────────────
-  PbO:   223.20,
-  Bi2O3: 465.96,
+  'PbO', 'Bi2O3',
   // ── Rare-earth oxides ─────────────────────────────────────────────────────
-  La2O3: 325.81,  // 2×138.905 + 3×16
-  CeO2:  172.11,
-  Pr2O3: 329.81,  // 2×140.907 + 3×16  (note: Pr6O11 also common, Fluegel uses Pr2O3)
-  Nd2O3: 336.48,
-  Sm2O3: 348.72,  // 2×150.36 + 3×16
-  Eu2O3: 351.93,  // 2×151.964 + 3×16
-  Gd2O3: 362.50,  // 2×157.25 + 3×16
-  Y2O3:  225.81,  // 2×88.906 + 3×16
+  'La2O3', 'CeO2', 'Pr2O3', 'Nd2O3', 'Sm2O3', 'Eu2O3', 'Gd2O3', 'Y2O3',
   // ── Actinide oxides ───────────────────────────────────────────────────────
-  ThO2:  264.04,
-  UO2:   270.03,
+  'ThO2', 'UO2',
   // ── Other / halides / chalcogenides ───────────────────────────────────────
-  As2O3: 197.84,  // 2×74.922 + 3×16
-  V2O5:  181.88,
-  Cr2O3: 151.99,  // 2×51.996 + 3×16
-  CdO:   128.41,  // 112.41 + 16
-  Ag2O:  231.74,  // 2×107.868 + 16
-  F:      19.00,  // fluorine (as F⁻ equivalent)
-  Cl:     35.45,  // chlorine (as Cl⁻ equivalent)
-  SO3:    80.06,
-  Se:     78.96,  // selenium (elemental, as used in Fluegel table)
-  I:     126.90,  // iodine (elemental, as used in Fluegel table)
-};
+  'As2O3', 'V2O5', 'Cr2O3', 'CdO', 'Ag2O', 'F', 'Cl', 'SO3',
+  'Se', 'I',
+]);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. HETHERINGTON 1964 — pure fused silica
@@ -534,19 +492,19 @@ const IIDA_A = 1.031e-3;
 export const IIDA_MODEL = {
   A: IIDA_A,
   /** Pure-component constants for η₀ᵢ calculation.
-   *  M = molar mass (g/mol), Tm = melting point (K),
+   *  Molar mass comes from COMPOUND_LIBRARY; Tm = melting point (K),
    *  Vm = molar volume at melting point (×10⁻⁶ m³/mol), H = activation enthalpy (J/mol) */
   components: {
-    SiO2:  { M: 60.08,  Tm: 1996, Vm: 27.2, H: 51100 },
-    Al2O3: { M: 101.96, Tm: 2327, Vm: 28.3, H: 47800 },
-    CaO:   { M: 56.08,  Tm: 2886, Vm: 16.5, H: 33900 },
-    MgO:   { M: 40.30,  Tm: 3105, Vm: 11.5, H: 32200 },
-    FeO:   { M: 71.85,  Tm: 1644, Vm: 14.5, H: 24300 },
-    MnO:   { M: 70.94,  Tm: 2115, Vm: 15.6, H: 30500 },
-    CaF2:  { M: 78.08,  Tm: 1691, Vm: 24.5, H: 29700 },
-    Na2O:  { M: 61.98,  Tm: 1405, Vm: 27.3, H: 19500 },
-    Li2O:  { M: 29.88,  Tm: 1711, Vm: 13.9, H: 25000 },
-  } as Record<string, { M: number; Tm: number; Vm: number; H: number }>,
+    SiO2:  { Tm: 1996, Vm: 27.2, H: 51100 },
+    Al2O3: { Tm: 2327, Vm: 28.3, H: 47800 },
+    CaO:   { Tm: 2886, Vm: 16.5, H: 33900 },
+    MgO:   { Tm: 3105, Vm: 11.5, H: 32200 },
+    FeO:   { Tm: 1644, Vm: 14.5, H: 24300 },
+    MnO:   { Tm: 2115, Vm: 15.6, H: 30500 },
+    CaF2:  { Tm: 1691, Vm: 24.5, H: 29700 },
+    Na2O:  { Tm: 1405, Vm: 27.3, H: 19500 },
+    Li2O:  { Tm: 1711, Vm: 13.9, H: 25000 },
+  } as Record<string, { Tm: number; Vm: number; H: number }>,
   /** Basicity interaction coefficients α (Mills 2011).
    *  Acidic oxides (network formers) act as denominator; basic as numerator.
    *  Al₂O₃ is treated separately (dynamic / amphoteric). */
@@ -614,24 +572,11 @@ export const NAKAMOTO_2007 = {
     Li2O:  -94500,
     CaF2: -108200,
   } as Record<string, number>,
-  /** Molar masses for components in this model (g/mol) */
-  molarMass: {
-    SiO2:   60.08,
-    P2O5:  141.94,
-    Al2O3: 101.96,
-    ZrO2:  123.22,
-    TiO2:   79.87,
-    B2O3:   69.62,
-    Fe2O3: 159.69,
-    FeO:    71.85,
-    MnO:    70.94,
-    MgO:    40.30,
-    CaO:    56.08,
-    Na2O:   61.98,
-    K2O:    94.20,
-    Li2O:   29.88,
-    CaF2:   78.08,
-  } as Record<string, number>,
+  /** Molar masses for components in this model (g/mol) — values from COMPOUND_LIBRARY */
+  molarMass: molarMassTableGramsPerMol([
+    'SiO2', 'P2O5', 'Al2O3', 'ZrO2', 'TiO2', 'B2O3', 'Fe2O3', 'FeO',
+    'MnO', 'MgO', 'CaO', 'Na2O', 'K2O', 'Li2O', 'CaF2',
+  ]),
   /** Al₂O₃ correction factor when SiO₂ mole fraction > 0.55 (highly acidic slag) */
   Al2O3_acid_correction: 0.85,
   SiO2_acid_threshold:   0.55,

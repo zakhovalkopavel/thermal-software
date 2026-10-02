@@ -1,12 +1,13 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /** NO2 — Nitrogen dioxide */
 export const NO2: CompoundValue = {
   name: 'Nitrogen dioxide',
   chemicalFormula: 'NO2',
-  Mr: 0.046,
+  Mr: COMPOUND_LIBRARY.NO2.molarMass_kg_mol,
   enthalpyFormation298: 33.2e3,
   gibbsEnergy298: 51.3e3,
   collisionDiameter: 3.765,

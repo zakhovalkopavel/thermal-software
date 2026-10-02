@@ -11,9 +11,9 @@
  */
 
 import { LinearHyperbolicEquationMethod }
-  from '../../../../src/common/thermal/utils/linear-hyperbolic-equation-method';
+  from '../../../../src/common/thermal/utils/equation-methods/linear-hyperbolic-equation-method';
 import { LinearHyperbolicLogarithmicEquationMethod }
-  from '../../../../src/common/thermal/utils/linear-hyperbolic-logarithmic-equation-method';
+  from '../../../../src/common/thermal/utils/equation-methods/linear-hyperbolic-logarithmic-equation-method';
 
 // ─── LinearHyperbolicEquationMethod  f(T) = a + b·T + d/T² ──────────────────
 

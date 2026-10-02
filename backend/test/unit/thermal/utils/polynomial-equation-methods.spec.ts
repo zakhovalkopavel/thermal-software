@@ -12,10 +12,10 @@
  *   - scaling factor k
  */
 
-import { LinearEquationMethod }   from '../../../../src/common/thermal/utils/linear-equation-method';
-import { QuadraticEquationMethod } from '../../../../src/common/thermal/utils/quadratic-equation-method';
-import { CubicEquationMethod }     from '../../../../src/common/thermal/utils/cubic-equation-method';
-import { QuarticEquationMethod }   from '../../../../src/common/thermal/utils/quartic-equation-method';
+import { LinearEquationMethod }   from '../../../../src/common/thermal/utils/equation-methods/linear-equation-method';
+import { QuadraticEquationMethod } from '../../../../src/common/thermal/utils/equation-methods/quadratic-equation-method';
+import { CubicEquationMethod }     from '../../../../src/common/thermal/utils/equation-methods/cubic-equation-method';
+import { QuarticEquationMethod }   from '../../../../src/common/thermal/utils/equation-methods/quartic-equation-method';
 
 // ─── LinearEquationMethod  f(T) = a + b·T ────────────────────────────────────
 

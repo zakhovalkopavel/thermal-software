@@ -1,6 +1,6 @@
 import { ChemicalKineticsService } from '../../../../src/modules/combustion/services/chemical-kinetics.service';
-import { BED_KINETICS } from '../../../../src/modules/combustion/constants/combustion.constants';
-import { Species } from '../../../../src/modules/thermodynamics/enums/species.enum';
+import { BED_REACTIONS } from '../../../../src/modules/combustion/constants';
+import { Species } from '../../../../src/modules/thermodynamics/enums';
 
 describe('ChemicalKineticsService', () => {
   const k = new ChemicalKineticsService();
@@ -9,8 +9,8 @@ describe('ChemicalKineticsService', () => {
   const R_p = 0.01;
 
   it('Arrhenius constant grows with temperature', () => {
-    const k1 = k.arrhenius(BED_KINETICS.A.A1, BED_KINETICS.E.E1, 1000);
-    const k2 = k.arrhenius(BED_KINETICS.A.A1, BED_KINETICS.E.E1, 1200);
+    const k1 = k.arrhenius(BED_REACTIONS.A.A1, BED_REACTIONS.E.E1, 1000);
+    const k2 = k.arrhenius(BED_REACTIONS.A.A1, BED_REACTIONS.E.E1, 1200);
     expect(k2).toBeGreaterThan(k1);
     expect(k.arrhenius(5, 0, 900)).toBe(5);
   });

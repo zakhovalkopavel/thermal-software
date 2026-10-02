@@ -1,15 +1,11 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
-import { Species } from '../../thermodynamics/enums/species.enum';
-import { brentq } from '../../../common/utils/root-finding.util';
-import { COMBUSTION } from '../constants/combustion.constants';
-import { CondensedFuel } from '../data/fuels/fuel.interface';
-import {
-  ElementFlows, EquilibriumProducts, GasFlows, GasStream, ReactionStepInput, ReactionStepOutcome,
-} from '../interfaces/combustion-streams.interface';
-import {
-  addElements, airFlows, elementResidual, elementsOfCondensed, elementsOfGas, emptyElements,
-  stoichiometricO2, sumFlows,
-} from '../utils/element-balance.util';
+import { Species } from '../../thermodynamics/enums';
+import { brentq } from '../../../common/utils/root-finding';
+import { COMBUSTION } from '../constants';
+import { CondensedFuel, EquilibriumProducts, GasStream, ReactionStepInput, ReactionStepOutcome } from '../interfaces';
+import { ElementFlows, GasFlows } from '../types';
+import { addElements, elementResidual, elementsOfCondensed, elementsOfGas, emptyElements, stoichiometricO2 } from '../utils/element-balance';
+import { airFlows, sumFlows } from '../utils/gas-flows';
 import { CombustionEnthalpyService } from './combustion-enthalpy.service';
 import { ProductEquilibriumService } from './product-equilibrium.service';
 

@@ -85,10 +85,10 @@ See [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) § 7 for the f
 | 25 | `BurcatELTE`     | Burcat, A.; Ruscic, B.; Goos, E. — *Extended Third Millennium Thermodynamic Database of New NASA Polynomials with Active Thermochemical Tables update*. Hosted at ELTE (Eötvös Loránd University), updated continuously. URL: https://respecth.elte.hu/burcat.php |
 | 26 | `Basu2006`       | Basu, P. — *Combustion and Gasification in Fluidized Beds*. CRC Press (Taylor & Francis), 2006, pp. 45–78. Solid fuel properties: `charcoal-briquette` preset (p. 67). |
 | 27 | `VanKrevelen1993` | Van Krevelen, D.W. — *Coal: Typology – Physics – Chemistry – Constitution*, 3rd ed. Elsevier, 1993, pp. 220–250. Solid fuel properties: `charcoal-oak` preset (p. 235). |
-| 28 | `Laurendeau1978` | Laurendeau, N.M. — *Heterogeneous Kinetics of Coal Char Gasification and Combustion*. Progress in Energy and Combustion Science, 4(4), pp. 221–270, 1978. Char surface reaction kinetics (`BED_KINETICS`). |
-| 29 | `Turns2012`      | Turns, S.R. — *An Introduction to Combustion: Concepts and Applications*, 3rd ed. McGraw-Hill, 2012, pp. 120–145. Gas-phase reaction kinetics (`BED_KINETICS`). |
-| 30 | `Higman2008`     | Higman, C.; van der Burgt, M. — *Gasification*, 2nd ed. Gulf Professional Publishing (Elsevier), 2008, pp. 78–95. Boudouard and water-gas reactions (`BED_KINETICS`). |
-| 31 | `IUPAC2021`      | Prohaska, T. et al. — *Standard Atomic Weights of the Elements 2021 (IUPAC Technical Report)*. Pure and Applied Chemistry, 94(5), pp. 573–600, 2022. Conventional atomic weights (`ATOMIC_MASS`). URL: https://doi.org/10.1515/pac-2019-0603 |
+| 28 | `Laurendeau1978` | Laurendeau, N.M. — *Heterogeneous Kinetics of Coal Char Gasification and Combustion*. Progress in Energy and Combustion Science, 4(4), pp. 221–270, 1978. Char surface reaction kinetics (`BED_REACTIONS`). |
+| 29 | `Turns2012`      | Turns, S.R. — *An Introduction to Combustion: Concepts and Applications*, 3rd ed. McGraw-Hill, 2012, pp. 120–145. Gas-phase reaction kinetics (`BED_REACTIONS`). |
+| 30 | `Higman2008`     | Higman, C.; van der Burgt, M. — *Gasification*, 2nd ed. Gulf Professional Publishing (Elsevier), 2008, pp. 78–95. Boudouard and water-gas reactions (`BED_REACTIONS`). |
+| 31 | `IUPAC2021`      | Prohaska, T. et al. — *Standard Atomic Weights of the Elements 2021 (IUPAC Technical Report)*. Pure and Applied Chemistry, 94(5), pp. 573–600, 2022. Conventional atomic weights (gas `Mr` values in `COMPOUND_LIBRARY`). URL: https://doi.org/10.1515/pac-2019-0603 |
 | 32 | `NISTWebBook`    | Linstrom, P.J.; Mallard, W.G. (eds.) — *NIST Chemistry WebBook*, NIST Standard Reference Database Number 69. National Institute of Standards and Technology, maintained. Reference data for fits (NH3 Sutherland viscosity). URL: https://webbook.nist.gov/chemistry/ |
 | 33 | `Ergun1952`      | Ergun, S. — *Fluid Flow through Packed Columns*. Chemical Engineering Progress, 48(2), pp. 89–94, 1952. Packed-bed pressure drop (`AerodynamicsService`). |
 | 34 | `Perry8`         | Green, D.W.; Perry, R.H. (eds.) — *Perry's Chemical Engineers' Handbook*, 8th ed. McGraw-Hill, 2008. DIPPR Eq. 102 coefficients: Table 2-312 (vapor viscosity) and Table 2-314 (vapor thermal conductivity) for the fuel gases C2H6 … C3H6. Machine-readable copies of both tables: CalebBell/chemicals, `chemicals/Viscosity/Table 2-312 …tsv` and `chemicals/Thermal Conductivity/Table 2-314 …tsv`. URL: https://github.com/CalebBell/chemicals |
@@ -126,8 +126,10 @@ this table) and replace the free text with the key (+ page).
   Hetherington 1964 validation data, Mills 2011, phase equilibrium / eutectics, shrinkage,
   refractoriness, water demand, blend optimizer, Maxwell–Eucken (`services/thermal-performance.service.ts`),
   `constants/calculation-constants.ts` ("Reference: NIST database").
-- [ ] **Numerics** — `common/utils/gauss-legendre.util.ts`, `gauss-legendre.constants.ts`,
-  `simpson.util.ts` (Abramowitz & Stegun).
+- [ ] **Numerics** — `common/utils/quadrature/` (`gauss-legendre-tables.constants.ts`,
+  `gauss-legendre.util.ts`, `simpson.util.ts`; Abramowitz & Stegun).
+- [ ] **Chemistry** — `common/chemistry/elements/periodic-table.data.ts` (CIAAW Abridged Standard
+  Atomic Weights 2024, https://www.ciaaw.org/abridged-atomic-weights.htm).
 - [ ] **Other** — `modules/metals/data/materials/metal-thermal.data.ts`,
   `common/thermal/compound/composition/air.composition.ts`,
   `modules/thermal-distribution/utils/characteristic-length.util.ts`,

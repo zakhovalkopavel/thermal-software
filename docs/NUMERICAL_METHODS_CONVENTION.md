@@ -3,7 +3,9 @@
 ## Overview
 
 All numerical solving and optimisation in the backend **must** use the wrapper functions
-in `backend/src/common/utils/numeric.util.ts`.  
+in `backend/src/common/utils/` — one wrapper per `*.util.ts` file, grouped into
+`root-finding/`, `optimization/`, `regression/`, `linear-algebra/`, `quadrature/`, `bessel/`,
+`math/` and `numeric-format/`; import from the folder (`index.ts`).  
 Direct use of the underlying packages is forbidden — call the wrappers.
 
 The wrappers are named after their **SciPy equivalents** so that algorithms described in
@@ -58,7 +60,7 @@ The backend uses **CommonJS** (`"module": "commonjs"` in tsconfig.json).
 all `.js` files in the package as ESM — but the actual `build/fmin.js` is a UMD bundle
 that works fine when executed via `new Function(...)`.  
 Dynamic `import()` fails because Node tries to parse the UMD file as ESM syntax.  
-The `getFmin()` loader in `numeric.util.ts` handles this transparently.  
+The `getFmin()` loader in `optimization/get-fmin.util.ts` handles this transparently.  
 **Never call `require('fmin')` or `import('fmin')` directly.**
 
 ---
@@ -68,7 +70,7 @@ The `getFmin()` loader in `numeric.util.ts` handles this transparently.
 ### `brentq(f, a, b, tol?)`
 
 ```typescript
-import { brentq } from '@/common/utils/numeric.util';
+import { brentq } from '@/common/utils/root-finding';
 
 // Find T where viscosity(T) = target
 const { root } = brentq(T => calcViscosity(T) - target, T_min, T_max, 1e-6);
@@ -83,7 +85,7 @@ const { root } = brentq(T => calcViscosity(T) - target, T_min, T_max, 1e-6);
 ### `brent(f, a, b, tol?)`
 
 ```typescript
-import { brent } from '@/common/utils/numeric.util';
+import { brent } from '@/common/utils/optimization';
 
 // Find minimum of a unimodal scalar function in [a, b]
 const { x, fx } = brent(T => Math.abs(calcViscosity(T) - target), T_min, T_max);
@@ -98,7 +100,7 @@ const { x, fx } = brent(T => Math.abs(calcViscosity(T) - target), T_min, T_max);
 ### `nelderMead(f, x0, opts?)`
 
 ```typescript
-import { nelderMead } from '@/common/utils/numeric.util';
+import { nelderMead } from '@/common/utils/optimization';
 
 // Fit two Arrhenius parameters to measured data
 const { x } = nelderMead(
@@ -122,7 +124,7 @@ const [A, B] = x;
 ### `conjugateGradient(f, x0, opts?)`
 
 ```typescript
-import { conjugateGradient } from '@/common/utils/numeric.util';
+import { conjugateGradient } from '@/common/utils/optimization';
 
 // f must mutate grad in-place AND return the scalar value
 const { x } = conjugateGradient(
@@ -145,7 +147,7 @@ const { x } = conjugateGradient(
 ### `linearRegression(x, y)`
 
 ```typescript
-import { linearRegression } from '@/common/utils/numeric.util';
+import { linearRegression } from '@/common/utils/regression';
 
 const { slope, intercept, r2, predict } = linearRegression(T_values, eta_values);
 console.log(`η = ${slope}·T + ${intercept}  R²=${r2.toFixed(4)}`);
@@ -162,7 +164,7 @@ console.log(`η = ${slope}·T + ${intercept}  R²=${r2.toFixed(4)}`);
 ### `polynomialFit(x, y, degree)`
 
 ```typescript
-import { polynomialFit } from '@/common/utils/numeric.util';
+import { polynomialFit } from '@/common/utils/regression';
 
 const { coefficients, r2, predict } = polynomialFit(T_values, shrinkage_values, 2);
 // coefficients = [c0, c1, c2]  →  y = c0 + c1·x + c2·x²
@@ -180,7 +182,7 @@ const { coefficients, r2, predict } = polynomialFit(T_values, shrinkage_values, 
 ### `exponentialFit(x, y)`
 
 ```typescript
-import { exponentialFit } from '@/common/utils/numeric.util';
+import { exponentialFit } from '@/common/utils/regression';
 
 // y = A·eᴮˣ  — e.g. creep rate vs temperature
 const { A, B, r2, predict } = exponentialFit(T_values, creep_values);
@@ -197,7 +199,7 @@ const { A, B, r2, predict } = exponentialFit(T_values, creep_values);
 ### `powerFit(x, y)`
 
 ```typescript
-import { powerFit } from '@/common/utils/numeric.util';
+import { powerFit } from '@/common/utils/regression';
 
 // y = A·xᴮ  — e.g. particle size vs milling time
 const { A, B, r2, predict } = powerFit(time_values, size_values);
@@ -213,7 +215,7 @@ const { A, B, r2, predict } = powerFit(time_values, size_values);
 ### `levenbergMarquardt(xData, yData, model, initialValues, opts?)`
 
 ```typescript
-import { levenbergMarquardt } from '@/common/utils/numeric.util';
+import { levenbergMarquardt } from '@/common/utils/regression';
 
 // Fit Arrhenius: eta(T) = A * exp(B / T)
 const result = levenbergMarquardt(
@@ -241,7 +243,7 @@ const [A, B] = result.parameterValues;
 ### `luSolve(A, b)`
 
 ```typescript
-import { luSolve } from '@/common/utils/numeric.util';
+import { luSolve } from '@/common/utils/linear-algebra';
 
 // Solve 3-point VTF system: M · [A, B, T0]ᵀ = rhs
 const { x: [A, B, T0] } = luSolve(
@@ -286,7 +288,7 @@ Multi-variable minimisation?
 1. Identify the SciPy equivalent method name.
 2. Research the npm package — confirm it is actively maintained, MIT/Apache licensed,
    and works in Node.js CJS context (or document the loading workaround).
-3. Add the wrapper to `numeric.util.ts` with full JSDoc including the SciPy equivalent.
+3. Add the wrapper as its own `*.util.ts` file in the matching `common/utils/` subfolder, export it from the folder `index.ts`, with full JSDoc including the SciPy equivalent.
 4. Add a smoke test case to `test-numeric-smoke.js`.
 5. Add a row to the mapping table in this document.
 

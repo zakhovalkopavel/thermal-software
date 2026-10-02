@@ -1,6 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
  * C3H8 — Propane.
@@ -12,7 +13,7 @@ import { RefKey } from '../../enum/ref-key.enum';
 export const C3H8: CompoundValue = {
   name: 'Propane',
   chemicalFormula: 'C3H8',
-  Mr: 0.044097,
+  Mr: COMPOUND_LIBRARY.C3H8.molarMass_kg_mol,
   /** ref: Perry9 Table 2-95, p. 2-172, no. 295 — −10.468, −2.439 (J/kmol × 1E-07) */
   enthalpyFormation298: -104680,
   gibbsEnergy298: -24390,

@@ -15,7 +15,7 @@ import {
   cylinderEigenvaluesBC1,
   sphereEigenvaluesBC1,
 } from './eigenvalues-bc1.util';
-import { besselJ0, besselJ1 } from '../../../common/utils/bessel.util';
+import { besselJ0, besselJ1 } from '../../../common/utils/bessel';
 import { SERIES_TERMS_DEFAULT } from '../constants/thermal-distribution.constants';
 
 // ─── Amplitude coefficients ───────────────────────────────────────────────────

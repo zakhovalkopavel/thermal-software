@@ -1,46 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { Species } from '../../thermodynamics/enums/species.enum';
-import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
-import { BED_KINETICS } from '../constants/combustion.constants';
-import { GasFlows } from '../interfaces/combustion-streams.interface';
-
-export interface SurfaceRates {
-  /** C + O2 → CO2 */
-  r1:  number;
-  /** 2C + O2 → 2CO (per mol O2) */
-  r2:  number;
-  /** C + CO2 → 2CO */
-  r3:  number;
-  /** C + H2O → CO + H2 */
-  r31: number;
-  /** C + 2H2O → CO2 + 2H2 */
-  r32: number;
-  /** C + 2H2 → CH4 */
-  r33: number;
-  /** External specific surface of the bed [m²/m³] */
-  a_s: number;
-}
-
-export interface GasPhaseRates {
-  /** 2CO + O2 → 2CO2 (per mol O2) */
-  r4:  number;
-  /** 2H2 + O2 → 2H2O (per mol O2) */
-  r41: number;
-  /** CH4 + 2O2 → CO2 + 2H2O */
-  r42: number;
-  /** CO + H2O ⇌ CO2 + H2 (net forward) */
-  r43: number;
-}
-
-export interface EffectiveDiffusion {
-  O2:  number;
-  CO2: number;
-  H2O: number;
-}
+import { Species } from '../../thermodynamics/enums';
+import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants';
+import { BED_KINETICS, BED_REACTIONS, COMBUSTION } from '../constants';
+import { GasFlows } from '../types';
+import { EffectiveDiffusion, SurfaceRates, GasPhaseRates } from '../interfaces';
 
 /**
  * Char surface and gas-phase reaction rates — port of legacy
- * furnaceCombustion/modules/ChemicalKinetics.js. Constants in BED_KINETICS (verbatim).
+ * furnaceCombustion/modules/ChemicalKinetics.js. Reaction constants in BED_REACTIONS (verbatim).
  * Rates in mol/(m³ bed·s) with partial pressures in atm.
  */
 @Injectable()
@@ -48,7 +15,7 @@ export class ChemicalKineticsService {
 
   /** Arrhenius rate constant k = A·exp(−E/(R·T)) */
   arrhenius(A: number, E_Jmol: number, T_K: number): number {
-    return A * Math.exp(-E_Jmol / (GAS_CONSTANT_J_MOLK * T_K));
+    return A * Math.exp(-E_Jmol / (PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK * T_K));
   }
 
   /**
@@ -64,7 +31,7 @@ export class ChemicalKineticsService {
 
   /** Kinetic temperature — log-mean of char and gas temperatures */
   kineticTemperature(T_gas_K: number, T_solid_K: number): number {
-    if (Math.abs(T_solid_K - T_gas_K) < 1e-9 * T_gas_K) return T_gas_K;
+    if (Math.abs(T_solid_K - T_gas_K) < BED_KINETICS.KINETIC_T_REL_TOL * T_gas_K) return T_gas_K;
     return (T_solid_K - T_gas_K) / Math.log(T_solid_K / T_gas_K);
   }
 
@@ -73,7 +40,7 @@ export class ChemicalKineticsService {
     bed: { porosity: number; activityFactor: number },
     D: EffectiveDiffusion, R_p_m: number, P_atm = 1,
   ): SurfaceRates {
-    const { E, A } = BED_KINETICS;
+    const { E, A } = BED_REACTIONS;
     const p = (sp: Species): number => (y[sp] ?? 0) * P_atm;
     const T = this.kineticTemperature(T_gas_K, T_solid_K);
     const act = bed.activityFactor;
@@ -103,7 +70,7 @@ export class ChemicalKineticsService {
    * NASA-7 equilibrium constant (legacy used a coarse ln K fit).
    */
   gasPhaseRates(y: GasFlows, T_K: number, wgsKp: number, P_atm = 1): GasPhaseRates {
-    const { E, A } = BED_KINETICS;
+    const { E, A } = BED_REACTIONS;
     const p = (sp: Species): number => (y[sp] ?? 0) * P_atm;
     const k4  = this.arrhenius(A.A4,  E.E4,  T_K);
     const k41 = this.arrhenius(A.A41, E.E41, T_K);
@@ -113,13 +80,13 @@ export class ChemicalKineticsService {
       r4:  k4  * p(Species.CO) ** 2 * p(Species.O2),
       r41: k41 * p(Species.H2) ** 2 * p(Species.O2),
       r42: k42 * p(Species.CH4) * p(Species.O2) ** 2,
-      r43: k43 * p(Species.CO) * p(Species.H2O) - (k43 / Math.max(wgsKp, 1e-300)) * p(Species.CO2) * p(Species.H2),
+      r43: k43 * p(Species.CO) * p(Species.H2O) - (k43 / Math.max(wgsKp, COMBUSTION.DIVISION_FLOOR)) * p(Species.CO2) * p(Species.H2),
     };
   }
 
   /** Surface heat release [W] of given surface reaction extents [mol/s] (legacy heats) */
   surfaceHeatRelease_W(x: Pick<SurfaceRates, 'r1' | 'r2' | 'r3' | 'r31' | 'r32' | 'r33'>): number {
-    const H = BED_KINETICS.DH;
+    const H = BED_REACTIONS.DH;
     return -(x.r1 * H.dH1 + x.r2 * 2 * H.dH2 + x.r3 * H.dH3 + x.r31 * H.dH31 + x.r32 * H.dH32 + x.r33 * H.dH33);
   }
 }

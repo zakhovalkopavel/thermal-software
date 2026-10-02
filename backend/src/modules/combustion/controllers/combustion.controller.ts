@@ -1,27 +1,13 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CombustionService } from '../services/combustion.service';
-import { SolidDirectInputDto, SolidDirectResultDto } from '../dto/solid-direct.dto';
-import { SolidTwoStepInputDto, SolidTwoStepResultDto } from '../dto/solid-two-step.dto';
-import { FluidFuelInputDto, FluidFuelResultDto } from '../dto/fluid-fuel.dto';
-import { BedCombustionInputDto, BedCombustionResultDto } from '../dto/bed-combustion.dto';
-import { FuelSummaryDto } from '../dto/condensed-fuel.dto';
+import { SolidDirectInputDto, SolidDirectResultDto } from '../dto/solid-direct';
+import { SolidTwoStepInputDto, SolidTwoStepResultDto } from '../dto/solid-two-step';
+import { FluidFuelInputDto, FluidFuelResultDto } from '../dto/fluid';
+import { BedCombustionInputDto, BedCombustionResultDto } from '../dto/bed';
+import { FuelSummaryDto } from '../dto/common';
 import { FuelId } from '../enums/fuel-id.enum';
-
-const CHARCOAL_LHV_30 = {
-  name: 'Charcoal briquette, LHV 30 MJ/kg',
-  elementalComp: { C: 0.85, H: 0.03, O: 0.10, N: 0.01, ash: 0.01 },
-  lhv_J_kg: 30_000_000,
-  specificHeat_J_kgK: 1100,
-  porosity: 0.45,
-  particleSize_m: 0.05,
-  activityFactor: 1,
-};
-
-const WALL_LAYERS = [
-  { material: 'chamotte_solid', thicknessMm: 65 },
-  { material: 'chamotte_600',   thicknessMm: 65 },
-];
+import { COMBUSTION_EXAMPLES } from '../constants';
 
 @ApiTags('combustion')
 @Controller('combustion')
@@ -81,7 +67,7 @@ export class CombustionController {
       lhvBasedWithLosses: {
         summary: 'Briquette analysis with LHV 30 MJ/kg, generator flux 7 kW/m² × 0.2 m²',
         value: {
-          fuel: CHARCOAL_LHV_30, fPower_W: 20_000, kExcessAir: 1.3,
+          fuel: COMBUSTION_EXAMPLES.CHARCOAL_LHV_30, fPower_W: 20_000, kExcessAir: 1.3,
           tAirPrimary_K: 293, generatorHeatFlux_Wm2: 7000, generatorSurface_m2: 0.2, furnaceHeatLoss_W: 1000,
         },
       },
@@ -135,15 +121,17 @@ export class CombustionController {
       briquetteBed: {
         summary: 'Charcoal briquette preset, 10 m³/h blast at 400 K, insulated generator, λ = 1.3',
         value: {
-          fuelId: FuelId.CharcoalBriquette, airFlow_m3h: 10, tAirPrimary_K: 400,
-          bedHeight_m: 0.5, diameter_m: 0.3, nLayers: 25,
-          generatorWallLayers: WALL_LAYERS, kExcessAir: 1.3, tAirSecondary_K: 573,
-          furnace: { diameter_m: 0.4, length_m: 1, wallLayers: WALL_LAYERS },
+          fuelId: FuelId.CharcoalBriquette, ...COMBUSTION_EXAMPLES.BED, ...COMBUSTION_EXAMPLES.BED_WALL,
+          generatorWallLayers: COMBUSTION_EXAMPLES.WALL_LAYERS, kExcessAir: 1.3, tAirSecondary_K: 573,
+          furnace: { ...COMBUSTION_EXAMPLES.FURNACE, wallLayers: COMBUSTION_EXAMPLES.WALL_LAYERS },
         },
       },
       steamInjection: {
         summary: 'LHV-based charcoal with 10 % steam injection, adiabatic generator',
-        value: { fuel: CHARCOAL_LHV_30, airFlow_m3h: 10, tAirPrimary_K: 400, steamInjectionPercent: 10, steamT_K: 500 },
+        value: {
+          fuel: COMBUSTION_EXAMPLES.CHARCOAL_LHV_30, ...COMBUSTION_EXAMPLES.BED,
+          steamInjectionPercent: 10, steamT_K: COMBUSTION_EXAMPLES.STEAM_T_K,
+        },
       },
     },
   })

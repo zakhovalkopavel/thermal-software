@@ -1,6 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
  * C3H6 — Propylene.
@@ -12,7 +13,7 @@ import { RefKey } from '../../enum/ref-key.enum';
 export const C3H6: CompoundValue = {
   name: 'Propylene',
   chemicalFormula: 'C3H6',
-  Mr: 0.042081,
+  Mr: COMPOUND_LIBRARY.C3H6.molarMass_kg_mol,
   /** ref: Perry9 Table 2-95, p. 2-173, no. 305 — 2.023, 6.264 (J/kmol × 1E-07) */
   enthalpyFormation298: 20230,
   gibbsEnergy298: 62640,

@@ -8,7 +8,7 @@
  * Last Updated: February 2, 2026
  */
 
-import { GAS_CONSTANT_J_MOLK } from '../../../common/thermal/constants/physical.constants';
+import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 
 // ============================================================
 // UNIVERSAL CONSTANTS (Physics & Chemistry)
@@ -270,7 +270,7 @@ export const MAX_CONE_NUMBER = 40;
  */
 export const CALCULATION_CONSTANTS = {
   physics: {
-    GAS_CONSTANT_J_MOLK,
+    GAS_CONSTANT_J_MOLK: PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK,
     ABSOLUTE_ZERO_OFFSET,
   },
   testing: {

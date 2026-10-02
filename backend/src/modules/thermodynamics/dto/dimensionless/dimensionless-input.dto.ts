@@ -8,11 +8,11 @@ import { FlowRegime } from '../../types/flow-regime.type';
 import { CorrelationName } from '../../types/correlation-name.type';
 import { KnownFluid, KNOWN_FLUID_DESCRIPTION } from '../../types/known-fluid.type';
 import { GeometryDimsDto } from '../geometry/geometry-dims.dto';
-import { STANDARD_PRESSURE_PA, STANDARD_TEMPERATURE_K } from '../../../../common/thermal';
+import { STANDARD_CONDITIONS } from '../../../../common/thermal';
 
 /** Standard temperature [K] — used as default bulk temperature when none supplied. */
-const T_DEFAULT = STANDARD_TEMPERATURE_K;
-const P_DEFAULT = STANDARD_PRESSURE_PA;
+const T_DEFAULT = STANDARD_CONDITIONS.TEMPERATURE_K;
+const P_DEFAULT = STANDARD_CONDITIONS.PRESSURE_PA;
 
 /**
  * Input for the full dimensionless-number + Nusselt correlation endpoint.

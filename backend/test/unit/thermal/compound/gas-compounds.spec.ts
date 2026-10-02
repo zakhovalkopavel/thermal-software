@@ -19,13 +19,13 @@
  */
 
 import { GAS_REGISTRY } from '../../../../src/common/thermal/compound/gas/registry';
-import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-property-resolver';
-import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/nasa7-equation-method';
-import { Nasa9EquationMethod } from '../../../../src/common/thermal/utils/nasa9-equation-method';
-import { heatCapacityEntries } from '../../../../src/common/thermal/utils/heat-capacity-entries';
+import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-properties/compound-property-resolver';
+import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa7-equation-method';
+import { Nasa9EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa9-equation-method';
+import { heatCapacityEntries } from '../../../../src/common/thermal/utils/compound-properties/heat-capacity-entries.util';
 import {
   compoundNasa7, compoundNasa9, nasa7Species, nasa9Species,
-} from '../../../../src/common/thermal/utils/nasa-database';
+} from '../../../../src/common/thermal/utils/nasa';
 import { EquationTypeDto } from '../../../../src/common/thermal/dto/equation-type.dto';
 import { RefKey } from '../../../../src/common/thermal/enum/ref-key.enum';
 

@@ -1,12 +1,13 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /** NO — Nitrogen oxide (Nitric oxide) */
 export const NO: CompoundValue = {
   name: 'Nitrogen oxide',
   chemicalFormula: 'NO',
-  Mr: 0.030006,
+  Mr: COMPOUND_LIBRARY.NO.molarMass_kg_mol,
   enthalpyFormation298: 90.3e3,
   gibbsEnergy298: 86.6e3,
   collisionDiameter: 4.495,

@@ -2,9 +2,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { KnownFluid, KNOWN_FLUID_DESCRIPTION } from '../../types/known-fluid.type';
-import { STANDARD_PRESSURE_PA } from '../../../../common/thermal';
+import { STANDARD_CONDITIONS } from '../../../../common/thermal';
 
-const P_DEFAULT = STANDARD_PRESSURE_PA;
+const P_DEFAULT = STANDARD_CONDITIONS.PRESSURE_PA;
 
 /**
  * Input for Pr = μ·Cp / λ.
