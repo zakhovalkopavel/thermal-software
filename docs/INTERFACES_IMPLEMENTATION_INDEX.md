@@ -100,7 +100,6 @@ backend/src/modules/refractory/interfaces/
 ├── refractoriness.interface.ts         ✅ 13 interfaces
 ├── viscosity.interface.ts              ✅ 5 interfaces
 ├── glass-viscosity.interface.ts        ✅ 6 interfaces
-├── mineral-phase.interface.ts          ✅ 13 interfaces
 └── README.md                           ✅ Quick reference
 ```
 
@@ -119,7 +118,7 @@ backend/src/modules/refractory/constants/
 
 ### Material catalogue and mix composition (September 2026)
 
-One construct per file. API: [`REFRACTORY_API_SPEC.md`](api/REFRACTORY_API_SPEC.md) §15–16, [`METALS_API_SPEC.md`](api/METALS_API_SPEC.md).
+One construct per file. API: [`REFRACTORY_API_SPEC.md`](api/REFRACTORY_API_SPEC.md) §13–14, [`METALS_API_SPEC.md`](api/METALS_API_SPEC.md).
 
 ```
 backend/src/common/thermal/dto/
@@ -369,7 +368,6 @@ Complete:    tmp/reports/COMPLETE_CHECKLIST.md
 6. RefractorinessService
 7. ViscosityService
 8. GlassViscosityService
-9. MineralPhaseService
 
 Each needs import path updates from `../dto/` to `../interfaces/`
 

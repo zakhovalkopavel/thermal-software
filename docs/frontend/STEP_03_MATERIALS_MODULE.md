@@ -72,8 +72,8 @@ The library has no metal group; metals live only in `/metals`.
 | E4 filters | `type` ∈ `MaterialType`; `search` = case-insensitive substring of `materialId` or `name`; filters combine with AND. Group filtering is done by E7, not by a query parameter. |
 | E6 order and counts | Order of `MATERIAL_GROUP_ROUTES`; `count` = number of unique active materials in the group; groups with `count = 0` are omitted. |
 | E10 categories | Category = **primary group** (`materialGroup[0]`), so every material appears exactly once (E7 lists a material under each of its groups — e.g. `soda_lime_glass` under both glasses and silicates). Categories in `MATERIAL_GROUP_ROUTES` order, empty categories omitted, materials inside a category as in E4. Used by the Raw materials section ([Step 7](STEP_07_RAW_MATERIALS.md)) and the `library` picker kind. |
-| E9 mix components | A material is a mix component when its **primary group** (`materialGroup[0]`) is in `MIX_COMPONENT_GROUPS` — today `binder`, `oxide`, `silicate`, `clay`, `carbide`, `nitride` (in this order) — and its id is not in `MIX_EXCLUDED_MATERIAL_IDS` (`paper_clay`, contains paper fibre). Result: 60 materials (binder 4, oxide 21, silicate 14, clay 10, carbide 5, nitride 6). The primary group is used because glasses carry `silicate` / `oxide` as secondary groups and must not enter mixes. Not mix components today: glasses (21), phosphates (7), borides (4), fluorides (4), borates (3), carbonate (dolomite), hydroxide (aluminium hydroxide). Groups are ordered as in the constant; materials inside a group as in E4. |
-| Mix groups extension | Adding a group to mixes = add it to `MIX_COMPONENT_GROUPS` (and to `MaterialGroup` if new). Planned later: glass frits, fluoride salts, sulfates, nitrates, chlorides, borates, phosphates. Fluorides, borates and phosphates already exist in the library; glass frits, sulfates, nitrates and chlorides need new library data (data file changes → separate approval). |
+| E9 mix components | A material is a mix component when its **primary group** (`materialGroup[0]`) is in `MIX_COMPONENT_GROUPS` — `binder`, `oxide`, `silicate`, `clay`, `carbide`, `nitride`, `borate`, `fluoride` (in this order) — and its id is not in `MIX_EXCLUDED_MATERIAL_IDS` (`paper_clay`, contains paper fibre). Result: 67 materials (binder 4, oxide 21, silicate 14, clay 10, carbide 5, nitride 6, borate 3, fluoride 4). The primary group is used because glasses carry `silicate` / `oxide` as secondary groups and must not enter mixes. Not mix components today: glasses (21), phosphates (7), borides (4), carbonate (dolomite), hydroxide (aluminium hydroxide). Groups are ordered as in the constant; materials inside a group as in E4. |
+| Mix groups extension | Adding a group to mixes = add it to `MIX_COMPONENT_GROUPS` (and to `MaterialGroup` if new). Borates and fluorides are admitted (the four fluorides are stored as compounds, e.g. `calcium_fluoride` `{ CaF2: 100 }`, so that mix composition and phase equilibrium recognise them). Planned later: glass frits, sulfates, nitrates, chlorides, phosphates. Phosphates already exist in the library; glass frits, sulfates, nitrates and chlorides need new library data (data file changes → separate approval). |
 | E3 temperature | `T_K` is converted from the query string with `@Type(() => Number)`; ε is clamped to the validity range returned in E2 (`emissivityRange_K`), λ is not clamped. |
 | Route order | E7 is a parameter route directly under `/refractory`. It is declared **last** in `MaterialCatalogController` (after E9 and E10), and the controller is registered **after** `RefractoryController` in `refractory.module.ts`. Any future `GET /refractory/<static>` route must be declared above E7 in this controller. |
 | Errors | Nest standard error body; 404 via `NotFoundException` from the service; 400 from the global `ValidationPipe` (`whitelist`, `forbidNonWhitelisted`, `transform`). |
@@ -97,7 +97,7 @@ The existing `MaterialGroupType` union in `data/interfaces/material.interface.ts
 | File | Export |
 |------|--------|
 | `modules/refractory/constants/material-group-routes.constants.ts` | `MATERIAL_GROUP_ROUTES: ReadonlyArray<{ route: MaterialGroupRoute; group: MaterialGroup; label: string }>` — single source of truth for E6 order/labels and E7 mapping |
-| `modules/refractory/constants/mix-component-groups.constants.ts` | `MIX_COMPONENT_GROUPS: ReadonlyArray<MaterialGroup>` — `[BINDER, OXIDE, SILICATE, CLAY, CARBIDE, NITRIDE]`; single source of truth for E9 and for the mix-composition validation ([Step 9 §2](STEP_09_MINERAL_COMPOSITIONS.md)) |
+| `modules/refractory/constants/mix-component-groups.constants.ts` | `MIX_COMPONENT_GROUPS: ReadonlyArray<MaterialGroup>` — `[BINDER, OXIDE, SILICATE, CLAY, CARBIDE, NITRIDE, BORATE, FLUORIDE]`; single source of truth for E9 and for the mix-composition validation ([Step 9 §2](STEP_09_MINERAL_COMPOSITIONS.md)) |
 | `modules/refractory/constants/mix-excluded-material-ids.constants.ts` | `MIX_EXCLUDED_MATERIAL_IDS: ReadonlyArray<string>` — `['paper_clay']` |
 
 **DTOs** — `@ApiProperty` on every field; validators only on input DTOs.
@@ -114,7 +114,7 @@ The existing `MaterialGroupType` union in `data/interfaces/material.interface.ts
 | `modules/refractory/dto/material-catalog/material-group-route-param.dto.ts` | `MaterialGroupRouteParamDto` | `groupRoute` — `@IsEnum(MaterialGroupRoute)` |
 | `modules/refractory/dto/material-catalog/material-group-summary.dto.ts` | `MaterialGroupSummaryDto` | `group: MaterialGroup`, `route: MaterialGroupRoute`, `label`, `count` |
 | `modules/refractory/dto/material-catalog/material-category.dto.ts` | `MaterialCategoryDto` | `group: MaterialGroup`, `label` (from `MATERIAL_GROUP_ROUTES`), `materials: MaterialEntryDto[]` — response of E9 and E10 |
-| `modules/refractory/dto/material-catalog/material-entry.dto.ts` | `MaterialEntryDto` | `materialId`, `name`, `type: MaterialType`, `materialGroup: MaterialGroup[]`, `orderNumber`, `description`, `composition: Record<string, number>` (wt%, as stored), `rho_true_after_firing_kgm3`, `availableParticleSizes?: string[]`, `particleSize?: MaterialParticleSizeDto`, `thermalProperties?: MaterialThermalPropertiesDto`, `mechanicalProperties?: MaterialMechanicalPropertiesDto`, `chemicalShrinkage_volFrac`, `activationEnergy_Jmol`, `meltingPoint_C`, `sourceUrl?`, `supplier?`, `grade?` |
+| `modules/refractory/dto/material-catalog/material-entry.dto.ts` | `MaterialEntryDto` | `materialId`, `name`, `type: MaterialType`, `materialGroup: MaterialGroup[]`, `orderNumber`, `description`, `composition: Record<string, number>` (wt%, as stored), `rho_true_after_firing_kgm3`, `availableParticleSizes?: string[]`, `particleSize?: MaterialParticleSizeDto`, `thermalProperties?: MaterialThermalPropertiesDto`, `mechanicalProperties?: MaterialMechanicalPropertiesDto`, `chemicalShrinkage_volFrac`, `activationEnergy_Jmol`, `meltingPoint_C`, `mineralogy?: MaterialMineralogyDto` (`phases: MineralogyPhaseDto[]` with `phaseId`, `phase`, `formula`, `wt`; `amorphous_wt`; `source`), `sourceUrl?`, `supplier?`, `grade?` |
 | `modules/refractory/dto/material-catalog/material-particle-size.dto.ts` | `MaterialParticleSizeDto` | `dMin_mm`, `dMax_mm`, `d50_mm` |
 | `modules/refractory/dto/material-catalog/material-thermal-properties.dto.ts` | `MaterialThermalPropertiesDto` | `thermalConductivity_WmK?`, `specificHeat_JkgK?`, `thermalExpansion_perK?` |
 | `modules/refractory/dto/material-catalog/material-mechanical-properties.dto.ts` | `MaterialMechanicalPropertiesDto` | `crushingStrength_MPa?`, `modulusOfRupture_MPa?`, `youngModulus_GPa?`, `hardness_HV?` |
@@ -155,7 +155,7 @@ Run inside Docker only: `docker compose exec backend npm run test -- <pattern>`.
 | `test/unit/metals/services/metal-thermal.service.spec.ts` (extend) | `listMaterials`: 2 grades, ids match `MetalMaterial`, range = data `T_min_K` / `T_max_K` |
 | `test/unit/refractory/services/catalog/refractory-thermal.service.spec.ts` (extend) | `listProducts`: 19 items, ids = enum values; `getProperties`: λ/ε equal `lambda()` / `emissivity()`; ε clamped outside range |
 | `test/unit/refractory/services/catalog/material-catalog.service.spec.ts` (new) | 102 unique active materials; sort order; each duplicated id returned once; `type` and `search` filters and their AND; `getMaterial` found / 404; `listGroups` order = `MATERIAL_GROUP_ROUTES`, counts match `listByGroupRoute` lengths, no zero-count groups; every material of `listByGroupRoute(route)` contains the mapped group; `listCategories`: 102 materials in total, each exactly once, `materialGroup[0]` = category, `soda_lime_glass` only under glass |
-| `test/unit/refractory/services/catalog/mix-component-catalog.service.spec.ts` (new) | `listGroups`: order = `MIX_COMPONENT_GROUPS`; 60 materials with the per-group counts of §1.3; every material's `materialGroup[0]` equals its group; no glass, phosphate, boride, fluoride, borate, carbonate or hydroxide primary group; `paper_clay` absent; `getMixComponent`: `alumina_tabular` ok, `soda_lime_glass` → 400, `calcium_fluoride` → 400, `paper_clay` → 400, unknown → 404 |
+| `test/unit/refractory/services/catalog/mix-component-catalog.service.spec.ts` (new) | `listGroups`: order = `MIX_COMPONENT_GROUPS`; 67 materials with the per-group counts of §1.3; every material's `materialGroup[0]` equals its group; no glass, phosphate, boride, carbonate or hydroxide primary group; `paper_clay` absent; `getMixComponent`: `alumina_tabular`, `borax`, `calcium_fluoride` ok, `soda_lime_glass` → 400, `aluminum_phosphate` → 400, `paper_clay` → 400, unknown → 404 |
 | `test/unit/refractory/services/catalog/particle-size-catalog.service.spec.ts` (new) | six tables present; each entry has `dMin_mm < dMax_mm` and `d50_mm` inside |
 | `test/unit/refractory/dto/refractory-products/refractory-product-query.dto.spec.ts` (new) | query-string `T_K` converted to number; missing / non-numeric / `< 1` rejected; unknown `material` rejected |
 | `test/unit/refractory/dto/material-catalog/material-list-query.dto.spec.ts` (new) | valid `type`; invalid `type` rejected; `search` length limit; unknown parameter rejected (`forbidNonWhitelisted`) |
@@ -216,7 +216,7 @@ frontend/src/modules/materials/
 │   ├── material-library.api.ts            # materialLibraryApi.list(query), .get(id), .listGroups(), .listByGroup(route), .listMixComponents(), .listCategories()
 │   ├── particle-sizes.api.ts              # particleSizesApi.get()
 │   ├── mix-composition.api.ts             # mixCompositionApi.calculate(input) — used by Steps 7 and 9
-│   └── thermal-conductivity.api.ts        # thermalConductivityApi.calculate(input) — used by Steps 7 and 9
+│   └── mix-thermal.api.ts                 # mixThermalApi.calculate(input) — used by Steps 7 and 9 (thermal-conductivity.api.ts removed)
 ├── hooks/
 │   ├── useMetalList.ts
 │   ├── useGasList.ts
@@ -253,9 +253,8 @@ frontend/src/modules/materials/
 │   ├── mix-composition-input.type.ts
 │   ├── non-oxide-components.type.ts
 │   ├── mix-composition-result.type.ts
-│   ├── oxide-composition.type.ts
-│   ├── thermal-conductivity-input.type.ts
-│   ├── thermal-conductivity-result.type.ts
+│   ├── mix-thermal-input.type.ts
+│   ├── mix-thermal-result.type.ts
 │   ├── temperature-sweep.type.ts
 │   └── temperature-sweep-fields-props.type.ts
 ├── constants/
@@ -309,10 +308,11 @@ Each mirrors one backend response DTO (§1.4); field names and unit suffixes are
 | `mix-component-input.type.ts` | `MixComponentInput` | `MixComponentInputDto` ([Step 9 §2.3](STEP_09_MINERAL_COMPOSITIONS.md)) |
 | `mix-composition-input.type.ts` | `MixCompositionInput` | `MixCompositionInputDto` |
 | `non-oxide-components.type.ts` | `NonOxideComponents` | `NonOxideComponentsDto` |
-| `mix-composition-result.type.ts` | `MixCompositionResult` | `MixCompositionResultDto` |
-| `oxide-composition.type.ts` | `OxideComposition` = optional `SiO2, Al2O3, CaO, MgO, Fe2O3, K2O, Na2O, TiO2` (wt%) | `OxideCompositionDto` |
-| `thermal-conductivity-input.type.ts` | `ThermalConductivityInput` = `{ composition: OxideComposition; temperature (°C); porosity? (0–1) }` | `ThermalConductivityDto` |
-| `thermal-conductivity-result.type.ts` | `ThermalConductivityResult` = `{ thermalConductivity_WmK; specificHeat_JkgK; density_kgm3; thermalDiffusivity_m2s; temperature_C; porosity; components }` | response of `POST /refractory/thermal-conductivity` (no DTO class) |
+| `mix-composition-result.type.ts` | `MixCompositionResult` (`oxides_wt: Record<string, number>` instead of `acceptedOxides_wt`, `acceptedOxides_normalized`, `otherOxides_wt`) | `MixCompositionResultDto` |
+| `mix-thermal-input.type.ts` | `MixThermalInput` = `{ fractions: MixComponentInput[]; temperatures_C: number[]; porosity }` | `MixThermalInputDto` |
+| `mix-thermal-result.type.ts` | `MixThermalResult` | `MixThermalResultDto` |
+
+Removed: `oxide-composition.type.ts` (`OxideComposition`, the eight fields of the removed `OxideCompositionDto`), `thermal-conductivity-input.type.ts`, `thermal-conductivity-result.type.ts`.
 | `temperature-sweep.type.ts` | `TemperatureSweep` = `{ mode: 'single' \| 'range'; unit: 'C' \| 'K'; value; from; to; step }` | — (§2.8) |
 | `temperature-sweep-fields-props.type.ts` | `TemperatureSweepFieldsProps` = `{ value: TemperatureSweep; onChange; maxPoints?: number }` | — |
 
@@ -328,7 +328,7 @@ One object per file, built on the shared axios client from Step 1 (`services/api
 | `material-library.api.ts` | `materialLibraryApi` | `list(query)` → E4; `get(materialId)` → E5; `listGroups()` → E6; `listByGroup(route)` → E7; `listMixComponents()` → E9; `listCategories()` → E10 |
 | `particle-sizes.api.ts` | `particleSizesApi` | `get()` → E8 |
 | `mix-composition.api.ts` | `mixCompositionApi` | `calculate(input)` → `POST /refractory/mix/composition` (approved, [Step 9 §2](STEP_09_MINERAL_COMPOSITIONS.md)) |
-| `thermal-conductivity.api.ts` | `thermalConductivityApi` | `calculate(input)` → `POST /refractory/thermal-conductivity` (exists) |
+| `mix-thermal.api.ts` | `mixThermalApi` | `calculate(input)` → `POST /refractory/mix/thermal` (replaces `thermalConductivityApi`; `/thermal-conductivity` is removed) |
 
 ### 2.5 Hooks and caching
 
@@ -402,7 +402,7 @@ export type MaterialPickerSelection = { kind: MaterialPickerKind; materialId: st
 - [ ] Every new file exports exactly one construct; controllers make one service call per handler
 - [ ] `GET /refractory/refractories/properties?material=chamotte_solid&T_K=1000` returns λ and ε
 - [ ] `GET /refractory/material-groups` lists every non-empty library group with its route; each per-group route returns only that group
-- [ ] `GET /refractory/mix-components` returns 60 materials in six groups (binder, oxide, silicate, clay, carbide, nitride) by primary group; no glasses, no `paper_clay`
+- [ ] `GET /refractory/mix-components` returns 67 materials in eight groups (binder, oxide, silicate, clay, carbide, nitride, borate, fluoride) by primary group; no glasses, no `paper_clay`
 - [ ] `GET /refractory/material-categories` returns all 102 materials, each once, grouped by primary group
 - [ ] `/refractory/materials`, `/refractory/material-groups`, `/refractory/particle-sizes`, `/refractory/mix-components`, `/refractory/material-categories` are not captured by `/refractory/:groupRoute`
 - [ ] Tests in §1.5 pass inside Docker; docs in §1.6 updated

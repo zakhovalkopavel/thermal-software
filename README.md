@@ -70,7 +70,7 @@ make up
 
 | Component                    | Status                  | Detail                                              |
 |------------------------------|-------------------------|-----------------------------------------------------|
-| **Backend — Refractory**     | 🚧 In Progress          | 11 services scaffolded (blend-optimizer, glass-viscosity, mineral-phase, packing, participation, phase-equilibrium, psd-calculator, refractoriness, shrinkage, thermal-performance, water-demand) |
+| **Backend — Refractory**     | 🚧 In Progress          | 10 services scaffolded (blend-optimizer, glass-viscosity, packing, participation, phase-equilibrium, psd-calculator, refractoriness, shrinkage, thermal-performance, water-demand) |
 | **Backend — Thermodynamics** | 🚧 In Progress          | 8 services scaffolded (aerodynamics, diffusion, dimensionless-calculation, dimensionless-numbers, fluid-property, gas-properties, radiation, transport) |
 | **Frontend**                 | 🚧 Skeleton only        | React 19 + Vite 7 + MUI 7 — no pages yet           |
 | **Python tools**             | ✅ Active               | NASA-7/9 coefficient parser + OCR extraction pipeline |
@@ -222,8 +222,7 @@ Full spec: [`docs/api/REFRACTORY_API_SPEC.md`](docs/api/REFRACTORY_API_SPEC.md)
 
 | Endpoint | Service | Description |
 |----------|---------|-------------|
-| `POST /phase-equilibrium` | `PhaseEquilibriumService` | Liquid/solid phase distribution at temperature |
-| `POST /mineral-phases` | `MineralPhaseService` | Identify mineral phases from oxide composition |
+| `POST /phase-equilibrium` | `PhaseEquilibriumService` | Phases of a fired mix at T and after cooling, with unreacted original phases |
 | `POST /blend-optimization` | `BlendOptimizerService` | Optimize particle blend for target PSD |
 | `POST /psd/andreasen` | `PSDCalculatorService` | Andreasen discrete PSD calculation |
 | `POST /psd/funk-dinger` | `PSDCalculatorService` | Funk-Dinger discrete PSD calculation |
@@ -233,8 +232,9 @@ Full spec: [`docs/api/REFRACTORY_API_SPEC.md`](docs/api/REFRACTORY_API_SPEC.md)
 | `POST /water-demand` | `WaterDemandService` | Water demand from packing fraction |
 | `POST /water-demand/range` | `WaterDemandService` | Water demand min/typical/max range |
 | `POST /shrinkage` | `ShrinkageService` | Drying + firing shrinkage over temperature profile |
-| `POST /thermal-conductivity` | `ThermalPerformanceService` | Effective thermal conductivity with porosity |
-| `POST /refractoriness` | `RefractorinessService` | PCE / RUL temperature from composition |
+| `POST /refractoriness` | `RefractorinessService` | Cone refractoriness, solidus, liquidus and temperatures at given liquid fractions of a fired mix (phase diagrams) |
+| `POST /mix/composition` | `MixCompositionService` | Fired-basis composition of a mix of library raw materials |
+| `POST /mix/thermal` | `MixThermalService` | λ, Cp, ρ, diffusivity vs T of a fired material or mix |
 | `POST /glass-viscosity` | `GlassViscosityService` | Glass viscosity + VFT curve + fixed points |
 
 All endpoints: `POST` → `200 OK` on success, `400 Bad Request` on invalid input.

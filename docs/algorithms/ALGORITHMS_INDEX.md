@@ -9,7 +9,7 @@
 ## 📚 AVAILABLE ALGORITHMS
 
 ### 1. **Viscosity (Melt / Glass)** ⭐
-**Services:** `GlassViscosityService` (glass compositions), melt viscosity integrated in `PhaseEquilibriumService`  
+**Services:** `GlassViscosityService` (glass compositions); `PhaseEquilibriumService` calls it for the viscosity of every liquid and glass at T and the glass points after cooling  
 **Model:** Arrhenius (melt) + VFT / Lakatos / Fluegel (glass)
 
 **Algorithm documents:**
@@ -32,56 +32,39 @@
 
 ---
 
-### 2. **THERMAL_PERFORMANCE_ALGORITHM.md** ⭐ NEW
-**Service:** `ThermalPerformanceService`  
-**Components:** 33 (21 oxides + 6 fluorides + 6 chlorides)  
-**Model:** Composition-Weighted with Temperature & Porosity Corrections  
+### 2. **[MIX_THERMAL_ALGORITHM.md](./MIX_THERMAL_ALGORITHM.md)**
+**Service:** `MixThermalService`: `POST /api/v1/refractory/mix/thermal`  
+**Model:** λ, Cp, ρ and diffusivity of a fired library material or mix vs T (NASA-9 Cp, library λ with a temperature law, Maxwell–Eucken porosity)
 
-**Resources:**
-- Kingery et al. (1976) - Ceramic thermal properties
-- Schacht (2004) - Refractory handbook
-- Maxwell & Eucken - Porosity equations
-- TPRC Database - Thermophysical properties
-
-**Key Features:**
-- Thermal conductivity by component
-- Temperature dependence (-0.0003 K⁻¹)
-- Maxwell-Eucken porosity correction
-- Thermal diffusivity calculation
-- ✅ Production-ready
+The former `ThermalPerformanceService` (`POST /thermal-conductivity`, composition-weighted λ of eight oxides) is removed: its component lookup matched no oxide, so λ and Cp were constants.
 
 ---
 
-### 3. **REFRACTORINESS_ALGORITHM.md** ⭐ NEW
-**Service:** `RefractorinessService`  
-**Components:** 33 (21 oxides + 6 fluorides + 6 chlorides)  
-**Model:** Component-Based Temperature Estimation  
-
-**Resources:**
-- ISO 1893:2015 - RUL standard
-- ASTM C24-10 - PCE standard
-- Mills (1993) - Refractory handbook
-- GOST 4069-69 - Russian standard
+### 3. **[REFRACTORINESS_ALGORITHM.md](./REFRACTORINESS_ALGORITHM.md)**
+**Service:** `RefractorinessService`: `POST /api/v1/refractory/refractoriness`  
+**Model:** Equilibrium melting of the whole fired mix on the phase diagrams of entry 4
 
 **Key Features:**
-- Network former/modifier effects (+800 to -900 K)
-- Fluoride flux components
-- Chloride destabilizer components
-- 4 standard support (ISO, ASTM, GOST)
-- Classification by duty level
-- ✅ Production-ready
+- Mix fractions in; every oxide and fluoride with diagram data counts, the rest is `unmodelled`
+- Solidus, liquidus and temperatures at given liquid fractions (bisection on the equilibrium liquid)
+- Refractoriness (cone test, ASTM C24 / GOST 4069): temperature at which the liquid reaches a critical fraction fitted to published cone values, with cone equivalent and fit uncertainty
+- Aluminosilicates: also `(360 + Al2O3 − ΣR) / 0.228` inside its verified range; ASTM C27 class check
+- No refractoriness-under-load values (ISO 1893): they depend on microstructure
+- Replaces the component-sum estimate (1400 °C + Σ wt% · effect), whose lookup matched only K2O
 
 ---
 
-### 4. **FULL_PHASE_EQUILIBRIUM.md**
-**Service:** `PhaseEquilibriumService`  
-**Model:** Thermodynamic phase calculation  
+### 4. **[FULL_PHASE_EQUILIBRIUM.md](./FULL_PHASE_EQUILIBRIUM.md)**
+**Service:** `PhaseEquilibriumService`: `POST /api/v1/refractory/phase-equilibrium`  
+**Model:** Lever rule on tabulated phase diagrams (Al2O3–SiO2, K2O / Na2O / CaO / MgO–Al2O3–SiO2, CaO–MgO–SiO2) with a shrinking-core grain reaction
 
 **Contents:**
-- Phase equilibrium principles
-- Liquid-solid distribution
-- Temperature-dependent calculations
-- Material composition analysis
+- Raw material mineralogy and phase catalog ([MINERAL_PHASE_IDENTIFICATION.md](./MINERAL_PHASE_IDENTIFICATION.md))
+- Reaction depth δ(T, t) per material and reacted fraction per size fraction
+- Matrix equilibrium at T and after cooling (liquid → glass)
+- Glass formers (borates, alkali silicates, silica glass, glassy bond) stay glass below the solidus: rigid or softened by viscosity from `GlassViscosityService`, which also gives melt viscosity and glass points
+- Unreacted original phases: unchanged, softened (glass) or transformed on their own
+- System selection and projection of multi-flux compositions
 
 ---
 
@@ -124,10 +107,10 @@
 **Model:** Fired-basis mixing of library raw-material compositions
 
 **Key Features:**
-- Composition key classification (loss on ignition, accepted oxides, other oxides, metal impurities, carbon, non-oxides by group)
-- Fired-basis rescaling and accepted oxides normalised to 100 % for the chemical endpoints
+- Composition key classification (loss on ignition, oxides, fluorides, metal impurities, carbon, non-oxides by group)
+- Fired-basis rescaling; every oxide reported in `oxides_wt`
 - True density of the fired mix from material true densities
-- Reliability warning when > 5 % of the fired mass is outside the accepted oxides
+- Warning for composition keys no calculation models (`other`, e.g. `Grog`)
 
 ---
 
@@ -141,8 +124,8 @@ Material Library (Composition Data)
         ├→ PackingService → Packing density
         ├→ PSDCalculatorService → Particle distribution
         ├→ ShrinkageService → Shrinkage %
-        ├→ RefractorinessService → Refractory performance
-        ├→ ThermalPerformanceService → Thermal properties
+        ├→ RefractorinessService → Cone refractoriness, solidus, liquidus, liquid levels (phase diagrams)
+        ├→ MixThermalService → Thermal properties
         └→ GlassViscosityService → Glass viscosity
 ```
 
@@ -153,9 +136,9 @@ Material Library (Composition Data)
 | Algorithm | Model Type | Components | Accuracy | Range |
 |-----------|-----------|-----------|----------|-------|
 | Viscosity | Arrhenius | 33 | ±10-20% | 1000-2000°C |
-| Thermal Performance | Weighted avg + corrections | 33 | ±15-25% | 20-2000°C |
-| Refractoriness | Component-based | 33 | ±50-100°C | 800-2500°C |
-| Phase Equilibrium | Thermodynamic | All | ±5% | All temps |
+| Mix Thermal | NASA-9 Cp + library λ + Maxwell–Eucken | all fired phases | see [MIX_THERMAL_ALGORITHM.md](./MIX_THERMAL_ALGORITHM.md) | ≥ 200 K |
+| Refractoriness | Equilibrium melting on phase diagrams + critical liquid fitted to cone values | as Phase Equilibrium + reference cone values | solidus/liquidus: diagram data ±10–20 °C; cone value: fit RMS inside the reference range | 500–2000°C |
+| Phase Equilibrium | Phase diagrams + grain reaction + glass viscosity | base oxides in 6 main systems, extra oxides in sourced subsystems; carbides, nitrides, graphite inert | diagram data ±10–20 °C; grain reaction calibrated | 500–2000°C |
 | Packing | Empirical | All | ±15% | All sizes |
 | PSD | Mathematical | All | ±3% | All sizes |
 

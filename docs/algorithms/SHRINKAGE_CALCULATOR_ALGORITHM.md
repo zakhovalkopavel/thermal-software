@@ -368,7 +368,7 @@ Relative Density:    0.40 - 0.98
 
 - **Blend Optimizer:** `docs/algorithms/BLEND_OPTIMIZER_ALGORITHM.md`
 - **Packing Models:** `docs/algorithms/PACKING_MODELS.md`
-- **Thermal Performance:** `docs/algorithms/THERMAL_PERFORMANCE_ALGORITHM.md`
+- **Mix Thermal:** `docs/algorithms/MIX_THERMAL_ALGORITHM.md`
 
 ---
 

@@ -88,6 +88,7 @@ C3 keeps every fired phase. Cp comes from NASA-9 condensed-phase data, the dense
 | `activationEnergy_Jmol` | activation energy, J/mol |
 | `mechanicalProperties.*` | crushing strength MPa, modulus of rupture MPa, Young's modulus GPa, hardness HV |
 | `availableParticleSizes`, `particleSize` | particle sizes |
+| `mineralogy` | mineralogy as delivered: table of phase, formula, wt%; then amorphous remainder (`amorphous_wt`) and source |
 
 - **Calculated block:** shown when the material is in E9. Flow: one C3 call per material with all temperatures of `toTemperatureGrid(sweep)` (converted to °C) and the chosen porosity (default `RAW_MATERIALS_UI.defaultPorosity = 0.2`, max 0.95), plus a P = 0 call for the selected material when "dense" is ticked. Disabled with a reason when the material is not a mix component ("not a mix raw material": glasses, phosphates, fluorides, …).
 - **Compare:** up to `RAW_MATERIALS_UI.maxCompared = 3` materials; reference values side by side; calculated series for the ones that allow it.

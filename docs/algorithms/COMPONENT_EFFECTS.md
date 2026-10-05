@@ -6,6 +6,8 @@
 
 ---
 
+> **Status (phase-equilibrium rework):** the effect values below have no recorded source, and `COMPONENT_PROPERTIES` is keyed by constant names (`AL2O3`, `SIO2`, …) while compositions use formulas (`Al2O3`, `SiO2`, …), so `getComponentEffect` matches only `K2O` and `KF`. Refractoriness ([REFRACTORINESS_ALGORITHM.md](REFRACTORINESS_ALGORITHM.md)), thermal conductivity (removed; see [MIX_THERMAL_ALGORITHM.md](MIX_THERMAL_ALGORITHM.md)) and phase equilibrium ([FULL_PHASE_EQUILIBRIUM.md](FULL_PHASE_EQUILIBRIUM.md)) no longer use this system. `calculateRefractorinessEffect`, `calculateWeightedThermalConductivity`, `calculateWeightedSpecificHeat` and `extractComponentsByCategory` are removed. The remaining user is the component breakdown of `GlassViscosityService`.
+
 ## Overview
 
 The component effects system provides centralized, data-driven calculations for how chemical components (oxides, fluorides, chlorides) affect various refractory properties across the application.

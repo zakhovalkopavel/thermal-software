@@ -1,7 +1,7 @@
 # Mix Thermal Algorithm (fired raw materials)
 
 **Service:** `backend/src/modules/refractory/services/thermal/mix-thermal.service.ts` (`MixThermalService`)  
-**Endpoint:** `POST /api/v1/refractory/mix/thermal` ([API spec §15b](../api/REFRACTORY_API_SPEC.md))  
+**Endpoint:** `POST /api/v1/refractory/mix/thermal` ([API spec §13b](../api/REFRACTORY_API_SPEC.md))  
 **Constants:** `constants/mix-thermal.constants.ts` (`MIX_THERMAL_CONSTANTS`)  
 **Utils:** `utils/fired-phases.util.ts`, `utils/phase-specific-heat.util.ts`, `utils/maxwell-eucken-conductivity.util.ts`; air λ from the `Air` compound (`common/thermal/compound/gas/air.ts`) via `CompoundPropertyResolver`  
 **Tests:** `backend/test/unit/refractory/services/thermal/mix-thermal.service.spec.ts`, `backend/test/unit/refractory/utils/mix-thermal-utils.spec.ts`
@@ -12,7 +12,7 @@
 
 Thermal conductivity, specific heat, density and diffusivity versus temperature of a **fired** library raw material, or of a mix of them, at a given porosity.
 
-It replaces the use of `POST /thermal-conductivity` for library materials. That endpoint sees only the eight accepted oxides rescaled to 100 %, so non-oxide materials were calculated from their oxide impurities (fired SiC became 50 % SiO2 / 30 % Fe2O3 / 20 % Al2O3). It also used a fixed density of 2500 kg/m³.
+It replaces `POST /thermal-conductivity`, which is removed (raw materials page and the λ chart of mineral compositions). That endpoint saw only eight oxides rescaled to 100 %, and its component lookup matched none of them, so λ and Cp were constants. Non-oxide materials were calculated from their oxide impurities (fired SiC became 50 % SiO2 / 30 % Fe2O3 / 20 % Al2O3). It also used a fixed density of 2500 kg/m³.
 
 ## Inputs
 

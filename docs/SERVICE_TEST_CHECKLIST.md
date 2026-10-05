@@ -170,23 +170,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ---
 
-### 8. MineralPhaseService
-**File:** `mineral-phase.service.ts`  
-**Test File:** `test/unit/refractory/services/composition/mineral-phase.service.spec.ts`
-
-| Public Method | Tests | Status | Notes |
-|---------------|-------|--------|-------|
-| ? | ? | ? | Need to review source |
-
-**Checklist:**
-- [ ] Review all public methods
-- [ ] Create test cases
-
-**Priority:** MEDIUM
-
----
-
-### 9. PhaseEquilibriumService
+### 8. PhaseEquilibriumService
 **File:** `phase-equilibrium.service.ts`  
 **Test File:** `test/unit/refractory/services/composition/phase-equilibrium.service.spec.ts`
 
@@ -202,7 +186,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ---
 
-### 10. ThermalPerformanceService
+### 9. ThermalPerformanceService
 **File:** `thermal-performance.service.ts`  
 **Test File:** `test/unit/refractory/services/thermal/thermal-performance.service.spec.ts`
 
@@ -218,7 +202,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ---
 
-### 11. RefractorynessService
+### 10. RefractorynessService
 **File:** `refractoriness.service.ts`  
 **Test File:** `test/unit/refractory/services/composition/refractoriness.service.spec.ts`
 
@@ -234,7 +218,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ---
 
-### 12. ParticipationService
+### 11. ParticipationService
 **File:** `participation.service.ts`  
 **Test File:** `test/unit/refractory/services/particle-packing/participation.service.spec.ts`
 
@@ -261,7 +245,6 @@ This document lists all public methods in refractory services and tracks test im
 | WaterDemandService | 5 | ⏳ 2/5 | 40% |
 | ViscosityService | ? | ? | ? |
 | GlassViscosityService | ? | ? | ? |
-| MineralPhaseService | ? | ? | ? |
 | PhaseEquilibriumService | ? | ? | ? |
 | ThermalPerformanceService | ? | ? | ? |
 | RefractorynessService | ? | ? | ? |

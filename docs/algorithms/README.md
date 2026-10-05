@@ -80,14 +80,11 @@ Common library reference:
    - Stoichiometric calculations
    - Phases: Mullite, Corundum, Spinel, Forsterite, Periclase, Zirconia, etc.
 
-3. **[Refractoriness Algorithm](./REFRACTORINESS_ALGORITHM.md)** ✅ MERGED & COMPREHENSIVE
-   - **Complete documentation** combining implementation + academic reference
-   - ISO 1893, ASTM C24, GOST 4069 standards
-   - Component effects (33 components: oxides, fluorides, chlorides)
-   - Step-by-step calculation procedure
-   - 4 practical worked examples
-   - Validation & accuracy metrics
-   - 10+ peer-reviewed references
+3. **[Refractoriness Algorithm](./REFRACTORINESS_ALGORITHM.md)** 🔄 REWRITTEN
+   - Mix fractions in; equilibrium melting of the fired mix on the phase diagrams
+   - Solidus, liquidus and temperatures at given liquid fractions
+   - Cone refractoriness (ASTM C24 / GOST 4069) from a critical liquid fraction fitted to published cone values; aluminosilicate formula inside its range; ASTM C27 check
+   - No refractoriness under load (ISO 1893)
 
 4. **[Blend Optimizer Algorithm](./BLEND_OPTIMIZER_ALGORITHM.md)** ✅ NEW
    - Multi-stage PSD optimization
@@ -109,7 +106,7 @@ Common library reference:
 |------|-------|--------|
 | [`FULL_PHASE_EQUILIBRIUM.md`](./FULL_PHASE_EQUILIBRIUM.md) | Liquid-solid partitioning, eutectic, lever rule | ✅ |
 | [`PACKING_MODELS.md`](./PACKING_MODELS.md) | CPM and Furnas packing density models | ✅ |
-| [`THERMAL_PERFORMANCE_ALGORITHM.md`](./THERMAL_PERFORMANCE_ALGORITHM.md) | Effective thermal conductivity with porosity | ✅ |
+| [`MIX_THERMAL_ALGORITHM.md`](./MIX_THERMAL_ALGORITHM.md) | λ, Cp, ρ, diffusivity of a fired material or mix vs T (replaces the removed thermal-conductivity endpoint) | ✅ |
 | [`WATER_DEMAND_ALGORITHM.md`](./WATER_DEMAND_ALGORITHM.md) | Water demand from packing fraction | ✅ |
 | [`PSD_ALGORITHMS.md`](./PSD_ALGORITHMS.md) | Andreasen and Funk-Dinger PSD models | ✅ |
 | [`MULTI_MODEL_COMPLETE.md`](./MULTI_MODEL_COMPLETE.md) | Multi-model viscosity comparison | ✅ |
@@ -167,7 +164,6 @@ Specification for temperature field and thermal distribution calculations (not y
 ### Helper Functions
 
 ```typescript
-calculateRefractorinessEffect(composition)      // → number (K)
 calculateLiquidusEffect(composition)             // → number (K)
 calculateViscosityEffect(composition)            // → number (K)
 calculateLiquidCompositionWithEnrichment(comp)  // → Record<string, number>
@@ -175,12 +171,6 @@ calculateSolidCompositionWithEnrichment(comp)   // → Record<string, number>
 ```
 
 ### Service Integration
-
-**RefractorinessService:**
-```typescript
-const effectFromComponents = calculateRefractorinessEffect(composition);
-refractorinessTemp += effectFromComponents;
-```
 
 **PhaseEquilibriumService:**
 ```typescript
@@ -253,52 +243,11 @@ Extract Oxides → Check Alumina → Check Silica → Check Calcium
 
 **File:** [`REFRACTORINESS_ALGORITHM.md`](./REFRACTORINESS_ALGORITHM.md)
 
-### Algorithm
+Mix fractions in. The whole fired composition is equilibrated on the phase diagrams of [FULL_PHASE_EQUILIBRIUM.md](./FULL_PHASE_EQUILIBRIUM.md), and bisection on the equilibrium liquid gives:
+- solidus (first liquid) and liquidus (all but inert and unmodelled parts liquid);
+- the temperature at each requested liquid fraction (default 10, 25, 50 %).
 
-```
-RT = Base_Temperature (1400°C)
-   + Σ(Component_Effect × Wt% / 100)
-   + Standard-specific transformation (ISO 1893, ASTM C24, GOST 4069)
-```
-
-### Standards Supported
-
-#### ISO 1893 - RUL (Refractoriness Under Load)
-Three deformation points at 0.2 MPa load:
-- **T0.5:** Temperature for 0.5mm deformation
-- **T1:** Temperature for 1mm deformation
-- **T2:** Temperature for 2mm deformation (full refractoriness)
-
-#### ASTM C24 - PCE (Pyrometric Cone Equivalent)
-Maps temperature to cone numbers (Cone 26-42):
-- Visual comparison with standard pyrometric cones
-- Resolution: ~30°C per cone
-- Cone 30 ≈ 1723°C, Cone 35 ≈ 1835°C
-
-#### GOST 4069 - Russian Standard
-Similar to PCE but Russian cone scale.
-
-### Component Effects
-
-**Strongest Effects:**
-- **Na2O:** -900K (strongest flux)
-- **AL2O3:** +800K (strongest former)
-- **K2O, LI2O:** -850K, -800K (strong fluxes)
-- **Fluorides:** -850K to -280K (all fluxes)
-
-### Physical Constraints
-- Minimum RT: 1200°C
-- Maximum RT: 1900°C
-- Valid composition range: 99-101% total
-
-### Example Calculation
-
-**Chamotte (45% Al2O3, 38% SiO2, 8% Fe2O3, 4% TiO2):**
-```
-RT = 1400 + (0.45×800) + (0.38×500) + (0.08×-450) + (0.04×400)
-   = 1400 + 360 + 190 - 36 + 16
-   = 1930°C (Cone 35-36)
-```
+The refractoriness (cone test, ASTM C24 / GOST 4069) is the temperature at which the equilibrium liquid reaches the critical fraction L\*, fitted to published cone values of reference materials; it comes with the cone equivalent and the fit RMS as uncertainty. For aluminosilicates inside its verified range, `(360 + Al2O3 − ΣR) / 0.228` °C is reported as a second value, and compositions in an ASTM C27 class are checked against the class minimum. Refractoriness under load (ISO 1893) is not estimated. The former estimate `RT = 1400 °C + Σ wt% · effect` had no source, and its lookup matched only K2O.
 
 ---
 
@@ -355,7 +304,6 @@ Determines liquid and solid compositions at equilibrium:
 
 **Uses:**
 - Component enrichment factors from Component Effects System
-- Phase identification from Mineral Phase Service
 
 ### Viscosity Calculation
 
@@ -401,18 +349,6 @@ export interface ComponentEffect {
   liquidEnrichmentFactor?: number;       // 0.1-2.5
   solidEnrichmentFactor?: number;        // 0.1-1.0
   description?: string;
-}
-```
-
-### MineralPhase Structure
-
-```typescript
-{
-  phase: string;           // Phase name
-  formula: string;         // Chemical formula
-  percent: number;         // Amount formed (%)
-  meltingPoint: number;    // Melting point (°C)
-  description: string;     // Physical description
 }
 ```
 
@@ -511,21 +447,17 @@ All algorithms validated against:
 ```
 RefractorinessService
   ↓
-  └─→ Component Effects System (calculateRefractorinessEffect)
+  ├─→ MixCompositionService (fired composition)
+  └─→ phase-diagram utils (equilibrium of one composition)
 
 PhaseEquilibriumService
   ↓
   ├─→ Component Effects System (calculateLiquidusEffect)
-  ├─→ Component Effects System (enrichment factors)
-  └─→ Mineral Phase Service (for comparison)
+  └─→ Component Effects System (enrichment factors)
 
 ViscosityService
   ↓
   └─→ Component Effects System (calculateViscosityEffect)
-
-MineralPhaseService
-  ↓
-  └─→ (Independent)
 ```
 
 ### Data Flow
@@ -533,14 +465,9 @@ MineralPhaseService
 ```
 User Input (Composition)
   ↓
-  ├─→ Component Effects System
-  │    ├─→ Refractoriness Service → RT calculation
-  │    ├─→ Phase Equilibrium Service → Liquid/Solid composition
-  │    └─→ Viscosity Service → Melt viscosity
-  │
-  └─→ Mineral Phase Service → Phase identification
-       ├─→ 17 phases with properties
-       └─→ Stability ranges
+  └─→ Component Effects System
+       ├─→ Phase Equilibrium Service → Liquid/Solid composition
+       └─→ Viscosity Service → Melt viscosity
 ```
 
 ---
@@ -593,7 +520,8 @@ docs/algorithms/
 ├── SHRINKAGE_CALCULATOR_ALGORITHM.md      ✅
 ├── FULL_PHASE_EQUILIBRIUM.md              ✅
 ├── PACKING_MODELS.md                      ✅
-├── THERMAL_PERFORMANCE_ALGORITHM.md       ✅
+├── MIX_COMPOSITION_ALGORITHM.md           ✅
+├── MIX_THERMAL_ALGORITHM.md               ✅
 ├── WATER_DEMAND_ALGORITHM.md              ✅
 ├── PSD_ALGORITHMS.md                      ✅
 ├── MULTI_MODEL_COMPLETE.md                ✅

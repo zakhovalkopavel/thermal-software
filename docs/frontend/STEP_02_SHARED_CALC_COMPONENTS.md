@@ -95,9 +95,9 @@ interface OxideCompositionInputProps {
 
 ### Allowed oxides — backend constraint
 
-The backend runs `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })`. `OxideCompositionDto` (used by phase-equilibrium, mineral-phases, thermal-conductivity, refractoriness) accepts **only** `SiO2, Al2O3, CaO, MgO, Fe2O3, K2O, Na2O, TiO2`. Any other key returns HTTP 400.
+The backend runs `ValidationPipe({ whitelist: true, forbidNonWhitelisted: true })`. No refractory endpoint takes an oxide list any more: phase equilibrium, refractoriness and mix thermal take mix fractions, and the eight-field `OxideCompositionDto` is removed (step 3 of the phase-equilibrium work). Glass viscosity keeps its own wide composition record.
 
-- Export `REFRACTORY_OXIDES` (the 8 keys above) and `GLASS_OXIDES` (wide list: `SiO2, Al2O3, Na2O, K2O, Li2O, CaO, MgO, BaO, ZnO, PbO, B2O3, Fe2O3, TiO2, ZrO2, SrO, …`) from `components/calc/oxides.ts`.
+- Export `GLASS_OXIDES` (wide list: `SiO2, Al2O3, Na2O, K2O, Li2O, CaO, MgO, BaO, ZnO, PbO, B2O3, Fe2O3, TiO2, ZrO2, SrO, …`) from `components/calc/oxides.ts`. `REFRACTORY_OXIDES` (the former eight keys) is removed with its only user, the bulk composition card of [Step 9](STEP_09_MINERAL_COMPOSITIONS.md).
 - Provide `pickOxides(composition, allowed)` → `{ kept, ignored }` so callers can strip unsupported keys and display "ignored: B2O3 1.2 %".
 
 ---
