@@ -5,8 +5,6 @@ export const GLASSES_UI = {
   defaultPresetId: 'soda_lime_glass',
   chartGrid: { from: 400, to: 1600, step: 20 },
   maxGridPoints: 301,
-  sumMin: 99,
-  sumMax: 101,
   viscosityAxis: { min: 1, max: 1e15 },
   viscosityChartHeight: 460,
   compositionChart: { baseHeight: 120, rowHeight: 56 },

@@ -1,16 +1,43 @@
 /**
  * Unit tests for glass-composition.util.ts
  *
- * Covers: wtPctToMolPct, molPctToWtPct
+ * Covers: normalizeComposition, wtPctToMolPct, molPctToWtPct
  */
 
 import {
+  normalizeComposition,
   wtPctToMolPct,
   molPctToWtPct,
+  InvalidCompositionError,
 } from '../../../../src/modules/refractory/utils/glass-composition.util';
 import {
   FLUEGEL_VALIDATION_GLASSES,
 } from '../../../../src/modules/refractory/data/glass-viscosity-validation.data';
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('glass-composition.util — normalizeComposition', () => {
+  it('re-scales a composition that does not sum to 100, keeping proportions', () => {
+    const n = normalizeComposition({ SiO2: 36.1, Na2O: 6.7, CaO: 5.6 });
+    expect(Object.values(n).reduce((s, v) => s + v, 0)).toBeCloseTo(100, 10);
+    expect(n['SiO2'] / n['Na2O']).toBeCloseTo(36.1 / 6.7, 10);
+  });
+
+  it('drops zero-valued components', () => {
+    expect(normalizeComposition({ SiO2: 80, B2O3: 0, Na2O: 20 })).not.toHaveProperty('B2O3');
+  });
+
+  it.each([
+    ['empty', {}],
+    ['all-zero', { SiO2: 0 }],
+    ['negative', { SiO2: 80, Na2O: -5 }],
+    ['NaN', { SiO2: NaN }],
+    ['Infinity', { SiO2: Infinity }],
+    ['string', { SiO2: '72' as unknown as number }],
+  ])('throws InvalidCompositionError for %s input', (_, comp) => {
+    expect(() => normalizeComposition(comp as Record<string, number>)).toThrow(InvalidCompositionError);
+  });
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 

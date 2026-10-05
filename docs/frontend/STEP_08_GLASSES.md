@@ -39,7 +39,7 @@ There is no separate glass backend module — all endpoints live under `/api/v1/
    - unit = mol → call `convert-composition` (`mol_to_wt`) first, then send the wt% result.
 5. The results panel shows the composition **in both units** so the engineer sees exactly what was calculated.
 
-Sum must be within 99–101 % (yup test) — offer **Normalize** otherwise.
+The sum is not validated on the frontend: the backend normalises every composition to 100 % before model selection and calculation (the response `composition` is the normalised one). **Normalize** stays as a convenience for editing.
 
 ---
 

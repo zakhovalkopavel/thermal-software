@@ -5,7 +5,7 @@
  * No NestJS dependencies — usable anywhere (service, utils, tests).
  *
  * Contents:
- *   normalizeComposition — strip zeros, normalise to 100 wt%
+ *   normalizeComposition — validate, strip zeros, normalise to 100 wt%
  *   wtPctToMolPct        — weight percent → mol percent
  *   molPctToWtPct        — mol percent → weight percent
  */
@@ -15,14 +15,27 @@ import { MOLAR_MASSES } from '../constants/viscosity-parameters';
 // ─── Normalise ────────────────────────────────────────────────────────────────
 
 /**
+ * Thrown when a composition cannot be normalised (non-numeric, negative or
+ * all-zero input). Callers map it to a client error.
+ */
+export class InvalidCompositionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'InvalidCompositionError';
+  }
+}
+
+/**
  * Normalise a composition object:
- *   1. Remove keys with zero or negative values.
- *   2. Re-scale all values so they sum to exactly 100.
+ *   1. Reject non-numeric, non-finite or negative values.
+ *   2. Remove keys with zero values.
+ *   3. Re-scale all values so they sum to exactly 100.
  *
  * This is a no-op for a composition that already sums to 100.
  *
  * @param comp   Raw wt% (or mol%) composition — any number of components.
  * @returns      Cleaned, normalised composition.
+ * @throws       InvalidCompositionError
  */
 export function normalizeComposition(
   comp: Record<string, number>,
@@ -30,14 +43,20 @@ export function normalizeComposition(
   const filtered: Record<string, number> = {};
   let sum = 0;
 
-  for (const [k, v] of Object.entries(comp)) {
+  for (const [k, v] of Object.entries(comp ?? {})) {
+    if (typeof v !== 'number' || !Number.isFinite(v)) {
+      throw new InvalidCompositionError(`Composition value for ${k} must be a finite number (got ${JSON.stringify(v)})`);
+    }
+    if (v < 0) {
+      throw new InvalidCompositionError(`Composition value for ${k} must not be negative (got ${v})`);
+    }
     if (v > 0) {
       filtered[k] = v;
       sum += v;
     }
   }
 
-  if (sum === 0) throw new Error('Composition is empty or all-zero — cannot normalise');
+  if (sum === 0) throw new InvalidCompositionError('Composition is empty or all-zero — cannot normalise');
 
   const factor = 100 / sum;
   const normalized: Record<string, number> = {};

@@ -3,8 +3,6 @@ import { GLASS_OXIDES } from '@/shared/ui/calc';
 import { GLASSES_UI } from './constants/glasses-ui.constants';
 import type { GlassTask } from './types/glass-task.type';
 
-const sumOf = (composition: Record<string, number>) => Object.values(composition).reduce((total, value) => total + value, 0);
-
 export const glassFormSchema = yup.object({
   composition: yup
     .mixed<Record<string, number>>()
@@ -17,14 +15,6 @@ export const glassFormSchema = yup.object({
           .filter((key) => !(GLASS_OXIDES as readonly string[]).includes(key))
           .join(', ')}.`,
       (value) => Object.keys(value ?? {}).every((key) => (GLASS_OXIDES as readonly string[]).includes(key)),
-    )
-    .test(
-      'sum',
-      `Σ must be within ${GLASSES_UI.sumMin}–${GLASSES_UI.sumMax} % — use Normalize.`,
-      (value) => {
-        const sum = sumOf(value ?? {});
-        return sum >= GLASSES_UI.sumMin && sum <= GLASSES_UI.sumMax;
-      },
     ),
   task: yup.mixed<GlassTask>().oneOf(['at-temperature', 'profile', 'temperature-at-viscosity']).required(),
   temperature_C: yup

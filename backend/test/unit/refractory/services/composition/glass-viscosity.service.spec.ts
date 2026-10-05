@@ -6,6 +6,7 @@
  * model selection) live in their own spec files under test/unit/refractory/utils/.
  */
 
+import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GlassViscosityService } from '../../../../../src/modules/refractory/services/composition/glass-viscosity.service';
 import {
@@ -163,12 +164,42 @@ describe('GlassViscosityService — calculateViscosity', () => {
       expect(Object.values(r.composition).reduce((s, v) => s + v, 0)).toBeCloseTo(100, 1);
     });
 
-    it('throws for empty composition', () => {
-      expect(() => service.calculateViscosity({}, 1100)).toThrow();
+    it('gives identical results for a composition and its scaled copy', () => {
+      const comp   = { SiO2: 72.2, Na2O: 13.4, CaO: 11.2, MgO: 1.5, Al2O3: 1.3, K2O: 0.4 };
+      const scaled = Object.fromEntries(Object.entries(comp).map(([k, v]) => [k, v * 0.37]));
+      const a = service.calculateViscosity(comp, 1100);
+      const b = service.calculateViscosity(scaled, 1100);
+      expect(b.model.systemType).toBe(a.model.systemType);
+      expect(b.logViscosity).toBeCloseTo(a.logViscosity, 6);
+      expect(b.fixedPoints.workingPoint_C).toBeCloseTo(a.fixedPoints.workingPoint_C, 6);
     });
 
-    it('throws for all-zero composition', () => {
-      expect(() => service.calculateViscosity({ SiO2: 0 }, 1100)).toThrow();
+    it('selects pure-silica model when SiO₂ dominates only after normalisation', () => {
+      expect(service.calculateViscosity({ SiO2: 50, Al2O3: 0.2 }, 1500).model.systemType)
+        .toBe(ViscosityModel.HETHERINGTON_1964);
+    });
+
+    it('normalises profile and inverse-lookup inputs too', () => {
+      const comp   = { SiO2: 72.2, Na2O: 13.4, CaO: 11.2, MgO: 1.5, Al2O3: 1.3, K2O: 0.4 };
+      const scaled = Object.fromEntries(Object.entries(comp).map(([k, v]) => [k, v * 2]));
+      expect(service.getTemperatureAtViscosity(scaled, 3).temperature_C)
+        .toBeCloseTo(service.getTemperatureAtViscosity(comp, 3).temperature_C, 6);
+      expect(service.calculateViscosityProfile(scaled, [1000, 1200]).points)
+        .toEqual(service.calculateViscosityProfile(comp, [1000, 1200]).points);
+    });
+
+    it('throws BadRequestException for empty composition', () => {
+      expect(() => service.calculateViscosity({}, 1100)).toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException for all-zero composition', () => {
+      expect(() => service.calculateViscosity({ SiO2: 0 }, 1100)).toThrow(BadRequestException);
+    });
+
+    it('throws BadRequestException for negative or non-numeric values', () => {
+      expect(() => service.calculateViscosity({ SiO2: 80, Na2O: -1 }, 1100)).toThrow(BadRequestException);
+      expect(() => service.calculateViscosity({ SiO2: 'x' as unknown as number }, 1100)).toThrow(BadRequestException);
+      expect(() => service.convertComposition({ SiO2: NaN }, 'wt_to_mol')).toThrow(BadRequestException);
     });
 
     it('does NOT throw for slag — routes to IIDA model', () => {

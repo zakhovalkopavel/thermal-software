@@ -24,6 +24,7 @@ import {
   normalizeComposition,
   wtPctToMolPct,
   molPctToWtPct,
+  InvalidCompositionError,
 } from '../../utils/glass-composition.util';
 import {
   buildVtf,
@@ -140,7 +141,7 @@ export class GlassViscosityService {
     temperature: number,
     requestedModel?: ViscosityModel,
   ): GlassViscosityResult {
-    const comp      = normalizeComposition(composition);
+    const comp      = this.normalize(composition);
     const selection = this.resolveModel(comp, requestedModel);
     const modelType = selection.primary;
 
@@ -213,7 +214,7 @@ export class GlassViscosityService {
     temperatures_C: number[],
     requestedModel?: ViscosityModel,
   ) {
-    const comp      = normalizeComposition(composition);
+    const comp      = this.normalize(composition);
     const selection = this.resolveModel(comp, requestedModel);
     const modelType = selection.primary;
 
@@ -289,7 +290,7 @@ export class GlassViscosityService {
     targetLogEta: number,
     requestedModel?: ViscosityModel,
   ) {
-    const comp      = normalizeComposition(composition);
+    const comp      = this.normalize(composition);
     const selection = this.resolveModel(comp, requestedModel);
     const modelType = selection.primary;
 
@@ -354,7 +355,7 @@ export class GlassViscosityService {
     composition: Record<string, number>,
     direction: 'wt_to_mol' | 'mol_to_wt',
   ): { input: Record<string, number>; output: Record<string, number>; direction: string } {
-    const input  = normalizeComposition(composition);
+    const input  = this.normalize(composition);
     const output = direction === 'wt_to_mol' ? wtPctToMolPct(input) : molPctToWtPct(input);
     return { input, output, direction };
   }
@@ -436,6 +437,16 @@ export class GlassViscosityService {
 
 
   // ─── Private helpers ─────────────────────────────────────────────────────────
+
+  /** Normalise to 100 % before any model selection or calculation. */
+  private normalize(composition: Record<string, number>): Record<string, number> {
+    try {
+      return normalizeComposition(composition);
+    } catch (error) {
+      if (error instanceof InvalidCompositionError) throw new BadRequestException(error.message);
+      throw error;
+    }
+  }
 
   private validateFixedPointOrdering(fp: FixedPoints): string[] {
     const w: string[] = [];
