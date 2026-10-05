@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { RefractoryThermalMaterial } from '../../../../../src/modules/refractory/enums/refractory-thermal-material.enum';
 import { RefractoryThermalService } from '../../../../../src/modules/refractory/services/catalog/refractory-thermal.service';
+import { kelvinToCelsius } from '../../../../../src/common/thermal/utils/temperature';
 
 describe('RefractoryThermalService', () => {
   let service: RefractoryThermalService;
@@ -11,22 +12,22 @@ describe('RefractoryThermalService', () => {
 
   describe('lambda', () => {
     it('CHAMOTTE_SOLID at 1000 K - returns the tabulated linear fit', () => {
-      const expected = 0.700 + 6.4e-4 * (1000 - 273); // t = 727 °C from Mikheev fit
+      const expected = 0.700 + 6.4e-4 * kelvinToCelsius(1000); // Mikheev fit in °C
       expect(service.lambda(RefractoryThermalMaterial.CHAMOTTE_SOLID, 1000)).toBeCloseTo(expected, 3);
     });
 
     it('CHAMOTTE_1300 at 1000 K - returns the tabulated linear fit', () => {
-      const expected = 0.470 + 3.5e-4 * (1000 - 273); // t = 727 °C from Mikheev fit
+      const expected = 0.470 + 3.5e-4 * kelvinToCelsius(1000); // Mikheev fit in °C
       expect(service.lambda(RefractoryThermalMaterial.CHAMOTTE_1300, 1000)).toBeCloseTo(expected, 3);
     });
 
     it('SILICON_CARBIDE at 1273 K - returns the tabulated linear fit', () => {
-      const expected = 13.73 - 4.555e-3 * (1273 - 273); // t = 1000 °C from Mikheev fit
+      const expected = 13.73 - 4.555e-3 * kelvinToCelsius(1273); // Mikheev fit in °C
       expect(service.lambda(RefractoryThermalMaterial.SILICON_CARBIDE, 1273)).toBeCloseTo(expected, 3);
     });
 
     it('BASALT_FIBER_MAT at 373 K - returns the cubic fit', () => {
-      const tCelsius = 373 - 273; // t = 100 °C
+      const tCelsius = kelvinToCelsius(373);
       const expected =
         0.139
         - 7.97e-5 * tCelsius
@@ -36,7 +37,7 @@ describe('RefractoryThermalService', () => {
     });
 
     it('ALUMINA_2500 at 1000 K - returns the tabulated linear fit', () => {
-      const expected = 1.9 + 1.6e-3 * (1000 - 273); // t = 727 °C from Mikheev fit
+      const expected = 1.9 + 1.6e-3 * kelvinToCelsius(1000); // Mikheev fit in °C
       expect(service.lambda(RefractoryThermalMaterial.ALUMINA_2500, 1000)).toBeCloseTo(expected, 3);
     });
 
@@ -103,7 +104,7 @@ describe('RefractoryThermalService', () => {
     it('below the ε validity range - ε clamped, λ not clamped', () => {
       const result = service.getProperties({ material: RefractoryThermalMaterial.CHAMOTTE_SOLID, T_K: 300 });
       expect(result.emissivity).toBeCloseTo(service.emissivity(RefractoryThermalMaterial.CHAMOTTE_SOLID, 673), 6);
-      expect(result.lambda_WmK).toBeCloseTo(0.700 + 6.4e-4 * (300 - 273), 6);
+      expect(result.lambda_WmK).toBeCloseTo(0.700 + 6.4e-4 * kelvinToCelsius(300), 6);
     });
   });
 });

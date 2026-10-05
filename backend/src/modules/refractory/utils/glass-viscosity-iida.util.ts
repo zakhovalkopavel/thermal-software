@@ -17,6 +17,7 @@ import { IIDA_MODEL, MILLS_LIQUIDUS, MOLAR_MASSES } from '../constants/viscosity
 import { SlagViscosityResult } from '../interfaces/viscosity-parameters.interface';
 import { wtPctToMolPct } from './glass-composition.util';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
+import { celsiusToKelvin } from '../../../common/thermal/utils/temperature';
 import { molarMassGramsPerMol } from '../../../common/chemistry';
 
 // ─── Liquidus helper (shared between Iida and Nakamoto) ──────────────────────
@@ -104,7 +105,7 @@ export function calcIidaViscosity(
   temperature_C: number,
 ): SlagViscosityResult {
   const warnings: string[] = [];
-  const T_K = temperature_C + 273.15;
+  const T_K = celsiusToKelvin(temperature_C);
 
   const T_liq = estimateLiquidusMills(comp_wt_pct);
   const thermalState =

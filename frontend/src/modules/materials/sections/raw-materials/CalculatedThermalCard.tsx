@@ -1,26 +1,25 @@
 import { useMemo, useState } from 'react';
-import { Alert, Box, Checkbox, CircularProgress, FormControlLabel, Grid, Stack, Typography } from '@mui/material';
+import { Alert, Box, Checkbox, FormControlLabel, Grid, Stack, Typography } from '@mui/material';
 import {
   CalculateButton,
-  JsonErrorAlert,
   NumberField,
-  REFRACTORY_OXIDES,
   ResultCard,
   ResultPanel,
   ResultTable,
   formatValue,
 } from '@/shared/ui/calc';
 import type { ResultTableColumn } from '@/shared/ui/calc';
+import { celsiusToKelvin } from '@/shared/utils/celsius-to-kelvin';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import { TemperatureSweepFields } from '../../components/TemperatureSweepFields';
-import { TEMPERATURE_SWEEP } from '../../constants/temperature-sweep.constants';
 import { toTemperatureGrid } from '../../mappers/temperature-grid.mapper';
+import type { MixThermalResult } from '../../types/mix-thermal-result.type';
 import type { TemperatureSweep } from '../../types/temperature-sweep.type';
 import { EffectiveConductivityChart } from './charts/EffectiveConductivityChart';
 import { SpecificHeatChart } from './charts/SpecificHeatChart';
 import { RAW_MATERIALS_UI } from './constants/raw-materials-ui.constants';
 import { useRawMaterialThermal } from './hooks/useRawMaterialThermal';
-import { useSingleMaterialComposition } from './hooks/useSingleMaterialComposition';
-import { toCompositionCoverage } from './mappers/composition-coverage.mapper';
+import { toFiredPhaseRows } from './mappers/fired-phase-rows.mapper';
 import type { CalculatedThermalCardProps } from './types/calculated-thermal-card-props.type';
 import type { RawMaterialThermalPoint } from './types/raw-material-thermal-point.type';
 import type { RawMaterialThermalRequest } from './types/raw-material-thermal-request.type';
@@ -32,15 +31,44 @@ const COLUMNS: ResultTableColumn<TableRow>[] = [
   { key: 'temperature_K', label: 'T', unit: 'K' },
   { key: 'lambda_WmK', label: 'λ_eff', unit: 'W/(m·K)' },
   { key: 'cp_JkgK', label: 'Cp', unit: 'J/(kg·K)' },
-  { key: 'rho_kgm3', label: 'ρ (model value)', unit: 'kg/m³' },
-  { key: 'diffusivity_m2s', label: 'a (model value)', unit: 'm²/s' },
+  { key: 'rho_kgm3', label: 'ρ (bulk)', unit: 'kg/m³' },
+  { key: 'diffusivity_m2s', label: 'a', unit: 'm²/s' },
 ];
 
+const LAMBDA_SOURCE_LABEL: Record<MixThermalResult['materials'][number]['lambdaReferenceSource'], string> = {
+  library: 'library value',
+  'group-median': 'median of its group (no library value)',
+};
+
+const LAW_LABEL: Record<MixThermalResult['materials'][number]['conductionLaw'], string> = {
+  phonon: 'phonon conduction, decreases with T',
+  electronic: 'electronic conduction, constant with T',
+};
+
 const toCelsius = (T_K: number) =>
-  Number((T_K - TEMPERATURE_SWEEP.KELVIN_OFFSET).toFixed(RAW_MATERIALS_UI.temperatureDecimals));
+  Number(kelvinToCelsius(T_K).toFixed(RAW_MATERIALS_UI.temperatureDecimals));
+
+function FiredBasis({ result }: { result: MixThermalResult }) {
+  const basis = result.materials[0];
+  return (
+    <Stack spacing={0.5}>
+      <Typography variant="body2">
+        Fired phases (loss on ignition {formatValue(result.lossOnIgnition_wt)} wt% removed):{' '}
+        {toFiredPhaseRows(result.firedPhases_wt)
+          .map((row) => `${row.phase} ${formatValue(row.share_wt)} %`)
+          .join(', ')}
+      </Typography>
+      <Typography variant="body2">
+        Cp from NASA-9 phase data for{' '}
+        <b>{formatValue(result.heatCapacityCoverage_wt, RAW_MATERIALS_UI.coverageDigits)} %</b> of the fired mass;
+        dense λ_ref = <b>{formatValue(basis.lambdaReference_WmK)} W/(m·K)</b> ({LAMBDA_SOURCE_LABEL[basis.lambdaReferenceSource]},{' '}
+        {LAW_LABEL[basis.conductionLaw]}); true density <b>{formatValue(result.trueDensity_kgm3)} kg/m³</b>.
+      </Typography>
+    </Stack>
+  );
+}
 
 export function CalculatedThermalCard({ material, eligible, comparedEligible }: CalculatedThermalCardProps) {
-  const composition = useSingleMaterialComposition(material.materialId, eligible);
   const [sweep, setSweep] = useState<TemperatureSweep>(RAW_MATERIALS_UI.defaultSweep);
   const [porosity, setPorosity] = useState<number | null>(RAW_MATERIALS_UI.defaultPorosity);
   const [includeDense, setIncludeDense] = useState(false);
@@ -53,7 +81,7 @@ export function CalculatedThermalCard({ material, eligible, comparedEligible }: 
     [material, comparedEligible],
   );
 
-  const heading = <Typography variant="subtitle1">Calculated vs temperature (mix components)</Typography>;
+  const heading = <Typography variant="subtitle1">Calculated vs temperature (fired material)</Typography>;
 
   if (!eligible) {
     return (
@@ -62,37 +90,6 @@ export function CalculatedThermalCard({ material, eligible, comparedEligible }: 
         <Alert severity="info">
           {material.name} is not a mix raw material, so the calculated block is not available. Reference values are
           shown above.
-        </Alert>
-      </Stack>
-    );
-  }
-  if (composition.isLoading) {
-    return (
-      <Stack spacing={1}>
-        {heading}
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
-          <CircularProgress size={24} />
-        </Box>
-      </Stack>
-    );
-  }
-  if (!composition.data) {
-    return (
-      <Stack spacing={1}>
-        {heading}
-        <JsonErrorAlert error={composition.error} />
-      </Stack>
-    );
-  }
-
-  const fired = composition.data;
-  if (Object.keys(fired.acceptedOxides_normalized).length === 0) {
-    return (
-      <Stack spacing={1}>
-        {heading}
-        <Alert severity="info">
-          The fired composition of {material.name} contains none of the modelled oxides ({REFRACTORY_OXIDES.join(', ')}),
-          so the calculated block is not available.
         </Alert>
       </Stack>
     );
@@ -113,27 +110,15 @@ export function CalculatedThermalCard({ material, eligible, comparedEligible }: 
     }
   };
 
-  const skipped = (request?.materialIds ?? []).filter((id) => {
-    const normalized = result.compositions[id]?.acceptedOxides_normalized;
-    return normalized && Object.keys(normalized).length === 0;
-  });
+  const selected = result.results[material.materialId];
   const selectedRows: TableRow[] = result.points
     .filter((point) => point.materialId === material.materialId && point.porosity === request?.porosity)
     .sort((a, b) => a.temperature_C - b.temperature_C)
-    .map((point) => ({ ...point, temperature_K: point.temperature_C + TEMPERATURE_SWEEP.KELVIN_OFFSET }));
+    .map((point) => ({ ...point, temperature_K: celsiusToKelvin(point.temperature_C) }));
 
   return (
     <Stack spacing={2}>
       {heading}
-      <Typography variant="body2">
-        Fired basis: loss on ignition {formatValue(fired.lossOnIgnition_wt)} wt%; coverage by modelled oxides{' '}
-        <b>{formatValue(toCompositionCoverage(fired), RAW_MATERIALS_UI.coverageDigits)} %</b> of the fired mass.
-      </Typography>
-      {fired.warnings.map((warning) => (
-        <Alert key={warning} severity="warning">
-          {warning}
-        </Alert>
-      ))}
       <Stack
         component="form"
         spacing={2}
@@ -155,7 +140,7 @@ export function CalculatedThermalCard({ material, eligible, comparedEligible }: 
                 min={RAW_MATERIALS_UI.porosityMin}
                 max={RAW_MATERIALS_UI.porosityMax}
                 step={RAW_MATERIALS_UI.porosityStep}
-                helperText="Volume fraction, 0–1"
+                helperText={`Volume fraction, 0–${RAW_MATERIALS_UI.porosityMax}`}
               />
               <FormControlLabel
                 control={<Checkbox size="small" checked={includeDense} onChange={(event) => setIncludeDense(event.target.checked)} />}
@@ -177,9 +162,12 @@ export function CalculatedThermalCard({ material, eligible, comparedEligible }: 
       <ResultPanel loading={result.isLoading} error={result.error} hasResult={Boolean(request) && result.isComplete}>
         {request && (
           <Stack spacing={2}>
-            {skipped.length > 0 && (
-              <Alert severity="info">No modelled oxide, not calculated: {skipped.map((id) => names[id] ?? id).join(', ')}</Alert>
-            )}
+            {selected && <FiredBasis result={selected} />}
+            {selected?.warnings.map((warning) => (
+              <Alert key={warning} severity="warning">
+                {warning}
+              </Alert>
+            ))}
             {request.temperatures_C.length === 1 ? (
               <Grid container spacing={2}>
                 {selectedRows.slice(0, 1).flatMap((row) => [
@@ -190,15 +178,12 @@ export function CalculatedThermalCard({ material, eligible, comparedEligible }: 
                     <ResultCard label="Cp" value={row.cp_JkgK} unit="J/(kg·K)" />
                   </Grid>,
                   <Grid key="rho" size={{ xs: 6, md: 4 }}>
-                    <ResultCard label="ρ (model value)" value={row.rho_kgm3} unit="kg/m³" hint={RAW_MATERIALS_UI.modelDensityNote} />
+                    <ResultCard label="ρ (bulk)" value={row.rho_kgm3} unit="kg/m³" hint={RAW_MATERIALS_UI.bulkDensityNote} />
                   </Grid>,
                   <Grid key="a" size={{ xs: 6, md: 4 }}>
-                    <ResultCard label="a (model value)" value={row.diffusivity_m2s} unit="m²/s" />
+                    <ResultCard label="a" value={row.diffusivity_m2s} unit="m²/s" />
                   </Grid>,
                 ])}
-                <Grid size={{ xs: 6, md: 4 }}>
-                  <ResultCard label="True density (library)" value={material.rho_true_after_firing_kgm3} unit="kg/m³" />
-                </Grid>
               </Grid>
             ) : (
               <>
@@ -210,8 +195,7 @@ export function CalculatedThermalCard({ material, eligible, comparedEligible }: 
                 />
                 <SpecificHeatChart points={result.points} names={names} porosity={request.porosity} includeDense={false} />
                 <Typography variant="body2">
-                  {material.name} at P = {request.porosity}. ρ and a are model values ({RAW_MATERIALS_UI.modelDensityNote}); library true
-                  density after firing: <b>{formatValue(material.rho_true_after_firing_kgm3)} kg/m³</b>.
+                  {material.name} at P = {request.porosity}; {RAW_MATERIALS_UI.bulkDensityNote}.
                 </Typography>
                 <ResultTable columns={COLUMNS} rows={selectedRows} rowKey={(row) => String(row.temperature_C)} />
               </>

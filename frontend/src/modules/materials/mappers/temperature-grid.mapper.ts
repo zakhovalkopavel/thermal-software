@@ -1,3 +1,4 @@
+import { celsiusToKelvin } from '@/shared/utils/celsius-to-kelvin';
 import { TEMPERATURE_SWEEP } from '../constants/temperature-sweep.constants';
 import type { TemperatureSweep } from '../types/temperature-sweep.type';
 
@@ -7,7 +8,7 @@ const GRID_DECIMALS = 6;
 /** Temperatures of the sweep in K, both ends included. Throws a user-facing message when the sweep is invalid. */
 export function toTemperatureGrid(sweep: TemperatureSweep, maxPoints: number = TEMPERATURE_SWEEP.maxPoints): number[] {
   const toKelvin = (value: number) =>
-    Number((sweep.unit === 'C' ? value + TEMPERATURE_SWEEP.KELVIN_OFFSET : value).toFixed(GRID_DECIMALS));
+    Number((sweep.unit === 'C' ? celsiusToKelvin(value) : value).toFixed(GRID_DECIMALS));
 
   if (sweep.mode === 'single') {
     if (sweep.value === null) throw new Error('Enter a temperature.');

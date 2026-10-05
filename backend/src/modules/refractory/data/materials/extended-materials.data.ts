@@ -368,7 +368,7 @@ export const EXTENDED_MATERIAL_LIBRARY: MaterialEntry[] = [
     materialGroup: ['nitride'],
     orderNumber: 14,
     description: 'Si3N4, excellent thermal shock resistance, high strength',
-    composition: { Si: 60.0, N: 40.0 },
+    composition: { Si3N4: 100.0 },
     rho_true_after_firing_kgm3: 3440,
     availableParticleSizes: ['FINE_1_01', 'FINE_03_01', 'POWDER_015_005'],
     thermalProperties: {

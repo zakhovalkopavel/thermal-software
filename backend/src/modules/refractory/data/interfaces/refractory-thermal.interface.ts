@@ -2,7 +2,7 @@ import { RefractoryThermalMaterial } from '../../enums/refractory-thermal-materi
 
 /**
  * Coefficients for λ(T) = a + b·T_C + c·T_C² + d·T_C³  [W/(m·K)]
- * T_C = T_K − 273  (Celsius)
+ * T_C = kelvinToCelsius(T_K)
  */
 export interface LambdaCoefficients {
   a: number;

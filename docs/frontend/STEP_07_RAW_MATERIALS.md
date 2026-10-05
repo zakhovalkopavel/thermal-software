@@ -1,7 +1,7 @@
 # STEP 07 — Materials: Raw materials (categorised library)
 
 **Priority:** MEDIUM  
-**Status:** backend ready (E5, E9, E10, C1); frontend not started  
+**Status:** backend ready (E5, E9, E10, C3); frontend not started  
 **Depends on:** [STEP_03_MATERIALS_MODULE.md](STEP_03_MATERIALS_MODULE.md) (E5, E9, E10, temperature sweep), [STEP_09 §2](STEP_09_MINERAL_COMPOSITIONS.md) (`POST /refractory/mix/composition`, implemented)  
 **Frontend root:** `frontend/src/modules/materials/sections/raw-materials/`  
 **Route:** `/materials/raw-materials?category=&material=`
@@ -22,30 +22,31 @@ Each category has a different set of available properties; the page shows what t
 
 ## 1. Backend
 
-No new backend change for this section. It uses:
-
 | # | Method | Path | Use | State |
 |---|--------|------|-----|-------|
 | E10 | `GET` | `/refractory/material-categories` | categories (primary group) with their materials | implemented ([Step 3](STEP_03_MATERIALS_MODULE.md)) |
 | E5 | `GET` | `/refractory/materials/:materialId` | full entry of the selected material | implemented |
 | E9 | `GET` | `/refractory/mix-components` | which materials allow the calculated block | implemented |
-| C1 | `POST` | `/refractory/mix/composition` | single material `{ fractions: [{ materialId, massFraction: 1 }] }` → fired-basis `acceptedOxides_normalized`, coverage, warnings | implemented ([Step 9 §2](STEP_09_MINERAL_COMPOSITIONS.md)) |
-| C2 | `POST` | `/refractory/thermal-conductivity` | `{ composition: acceptedOxides_normalized, temperature (°C), porosity }` → `thermalConductivity_WmK`, `specificHeat_JkgK`, `density_kgm3`, `thermalDiffusivity_m2s` | exists |
+| C3 | `POST` | `/refractory/mix/thermal` | `{ fractions: [{ materialId, massFraction: 1 }], temperatures_C, porosity }` → fired phases, Cp coverage, λ reference, `points[]` (λ_s, λ_eff, Cp, a), true and bulk density, warnings | implemented ([algorithm](../algorithms/MIX_THERMAL_ALGORITHM.md)) |
 
-### 1.1 Why the calculated block goes through C1
+### 1.1 Why the calculated block uses C3
 
-C2 accepts only the 8 oxides of `OxideCompositionDto` and does **not** rescale a partial composition: it sums `wt% / 100 · property`, so a material with 14 % loss on ignition (`kaolinite`) or with non-oxide keys would get a λ that is too low. C1 already converts the material to the fired basis and returns the 8 accepted oxides rescaled to 100 % plus a warning when more than 5 % of the fired mass is outside them. The frontend therefore applies **no composition rule** of its own.
+The first version sent the 8 accepted oxides of `POST /refractory/mix/composition` to `POST /refractory/thermal-conductivity`. That gave wrong results for every material:
 
-### 1.2 Limits of the C2 model (shown in the UI)
+- the non-oxide phases were lost (fired SiC was calculated from its 0.5 % SiO2 / 0.3 % Fe2O3 / 0.2 % Al2O3 impurities rescaled to 100 %);
+- the component property lookup of `/thermal-conductivity` never matched an oxide, so λ and Cp fell back to constants (1.0 W/(m·K), 800 J/(kg·K));
+- its porosity formula made λ_eff ≈ 8 λ_air at P = 0.2 whatever the solid, and the density was fixed at 2500 kg/m³.
 
-| Limit | Consequence in the UI |
-|-------|------------------------|
-| Only 8 oxides (`SiO2, Al2O3, CaO, MgO, Fe2O3, K2O, Na2O, TiO2`) | show coverage = Σ `acceptedOxides_wt` from C1 (share of the fired mass represented); C1 warnings shown above the chart |
-| Density fixed at 2500 · (1 − P) kg/m³ (ignores the material's true density) | the calculated ρ and diffusivity are labelled "model value"; the library `rho_true_after_firing_kgm3` is shown next to it for comparison |
-| Linear temperature coefficient for λ | note under the chart: "Maxwell–Eucken with linear temperature correction" |
-| No accepted oxide (e.g. `silicon_nitride`, stored as `Si` / `N`) | `acceptedOxides_normalized` is empty → calculated block disabled with the reason; reference properties still shown |
+C3 keeps every fired phase. Cp comes from NASA-9 condensed-phase data, the dense λ from the material's library reference with a temperature law, ρ from the library true density, and λ_eff from Maxwell–Eucken. The frontend applies **no composition rule** of its own.
 
-Using the true density in C2 would be a backend calculation change and would need separate approval; it is **not** part of this step.
+### 1.2 What the UI shows from C3
+
+| Item | Source |
+|------|--------|
+| Fired phases and loss on ignition | `firedPhases_wt`, `lossOnIgnition_wt` |
+| Share of the fired mass with NASA-9 Cp | `heatCapacityCoverage_wt`; warning when > 5 % uses the library Cp |
+| Dense λ_ref, its source (library / group median) and temperature law | `materials[0]` |
+| True density; bulk ρ = ρ_true (1 − P) | `trueDensity_kgm3`, `bulkDensity_kgm3` |
 
 ---
 
@@ -88,7 +89,7 @@ Using the true density in C2 would be a backend calculation change and would nee
 | `mechanicalProperties.*` | crushing strength MPa, modulus of rupture MPa, Young's modulus GPa, hardness HV |
 | `availableParticleSizes`, `particleSize` | particle sizes |
 
-- **Calculated block:** shown when the material is in E9. Flow: C1 once per material → `acceptedOxides_normalized`; then C2 for each T of `toTemperatureGrid(sweep)` (converted to °C) with the chosen porosity (default `RAW_MATERIALS_UI.defaultPorosity = 0.2`). Disabled with a reason when the material is not a mix component ("not a mix raw material": glasses, phosphates, fluorides, …) or C1 returns no accepted oxide.
+- **Calculated block:** shown when the material is in E9. Flow: one C3 call per material with all temperatures of `toTemperatureGrid(sweep)` (converted to °C) and the chosen porosity (default `RAW_MATERIALS_UI.defaultPorosity = 0.2`, max 0.95), plus a P = 0 call for the selected material when "dense" is ticked. Disabled with a reason when the material is not a mix component ("not a mix raw material": glasses, phosphates, fluorides, …).
 - **Compare:** up to `RAW_MATERIALS_UI.maxCompared = 3` materials; reference values side by side; calculated series for the ones that allow it.
 
 ### 2.2 Charts
@@ -102,7 +103,7 @@ Using the true density in C2 would be a backend calculation change and would nee
 
 ### 2.3 Files
 
-One export per file (conventions in [Step 3 §2.1](STEP_03_MATERIALS_MODULE.md)). Catalogue hooks (`useMaterialCategories`, `useMaterial`, `useMixComponents`) and the API objects `mixCompositionApi`, `thermalConductivityApi` are module-level (Step 3).
+One export per file (conventions in [Step 3 §2.1](STEP_03_MATERIALS_MODULE.md)). Catalogue hooks (`useMaterialCategories`, `useMaterial`, `useMixComponents`) and the API object `mixThermalApi` are module-level (Step 3).
 
 ```
 sections/raw-materials/
@@ -119,18 +120,17 @@ sections/raw-materials/
 │   ├── SpecificHeatChart.tsx
 │   └── ReferenceComparisonChart.tsx
 ├── hooks/
-│   ├── useSingleMaterialComposition.ts    # C1 for one material (useQuery, keyed by materialId)
-│   └── useRawMaterialThermal.ts           # C2 over temperatures (useQueries, keyed by materialId, T_C, porosity)
+│   └── useRawMaterialThermal.ts           # C3 per material and porosity (useQueries)
 ├── types/
 │   ├── reference-property-key.type.ts
 │   ├── reference-property-row.type.ts
 │   ├── raw-material-thermal-point.type.ts
 │   └── <component>-props.type.ts          # one per component
 ├── mappers/
-│   ├── single-material-composition-request.mapper.ts   # materialId → MixCompositionInput with massFraction 1
-│   ├── thermal-conductivity-request.mapper.ts          # (acceptedOxides_normalized, T_C, porosity) → ThermalConductivityInput
+│   ├── mix-thermal-request.mapper.ts                   # (materialId, temperatures_C, porosity) → MixThermalInput with massFraction 1
+│   ├── raw-material-thermal-points.mapper.ts           # MixThermalResult → RawMaterialThermalPoint[]
+│   ├── fired-phase-rows.mapper.ts                      # firedPhases_wt → rows sorted by share
 │   ├── reference-property-rows.mapper.ts               # MaterialEntry → rows present in REFERENCE_PROPERTY_FIELDS
-│   ├── composition-coverage.mapper.ts                  # Σ acceptedOxides_wt → coverage %
 │   └── raw-material-thermal-series.mapper.ts
 └── constants/
     ├── raw-materials-ui.constants.ts      # RAW_MATERIALS_UI (maxCompared, defaultPorosity, default sweep 20–1400 °C step 50)
@@ -143,10 +143,10 @@ sections/raw-materials/
 
 - [ ] Categories and counts come from E10; each material listed once; secondary groups shown as chips
 - [ ] Selecting a material shows composition (pie + table) and only the reference properties it has
-- [ ] `kaolinite`: calculated block uses C1 `acceptedOxides_normalized` (fired basis), shows coverage and the λ_eff(T) and Cp(T) charts
+- [ ] `kaolinite`: calculated block shows LOI 14 %, fired phases, group-median λ_ref warning and the λ_eff(T) and Cp(T) charts
+- [ ] `silicon_carbide`, `titanium_nitride`, `silicon_nitride`: calculated from SiC / TiN / Si3N4, not from their oxide impurities
 - [ ] `soda_lime_glass`: reference block shown, calculated block disabled with the reason
-- [ ] `silicon_nitride`: calculated block disabled (no accepted oxide)
-- [ ] Calculated ρ and diffusivity labelled "model value", library true density shown beside them
+- [ ] Bulk ρ = library true density · (1 − P)
 - [ ] Up to 3 materials compared; `?category=clay&material=kaolinite` deep link works
 - [ ] No composition rule, rescaling or eligibility rule in the frontend
 

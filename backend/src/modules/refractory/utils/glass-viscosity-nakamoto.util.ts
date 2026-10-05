@@ -21,6 +21,7 @@ import { SlagViscosityResult } from '../interfaces/viscosity-parameters.interfac
 import { wtPctToMolPct } from './glass-composition.util';
 import { estimateLiquidusMills } from './glass-viscosity-iida.util';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
+import { celsiusToKelvin } from '../../../common/thermal/utils/temperature';
 
 // ─── Main export ─────────────────────────────────────────────────────────────
 
@@ -35,7 +36,7 @@ export function calcNakamotoViscosity(
   temperature_C: number,
 ): SlagViscosityResult {
   const warnings: string[] = [];
-  const T_K = temperature_C + 273.15;
+  const T_K = celsiusToKelvin(temperature_C);
 
   // ── Liquidus safety check ─────────────────────────────────────────────────
   const T_liq = estimateLiquidusMills(comp_wt_pct);

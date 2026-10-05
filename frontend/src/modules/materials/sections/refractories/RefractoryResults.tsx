@@ -2,7 +2,7 @@ import { Grid, Stack, Tooltip, Typography } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { ResultCard, ResultTable, formatValue } from '@/shared/ui/calc';
 import type { ResultTableColumn } from '@/shared/ui/calc';
-import { TEMPERATURE_SWEEP } from '../../constants/temperature-sweep.constants';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import { isEmissivityClamped } from '../../mappers/is-emissivity-clamped.mapper';
 import { RefractoryEmissivityChart } from './charts/RefractoryEmissivityChart';
 import { RefractoryLambdaChart } from './charts/RefractoryLambdaChart';
@@ -39,7 +39,7 @@ export function RefractoryResults({ request, products, byMaterial }: RefractoryR
       <Stack spacing={2}>
         {details}
         <Typography variant="subtitle1">
-          At {formatValue(T_K - TEMPERATURE_SWEEP.KELVIN_OFFSET)} °C ({formatValue(T_K)} K)
+          At {formatValue(kelvinToCelsius(T_K))} °C ({formatValue(T_K)} K)
         </Typography>
         <Grid container spacing={2}>
           {selected.map((product) => {
@@ -67,7 +67,7 @@ export function RefractoryResults({ request, products, byMaterial }: RefractoryR
   }
 
   const rows: TableRow[] = request.temperatures_K.map((T_K) => {
-    const row: TableRow = { T_K, T_C: T_K - TEMPERATURE_SWEEP.KELVIN_OFFSET };
+    const row: TableRow = { T_K, T_C: kelvinToCelsius(T_K) };
     for (const product of selected) {
       const result = byMaterial[product.materialId]?.find((item) => item.T_K === T_K);
       if (result) {

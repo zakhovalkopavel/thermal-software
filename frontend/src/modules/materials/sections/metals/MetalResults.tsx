@@ -2,7 +2,7 @@ import { Grid, Stack, Tooltip, Typography } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { ResultCard, ResultTable, formatValue } from '@/shared/ui/calc';
 import type { ResultTableColumn } from '@/shared/ui/calc';
-import { TEMPERATURE_SWEEP } from '../../constants/temperature-sweep.constants';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import { isEmissivityClamped } from '../../mappers/is-emissivity-clamped.mapper';
 import { MetalPropertiesChart } from './charts/MetalPropertiesChart';
 import type { MetalResultsProps } from './types/metal-results-props.type';
@@ -24,7 +24,7 @@ export function MetalResults({ request, metals, byMaterial }: MetalResultsProps)
           return (
             <Stack key={metal.materialId} spacing={1}>
               <Typography variant="subtitle1">
-                {metal.name} at {formatValue(row.T_K)} K ({formatValue(row.T_K - TEMPERATURE_SWEEP.KELVIN_OFFSET)} °C)
+                {metal.name} at {formatValue(row.T_K)} K ({formatValue(kelvinToCelsius(row.T_K))} °C)
               </Typography>
               <Grid container spacing={2}>
                 <Grid size={{ xs: 6 }}>
@@ -50,7 +50,7 @@ export function MetalResults({ request, metals, byMaterial }: MetalResultsProps)
   }
 
   const rows: TableRow[] = request.temperatures_K.map((T_K) => {
-    const row: TableRow = { T_K, T_C: T_K - TEMPERATURE_SWEEP.KELVIN_OFFSET };
+    const row: TableRow = { T_K, T_C: kelvinToCelsius(T_K) };
     for (const { metal, rows: results } of graded) {
       const result = results.find((item) => item.T_K === T_K);
       if (result) {

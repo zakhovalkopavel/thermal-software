@@ -1,6 +1,5 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import {
-  ABSOLUTE_ZERO_OFFSET,
   BASE_REFRACTORINESS_C,
   MIN_TEMPERATURE_C,
   MAX_TEMPERATURE_C,

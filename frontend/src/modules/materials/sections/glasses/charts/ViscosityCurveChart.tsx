@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { formatPowerOfTen, formatValue } from '@/shared/ui/calc';
 import { XYLineChart, chartFormat } from '@/shared/ui/charts';
 import type { ChartAxis, PlotLine, XYLineChartProps } from '@/shared/ui/charts';
-import { TEMPERATURE_SWEEP } from '../../../constants/temperature-sweep.constants';
+import { celsiusToKelvin } from '@/shared/utils/celsius-to-kelvin';
 import { GLASSES_UI } from '../constants/glasses-ui.constants';
 import { toFixedPointMarkers } from '../mappers/fixed-point-markers.mapper';
 import { toViscosityLevelPlotLines } from '../mappers/viscosity-level-plot-lines.mapper';
@@ -30,7 +30,7 @@ export function ViscosityCurveChart({
       unit: '°C',
       min: xMin,
       max: xMax,
-      tooltipExtra: (x) => chartFormat.value(x + TEMPERATURE_SWEEP.KELVIN_OFFSET, 'K'),
+      tooltipExtra: (x) => chartFormat.value(celsiusToKelvin(x), 'K'),
     }),
     [xMin, xMax],
   );

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { kelvinToCelsius } from '../../../../common/thermal/utils/temperature';
 import { RefractoryThermalMaterial } from '../../enums/refractory-thermal-material.enum';
 import {
   REFRACTORY_THERMAL_MAP,
@@ -15,7 +16,7 @@ import { RefractoryProductResultDto } from '../../dto/refractory-products/refrac
  * refractory/insulation materials.  All coefficients are stored in
  * `data/materials/refractory-thermal.data.ts` — this service is pure computation.
  *
- * λ(T_C) = a + b·T_C + c·T_C² + d·T_C³  [W/(m·K)],  T_C = T_K − 273
+ * λ(T_C) = a + b·T_C + c·T_C² + d·T_C³  [W/(m·K)]
  * ε poly: ε = a + 1e-5·b·T + 1e-8·c·T² + 1e-10·d·T³  (T in Kelvin, clamped)
  * ε exp:  ε = a · T^b                                   (T in Kelvin, clamped)
  *
@@ -31,7 +32,7 @@ export class RefractoryThermalService {
     const entry = REFRACTORY_THERMAL_MAP.get(material);
     if (!entry) throw new NotFoundException(`Unknown refractory material: ${material}`);
 
-    const t = T_K - 273;
+    const t = kelvinToCelsius(T_K);
     const { a, b = 0, c = 0, d = 0 } = entry.lambda;
     return a + b * t + c * t * t + d * t * t * t;
   }

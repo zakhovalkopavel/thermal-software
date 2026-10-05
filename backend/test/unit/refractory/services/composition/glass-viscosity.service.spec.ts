@@ -21,6 +21,7 @@ import {
 } from '../../../../../src/modules/refractory/data/glass-viscosity-validation.data';
 import { VtfParameters } from '../../../../../src/modules/refractory/interfaces/viscosity-parameters.interface';
 import { temperatureAtLogViscosity } from '../../../../../src/modules/refractory/utils/glass-viscosity-vtf.util';
+import { kelvinToCelsius } from '../../../../../src/common/thermal/utils/temperature';
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -138,7 +139,7 @@ describe('GlassViscosityService — calculateViscosity', () => {
         expect(r.logViscosity).toBeCloseTo(pt.logEta, 1);
         // Verify the formula: T_K = B / (logEta - A)
         const T_K = B / (pt.logEta - A);
-        expect(T_K - 273.15).toBeCloseTo(pt.T_model_C, 0);
+        expect(kelvinToCelsius(T_K)).toBeCloseTo(pt.T_model_C, 0);
       });
     }
 

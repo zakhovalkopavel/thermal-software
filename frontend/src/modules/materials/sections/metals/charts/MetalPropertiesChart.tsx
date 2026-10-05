@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { XYLineChart, chartFormat } from '@/shared/ui/charts';
 import type { ChartAxis, XYLineChartProps } from '@/shared/ui/charts';
-import { TEMPERATURE_SWEEP } from '../../../constants/temperature-sweep.constants';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import { toClampedBands } from '../../../mappers/clamped-bands.mapper';
 import { toMetalPropertySeries } from '../mappers/metal-property-series.mapper';
 import type { MetalPropertiesChartProps } from '../types/metal-properties-chart-props.type';
@@ -23,7 +23,7 @@ export function MetalPropertiesChart({ metals, byMaterial }: MetalPropertiesChar
     const axis: XYLineChartProps['xAxis'] = {
       title: 'T',
       unit: 'K',
-      tooltipExtra: (x) => chartFormat.value(x - TEMPERATURE_SWEEP.KELVIN_OFFSET, '°C'),
+      tooltipExtra: (x) => chartFormat.value(kelvinToCelsius(x), '°C'),
     };
     return { series: toMetalPropertySeries(byMaterial, metals), xAxis: axis, bands: plotBands };
   }, [byMaterial, metals]);

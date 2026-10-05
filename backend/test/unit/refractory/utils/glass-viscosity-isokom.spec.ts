@@ -16,6 +16,7 @@ import {
   temperatureAtLogViscosity,
 } from '../../../../src/modules/refractory/utils/glass-viscosity-vtf.util';
 import { wtPctToMolPct } from '../../../../src/modules/refractory/utils/glass-composition.util';
+import { kelvinToCelsius } from '../../../../src/common/thermal/utils/temperature';
 import {
   LAKATOS_VALIDATION_GLASSES,
   FLUEGEL_VALIDATION_GLASSES,
@@ -116,7 +117,7 @@ describe('Hetherington 1964 — Arrhenius formula self-check', () => {
   for (const pt of glass.isokoms) {
     it(`T at log η=${pt.logEta} → ${pt.T_model_C}°C (±1°C)`, () => {
       const T_K = B / (pt.logEta - A);
-      expect(T_K - 273.15).toBeCloseTo(pt.T_model_C, 0);
+      expect(kelvinToCelsius(T_K)).toBeCloseTo(pt.T_model_C, 0);
       const r = service.calculateViscosity(glass.composition_wt_pct, pt.T_model_C);
       expect(r.logViscosity).toBeCloseTo(pt.logEta, 1);
     });

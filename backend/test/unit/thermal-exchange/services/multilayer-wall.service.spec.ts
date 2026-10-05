@@ -2,6 +2,7 @@ import { RefractoryThermalMaterial } from '../../../../src/modules/refractory/en
 import { MetalMaterial } from '../../../../src/modules/metals/enums/metal-material.enum';
 import { WallGeometry } from '../../../../src/modules/thermal-exchange/enums/wall-geometry.enum';
 import { MultilayerWallService } from '../../../../src/modules/thermal-exchange/services/multilayer-wall.service';
+import { celsiusToKelvin } from '../../../../src/common/thermal/utils/temperature';
 
 describe('MultilayerWallService', () => {
   let service: MultilayerWallService;
@@ -97,7 +98,7 @@ describe('MultilayerWallService', () => {
 
     const result = service.calculate(dto);
     const relativeFluxGap = Math.abs(result.fluxInner_W - result.fluxOuter_W) / result.fluxInner_W;
-    const tBetween_K = result.betweenLayers[0].tCelsius + 273;
+    const tBetween_K = celsiusToKelvin(result.betweenLayers[0].tCelsius);
 
     expect(result.betweenLayers).toHaveLength(1);
     expect(result.tInner_K).toBeLessThan(dto.tFlame_K);

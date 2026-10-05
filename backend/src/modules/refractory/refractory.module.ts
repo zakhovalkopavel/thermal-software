@@ -17,6 +17,7 @@ import { MaterialCatalogService } from './services/catalog/material-catalog.serv
 import { ParticleSizeCatalogService } from './services/catalog/particle-size-catalog.service';
 import { MixComponentCatalogService } from './services/catalog/mix-component-catalog.service';
 import { MixCompositionService } from './services/composition/mix-composition.service';
+import { MixThermalService } from './services/thermal/mix-thermal.service';
 
 @Module({
   // MaterialCatalogController ends with GET /refractory/:groupRoute and must stay last.
@@ -38,6 +39,7 @@ import { MixCompositionService } from './services/composition/mix-composition.se
     ParticleSizeCatalogService,
     MixComponentCatalogService,
     MixCompositionService,
+    MixThermalService,
   ],
   exports: [
     PhaseEquilibriumService,
@@ -55,6 +57,7 @@ import { MixCompositionService } from './services/composition/mix-composition.se
     MaterialCatalogService,
     MixComponentCatalogService,
     MixCompositionService,
+    MixThermalService,
   ],
 })
 export class RefractoryModule {}

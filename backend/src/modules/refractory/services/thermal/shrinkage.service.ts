@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PHYSICAL_CONSTANTS } from '../../../../common/thermal/constants/physical.constants';
+import { celsiusToKelvin } from '../../../../common/thermal/utils/temperature';
 import { ShrinkageStage, DryingShrinkage, FiringShrinkage, } from '../../interfaces';
 
 /**
@@ -144,7 +145,7 @@ export class ShrinkageService {
    * Calculate MSC theta parameter for metadata
    */
   private calculateMSCTheta(temperature_C: number, time_hours: number, activationEnergy_Jmol: number): number {
-    const T_K = temperature_C + 273.15;
+    const T_K = celsiusToKelvin(temperature_C);
     const time_s = time_hours * 3600;
     return time_s * Math.exp(-activationEnergy_Jmol / (PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK * T_K));
   }
@@ -320,7 +321,7 @@ export class ShrinkageService {
     activationEnergy_Jmol: number,
     initialDensity: number = 0.6,
   ): number {
-    const T_K = temperature_C + 273.15;
+    const T_K = celsiusToKelvin(temperature_C);
     const time_s = time_hours * 3600;
 
     // Calculate work of sintering parameter Θ

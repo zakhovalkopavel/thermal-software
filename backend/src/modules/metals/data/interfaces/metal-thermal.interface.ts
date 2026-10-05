@@ -4,7 +4,7 @@ import { MetalMaterial } from '../../enums/metal-material.enum';
  * λ(T) polynomial coefficients.
  *
  * When `tempUnit` is 'K', T_K is used directly.
- * When `tempUnit` is 'C', T_C = T_K − 273 is used.
+ * When `tempUnit` is 'C', T_C = kelvinToCelsius(T_K) is used.
  *
  * λ = a + b·T + c·T² + d·T³   [W/(m·K)]
  */

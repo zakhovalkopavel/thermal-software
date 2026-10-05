@@ -14,6 +14,7 @@ import { WallBalance } from '../interfaces/wall-balance.interface';
 import { WallGeometry } from '../enums/wall-geometry.enum';
 import { WallMaterialKey } from '../dto/layer.dto';
 import { SmokeCompositionDto } from '../dto/smoke-composition.dto';
+import { kelvinToCelsius } from '../../../common/thermal/utils/temperature';
 import { logMean } from '../../../common/utils/math';
 import { brentq } from '../../../common/utils/root-finding';
 import { MULTILAYER_WALL } from '../constants/multilayer-wall.constants';
@@ -88,7 +89,7 @@ export class MultilayerWallService {
         if (layerIdx !== prevLayerIdx && prevLayerIdx >= 0) {
           betweenTemps.push({
             name:     `layer_${prevLayerIdx}_to_${layerIdx}`,
-            tCelsius: tCurrent - 273,
+            tCelsius: kelvinToCelsius(tCurrent),
           });
         }
         prevLayerIdx = layerIdx;

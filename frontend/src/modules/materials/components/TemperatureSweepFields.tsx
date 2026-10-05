@@ -1,5 +1,7 @@
 import { Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { NumberField } from '@/shared/ui/calc';
+import { celsiusToKelvin } from '@/shared/utils/celsius-to-kelvin';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import { TEMPERATURE_SWEEP } from '../constants/temperature-sweep.constants';
 import { toTemperatureGrid } from '../mappers/temperature-grid.mapper';
 import type { TemperatureSweep } from '../types/temperature-sweep.type';
@@ -7,7 +9,7 @@ import type { TemperatureSweepFieldsProps } from '../types/temperature-sweep-fie
 
 function convert(value: number | null, from: TemperatureSweep['unit'], to: TemperatureSweep['unit']): number | null {
   if (value === null || from === to) return value;
-  const shifted = to === 'K' ? value + TEMPERATURE_SWEEP.KELVIN_OFFSET : value - TEMPERATURE_SWEEP.KELVIN_OFFSET;
+  const shifted = to === 'K' ? celsiusToKelvin(value) : kelvinToCelsius(value);
   return Number(shifted.toFixed(2));
 }
 

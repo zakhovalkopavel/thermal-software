@@ -13,6 +13,7 @@ export const MATERIALS_QUERY_KEYS = {
   material: (materialId: string | null | undefined) => ['materials', 'material', materialId] as const,
   particleSizes: ['materials', 'particle-sizes'] as const,
   mixComposition: (input: unknown) => ['materials', 'mix-composition', input] as const,
+  mixThermal: (input: unknown) => ['materials', 'mix-thermal', input] as const,
   thermalConductivity: (input: unknown) => ['materials', 'thermal-conductivity', input] as const,
   refractoryProperties: (material: string, T_K: number) => ['materials', 'refractory-properties', material, T_K] as const,
   metalThermal: (material: string, T_K: number) => ['materials', 'metal-thermal', material, T_K] as const,

@@ -1,5 +1,5 @@
-import { TEMPERATURE_SWEEP } from '@/modules/materials';
+import { celsiusToKelvin } from './celsius-to-kelvin';
 
 export function kelvinToCelsius(kelvin: number): number {
-  return kelvin - TEMPERATURE_SWEEP.KELVIN_OFFSET;
+  return kelvin - celsiusToKelvin(0);
 }

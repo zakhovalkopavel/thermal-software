@@ -14,6 +14,7 @@ import { RefractorinessService } from '../services/composition/refractoriness.se
 import { GlassViscosityService } from '../services/composition/glass-viscosity.service';
 import { MineralPhaseService } from '../services/composition/mineral-phase.service';
 import { MixCompositionService } from '../services/composition/mix-composition.service';
+import { MixThermalService } from '../services/thermal/mix-thermal.service';
 
 // DTOs
 import { PhaseCalculationDto, PhaseCalculationResponseDto } from '../dto/phase-equilibrium/phase-equilibrium.dto';
@@ -35,6 +36,8 @@ import {
 } from '../dto/glass-viscosity/glass-viscosity.dto';
 import { MixCompositionInputDto } from '../dto/mix-composition/mix-composition-input.dto';
 import { MixCompositionResultDto } from '../dto/mix-composition/mix-composition-result.dto';
+import { MixThermalInputDto } from '../dto/mix-thermal/mix-thermal-input.dto';
+import { MixThermalResultDto } from '../dto/mix-thermal/mix-thermal-result.dto';
 import { MineralPhaseEntryDto } from '../dto/mineral-phases/mineral-phase-entry.dto';
 import { BlendOptimizationResultDto } from '../dto/blend-optimization/blend-optimization-result.dto';
 import { PsdResultDto } from '../dto/psd/psd-result.dto';
@@ -69,6 +72,7 @@ export class RefractoryController {
     private readonly glassViscosityService: GlassViscosityService,
     private readonly mineralPhaseService: MineralPhaseService,
     private readonly mixCompositionService: MixCompositionService,
+    private readonly mixThermalService: MixThermalService,
   ) {}
 
   // ─── 1. Phase Equilibrium ────────────────────────────────────────────────────
@@ -411,5 +415,23 @@ export class RefractoryController {
   @ApiResponse({ status: 404, description: 'Unknown material id' })
   calculateMixComposition(@Body() dto: MixCompositionInputDto): MixCompositionResultDto {
     return this.mixCompositionService.calculate(dto);
+  }
+
+  // ─── 19. Mix thermal properties (fired basis) ───────────────────────────────
+
+  @Post('mix/thermal')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Thermal properties of a fired library raw material or mix versus temperature',
+    description:
+      'All fired phases are kept (SiC, TiN, AlN, C, … are not converted to oxides). Cp from NASA-9 condensed phases ' +
+      '(Neumann–Kopp), dense λ from the library reference with a phonon / electronic temperature law, ' +
+      'true density from the library, effective λ by Maxwell–Eucken with air in the pores.',
+  })
+  @ApiResponse({ status: 200, type: MixThermalResultDto })
+  @ApiResponse({ status: 400, description: 'Invalid input, Σ massFraction = 0, or material not allowed in mixes' })
+  @ApiResponse({ status: 404, description: 'Unknown material id' })
+  calculateMixThermal(@Body() dto: MixThermalInputDto): MixThermalResultDto {
+    return this.mixThermalService.calculate(dto);
   }
 }

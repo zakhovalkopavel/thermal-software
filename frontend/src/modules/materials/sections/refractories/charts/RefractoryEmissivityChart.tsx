@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import { XYLineChart, chartFormat } from '@/shared/ui/charts';
 import type { ChartAxis, XYLineChartProps } from '@/shared/ui/charts';
-import { TEMPERATURE_SWEEP } from '../../../constants/temperature-sweep.constants';
+import { celsiusToKelvin } from '@/shared/utils/celsius-to-kelvin';
 import { toRefractoryPropertySeries } from '../mappers/refractory-property-series.mapper';
 import type { RefractoryChartProps } from '../types/refractory-chart-props.type';
 
 const X_AXIS: XYLineChartProps['xAxis'] = {
   title: 'T',
   unit: '°C',
-  tooltipExtra: (x) => chartFormat.value(x + TEMPERATURE_SWEEP.KELVIN_OFFSET, 'K'),
+  tooltipExtra: (x) => chartFormat.value(celsiusToKelvin(x), 'K'),
 };
 const Y_AXES: ChartAxis[] = [{ title: 'ε', unit: '–', min: 0, max: 1 }];
 

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { MenuItem, TextField } from '@mui/material';
 import { XYLineChart, chartFormat } from '@/shared/ui/charts';
 import type { ChartAxis, XYLineChartProps } from '@/shared/ui/charts';
-import { TEMPERATURE_SWEEP } from '../../../constants/temperature-sweep.constants';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import { GAS_PROPERTY_AXES } from '../constants/gas-property-axes.constants';
 import { toGasPropertySeries } from '../mappers/gas-property-series.mapper';
 import type { GasPropertyChartProps } from '../types/gas-property-chart-props.type';
@@ -11,7 +11,7 @@ import type { GasPropertyKey } from '../types/gas-property-key.type';
 const X_AXIS: XYLineChartProps['xAxis'] = {
   title: 'T',
   unit: 'K',
-  tooltipExtra: (x) => chartFormat.value(x - TEMPERATURE_SWEEP.KELVIN_OFFSET, '°C'),
+  tooltipExtra: (x) => chartFormat.value(kelvinToCelsius(x), '°C'),
 };
 
 export function GasPropertyChart({ groups, availableKeys }: GasPropertyChartProps) {

@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { MetalMaterial } from '../../../../src/modules/metals/enums/metal-material.enum';
 import { MetalThermalService } from '../../../../src/modules/metals/services/metal-thermal.service';
+import { celsiusToKelvin, kelvinToCelsius } from '../../../../src/common/thermal/utils/temperature';
 
 describe('MetalThermalService', () => {
   let service: MetalThermalService;
@@ -21,7 +22,7 @@ describe('MetalThermalService', () => {
     });
 
     it('MILD_STEEL at 573 K - returns the Celsius-based cubic fit', () => {
-      const tCelsius = 573 - 273; // t = 300 °C
+      const tCelsius = kelvinToCelsius(573);
       const expected =
         6.56e-8 * Math.pow(tCelsius, 3)
         - 8.34e-5 * tCelsius * tCelsius
@@ -30,9 +31,9 @@ describe('MetalThermalService', () => {
       expect(service.lambda(MetalMaterial.MILD_STEEL, 573)).toBeCloseTo(expected, 3);
     });
 
-    it('MILD_STEEL at 273 K - returns the zero-Celsius intercept', () => {
-      const expected = 49.16; // t = 0 °C
-      expect(service.lambda(MetalMaterial.MILD_STEEL, 273)).toBeCloseTo(expected, 3);
+    it('MILD_STEEL at 0 °C - returns the zero-Celsius intercept', () => {
+      const expected = 49.16;
+      expect(service.lambda(MetalMaterial.MILD_STEEL, celsiusToKelvin(0))).toBeCloseTo(expected, 3);
     });
 
     it('unknown material - throws NotFoundException', () => {

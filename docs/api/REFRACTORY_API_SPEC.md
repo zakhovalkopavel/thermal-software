@@ -28,6 +28,7 @@ All endpoints accept and return JSON. All `POST` endpoints return `200 OK` on su
 | POST | `/refractoriness` | `RefractorinessService.calculateRefractoriness` | PCE / RUL temperature from composition |
 | POST | `/glass-viscosity` | `GlassViscosityService.calculateViscosity` | Glass viscosity + VFT curve + fixed points |
 | POST | `/mix/composition` | `MixCompositionService.calculate` | Fired-basis composition of a mix of library raw materials (§15) |
+| POST | `/mix/thermal` | `MixThermalService.calculate` | λ, Cp, ρ, diffusivity vs T of a fired library raw material or mix (§15b) |
 
 Read-only catalogue (`MaterialCatalogController`, tag `materials`, §16):
 
@@ -629,6 +630,57 @@ Numbers are unrounded.
 
 ---
 
+## 15b. Mix Thermal Properties
+
+### `POST /mix/thermal`
+
+Thermal properties of a **fired** library raw material, or mix, versus temperature. All fired phases are kept (SiC, TiN, AlN, C, … are not converted to oxides). Algorithm: [`MIX_THERMAL_ALGORITHM.md`](../algorithms/MIX_THERMAL_ALGORITHM.md).
+
+**Request body** (`MixThermalInputDto`):
+```json
+{
+  "fractions": [{ "materialId": "silicon_carbide", "massFraction": 1 }],
+  "temperatures_C": [20, 600, 1200],
+  "porosity": 0.2
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `fractions` | `MixComponentInputDto[]` | ✅ | As in §15 |
+| `temperatures_C` | number[] | ✅ | 1–301 temperatures, °C, each ≥ −73.15 (`MIX_THERMAL_CONSTANTS.minTemperature_K` = 200 K) |
+| `porosity` | number | ✅ | Pore volume fraction, 0–0.95 |
+
+**Response** (`MixThermalResultDto`, abridged):
+```json
+{
+  "porosity": 0.2,
+  "lossOnIgnition_wt": 0,
+  "firedPhases_wt": { "SiC": 98.5, "C": 0.5, "SiO2": 0.5, "Fe2O3": 0.3, "Al2O3": 0.2 },
+  "heatCapacityCoverage_wt": 100,
+  "trueDensity_kgm3": 3210,
+  "bulkDensity_kgm3": 2568,
+  "materials": [{
+    "materialId": "silicon_carbide", "firedMassFraction": 1, "volumeFraction": 1,
+    "firedPhases_wt": { "SiC": 98.5, "C": 0.5, "SiO2": 0.5, "Fe2O3": 0.3, "Al2O3": 0.2 },
+    "trueDensity_kgm3": 3210, "lambdaReference_WmK": 120, "lambdaReferenceSource": "library",
+    "conductionLaw": "phonon", "heatCapacityCoverage_wt": 100
+  }],
+  "points": [
+    { "temperature_C": 20, "lambdaSolid_WmK": 122.025, "lambdaEffective_WmK": 88.755, "specificHeat_JkgK": 657.3, "thermalDiffusivity_m2s": 5.258e-5 }
+  ],
+  "warnings": []
+}
+```
+
+| Status | When |
+|--------|------|
+| 200 | calculated |
+| 400 | validation error; Σ `massFraction` = 0; material not a mix component; material with no fired mass |
+| 404 | unknown material id |
+
+---
+
 ## 16. Material catalogue (read-only)
 
 Controller `MaterialCatalogController`, tag `materials`. All `GET`, `200 OK`, data from the existing library files (nothing is copied).
@@ -738,5 +790,6 @@ The global prefix in `main.ts` is `api/v1`. The controller is decorated with `@C
 | `/refractoriness` | ✅ | ❌ | ✅ service |
 | `/glass-viscosity` | ✅ | ❌ | ✅ service |
 | `/mix/composition` | ✅ | ✅ | ✅ (tests: `mix-composition.service.spec.ts`, `mix-composition-input.dto.spec.ts`) |
+| `/mix/thermal` | ✅ | ✅ | ✅ (tests: `mix-thermal.service.spec.ts`, `mix-thermal-utils.spec.ts`) |
 | Catalogue `GET` routes (§16) | ✅ | ✅ `MaterialCatalogController` | ✅ (tests: catalogue service specs, DTO specs, `material-catalog.controller.spec.ts`) |
 

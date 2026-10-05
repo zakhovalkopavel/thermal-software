@@ -17,6 +17,7 @@
  */
 
 import { HETHERINGTON_1964 } from '../constants/viscosity-parameters';
+import { celsiusToKelvin, kelvinToCelsius } from '../../../common/thermal/utils/temperature';
 import {
   GlassViscosityResult,
   ModelInfo,
@@ -46,7 +47,7 @@ import {
  * @returns              log₁₀(η / Pa·s)
  */
 export function calcHetheringtonLogEta(temperature_C: number): number {
-  const T_K = temperature_C + 273.15;
+  const T_K = celsiusToKelvin(temperature_C);
   return HETHERINGTON_1964.A + HETHERINGTON_1964.B / T_K;
 }
 
@@ -54,13 +55,13 @@ export function calcHetheringtonLogEta(temperature_C: number): number {
  * Calculate temperature in °C at a target log₁₀(η [Pa·s]) using
  * the Hetherington 1964 Arrhenius model (inverse).
  *
- * T_K = B / (logEta − A)  →  T_C = T_K − 273.15
+ * T_K = B / (logEta − A)
  *
  * @param logEtaPaS  Target log₁₀(η / Pa·s)
  * @returns          Temperature in °C
  */
 export function hetheringtonTemperatureAtLogEta(logEtaPaS: number): number {
-  return HETHERINGTON_1964.B / (logEtaPaS - HETHERINGTON_1964.A) - 273.15;
+  return kelvinToCelsius(HETHERINGTON_1964.B / (logEtaPaS - HETHERINGTON_1964.A));
 }
 
 // ─── Hetherington result builder ─────────────────────────────────────────────

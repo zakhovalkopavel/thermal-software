@@ -263,7 +263,7 @@ frontend/src/modules/materials/
 │   ├── materials-sections.constants.ts    # MATERIALS_SECTIONS (route, label, description)
 │   ├── catalog-cache.constants.ts         # CATALOG_CACHE (staleTime, gcTime)
 │   ├── refractory-groups.constants.ts     # REFRACTORY_GROUPS (key, label, id prefixes, colour)
-│   └── temperature-sweep.constants.ts     # TEMPERATURE_SWEEP (KELVIN_OFFSET, maxPoints)
+│   └── temperature-sweep.constants.ts     # TEMPERATURE_SWEEP (maxPoints)
 ├── mappers/
 │   ├── material-picker-options.mapper.ts  # toMaterialPickerOptions(kind, data)
 │   ├── refractory-groups.mapper.ts        # toRefractoryGroups(products) — shared by picker and Refractories section
@@ -390,7 +390,7 @@ export type MaterialPickerSelection = { kind: MaterialPickerKind; materialId: st
 
 ### 2.8 Temperature sweep (shared by Steps 4–7)
 
-`TemperatureSweepFields` renders the **Single T / Range** toggle, the unit (°C / K) and either one value or from / to / step. `toTemperatureGrid(sweep)` returns the list of temperatures in **K**, including both ends, and throws a validation message when the list would exceed `maxPoints` (default `TEMPERATURE_SWEEP.maxPoints = 40`). Conversion uses `TEMPERATURE_SWEEP.KELVIN_OFFSET = 273.15`; each section converts back to °C only where an endpoint expects °C. This is unit handling only; no physics in the frontend.
+`TemperatureSweepFields` renders the **Single T / Range** toggle, the unit (°C / K) and either one value or from / to / step. `toTemperatureGrid(sweep)` returns the list of temperatures in **K**, including both ends, and throws a validation message when the list would exceed `maxPoints` (default `TEMPERATURE_SWEEP.maxPoints = 40`). All °C ↔ K conversions go through `celsiusToKelvin` / `kelvinToCelsius` (`shared/utils/`; the offset exists only inside `celsiusToKelvin`); no offset is written inline. Each section converts back to °C only where an endpoint expects °C. This is unit handling only; no physics in the frontend.
 
 ---
 

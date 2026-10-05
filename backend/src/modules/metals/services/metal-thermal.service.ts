@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { kelvinToCelsius } from '../../../common/thermal/utils/temperature';
 import { MetalMaterial } from '../enums/metal-material.enum';
 import { MetalThermalQueryDto } from '../dto/metal-thermal-query.dto';
 import { MetalThermalResultDto } from '../dto/metal-thermal-result.dto';
@@ -24,7 +25,7 @@ export class MetalThermalService {
     if (!entry) throw new NotFoundException(`Unknown metal material: ${material}`);
 
     const { a, b = 0, c = 0, d = 0, tempUnit = 'C' } = entry.lambda;
-    const T = tempUnit === 'K' ? T_K : T_K - 273;
+    const T = tempUnit === 'K' ? T_K : kelvinToCelsius(T_K);
     return a + b * T + c * T * T + d * T * T * T;
   }
 

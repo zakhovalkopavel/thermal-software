@@ -36,7 +36,7 @@ For each key `k` of each material, the first matching class wins:
 | 5 | Carbon | `C` | `nonOxideComponents_wt.carbon` |
 | 6 | Non-oxide | anything else (`SiC`, `TiC`, `AlN`, `BN`, `N`, `O`, metal keys ≥ 1 wt%, `Grog`, …) | `.carbide` / `.nitride` if the material's primary group is carbide / nitride, otherwise `.other` |
 
-Examples: silicon nitride `{ Si: 60, N: 40 }` → 100 % nitride; titanium carbide `{ TiC: 98.5, TiO2: 0.8, C: 0.4, Fe: 0.3 }` → carbide 98.5, TiO2 0.8, carbon 0.4, Fe 0.3 dropped; raku clay `Grog: 15` → other.
+Examples: silicon nitride `{ Si3N4: 100 }` → 100 % nitride; titanium carbide `{ TiC: 98.5, TiO2: 0.8, C: 0.4, Fe: 0.3 }` → carbide 98.5, TiO2 0.8, carbon 0.4, Fe 0.3 dropped; raku clay `Grog: 15` → other.
 
 ## Step 2 — mix and convert to the fired basis
 

@@ -14,14 +14,6 @@ import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.c
 // UNIVERSAL CONSTANTS (Physics & Chemistry)
 // ============================================================
 
-/**
- * Absolute Zero Temperature (Kelvin to Celsius conversion)
- * Used in temperature conversions
- *
- * Reference: Standard temperature scale definition
- */
-export const ABSOLUTE_ZERO_OFFSET = 273.15;
-
 // ============================================================
 // TESTING & MEASUREMENT CONSTANTS
 // ============================================================
@@ -271,7 +263,6 @@ export const MAX_CONE_NUMBER = 40;
 export const CALCULATION_CONSTANTS = {
   physics: {
     GAS_CONSTANT_J_MOLK: PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK,
-    ABSOLUTE_ZERO_OFFSET,
   },
   testing: {
     RUL_TEST_LOAD_PA,
