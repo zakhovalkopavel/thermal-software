@@ -1,0 +1,75 @@
+{
+  "system": "Al2O3-MgO",
+  "components": ["Al2O3", "MgO"],
+  "units": { "temperature_C": "°C", "liquid_wt": "wt%", "liquidus": "[wt% MgO, °C]" },
+  "source": {
+    "ref": "slag-atlas-1995",
+    "figure": "Fig. 3.30",
+    "diagram": "Al2O3-MgO phase diagram based mainly on the results of Rankin, Merwin [1], Alper et al. [2] (sub-system MgO-MgO·Al2O3) and Viechnicki et al. [3] (sub-system Al2O3-MgO·Al2O3)",
+    "printedPage": 44,
+    "pdfPage": 64,
+    "caption": "Atlas text (printed p. 44): solid-state boundaries re-investigated by Roy, Coble [4] and Ando, Momoda [5] (solubility of MgO in Al2O3), Stubican, Roy [6], Henriksen, Kingery [7] and Mori [8] (solubility of Al2O3 in MgO), Roy et al. [9], Shirasuka, Yamaguchi [10], Viertel, Seifert [11] and Panda, Raj [12] (MgO·Al2O3 phase boundary). Solubility of Al2O3 in MgO determined by Alper et al. [2] confirmed with minor changes in [6-8]. Maximum solubility of MgO in Al2O3 does not exceed 0.001 mass% [5]. Thermodynamic evaluations: Hallstedt, Hillert [16], Howald, Roy [17], Hallstedt [18], Eriksson et al. [19]. 'In the last assessment made by Hallstedt [18], a minimum on the MgO·Al2O3 liquidus curve instead of a eutectic between MgO·Al2O3 and Al2O3 has been proposed.' References: [1] G. A. Rankin, H. E. Merwin, J. Am. Chem. Soc. 38 (1916) 568/88; [2] A. M. Alper, R. N. McNally, P. H. Ribbe, R. C. Doman, J. Am. Ceram. Soc. 45 (1962) 263/8; [3] D. Viechnicki, F. Schmid, J. W. McCauley, J. Am. Ceram. Soc. 57 (1974) 47/8; [18] B. Hallstedt, Report TRITA-MAC-0399, Royal Institute of Technology, Stockholm (1989)."
+  },
+  "digitization": {
+    "render": "pdfPage 64 at 400 dpi (3306 × 4673 px), full page coordinates",
+    "calibration": "x: mass% MgO ticks every 10 % at 1466, 1614.5, 1764, 1914.5, 2064.5, 2215.5, 2365.5, 2514.5, 2662.5, 2811.5, 2958.5 (piecewise linear); y: ticks 2800 … 1600 °C at 2003, 2127.5, 2251.5, 2376.5, 2502, 2625.5, 2749.5, bottom frame 1200 °C at 2999; scan rotation: frame bottom slopes +13 px over 1400 px, left frame dx/dy = −0.006",
+    "method": "Liquidus traced along the stroke centre, column by column; invariant lines from the horizontal strokes.",
+    "check": "Spinel liquidus maximum at 28.3 wt% MgO (stoichiometric MgAl2O4 28.3) and 2103 °C (label 2105). Digitized vs printed composition labels: 4.1 / '4', 6.6 / '6.5', 38.6 / '39', 44.9 / '45', 82.7 / '82' wt% MgO. Eutectic lines read 1980 / 1996 °C (labels 1975 / 1995)."
+  },
+  "phases": ["corundum", "spinel", "periclase"],
+  "invariantPoints": [
+    { "id": "am-1975", "type": "binary", "reaction": "eutectic", "phases": ["corundum", "spinel"],
+      "temperature_C": 1975, "liquid_wt": { "Al2O3": 96.0, "MgO": 4.0 }, "status": "conflict",
+      "sources": [
+        { "ref": "slag-atlas-1995", "figure": "Fig. 3.30", "printedPage": 44, "pdfPage": 64, "temperature": "printed label '1975' with arrow to the eutectic line", "composition": "printed label '4' (mass% MgO) at the liquidus end; digitized 4.1", "pixel": [1530, 2515] },
+        { "ref": "nsrds-nbs-61-1", "entry": 6077, "pdfPage": 116, "printedPage": 108,
+          "reported": { "system": "Al2O3-MgO", "composition_mol": { "Al2O3": 88.3, "MgO": 11.7 }, "approximate": true, "temperature_C": 1925, "uncertainty_C": null },
+          "converted_wt": { "Al2O3": 95.0, "MgO": 5.0 }, "originalReference": "2309",
+          "comparison": "ΔT = −50 °C, Δ = 1.0 wt% (approximate value)." },
+        { "ref": "nsrds-nbs-61-1", "entry": 6097, "pdfPage": 116, "printedPage": 108,
+          "reported": { "system": "Al2O3-MgO", "composition_mol": { "Al2O3": 85.0, "MgO": 15.0 }, "approximate": true, "temperature_C": 2000, "uncertainty_C": null },
+          "converted_wt": { "Al2O3": 93.5, "MgO": 6.5 }, "originalReference": "1483",
+          "comparison": "ΔT = +25 °C, Δ = 2.5 wt% (approximate value)." }
+      ],
+      "notes": "Both NBS entries are approximate and differ from each other by 75 °C; the atlas value lies between them. Spinel at the eutectic is the Al2O3-rich solid solution (printed '6.5' mass% MgO). The atlas text reports that Hallstedt's assessment proposes a liquidus minimum instead of a eutectic here. Fig. 3.187 edge: 97.6 wt% Al2O3, no temperature (mas-edge-spinel-corundum)." },
+    { "id": "am-spinel-melting", "type": "compound-melting", "reaction": null, "phases": ["spinel"],
+      "temperature_C": 2105, "liquid_wt": { "Al2O3": 71.7, "MgO": 28.3 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.30", "printedPage": 44, "pdfPage": 64, "temperature": "printed label '2105' at the liquidus maximum", "composition": "digitized maximum at 28.3 wt% MgO = MgAl2O4", "pixel": [1893, 2437] } ],
+      "notes": "Congruent. Fig. 3.187 prints '~2135'." },
+    { "id": "am-1995", "type": "binary", "reaction": "eutectic", "phases": ["spinel", "periclase"],
+      "temperature_C": 1995, "liquid_wt": { "Al2O3": 55.0, "MgO": 45.0 }, "status": "confirmed",
+      "sources": [
+        { "ref": "slag-atlas-1995", "figure": "Fig. 3.30", "printedPage": 44, "pdfPage": 64, "temperature": "printed label '1995' on the eutectic line", "composition": "printed label '45' (mass% MgO) under the liquidus junction; digitized 44.9", "pixel": [2141, 2509] },
+        { "ref": "nsrds-nbs-61-1", "entry": 6095, "pdfPage": 116, "printedPage": 108,
+          "reported": { "system": "Al2O3-MgO", "composition_mol": { "Al2O3": 32.6, "MgO": 67.4 }, "temperature_C": 1995, "uncertainty_C": null },
+          "converted_wt": { "Al2O3": 55.0, "MgO": 45.0 }, "originalReference": "1442",
+          "comparison": "ΔT = 0 °C, Δ = 0.0 wt%." },
+        { "ref": "nsrds-nbs-61-1", "entry": 6096, "pdfPage": 116, "printedPage": 108,
+          "reported": { "system": "Al2O3-MgO", "composition_mol": { "Al2O3": 35.0, "MgO": 65.0 }, "approximate": true, "temperature_C": 2000, "uncertainty_C": null },
+          "converted_wt": { "Al2O3": 57.7, "MgO": 42.3 }, "originalReference": "1483",
+          "comparison": "ΔT = +5 °C, Δ = 2.7 wt% (approximate value)." }
+      ],
+      "notes": "Solid phases at the eutectic: spinel ss at 39 and periclase ss at 82 mass% MgO (printed labels). Fig. 3.187 edge prints 1850 °C at 45.2 wt% MgO (mas-edge-periclase-spinel)." }
+  ],
+  "solidSolutions": [
+    { "phase": "spinel", "modelledAs": "MgO·Al2O3 (stoichiometric)",
+      "range_wt_MgO": [ { "temperature_C": 1975, "from": 6.5, "to": null }, { "temperature_C": 1995, "from": null, "to": 39 } ],
+      "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.30", "printedPage": 44, "pdfPage": 64, "read": "printed labels '6.5' (Al2O3-rich limit at the corundum eutectic) and '39' (MgO-rich limit at the periclase eutectic)" },
+      "notes": "Wide Al2O3-rich solubility at high temperature (to 93.5 wt% Al2O3), narrowing on cooling (dashed solvus). The '6.5' label is circled by hand in the scan." },
+    { "phase": "periclase", "modelledAs": "MgO (stoichiometric)",
+      "range_wt_MgO": [ { "temperature_C": 1995, "from": 82, "to": 100 } ],
+      "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.30", "printedPage": 44, "pdfPage": 64, "read": "printed label '82.' at the end of the eutectic line" },
+      "notes": "Up to 18 wt% Al2O3 dissolved in MgO at the eutectic (Alper et al. [2]); solvus falls steeply on cooling." }
+  ],
+  "liquidus": [
+    { "phase": "corundum", "from": "corundum melting point", "to": "am-1975", "status": "extracted",
+      "points": [[0, 2053], [1, 2046], [2, 2032], [3, 2013], [4.0, 1975]] },
+    { "phase": "spinel", "from": "am-1975", "to": "am-spinel-melting", "status": "extracted",
+      "points": [[4.0, 1975], [5, 1993], [6, 2007], [8, 2029], [10, 2048], [12, 2061], [14, 2071], [16, 2080], [18, 2087], [20, 2092], [22, 2096], [24, 2100], [26, 2103], [28.3, 2105]] },
+    { "phase": "spinel", "from": "am-spinel-melting", "to": "am-1995", "status": "extracted",
+      "points": [[28.3, 2105], [30, 2102], [32, 2097], [34, 2087], [36, 2075], [38, 2061], [40, 2045], [42, 2027], [44, 2008], [45.0, 1995]] },
+    { "phase": "periclase", "from": "am-1995", "to": "periclase melting point", "status": "extracted",
+      "points": [[45.0, 1995], [46, 2016], [48, 2061], [50, 2104], [55, 2201], [60, 2292], [65, 2378], [70, 2465], [75, 2549], [80, 2630], [85, 2702], [90, 2761], [95, 2800], [98, 2814], [100, 2822]] }
+  ],
+  "liquidusSource": { "ref": "slag-atlas-1995", "figure": "Fig. 3.30", "printedPage": 44, "pdfPage": 64, "read": "digitized stroke centre; end points set to the printed invariant and melting-point labels (2053, 1975, 2105, 1995, 2822)" }
+}

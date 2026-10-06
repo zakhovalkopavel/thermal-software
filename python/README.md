@@ -32,8 +32,15 @@ python/
 │   │   └── parsers/
 │   │       ├── nasa7.py      # NASA-7 (SP-273/1971) parser
 │   │       └── nasa9.py      # NASA-9 (RP-1311/1996 + Burcat) parser
+│   ├── phase_diagrams/   # Slag Atlas / NSRDS-NBS 61 phase-diagram extraction (one export per file)
+│   │   ├── __init__.py       # Public API re-exports
+│   │   ├── constants/  models/  config/      # constants, dataclasses, configs + source registry
+│   │   ├── rendering/  detection/  tracing/  # page images, frame/ticks/lines/junctions, curves
+│   │   ├── figures/  nbs/                    # caption + label OCR, NSRDS-NBS 61 matching
+│   │   └── builders/  output/  validation/   # system build, JSON + review writers, dataset rules
 │   └── scripts/          # Production scripts
 │       ├── parse_nasa_thermo.py  # NASA thermo CLI (thin wrapper)
+│       ├── extract_phase_diagram.py  # Phase-diagram CLI (thin wrapper)
 │       ├── extract_tables.py
 │       └── README.md     # Scripts documentation
 └── tests/                # Test files
@@ -43,6 +50,7 @@ python/
     │   ├── test_nasa7_parser.py
     │   ├── test_nasa9_parser.py
     │   └── test_writers.py
+    ├── phase_diagrams/   # Phase-diagram extraction tests (synthetic images, golden files)
     └── ocr/              # OCR module tests
         ├── test_coordinate_parsing.py
         ├── test_document_extraction.py
@@ -100,6 +108,35 @@ make nasa-parse          # parse both databases
 make nasa-parse-nasa7    # NASA-7 only
 make nasa-parse-nasa9    # NASA-9 only
 make nasa-test           # run unit tests
+```
+
+### Phase-Diagram Extraction (`src/phase_diagrams/`)
+
+Turns Slag Atlas figures into the phase-diagram dataset: calibrates the axes, traces the
+liquidus curves, checks invariants against NSRDS-NBS 61 and validates the dataset. Printed
+labels stay authoritative; digitized values are only checks.
+
+**Spec**: [docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md](../docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md)
+
+**Source files**: `shared/sources/compound-data/` (atlas, NSRDS-NBS 61 and JANAF PDFs, listed in `sources.json`)
+
+**Input / output**: `shared/processed/phase-diagrams/configs/*.config.json` → candidates,
+renders, tiles, overlays and review lists in `tmp/reports/python/phase-diagrams/`; a
+candidate reaches `shared/processed/phase-diagrams/systems/` only through `pd-promote`
+after user validation. All commands run in the `python` container.
+
+**Make commands**:
+```bash
+make pd-calibrate SYSTEM=mgo-sio2         # frame, ticks, residuals, calibration overlay
+make pd-extract SYSTEM=mgo-sio2           # binary config → candidate + comparison with the dataset file
+make pd-curves SYSTEM=cao-mgo-sio2        # ternary boundary curves → candidate with polyline_wt
+make pd-compare SYSTEM=mgo-sio2           # candidate vs dataset file (exit 1 on differences)
+make pd-promote SYSTEM=mgo-sio2           # candidate → dataset (after validation; refused on errors)
+make pd-tile PAGE=108 BOX="x0 y0 x1 y1"   # zoom tile with pixel rulers
+make pd-nbs-index                         # dump and parse NSRDS-NBS 61 (once)
+make pd-nbs-suggest COMPONENTS="MgO SiO2" # candidate NBS entries
+make pd-validate                          # dataset rules PD001–PD013
+make pd-test                              # unit + regression tests
 ```
 
 ### OCR Package (`src/ocr/`)
@@ -185,6 +222,10 @@ python /app/src/scripts/extract_tables.py
 # NASA thermo parser tests
 make nasa-test
 docker compose run --rm python python -m pytest /app/tests/nasa_thermo/ -v
+
+# Phase-diagram extraction tests
+make pd-test
+docker compose run --rm python python -m pytest /app/tests/phase_diagrams/ -v
 
 # OCR tests
 docker-compose exec python python /app/tests/ocr/test_coordinate_parsing.py

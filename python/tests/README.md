@@ -13,6 +13,14 @@ tests/
 │   ├── test_nasa7_parser.py
 │   ├── test_nasa9_parser.py
 │   └── test_writers.py
+├── phase_diagrams/       ← Phase-diagram extraction tests (pytest, no __init__.py)
+│   ├── conftest.py           fixtures: synthetic binary image, NBS text, dataset factory
+│   ├── pd_helpers.py         synthetic diagram drawing, fixture configs and datasets
+│   ├── fixtures/golden/      expected system files (writer golden test)
+│   ├── test_calibration.py … test_dataset_validator.py
+│   ├── test_figure_index.py  caption parser and index merge on real OCR text
+│   ├── test_candidates.py    candidate comparison, promotion check on a temporary dataset copy
+│   └── test_regression_atlas.py   regenerates every promoted binary (skipped without the atlas PDF)
 └── ocr/                  ← OCR extraction module tests
     ├── __init__.py
     ├── create_simple_test_images.py
@@ -41,6 +49,29 @@ docker compose run --rm python python -m pytest /app/tests/nasa_thermo/ -v
 ```
 
 See also: [docs/scripts/NASA_THERMO_PARSER_SPEC.md](../../docs/scripts/NASA_THERMO_PARSER_SPEC.md)
+
+---
+
+## Phase-Diagram Extraction Tests
+
+Uses **pytest**. Unit tests draw synthetic diagrams with Pillow (frame, ticks, an invariant
+line, two liquidus branches, a label, a gap) and use real NSRDS-NBS 61 text snippets; one
+fixture dataset per validator rule. `test_candidates.py` checks the candidate comparison and
+that a promotion with validation errors leaves the dataset untouched.
+`test_regression_atlas.py` renders the real atlas pages and checks that every binary config
+whose output file is in the dataset reproduces that file (no differences from
+`compare_systems`); a newly promoted binary is picked up automatically. It is skipped when the
+atlas PDF is missing.
+
+```bash
+# Via Makefile (recommended)
+make pd-test
+
+# Directly
+docker compose run --rm python python -m pytest /app/tests/phase_diagrams/ -v
+```
+
+See also: [docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md](../../docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md)
 
 ---
 
@@ -98,6 +129,7 @@ docker-compose exec python bash -c 'cd /app/tests/ocr && for t in test_*.py; do 
 
 Place test files in the appropriate subfolder:
 - `nasa_thermo/` — pytest-based unit tests for the NASA thermo parser
+- `phase_diagrams/` — pytest-based tests for the phase-diagram extraction
 - `ocr/` — script-style tests for the OCR extraction module
 
 ### Best Practices

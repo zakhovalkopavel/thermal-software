@@ -1,0 +1,337 @@
+"""
+phase_diagrams.builders.ternary_curve_filler — Fill ``polyline_wt`` of boundary curves, isotherms and inversion curves, and the liquid-immiscibility branches, in a ternary file.
+
+Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Ternary curves, § Ternary files
+"""
+from __future__ import annotations
+
+import copy
+import json
+import math
+import re
+
+import numpy as np
+
+from phase_diagrams.tracing.curve_tracer import trace_path
+from phase_diagrams.config.curves_config import CurvesConfig
+from phase_diagrams.detection.stroke_width_filter import stroke_width_filter
+from phase_diagrams.tracing.polyline_simplifier import simplify_polyline
+from phase_diagrams.models.review_item import ReviewItem
+from phase_diagrams.models.ternary_calibration import TernaryCalibration
+from phase_diagrams.models.ternary_fill import TernaryFill
+from phase_diagrams.models.traced_curve import TracedCurve
+
+_TRACE_GAP_PX = 15.0
+_SAME_PIXEL_PX = 2.0
+_SIMPLIFY_WT = 0.1
+_EDGE_WT = 0.3
+_POLYLINE_KEY = re.compile(r'"polyline_wt"\s*:\s*')
+
+
+def fill_ternary_curves(text: str, config: CurvesConfig, mask: np.ndarray, invariants: dict[str, dict]) -> TernaryFill:
+    """Trace every configured curve and isotherm and write its polyline into ``text``.
+
+    ``mask`` is the plain ink mask of the page; each entry is traced on the mask
+    filtered to its ``strokeWidth_px``. ``invariants`` maps every invariant id of
+    the dataset to its entry (``liquid_wt``, ``sources``).
+    Config pixels (end points, waypoints, isotherm ends) are in the stored
+    coordinates of the system file; ``pixelOrigin`` converts them to page pixels.
+    Path points drawn at the same pixel are joined directly; an ``endPixel``
+    extends a curve past its last path point (open end, not an invariant).
+    An inversion entry (matched by ``phase`` and ``change``) gets ``polyline_wt``
+    appended when it has none; that is the only key the filler may add there.
+    Liquid-immiscibility branches are written, in config order, as
+    ``liquidImmiscibility.polylines_wt`` (appended when absent).
+    Raises ValueError for unmatched config entries, missing end pixels or a
+    write that would change anything other than the filled polylines.
+    """
+    system = json.loads(text)
+    components = list(system["components"])
+    calibration = TernaryCalibration.from_system(system, config.pixel_origin)
+    own_ids = {p["id"] for p in system.get("invariantPoints", [])}
+    review: list[ReviewItem] = []
+    log: list[str] = []
+    curves: list[TracedCurve] = []
+    polylines: dict[tuple[str, int], list[list[float]]] = {}
+
+    def stored_pixel(point_id: str) -> tuple[float, float]:
+        if point_id in config.endpoint_pixels:
+            return config.endpoint_pixels[point_id]
+        if point_id in own_ids:
+            for source in invariants[point_id].get("sources", []):
+                if source.get("ref") == "slag-atlas-1995" and source.get("pixel"):
+                    return float(source["pixel"][0]), float(source["pixel"][1])
+        raise ValueError(f"{config.name}: no pixel for '{point_id}'; add it to endpointPixels")
+
+    def point_wt(point_id: str) -> list[float]:
+        if point_id not in invariants:
+            raise ValueError(f"{config.name}: path id '{point_id}' not found in any system file")
+        liquid = invariants[point_id]["liquid_wt"]
+        return [float(liquid.get(c, 0.0)) for c in components]
+
+    def to_wt(pixels: list[tuple[float, float]]) -> list[list[float]]:
+        out = []
+        for px, py in pixels:
+            wt = calibration.to_wt(px, py)
+            out.append([wt[c] for c in components])
+        return out
+
+    filtered: dict[tuple[float, float], np.ndarray] = {}
+
+    def trace(start, end, waypoints, label, width) -> TracedCurve:
+        if width not in filtered:
+            filtered[width] = stroke_width_filter(mask, width)
+        page = calibration.stored_to_page
+        stops = [page(*start)] + [page(*w["pixel"]) for w in waypoints] + [page(*end)]
+        straight = [False] + [w["straight"] for w in waypoints] + [False]
+        pixels: list[tuple[float, float]] = []
+        gap = 0.0
+        run = 0
+        for k in range(1, len(stops) + 1):
+            if k < len(stops) and not straight[k]:
+                continue
+            if k - 1 > run:
+                part = trace_path(filtered[width], stops[run], stops[k - 1], stops[run + 1:k - 1], label=label)
+                pixels.extend(part.pixels if not pixels else part.pixels[1:])
+                gap += part.gap_px
+            if k < len(stops):
+                pixels.extend([stops[k - 1], stops[k]] if not pixels else [stops[k]])
+                log.append(f"{label}: straight step {_px(stops[k - 1])}→{_px(stops[k])} "
+                           f"({math.dist(stops[k - 1], stops[k]):.0f} px, hidden stroke)")
+            run = k
+        curve = TracedCurve(pixels=pixels, gap_px=gap, label=label)
+        curves.append(curve)
+        if curve.gap_px > _TRACE_GAP_PX:
+            review.append(ReviewItem("trace-gap", label, f"path crosses {curve.gap_px:.0f} px of non-ink"))
+        return curve
+
+    boundary = system.get("boundaryCurves", [])
+    for entry in config.curves:
+        index = next(
+            (i for i, c in enumerate(boundary) if c.get("fields") == entry["fields"] and c.get("path") == entry["path"]),
+            None,
+        )
+        if index is None:
+            raise ValueError(f"{config.name}: no boundary curve {entry['fields']} {entry['path']}")
+        label = f"{'/'.join(f or '?' for f in entry['fields'])} {'→'.join(entry['path'])}"
+        path = entry["path"]
+        ends = [stored_pixel(p) for p in path] + ([entry["endPixel"]] if entry["endPixel"] else [])
+        assigned = _assign_waypoints(ends, entry["waypoints"])
+        polyline: list[list[float]] = []
+        for k in range(len(ends) - 1):
+            a_id, b_id = path[k], path[k + 1] if k + 1 < len(path) else None
+            if b_id is not None and not assigned[k] and math.dist(ends[k], ends[k + 1]) <= _SAME_PIXEL_PX:
+                points = [point_wt(a_id), point_wt(b_id)]
+                log.append(f"{label} [{a_id}→{b_id}]: drawn at the same pixel, joined directly")
+            else:
+                curve = trace(ends[k], ends[k + 1], assigned[k], f"{label} [{a_id}→{b_id or 'open end'}]", entry["strokeWidth_px"])
+                points = to_wt(curve.pixels)
+                points[0] = point_wt(a_id)
+                if b_id is not None:
+                    points[-1] = point_wt(b_id)
+            simplified = simplify_polyline(points, _SIMPLIFY_WT)
+            polyline.extend(simplified if not polyline else simplified[1:])
+        polylines[("boundaryCurves", index)] = _rounded(polyline, label, log)
+        log.append(f"{label}: {len(polyline)} points")
+
+    isotherms = system.get("isotherms", [])
+    for entry in config.isotherms:
+        index = next(
+            (i for i, c in enumerate(isotherms)
+             if c.get("field") == entry["field"] and c.get("temperature_C") == entry["temperature_C"]),
+            None,
+        )
+        if index is None:
+            raise ValueError(f"{config.name}: no isotherm {entry['field']} {entry['temperature_C']}")
+        label = f"isotherm {entry['field']} {entry['temperature_C']}"
+        curve = trace(entry["startPixel"], entry["endPixel"], entry["waypoints"], label, entry["strokeWidth_px"])
+        polyline = simplify_polyline(to_wt(curve.pixels), _SIMPLIFY_WT)
+        polylines[("isotherms", index)] = _rounded(polyline, label, log)
+        log.append(f"{label}: {len(polyline)} points")
+
+    inversions = system.get("inversions", [])
+    for entry in config.inversions:
+        index = next(
+            (i for i, v in enumerate(inversions) if v.get("phase") == entry["phase"] and v.get("change") == entry["change"]),
+            None,
+        )
+        if index is None:
+            raise ValueError(f"{config.name}: no inversion {entry['phase']} '{entry['change']}'")
+        label = f"inversion {entry['phase']} {entry['change']}"
+        curve = trace(entry["startPixel"], entry["endPixel"], entry["waypoints"], label, entry["strokeWidth_px"])
+        polyline = simplify_polyline(to_wt(curve.pixels), _SIMPLIFY_WT)
+        polylines[("inversions", index)] = _rounded(polyline, label, log)
+        log.append(f"{label}: {len(polyline)} points")
+
+    branches: list[list[list[float]]] = []
+    if config.liquid_immiscibility and not isinstance(system.get("liquidImmiscibility"), dict):
+        raise ValueError(f"{config.name}: liquidImmiscibility branches configured but the system file has no liquidImmiscibility object")
+    for number, entry in enumerate(config.liquid_immiscibility, start=1):
+        label = f"liquid immiscibility branch {number}"
+        curve = trace(entry["startPixel"], entry["endPixel"], entry["waypoints"], label, entry["strokeWidth_px"])
+        polyline = simplify_polyline(to_wt(curve.pixels), _SIMPLIFY_WT)
+        branches.append(_rounded(polyline, label, log))
+        log.append(f"{label}: {len(polyline)} points")
+
+    new_text = _replace_polylines(text, polylines)
+    new_text = _set_inversion_polylines(new_text, {i: v for (k, i), v in polylines.items() if k == "inversions"})
+    new_text = _set_immiscibility_polylines(new_text, branches)
+    expected = copy.deepcopy(system)
+    for (key, index), polyline in polylines.items():
+        expected[key][index]["polyline_wt"] = polyline
+    if branches:
+        expected["liquidImmiscibility"]["polylines_wt"] = branches
+    units_missing = bool(polylines or branches) and "polyline_wt" not in system.get("units", {})
+    if units_missing:
+        unit = "[" + ", ".join(f"wt% {c}" for c in components) + "]"
+        new_text = _add_units_entry(new_text, unit)
+        expected.setdefault("units", {})["polyline_wt"] = unit
+        log.append(f"units.polyline_wt added: {unit}")
+    if json.loads(new_text) != expected:
+        raise ValueError(f"{config.name}: rewrite changed more than polyline_wt; file left unchanged")
+    return TernaryFill(text=new_text, curves=curves, filled=len(polylines) + len(branches), units_missing=units_missing, review=review, log=log)
+
+
+def _add_units_entry(text: str, unit: str) -> str:
+    """Append ``"polyline_wt": unit`` inside the (flat) ``units`` object."""
+    match = re.search(r'"units"\s*:\s*\{', text)
+    if match is None:
+        raise ValueError("no 'units' object in system file")
+    close = text.index("}", match.end())
+    body = text[match.end():close].rstrip()
+    separator = ", " if body.strip() else " "
+    return text[:match.end()] + body + f'{separator}"polyline_wt": {json.dumps(unit, ensure_ascii=False)} ' + text[close:]
+
+
+def _px(point: tuple[float, float]) -> str:
+    return f"({point[0]:.0f}, {point[1]:.0f})"
+
+
+def _assign_waypoints(ends, waypoints) -> list[list[dict]]:
+    """Waypoints per path segment (nearest segment), ordered along the segment."""
+    assigned: list[list[tuple[float, int, dict]]] = [[] for _ in range(len(ends) - 1)]
+    for order, w in enumerate(waypoints):
+        best = None
+        for k, (a, b) in enumerate(zip(ends[:-1], ends[1:])):
+            a_arr, b_arr, w_arr = np.array(a), np.array(b), np.array(w["pixel"])
+            seg = b_arr - a_arr
+            t = float(np.clip((w_arr - a_arr) @ seg / max(seg @ seg, 1e-9), 0.0, 1.0))
+            distance = float(np.linalg.norm(w_arr - (a_arr + t * seg)))
+            if best is None or distance < best[0]:
+                best = (distance, k, t)
+        assigned[best[1]].append((best[2], order, w))
+    return [[w for _, _, w in sorted(items, key=lambda item: item[:2])] for items in assigned]
+
+
+def _rounded(polyline: list[list[float]], label: str, log: list[str]) -> list[list[float]]:
+    """Round to 0.1 wt%; a component up to ``_EDGE_WT`` below 0 (a stroke drawn on an edge) becomes 0."""
+    out = []
+    clamped = 0
+    for point in polyline:
+        a, b = round(point[0], 1), round(point[1], 1)
+        values = [a, b, round(100.0 - a - b, 1)]
+        if min(values) < -_EDGE_WT:
+            raise ValueError(f"{label}: point {values} lies {-min(values):.1f} wt% outside the triangle")
+        for i, value in enumerate(values):
+            if value < 0.0:
+                largest = max(range(3), key=lambda j: values[j])
+                values[largest] = round(values[largest] + value, 1)
+                values[i] = 0.0
+                clamped += 1
+        out.append([v + 0.0 for v in values])
+    if clamped:
+        log.append(f"{label}: {clamped} values within {_EDGE_WT} wt% outside the triangle set to 0")
+    return out
+
+
+def _replace_polylines(text: str, polylines: dict[tuple[str, int], list[list[float]]]) -> str:
+    """Replace the value after the n-th ``"polyline_wt"`` key inside each array, back to front."""
+    edits: list[tuple[int, int, str]] = []
+    for key in ("boundaryCurves", "isotherms"):
+        wanted = {index: value for (k, index), value in polylines.items() if k == key}
+        if not wanted:
+            continue
+        key_match = re.search(rf'"{key}"\s*:\s*\[', text)
+        if key_match is None:
+            raise ValueError(f"no '{key}' array in system file")
+        start = key_match.end() - 1
+        end = _closing_index(text, start)
+        matches = list(_POLYLINE_KEY.finditer(text, start, end))
+        for index, value in wanted.items():
+            edits.append((*_value_span(text, matches[index].end()), json.dumps(value)))
+    return _apply_edits(text, edits)
+
+
+def _set_inversion_polylines(text: str, polylines: dict[int, list[list[float]]]) -> str:
+    """Set ``polyline_wt`` of the n-th ``inversions`` entry; appended before its ``}`` when the entry has none."""
+    if not polylines:
+        return text
+    key_match = re.search(r'"inversions"\s*:\s*\[', text)
+    if key_match is None:
+        raise ValueError("no 'inversions' array in system file")
+    end = _closing_index(text, key_match.end() - 1)
+    objects: list[tuple[int, int]] = []
+    index = key_match.end()
+    while index < end:
+        if text[index] == "{":
+            objects.append((index, _closing_index(text, index)))
+            index = objects[-1][1]
+        index += 1
+    edits = [_key_edit(text, *objects[index], "polyline_wt", value) for index, value in polylines.items()]
+    return _apply_edits(text, edits)
+
+
+def _set_immiscibility_polylines(text: str, branches: list[list[list[float]]]) -> str:
+    """Set ``polylines_wt`` of the ``liquidImmiscibility`` object; appended before its ``}`` when absent."""
+    if not branches:
+        return text
+    key_match = re.search(r'"liquidImmiscibility"\s*:\s*\{', text)
+    if key_match is None:
+        raise ValueError("no 'liquidImmiscibility' object in system file")
+    open_index = key_match.end() - 1
+    return _apply_edits(text, [_key_edit(text, open_index, _closing_index(text, open_index), "polylines_wt", branches)])
+
+
+def _key_edit(text: str, open_index: int, close_index: int, key: str, value) -> tuple[int, int, str]:
+    """Edit setting ``key`` in the object between ``open_index`` and ``close_index``; appended before ``}`` when absent."""
+    match = re.compile(rf'"{key}"\s*:\s*').search(text, open_index, close_index)
+    if match is not None:
+        return *_value_span(text, match.end()), json.dumps(value)
+    body_end = len(text[:close_index].rstrip())
+    return body_end, body_end, f', "{key}": {json.dumps(value)}'
+
+
+def _value_span(text: str, value_start: int) -> tuple[int, int]:
+    """Start and end of the ``null`` or array value at ``value_start``."""
+    value_end = value_start + 4 if text.startswith("null", value_start) else _closing_index(text, value_start) + 1
+    return value_start, value_end
+
+
+def _apply_edits(text: str, edits: list[tuple[int, int, str]]) -> str:
+    for value_start, value_end, replacement in sorted(edits, reverse=True):
+        text = text[:value_start] + replacement + text[value_end:]
+    return text
+
+
+def _closing_index(text: str, open_index: int) -> int:
+    """Index of the ``]`` or ``}`` closing the bracket at ``open_index`` (strings are skipped)."""
+    depth = 0
+    in_string = False
+    index = open_index
+    while index < len(text):
+        char = text[index]
+        if in_string:
+            if char == "\\":
+                index += 1
+            elif char == '"':
+                in_string = False
+        elif char == '"':
+            in_string = True
+        elif char in "[{":
+            depth += 1
+        elif char in "]}":
+            depth -= 1
+            if depth == 0:
+                return index
+        index += 1
+    raise ValueError("unbalanced brackets in system file")
