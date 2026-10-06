@@ -23,7 +23,7 @@ or configuration in this project. All linked documents must be consulted for the
 | **Interfaces & Index** | [`docs/INTERFACES_IMPLEMENTATION_INDEX.md`](./INTERFACES_IMPLEMENTATION_INDEX.md) | Master index of all interfaces and their implementations |
 | **Test Specification** | [`docs/TEST_SPECIFICATION.md`](./TEST_SPECIFICATION.md) | Unit / integration / e2e test requirements |
 | **Service Test Spec** | [`docs/SERVICE_TEST_SPEC.md`](./SERVICE_TEST_SPEC.md) | Per-service test checklist and coverage targets |
-| **Reports Management** | [`docs/REPORTS_MANAGEMENT.md`](./REPORTS_MANAGEMENT.md) | All generated reports go to `tmp/reports/` |
+| **Reports Management** | [`docs/REPORTS_MANAGEMENT.md`](./REPORTS_MANAGEMENT.md) | All generated reports go to `tmp/reports/`; only `.gitkeep`/`.gitignore` under `tmp/` are tracked |
 | **Docker / Nginx** | [`docs/NGINX_ARCHITECTURE.md`](./NGINX_ARCHITECTURE.md) | Reverse-proxy layout, SSL termination, upstream routing |
 | **Python Container** | [`docs/PYTHON_CONTAINER.md`](./PYTHON_CONTAINER.md) | Python service conventions, package management |
 | **Docker Registry** | [`docs/DOCKER_REGISTRY.md`](./DOCKER_REGISTRY.md) | Image naming, tagging, push/pull workflow |
