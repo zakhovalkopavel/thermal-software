@@ -45,7 +45,7 @@
 | `material-catalog.service.ts` | ✅ `material-catalog.service.spec.ts` | 102 unique active materials; groups, categories by primary group |
 | `mix-component-catalog.service.ts` | ✅ `mix-component-catalog.service.spec.ts` | 60 mix components (binder, oxide, silicate, clay, carbide, nitride); `paper_clay` excluded |
 | `particle-size-catalog.service.ts` | ✅ `particle-size-catalog.service.spec.ts` | six size tables |
-| `mix-composition.service.ts` | ✅ `mix-composition.service.spec.ts` | fired basis; algorithm in [`MIX_COMPOSITION_ALGORITHM.md`](../algorithms/MIX_COMPOSITION_ALGORITHM.md) |
+| `mix-composition.service.ts` | ✅ `mix-composition.service.spec.ts` | fired basis; algorithm in [`MIX_COMPOSITION_ALGORITHM.md`](../algorithms/mix/MIX_COMPOSITION_ALGORITHM.md) |
 | `refractory-thermal.service.ts` — `listProducts`, `getProperties` | ✅ extended spec | 19 products; ε clamped |
 
 - DTOs and enums (one per file): listed in [`INTERFACES_IMPLEMENTATION_INDEX.md`](../INTERFACES_IMPLEMENTATION_INDEX.md)

@@ -68,53 +68,46 @@ Common library reference:
 
 ## 🔥 Refractory Algorithms
 
-1. **[Component Effects System](./COMPONENT_EFFECTS.md)** ✅ NEW
-   - Central data-driven architecture for all component calculations
-   - 33 chemical components with 5+ properties each
-   - Automatic iteration through components
-   - Used by all calculation services
-
-2. **[Mineral Phase Identification](./MINERAL_PHASE_IDENTIFICATION.md)** ✅ EXPANDED
-   - 17 distinct mineral phases identification
-   - Temperature-dependent phase formation
-   - Stoichiometric calculations
-   - Phases: Mullite, Corundum, Spinel, Forsterite, Periclase, Zirconia, etc.
-
-3. **[Refractoriness Algorithm](./REFRACTORINESS_ALGORITHM.md)** 🔄 REWRITTEN
-   - Mix fractions in; equilibrium melting of the fired mix on the phase diagrams
-   - Solidus, liquidus and temperatures at given liquid fractions
-   - Cone refractoriness (ASTM C24 / GOST 4069) from a critical liquid fraction fitted to published cone values; aluminosilicate formula inside its range; ASTM C27 check
-   - No refractoriness under load (ISO 1893)
-
-4. **[Blend Optimizer Algorithm](./BLEND_OPTIMIZER_ALGORITHM.md)** ✅ NEW
-   - Multi-stage PSD optimization
-   - Integration of PSD + Packing + Shrinkage
-   - 4 compaction scenarios (Self-compacting to Hand-pressable)
-   - 64+ optimization combinations evaluated
-   - Complete workflow documentation
-
-5. **[Shrinkage Calculator Algorithm](./SHRINKAGE_CALCULATOR_ALGORITHM.md)** ✅ NEW
-   - Chemical shrinkage model (drying phase)
-   - Master Sintering Curve (MSC) model (firing phase)
-   - Two-stage shrinkage prediction
-   - Temperature-dependent calculations
-   - ±5% accuracy for typical refractories
-
-### 🔬 Additional Refractory Algorithms
+### Phase equilibrium — [`phase-equilibrium/`](./phase-equilibrium/)
 
 | File | Topic | Status |
 |------|-------|--------|
-| [`FULL_PHASE_EQUILIBRIUM.md`](./FULL_PHASE_EQUILIBRIUM.md) | Liquid-solid partitioning, eutectic, lever rule | ✅ |
-| [`PACKING_MODELS.md`](./PACKING_MODELS.md) | CPM and Furnas packing density models | ✅ |
-| [`MIX_THERMAL_ALGORITHM.md`](./MIX_THERMAL_ALGORITHM.md) | λ, Cp, ρ, diffusivity of a fired material or mix vs T (replaces the removed thermal-conductivity endpoint) | ✅ |
-| [`WATER_DEMAND_ALGORITHM.md`](./WATER_DEMAND_ALGORITHM.md) | Water demand from packing fraction | ✅ |
-| [`PSD_ALGORITHMS.md`](./PSD_ALGORITHMS.md) | Andreasen and Funk-Dinger PSD models | ✅ |
-| [`MULTI_MODEL_COMPLETE.md`](./MULTI_MODEL_COMPLETE.md) | Multi-model viscosity comparison | ✅ |
-| [`COMPONENT_SPECIFIC_THRESHOLDS.md`](./COMPONENT_SPECIFIC_THRESHOLDS.md) | Per-component validity thresholds | ✅ |
-| [`VIABLE_COMPOSITION_RANGES.md`](./VIABLE_COMPOSITION_RANGES.md) | Composition feasibility ranges | ✅ |
-| [`VIABLE_RANGE_OUTPUT_FORMAT.md`](./VIABLE_RANGE_OUTPUT_FORMAT.md) | Output format for viable range results | ✅ |
-| [`BLEND_OPTIMIZER_FIXED_FRACTIONS.md`](./BLEND_OPTIMIZER_FIXED_FRACTIONS.md) | Fixed fractions & optimization goals | ✅ |
-| [`BLEND_OPTIMIZER_INPUT_OUTPUT_DEMO.md`](./BLEND_OPTIMIZER_INPUT_OUTPUT_DEMO.md) | Blend optimizer I/O examples | ✅ |
+| [`FULL_PHASE_EQUILIBRIUM.md`](./phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md) | `PhaseEquilibriumService`: lever rule on tabulated phase diagrams with a shrinking-core grain reaction; matrix equilibrium at T and after cooling (liquid → glass) | 🔄 REWRITTEN |
+| [`MINERAL_PHASE_IDENTIFICATION.md`](./phase-equilibrium/MINERAL_PHASE_IDENTIFICATION.md) | Raw material mineralogy and phase catalog | ✅ |
+| [`REFRACTORINESS_ALGORITHM.md`](./phase-equilibrium/REFRACTORINESS_ALGORITHM.md) | Equilibrium melting of the fired mix on the phase diagrams: solidus, liquidus, temperatures at given liquid fractions; cone refractoriness (ASTM C24 / GOST 4069) from a critical liquid fraction fitted to published cone values; no refractoriness under load (ISO 1893) | 🔄 REWRITTEN |
+| [`COMPONENT_EFFECTS.md`](./phase-equilibrium/COMPONENT_EFFECTS.md) | Per-component effect table; only the component breakdown of `GlassViscosityService` still uses it | ⚠️ unsourced values |
+
+### Mix — [`mix/`](./mix/)
+
+| File | Topic | Status |
+|------|-------|--------|
+| [`MIX_COMPOSITION_ALGORITHM.md`](./mix/MIX_COMPOSITION_ALGORITHM.md) | `MixCompositionService`: fired-basis mixing of library raw-material compositions, composition key classification, true density | ✅ |
+| [`MIX_THERMAL_ALGORITHM.md`](./mix/MIX_THERMAL_ALGORITHM.md) | `MixThermalService`: λ, Cp, ρ, diffusivity of a fired material or mix vs T (replaces the removed thermal-conductivity endpoint) | ✅ |
+
+### Blend optimizer — [`blend-optimizer/`](./blend-optimizer/)
+
+| File | Topic | Status |
+|------|-------|--------|
+| [`BLEND_OPTIMIZER_ALGORITHM.md`](./blend-optimizer/BLEND_OPTIMIZER_ALGORITHM.md) | Multi-stage PSD optimization integrating PSD + packing + shrinkage + water demand; 4 compaction scenarios | ✅ |
+| [`BLEND_OPTIMIZER_FIXED_FRACTIONS.md`](./blend-optimizer/BLEND_OPTIMIZER_FIXED_FRACTIONS.md) | Fixed fractions & optimization goals | ✅ |
+| [`BLEND_OPTIMIZER_INPUT_OUTPUT_DEMO.md`](./blend-optimizer/BLEND_OPTIMIZER_INPUT_OUTPUT_DEMO.md) | Blend optimizer I/O examples | ✅ |
+| [`COMPONENT_SPECIFIC_THRESHOLDS.md`](./blend-optimizer/COMPONENT_SPECIFIC_THRESHOLDS.md) | Per-component validity thresholds | ✅ |
+| [`VIABLE_COMPOSITION_RANGES.md`](./blend-optimizer/VIABLE_COMPOSITION_RANGES.md) | Composition feasibility ranges | ✅ |
+| [`VIABLE_RANGE_OUTPUT_FORMAT.md`](./blend-optimizer/VIABLE_RANGE_OUTPUT_FORMAT.md) | Output format for viable range results | ✅ |
+
+### Particle packing — [`particle-packing/`](./particle-packing/)
+
+| File | Topic | Status |
+|------|-------|--------|
+| [`PACKING_MODELS.md`](./particle-packing/PACKING_MODELS.md) | CPM and Furnas packing density models | ✅ |
+| [`PSD_ALGORITHMS.md`](./particle-packing/PSD_ALGORITHMS.md) | Andreasen and Funk-Dinger PSD models | ✅ |
+| [`WATER_DEMAND_ALGORITHM.md`](./particle-packing/WATER_DEMAND_ALGORITHM.md) | Water demand from packing fraction | ✅ |
+| [`SHRINKAGE_CALCULATOR_ALGORITHM.md`](./particle-packing/SHRINKAGE_CALCULATOR_ALGORITHM.md) | Chemical shrinkage (drying) and Master Sintering Curve (firing) | ✅ |
+
+### Glass viscosity — [`glass-viscosity/`](./glass-viscosity/)
+
+| File | Topic | Status |
+|------|-------|--------|
 | [`glass-viscosity/INDEX.md`](./glass-viscosity/INDEX.md) | Glass viscosity: Lakatos, Fluegel, VFT fitting | ✅ |
 
 ---
@@ -141,9 +134,99 @@ Specification for temperature field and thermal distribution calculations (not y
 
 ---
 
+## 🌡️ Heat Conduction & Heat Transfer Coefficient
+
+### Heat conduction — [`heat-conduction/`](./heat-conduction/)
+**Service:** Transient heat conduction solver (BC I / BC III)
+**Geometries:** Infinite Plate, Infinite Cylinder, Solid Sphere, Hollow Cylinder, Finite Parallelepiped, Finite Cylinder
+**Reference:** Luikov A. V. *Analytical Heat Diffusion Theory.* Academic Press, 1968.
+
+**Shared Foundation:**
+
+| File | Contents |
+|---|---|
+| [`HEAT_CONDUCTION_00_OVERVIEW.md`](./heat-conduction/HEAT_CONDUCTION_00_OVERVIEW.md) | Objectives, architectural constraints, mathematical citation catalog, bibliography |
+| [`HEAT_CONDUCTION_01_MATERIAL_PROPERTIES.md`](./heat-conduction/HEAT_CONDUCTION_01_MATERIAL_PROPERTIES.md) | AISI 304 thermophysical properties, mean property evaluation, effective heat transfer coefficient |
+
+**BC I — Boundary Conditions of the First Kind ($Bi \to \infty$):**
+
+| File | Geometry |
+|---|---|
+| [`HEAT_CONDUCTION_02_BC1_PLATE.md`](./heat-conduction/HEAT_CONDUCTION_02_BC1_PLATE.md) | Infinite Plate |
+| [`HEAT_CONDUCTION_03_BC1_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_03_BC1_CYLINDER.md) | Infinite Cylinder |
+| [`HEAT_CONDUCTION_04_BC1_SPHERE.md`](./heat-conduction/HEAT_CONDUCTION_04_BC1_SPHERE.md) | Solid Sphere |
+| [`HEAT_CONDUCTION_05_BC1_HOLLOW_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_05_BC1_HOLLOW_CYLINDER.md) | Unbounded Hollow Cylinder |
+| [`HEAT_CONDUCTION_06_BC1_PARALLELEPIPED.md`](./heat-conduction/HEAT_CONDUCTION_06_BC1_PARALLELEPIPED.md) | Rectangular Parallelepiped (product rule) |
+| [`HEAT_CONDUCTION_07_BC1_FINITE_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_07_BC1_FINITE_CYLINDER.md) | Finite Cylinder (product rule) |
+
+**BC III — Boundary Conditions of the Third Kind ($0.1 < Bi < 100$):**
+
+| File | Geometry |
+|---|---|
+| [`HEAT_CONDUCTION_08_BC3_PLATE.md`](./heat-conduction/HEAT_CONDUCTION_08_BC3_PLATE.md) | Infinite Plate — uniform, arbitrary, parabolic profiles |
+| [`HEAT_CONDUCTION_09_BC3_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_09_BC3_CYLINDER.md) | Infinite Cylinder — uniform, arbitrary, parabolic profiles |
+| [`HEAT_CONDUCTION_10_BC3_SPHERE.md`](./heat-conduction/HEAT_CONDUCTION_10_BC3_SPHERE.md) | Solid Sphere — uniform, arbitrary, parabolic profiles |
+| [`HEAT_CONDUCTION_11_BC3_HOLLOW_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_11_BC3_HOLLOW_CYLINDER.md) | Infinite Hollow Cylinder — Bessel-Neumann eigenvalue expansion |
+| [`HEAT_CONDUCTION_12_BC3_PARALLELEPIPED.md`](./heat-conduction/HEAT_CONDUCTION_12_BC3_PARALLELEPIPED.md) | Finite Parallelepiped — product rule, triple series |
+| [`HEAT_CONDUCTION_13_BC3_FINITE_CYLINDER.md`](./heat-conduction/HEAT_CONDUCTION_13_BC3_FINITE_CYLINDER.md) | Finite Cylinder — product rule, double series |
+
+**Solver Framework:**
+
+| File | Contents |
+|---|---|
+| [`HEAT_CONDUCTION_14_TIME_STEPPING.md`](./heat-conduction/HEAT_CONDUCTION_14_TIME_STEPPING.md) | Nonlinear time-stepping, iterative convergence loop, sequential interval method |
+| [`HEAT_CONDUCTION_15_BC_SELECTION_KONDRATIEV.md`](./heat-conduction/HEAT_CONDUCTION_15_BC_SELECTION_KONDRATIEV.md) | BC selection criteria, Kondratiev Regular Thermal Regime, inverse IHCP solver |
+| [`HEAT_CONDUCTION_16_COMPLEX_GEOMETRIES.md`](./heat-conduction/HEAT_CONDUCTION_16_COMPLEX_GEOMETRIES.md) | Engineering approximations for complex shapes, automated topology classification |
+
+### Heat transfer coefficient — [`heat-transfer-coefficient/`](./heat-transfer-coefficient/)
+**Role:** Multi-regime HTC orchestrator — entry point for $\alpha(T_s)$ calculation used by the heat conduction solver
+**Regimes:** Film boiling → Nucleate boiling → Single-phase convection
+
+| File | Contents |
+|---|---|
+| [`HTC_00_REGIMES_OVERVIEW.md`](./heat-transfer-coefficient/HTC_00_REGIMES_OVERVIEW.md) | **Entry point.** Regime routing state machine, Leidenfrost / CHF2 switching boundaries |
+| [`HTC_01_CRITICAL_FLUX.md`](./heat-transfer-coefficient/HTC_01_CRITICAL_FLUX.md) | Critical Heat Flux (CHF) and Minimum Heat Flux (MHF): Zuber, Kutateladze-Borishanskii, Kandlikar, Henry/Berenson models |
+| [`HTC_02_FILM_BOILING.md`](./heat-transfer-coefficient/HTC_02_FILM_BOILING.md) | Film boiling: Leidenfrost marker, Bromley conductive film, Klimenko universal correlation, orientation routing |
+| [`HTC_03_NUCLEATE_BOILING.md`](./heat-transfer-coefficient/HTC_03_NUCLEATE_BOILING.md) | Nucleate boiling: Labuntsov, Rohsenow, Kutateladze, Stephan-Abdelsalam, Cooper, Yang-Maas, Kovalev models |
+
+---
+
+## 🔥 Recuperator & Combustion
+
+### Recuperator — [`recuperator/`](./recuperator/)
+**Role:** Counter-flow heat exchanger optimisation, multilayer wall heat loss, combustion
+
+| File | Contents |
+|---|---|
+| [`RECUPERATOR_SPEC_00_Overview.md`](./recuperator/RECUPERATOR_SPEC_00_Overview.md) | Multi-module architecture, service map, API summary |
+| → [`combustion/07_RecuperatorFlueGas.md`](./combustion/07_RecuperatorFlueGas.md) | Combustion for the recuperator (selected mode, flue gas, smoke start temperature) — in the combustion docs |
+| [`RECUPERATOR_SPEC_02_Geometry.md`](./recuperator/RECUPERATOR_SPEC_02_Geometry.md) | Channel cross-sections for 4 hole forms, perimeters, ray lengths |
+| [`RECUPERATOR_SPEC_03_Materials.md`](./recuperator/RECUPERATOR_SPEC_03_Materials.md) | 21 materials: λ(T) and ε(T) split across refractory/metals modules |
+| [`RECUPERATOR_SPEC_04_HeatTransfer.md`](./recuperator/RECUPERATOR_SPEC_04_HeatTransfer.md) | Nu correlations, gas radiation (Hottel–Mikheev), overall wall HTC |
+| [`RECUPERATOR_SPEC_05_RecuperatorAlgorithm.md`](./recuperator/RECUPERATOR_SPEC_05_RecuperatorAlgorithm.md) | Counter-flow HX optimiser, 8-neighbour grid search, energy balance |
+| [`RECUPERATOR_SPEC_06_FurnaceAlgorithm.md`](./recuperator/RECUPERATOR_SPEC_06_FurnaceAlgorithm.md) | Multilayer radial FD, brentq on inner surface temperature, outer surface cooling |
+| [`RECUPERATOR_SPEC_07_API.md`](./recuperator/RECUPERATOR_SPEC_07_API.md) | All 4 endpoint specs with full DTOs |
+| [`RECUPERATOR_SPEC_08_Bibliography.md`](./recuperator/RECUPERATOR_SPEC_08_Bibliography.md) | Mikheev 1977, Gnielinski, Hottel, Churchill–Chu |
+
+### Combustion — [`combustion/`](./combustion/)
+**Role:** Fuel combustion in four modes on one absolute-enthalpy balance and one product-equilibrium routine
+
+| File | Contents |
+|---|---|
+| [`README.md`](./combustion/README.md) | Modes at a glance, service map, units, known limitations |
+| [`01_SharedPhysics.md`](./combustion/01_SharedPhysics.md) | NASA-7 absolute enthalpy, fuel ΔHf ⇄ LHV, verified fuel data, element balance, WGS equilibrium, brentq flame solver, constants |
+| [`02_Mode1_SolidDirect.md`](./combustion/02_Mode1_SolidDirect.md) | One-step solid combustion (λ < 1, = 1, > 1) |
+| [`03_Mode2_TwoStep.md`](./combustion/03_Mode2_TwoStep.md) | Generator gas at computed T_step1 + secondary-air burnout |
+| [`04_Mode3_Fluid.md`](./combustion/04_Mode3_Fluid.md) | Gaseous (species, hydrocarbon gases, MAP-Pro preset) and liquid (elemental) fuels |
+| [`05_Mode4_Bed.md`](./combustion/05_Mode4_Bed.md) | Packed bed by layers: legacy kinetics, Thiele η, ignited char root, Gunn/Ergun, wall losses, steam |
+| [`06_API.md`](./combustion/06_API.md) | All endpoints with full request/response DTOs, defaults, errors |
+| [`07_RecuperatorFlueGas.md`](./combustion/07_RecuperatorFlueGas.md) | `CombustionService.flueGas()`: combustion mode selected by the recuperator, flue gas, air preheat offset, smoke start temperature |
+
+---
+
 ## Component Effects System
 
-**File:** `COMPONENT_EFFECTS.md`
+**File:** [`phase-equilibrium/COMPONENT_EFFECTS.md`](./phase-equilibrium/COMPONENT_EFFECTS.md)
 
 ### Key Concepts
 - **33 Components** organized in 4 categories (oxides, fluorides, chlorides)
@@ -188,7 +271,7 @@ B += effectFromComponents;
 
 ## Mineral Phase Identification
 
-**File:** `MINERAL_PHASE_IDENTIFICATION.md`
+**File:** [`phase-equilibrium/MINERAL_PHASE_IDENTIFICATION.md`](./phase-equilibrium/MINERAL_PHASE_IDENTIFICATION.md)
 
 ### 17 Mineral Phases Identified
 
@@ -241,9 +324,9 @@ Extract Oxides → Check Alumina → Check Silica → Check Calcium
 
 ## Refractoriness Calculation
 
-**File:** [`REFRACTORINESS_ALGORITHM.md`](./REFRACTORINESS_ALGORITHM.md)
+**File:** [`phase-equilibrium/REFRACTORINESS_ALGORITHM.md`](./phase-equilibrium/REFRACTORINESS_ALGORITHM.md)
 
-Mix fractions in. The whole fired composition is equilibrated on the phase diagrams of [FULL_PHASE_EQUILIBRIUM.md](./FULL_PHASE_EQUILIBRIUM.md), and bisection on the equilibrium liquid gives:
+Mix fractions in. The whole fired composition is equilibrated on the phase diagrams of [FULL_PHASE_EQUILIBRIUM.md](./phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md), and bisection on the equilibrium liquid gives:
 - solidus (first liquid) and liquidus (all but inert and unmodelled parts liquid);
 - the temperature at each requested liquid fraction (default 10, 25, 50 %).
 
@@ -511,25 +594,33 @@ docs/algorithms/
 ├── README.md                              ← this file (index)
 │
 ├── ── Refractory ──────────────────────────────────────────
-├── COMPONENT_EFFECTS.md                   ✅
-├── MINERAL_PHASE_IDENTIFICATION.md        ✅
-├── REFRACTORINESS_ALGORITHM.md            ✅
-├── BLEND_OPTIMIZER_ALGORITHM.md           ✅
-├── BLEND_OPTIMIZER_FIXED_FRACTIONS.md     ✅
-├── BLEND_OPTIMIZER_INPUT_OUTPUT_DEMO.md   ✅
-├── SHRINKAGE_CALCULATOR_ALGORITHM.md      ✅
-├── FULL_PHASE_EQUILIBRIUM.md              ✅
-├── PACKING_MODELS.md                      ✅
-├── MIX_COMPOSITION_ALGORITHM.md           ✅
-├── MIX_THERMAL_ALGORITHM.md               ✅
-├── WATER_DEMAND_ALGORITHM.md              ✅
-├── PSD_ALGORITHMS.md                      ✅
-├── MULTI_MODEL_COMPLETE.md                ✅
-├── COMPONENT_SPECIFIC_THRESHOLDS.md       ✅
-├── VIABLE_COMPOSITION_RANGES.md           ✅
-├── VIABLE_RANGE_OUTPUT_FORMAT.md          ✅
-├── ALGORITHMS_INDEX.md                    ✅
-├── glass-viscosity/                       ✅  (14 chapters)
+├── phase-equilibrium/
+│   ├── FULL_PHASE_EQUILIBRIUM.md
+│   ├── MINERAL_PHASE_IDENTIFICATION.md
+│   ├── REFRACTORINESS_ALGORITHM.md
+│   └── COMPONENT_EFFECTS.md
+├── mix/
+│   ├── MIX_COMPOSITION_ALGORITHM.md
+│   └── MIX_THERMAL_ALGORITHM.md
+├── blend-optimizer/
+│   ├── BLEND_OPTIMIZER_ALGORITHM.md
+│   ├── BLEND_OPTIMIZER_FIXED_FRACTIONS.md
+│   ├── BLEND_OPTIMIZER_INPUT_OUTPUT_DEMO.md
+│   ├── COMPONENT_SPECIFIC_THRESHOLDS.md
+│   ├── VIABLE_COMPOSITION_RANGES.md
+│   └── VIABLE_RANGE_OUTPUT_FORMAT.md
+├── particle-packing/
+│   ├── PACKING_MODELS.md
+│   ├── PSD_ALGORITHMS.md
+│   ├── WATER_DEMAND_ALGORITHM.md
+│   └── SHRINKAGE_CALCULATOR_ALGORITHM.md
+├── glass-viscosity/                       (14 chapters)
+│
+├── ── Heat transfer ───────────────────────────────────────
+├── heat-conduction/
+├── heat-transfer-coefficient/
+├── recuperator/
+├── combustion/
 │
 └── ── Thermal Distribution (planned) ─────────────────────
     thermal-distribution/                  ⚠️ spec only — not yet implemented
@@ -573,7 +664,7 @@ backend/src/common/thermal/           ← Shared compound data + utils
 | Domain | Algorithms documented | Implementation | Tests |
 |---|---|---|---|
 | Refractory — core | ✅ 5 full docs | ✅ 11 services | ⚠️ Partial |
-| Refractory — additional | ✅ 14 docs (real file names) | ✅ Implemented | ⚠️ Partial |
+| Refractory — additional | ✅ 11 docs (`phase-equilibrium/`, `mix/`, `blend-optimizer/`, `particle-packing/`) + `glass-viscosity/` | ✅ Implemented | ⚠️ Partial |
 | Thermodynamics | ✅ This index + [service ref](../services/THERMODYNAMICS_SERVICES.md) | ✅ 8 services | ⚠️ Partial |
 | Common thermal library | ✅ [COMMON_THERMAL_LIBRARY.md](../services/COMMON_THERMAL_LIBRARY.md) | ✅ 16 compounds | ✅ |
 | Thermal distribution | ✅ 12 spec files (planned only) | ❌ Not started | ❌ |

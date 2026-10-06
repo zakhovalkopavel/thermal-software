@@ -222,7 +222,7 @@ To ease editor-based development the repository includes a small utility script 
 | IMPL-06 | Medium | Add slag model tests to `glass-viscosity-isokom.spec.ts` or new `slag-viscosity.spec.ts` |
 | IMPL-07 | Low | Fluegel isokom tolerance for some reference glasses is 5°C not 2°C; investigate coefficient rounding |
 | IMPL-08 | Low | D6 (BaO-bearing Lakatos glass) fails 2°C tolerance; check BaO coefficient sign in source CSV |
-| IMPL-09 | High | Fluorides are missing from `MOLAR_MASSES`, so `wtPctToMolPct` skips them: `selectModel` always sees CaF2 = 0 mol% (Nakamoto never chosen, Iida CaF2 limit warning never fires). Add `CaF2`, `NaF`, `KF`, `MgF2`, `AlF3`, `LiF` from `COMPOUND_LIBRARY` ([phase equilibrium, Step 6](../FULL_PHASE_EQUILIBRIUM.md)) |
+| IMPL-09 | High | Fluorides are missing from `MOLAR_MASSES`, so `wtPctToMolPct` skips them: `selectModel` always sees CaF2 = 0 mol% (Nakamoto never chosen, Iida CaF2 limit warning never fires). Add `CaF2`, `NaF`, `KF`, `MgF2`, `AlF3`, `LiF` from `COMPOUND_LIBRARY` ([phase equilibrium, Step 6](../phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md)) |
 | IMPL-10 | High | Fluegel 2007 has an `F` term but receives `CaF2`, `NaF`, …, which it drops silently. Convert MFₓ → cation oxide + `F` per the paper's composition convention (verified in phase-diagram data step 2) in `utils/fluoride-to-fluegel.util.ts`; no Lakatos reserve when fluorides are present; Iida warns about fluorides other than CaF2 |
 
 ---

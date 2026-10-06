@@ -847,5 +847,5 @@ Combined with PSD optimization, they enable systematic formulation design with p
 
 **Implementation:** `src/calculators/PackingCalculator.ts`  
 **Documentation:** This file  
-**Related:** PSD_ALGORITHMS.md, SHRINKAGE_MODELS.md
+**Related:** PSD_ALGORITHMS.md, SHRINKAGE_CALCULATOR_ALGORITHM.md
 

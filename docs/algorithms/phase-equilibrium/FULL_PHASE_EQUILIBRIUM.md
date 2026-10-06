@@ -1,11 +1,11 @@
 # Phase Equilibrium Algorithm (phase diagrams, grain size, unreacted original phases)
 
 **Service:** `backend/src/modules/refractory/services/composition/phase-equilibrium.service.ts` (`PhaseEquilibriumService`)  
-**Endpoint:** `POST /api/v1/refractory/phase-equilibrium` ([API spec §1](../api/REFRACTORY_API_SPEC.md))  
+**Endpoint:** `POST /api/v1/refractory/phase-equilibrium` ([API spec §1](../../api/REFRACTORY_API_SPEC.md))  
 **Constants:** `constants/phase-equilibrium.constants.ts` (`PHASE_EQUILIBRIUM_CONSTANTS`), `constants/grain-reaction.constants.ts` (`GRAIN_REACTION_CONSTANTS`)  
 **Data:** `data/phase-diagrams/` (phase catalog, main systems, extra-oxide subsystems), `mineralogy` of each mix component in `data/materials/*.data.ts`  
 **Utils:** `utils/phase-diagram/`, `utils/grain-reaction/`, `utils/mineralogy/`, `utils/glass-phase/`  
-**Glass and melt properties:** existing `GlassViscosityService` ([glass-viscosity spec](glass-viscosity/INDEX.md))  
+**Glass and melt properties:** existing `GlassViscosityService` ([glass-viscosity spec](../glass-viscosity/INDEX.md))  
 **Tests:** `backend/test/unit/refractory/services/composition/phase-equilibrium.service.spec.ts`, `backend/test/unit/refractory/utils/phase-diagram/`, `backend/test/unit/refractory/utils/grain-reaction/`, `backend/test/unit/refractory/utils/glass-phase/`, `backend/test/unit/refractory/data/mineralogy-consistency.spec.ts`, `backend/test/unit/refractory/data/phase-diagram-sources.spec.ts`
 
 ---
@@ -42,7 +42,7 @@ Every phase, invariant point, cotectic curve, liquidus node, solid-solution limi
 - `holdTime_hours` t: hold at T (default 2 h, the same name as in `/shrinkage`).
 - `totalMass`: fired mass of the body for the reported masses (default 1).
 - Per material, from the library:
-  - `composition` and loss on ignition: fired basis, every oxide and fluoride, as in [MIX_COMPOSITION_ALGORITHM.md](MIX_COMPOSITION_ALGORITHM.md);
+  - `composition` and loss on ignition: fired basis, every oxide and fluoride, as in [MIX_COMPOSITION_ALGORITHM.md](../mix/MIX_COMPOSITION_ALGORITHM.md);
   - `activationEnergy_Jmol`;
   - `mineralogy`.
 
@@ -321,7 +321,7 @@ Each crystal entry carries its `origin`. Each liquid or glass part carries its s
 
 ## Outputs
 
-See [API spec §1](../api/REFRACTORY_API_SPEC.md) for the full shape:
+See [API spec §1](../../api/REFRACTORY_API_SPEC.md) for the full shape:
 - `atTemperature` (crystals, liquid with parts and η, glass with parts, state and η), `afterCooling` (crystals, glass with parts and glass points);
 - `unreactedOriginalPhases[]` (aggregated over the mix);
 - `materials[]` (per material);
@@ -366,7 +366,7 @@ Removed:
   - the controller route, `services/thermal/thermal-performance.service.ts` and its provider, `test/unit/refractory/services/thermal/thermal-performance.service.spec.ts`;
   - `dto/thermal-conductivity/` (`thermal-conductivity.dto.ts`, `thermal-conductivity-result.dto.ts`, `thermal-conductivity-components.dto.ts`) and `interfaces/thermal-performance.interface.ts`;
   - `calculateWeightedThermalConductivity`, `calculateWeightedSpecificHeat` and `extractComponentsByCategory` in `data/component-properties.ts`, and `AIR_THERMAL_CONDUCTIVITY`, `BASE_DENSITY_KGM3`, `BASE_TEMPERATURE_C`, `DEFAULT_POROSITY`, `SPECIFIC_HEAT_TEMP_COEFF`, `THERMAL_CONDUCTIVITY_TEMP_COEFF` in `constants/calculation-constants.ts`;
-  - frontend: see [Step 9](../frontend/STEP_09_MINERAL_COMPOSITIONS.md) (λ chart moves to `/mix/thermal`);
+  - frontend: see [Step 9](../../frontend/STEP_09_MINERAL_COMPOSITIONS.md) (λ chart moves to `/mix/thermal`);
 - the old composition-based refractoriness (see [REFRACTORINESS_ALGORITHM.md](REFRACTORINESS_ALGORITHM.md), Code layout);
 - `OxideCompositionDto` in `dto/common/common.dto.ts` (eight oxide fields) and `utils/oxide-composition-record.util.ts` with its spec, once no DTO uses them.
 

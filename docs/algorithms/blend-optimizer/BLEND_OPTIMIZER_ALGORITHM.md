@@ -499,10 +499,10 @@ Workflow:
 
 ## Related Documentation
 
-- **PSD Algorithms:** `docs/algorithms/PSD_ALGORITHMS.md`
-- **Packing Models:** `docs/algorithms/PACKING_MODELS.md`
-- **Shrinkage Calculator:** `docs/algorithms/SHRINKAGE_CALCULATOR_ALGORITHM.md`
-- **Component Effects:** `docs/algorithms/COMPONENT_EFFECTS.md`
+- **PSD Algorithms:** `docs/algorithms/particle-packing/PSD_ALGORITHMS.md`
+- **Packing Models:** `docs/algorithms/particle-packing/PACKING_MODELS.md`
+- **Shrinkage Calculator:** `docs/algorithms/particle-packing/SHRINKAGE_CALCULATOR_ALGORITHM.md`
+- **Component Effects:** `docs/algorithms/phase-equilibrium/COMPONENT_EFFECTS.md`
 
 ---
 

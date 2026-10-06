@@ -139,7 +139,7 @@ check_implementation_status() {
 #
 #    INDEX_SCOPES are derived at runtime:
 #      • Every subdirectory of docs/ is a scope.
-#      • Its "index files" = README.md / INDEX.md / ALGORITHMS_INDEX.md
+#      • Its "index files" = README.md / INDEX.md / MIGRATION_INDEX.md
 #        found either in that dir or its parent.
 #      • A file is orphaned if it is NOT linked from ANY .md in docs/.
 # ════════════════════════════════════════════════════════════════
@@ -164,7 +164,7 @@ check_orphans() {
   done < <(find_all_md)
 
   # Index file names — never reported as orphans
-  local -a INDEX_NAMES=("README.md" "INDEX.md" "ALGORITHMS_INDEX.md" "MIGRATION_INDEX.md")
+  local -a INDEX_NAMES=("README.md" "INDEX.md" "MIGRATION_INDEX.md")
 
   # Check every .md that lives inside a sub-directory of docs/
   # (-mindepth 2 = at least docs/<subdir>/file.md)

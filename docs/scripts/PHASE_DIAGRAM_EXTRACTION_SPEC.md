@@ -5,48 +5,56 @@
 Produce the phase-diagram dataset in `shared/processed/phase-diagrams/` from scanned
 figures of the Slag Atlas, cross-checked against NSRDS-NBS 61, in a reproducible way.
 
-| Output | Produced from | Mode |
-|---|---|---|
-| `systems/<system>.json` (binary systems) | `configs/<system>.config.json` + measurements on the atlas page | Regenerated completely |
-| `boundaryCurves[].polyline_wt`, `isotherms[].polyline_wt` in ternary `systems/<system>.json` | `configs/<system>.curves.config.json` + measurements | Filled in place; nothing else in the file changes |
-| Review overlay, review list, renders, indexes | Same run | Working files, not committed |
-| Validation report | Whole dataset | Console, exit code |
+
+| Output                                                                                       | Produced from                                                   | Mode                                              |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------- |
+| `systems/<system>.json` (binary systems)                                                     | `configs/<system>.config.json` + measurements on the atlas page | Regenerated completely                            |
+| `boundaryCurves[].polyline_wt`, `isotherms[].polyline_wt` in ternary `systems/<system>.json` | `configs/<system>.curves.config.json` + measurements            | Filled in place; nothing else in the file changes |
+| Review overlay, review list, renders, indexes                                                | Same run                                                        | Working files, not committed                      |
+| Validation report                                                                            | Whole dataset                                                   | Console, exit code                                |
+
 
 The dataset is consumed by the phase-equilibrium implementation (step 3 of the
-phase-diagram rework, see `docs/algorithms/FULL_PHASE_EQUILIBRIUM.md`).
+phase-diagram rework, see `docs/algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md`).
 
 ---
+
+
 
 ## Principles
 
 1. **The config is the source of truth.** Everything a person decides or reads lives in
-   the config: page and figure, axis tick values, printed labels, phases at each invariant,
+  the config: page and figure, axis tick values, printed labels, phases at each invariant,
    chosen NBS entries, notes and hand-written blocks. The tool measures the rest (pixels,
    line temperatures, curve points, digitized compositions, NBS comparisons, statuses) and
    writes the system JSON. Running it twice gives the same file.
 2. **No data without proof.** Every value in the output carries its figure, printed page,
-   PDF page and pixel (atlas) or entry number and page (NBS). A value that cannot be traced
+  PDF page and pixel (atlas) or entry number and page (NBS). A value that cannot be traced
    to a source is not written.
 3. **OCR only suggests.** Tesseract readings of labels and captions appear in the review list
-   and the figure index. They never go into the system JSON.
+  and the figure index. They never go into the system JSON.
 4. **Printed labels win over the drawing.** Temperatures and compositions of invariant points
-   are the printed labels. Where the drawing differs from a label (for example Fig. 3.125
+  are the printed labels. Where the drawing differs from a label (for example Fig. 3.125
    draws the "38" eutectic at 39.3 wt%), the label is used, the difference is reported, and
    traced points near that junction are dropped (see [Curve sampling](#curve-sampling)).
    Values without a printed label are digitized and flagged as such.
-5. **Statuses follow `sources.json` → `statusLegend`.** The tool computes `extracted`,
-   `confirmed` and `conflict`; it never writes `recalled`.
+5. **Statuses follow** `sources.json` **→** `statusLegend`**.** The tool computes `extracted`,
+  `confirmed` and `conflict`; it never writes `recalled`.
 
 ---
 
+
+
 ## Folders
 
-| Folder | Content | Git |
-|---|---|---|
-| `shared/sources/` | Slag Atlas and NSRDS-NBS 61 PDFs | untracked (large files) |
-| `shared/processed/phase-diagrams/` | Dataset: `compounds.json`, `sources.json`, `OPEN_ITEMS.md`, `systems/` | ignored by `shared/.gitignore`; commit with `git add -f` |
-| `shared/processed/phase-diagrams/configs/` | Per-diagram configs | same as above |
-| `tmp/reports/python/phase-diagrams/` (`/app/reports/phase-diagrams/` in the container) | Working files | ignored (`tmp/*`) |
+
+| Folder                                                                                 | Content                                                                | Git                                                      |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------- |
+| `shared/sources/`                                                                      | Slag Atlas and NSRDS-NBS 61 PDFs                                       | untracked (large files)                                  |
+| `shared/processed/phase-diagrams/`                                                     | Dataset: `compounds.json`, `sources.json`, `OPEN_ITEMS.md`, `systems/` | ignored by `shared/.gitignore`; commit with `git add -f` |
+| `shared/processed/phase-diagrams/configs/`                                             | Per-diagram configs                                                    | same as above                                            |
+| `tmp/reports/python/phase-diagrams/` (`/app/reports/phase-diagrams/` in the container) | Working files                                                          | ignored (`tmp/*`)                                        |
+
 
 The working folder is the only `tmp/` path mounted into the `python` container
 (`./tmp/reports/python:/app/reports` in `compose.yml`), so no compose change is needed.
@@ -67,6 +75,8 @@ tmp/reports/python/phase-diagrams/
 ```
 
 ---
+
+
 
 ## Implementation layout
 
@@ -147,26 +157,32 @@ python/
 
 ---
 
+
+
 ## Per-diagram workflow
+
+
 
 ### Binary system
 
 1. **Locate** the figure in `figure-index/slag-atlas-1995.json` (`make pd-index` once).
 2. **Render and look**: `make pd-tile PAGE=108 BOX="1050 1700 2950 4000"`. Read the
-   printed labels from the tiles.
+  printed labels from the tiles.
 3. **Write the config** `configs/<system>.config.json`: source, axis tick values, phases,
-   invariants with printed labels and seed pixels, liquidus branches, verbatim blocks.
+  invariants with printed labels and seed pixels, liquidus branches, verbatim blocks.
 4. **Calibrate**: `make pd-calibrate SYSTEM=mgo-sio2` detects the frame and ticks, prints
-   the tick pixels and residuals, and writes an overlay. Fix the config if a tick is wrong
+  the tick pixels and residuals, and writes an overlay. Fix the config if a tick is wrong
    (optional `tickPixels` override).
 5. **Find NBS candidates**: `make pd-nbs-suggest COMPONENTS="MgO SiO2"`; add the chosen
-   entry numbers to the invariants.
+  entry numbers to the invariants.
 6. **Extract**: `make pd-extract SYSTEM=mgo-sio2` writes `systems/mgo-sio2.json`, the
-   overlay and the review list.
+  overlay and the review list.
 7. **Review** the overlay and `review/mgo-sio2.md`; carry open items into `OPEN_ITEMS.md`.
 8. **Validate**: `make pd-validate`.
 9. Update `compounds.json` and `sources.json` by hand where the new figure adds sources,
-   then stop for user validation and commit.
+  then stop for user validation and commit.
+
+
 
 ### Ternary curves
 
@@ -175,6 +191,8 @@ python/
 3. Review, validate, commit.
 
 ---
+
+
 
 ## Coordinate systems
 
@@ -187,26 +205,32 @@ determined once by matching the corners before its curves are traced).
 ### Binary calibration
 
 - x: piecewise-linear interpolation between tick pairs (value, pixel) of the x component
-  in wt%. y: same for temperature in °C.
+in wt%. y: same for temperature in °C.
 - Scan rotation: a linear term from the frame lines, `y_level = py + s · (px − px_ref)`,
-  where `s` is the slope of the bottom frame line; and `x_level = px + k · (py_ref − py)`
-  for the left frame tilt.
+where `s` is the slope of the bottom frame line; and `x_level = px + k · (py_ref − py)`
+for the left frame tilt.
 - Linear extrapolation beyond the outer ticks (needed for liquidus ends above the top tick).
 - Calibration check: tick residual ≤ 2 px against a straight-line fit; compound lines
-  (vertical strokes) must fall within 0.3 wt% of stoichiometry.
+(vertical strokes) must fall within 0.3 wt% of stoichiometry.
+
+
 
 ### Ternary calibration
 
 - Barycentric from the three corner pixels: solve
-  `[[xA, xB, xC], [yA, yB, yC], [1, 1, 1]] · [a, b, c] = [px, py, 1]`, then × 100.
+`[[xA, xB, xC], [yA, yB, yC], [1, 1, 1]] · [a, b, c] = [px, py, 1]`, then × 100.
 - Optional quadratic warp (stored in the system file `digitization.warpCorrection`):
-  features `f = [1, x, y, x², xy, y²]` with `x = (px − 1100)/1000`, `y = (py − 1100)/1000`;
-  ideal pixel = `f · C`; then barycentric. Read from the system file, never refitted by the
-  curve filler.
+features `f = [1, x, y, x², xy, y²]` with `x = (px − 1100)/1000`, `y = (py − 1100)/1000`;
+ideal pixel = `f · C`; then barycentric. Read from the system file, never refitted by the
+curve filler.
 
 ---
 
+
+
 ## Config schema
+
+
 
 ### Binary config — `configs/<system>.config.json`
 
@@ -266,25 +290,27 @@ determined once by matching the corners before its curves are traced).
 }
 ```
 
-| Field | Required | Meaning |
-|---|---|---|
-| `system`, `components` | yes | Output `system` and `components` (order of `liquid_wt` keys) |
-| `output` | yes | Path relative to the dataset folder |
-| `idPrefix` | yes | Prefix of generated ids (`as`, `am`, `ms`, …) |
-| `source` | yes | Copied to the output `source` block |
-| `frameSearchBox` | yes | Page region containing the diagram (atlas pages hold two diagrams) |
-| `axes.x.component` | yes | Oxide plotted on x, in wt% |
-| `axes.*.ticks` | yes | Tick values from left to right / top to bottom |
-| `axes.*.tickPixels` | no | Manual override when detection fails |
-| `endMembers` | yes | Pure-oxide ends of the liquidus: x position and printed melting temperature |
-| `invariants[].label` | yes | Printed values; `null` composition = not printed, digitized value used and flagged |
-| `invariants[].seedPixel` | yes | Approximate junction pixel; snapped by `junction_locator` |
-| `invariants[].nbs` | yes | Chosen NBS entry numbers (may be empty) |
-| `liquidus[].segments` | yes | `trace` (followed along ink), `straight` (two points), `flat` (constant temperature) |
-| `liquidus[].grid` | yes | wt% values to sample; endpoint values are replaced by the invariant labels |
-| `liquidImmiscibility` | no | Dome traced from the monotectic; critical point = traced maximum |
-| `junctionTolerance_wt` | no | Default 1.5; see [Curve sampling](#curve-sampling) |
-| `verbatim` | no | Blocks copied unchanged into the output (hand-written knowledge) |
+
+| Field                    | Required | Meaning                                                                              |
+| ------------------------ | -------- | ------------------------------------------------------------------------------------ |
+| `system`, `components`   | yes      | Output `system` and `components` (order of `liquid_wt` keys)                         |
+| `output`                 | yes      | Path relative to the dataset folder                                                  |
+| `idPrefix`               | yes      | Prefix of generated ids (`as`, `am`, `ms`, …)                                        |
+| `source`                 | yes      | Copied to the output `source` block                                                  |
+| `frameSearchBox`         | yes      | Page region containing the diagram (atlas pages hold two diagrams)                   |
+| `axes.x.component`       | yes      | Oxide plotted on x, in wt%                                                           |
+| `axes.*.ticks`           | yes      | Tick values from left to right / top to bottom                                       |
+| `axes.*.tickPixels`      | no       | Manual override when detection fails                                                 |
+| `endMembers`             | yes      | Pure-oxide ends of the liquidus: x position and printed melting temperature          |
+| `invariants[].label`     | yes      | Printed values; `null` composition = not printed, digitized value used and flagged   |
+| `invariants[].seedPixel` | yes      | Approximate junction pixel; snapped by `junction_locator`                            |
+| `invariants[].nbs`       | yes      | Chosen NBS entry numbers (may be empty)                                              |
+| `liquidus[].segments`    | yes      | `trace` (followed along ink), `straight` (two points), `flat` (constant temperature) |
+| `liquidus[].grid`        | yes      | wt% values to sample; endpoint values are replaced by the invariant labels           |
+| `liquidImmiscibility`    | no       | Dome traced from the monotectic; critical point = traced maximum                     |
+| `junctionTolerance_wt`   | no       | Default 1.5; see [Curve sampling](#curve-sampling)                                   |
+| `verbatim`               | no       | Blocks copied unchanged into the output (hand-written knowledge)                     |
+
 
 References: `end:<phase>` = end-member melting point, `<id>` = invariant liquid,
 `<id>:second` = second liquid of a monotectic.
@@ -308,30 +334,38 @@ References: `end:<phase>` = end-member melting point, `<id>` = invariant liquid,
 ```
 
 - Curves are matched to `boundaryCurves[]` by `fields` and `path`; isotherms by `field` and
-  `temperature_C`. Unmatched config entries are errors.
+`temperature_C`. Unmatched config entries are errors.
 - End pixels come from the invariant sources (`pixel`) of the system file. Points defined in
-  another system file (edge points) need `endpointPixels`.
+another system file (edge points) need `endpointPixels`.
 
 ---
 
+
+
 ## Algorithms
+
+
 
 ### Ink mask and stroke filter
 
 - Grey < 128 → ink.
 - Stroke width = 2 × distance transform at the skeleton. The filter keeps strokes inside
-  `strokeWidth_px`; text, thin arrows and dashed lines drop out. Binaries use the plain mask
-  restricted to the frame; ternaries use the filtered mask.
+`strokeWidth_px`; text, thin arrows and dashed lines drop out. Binaries use the plain mask
+restricted to the frame; ternaries use the filtered mask.
+
+
 
 ### Frame and ticks
 
 - Frame lines: rows/columns inside `frameSearchBox` with the longest ink runs (≥ 70 % of
-  the box side). Line position = centre of the run.
+the box side). Line position = centre of the run.
 - Ticks: short perpendicular runs (3–15 px) touching the inside of each frame edge,
-  detected with a low threshold (≥ 5 ink pixels in a 20 px band).
+detected with a low threshold (≥ 5 ink pixels in a 20 px band).
 - Matching: detected ticks are paired with the config values by spacing (median spacing,
-  then nearest expected position). Frame corners stand in for the outer ticks when they
-  coincide. Unmatched values are errors unless `tickPixels` overrides them.
+then nearest expected position). Frame corners stand in for the outer ticks when they
+coincide. Unmatched values are errors unless `tickPixels` overrides them.
+
+
 
 ### Horizontal invariant lines
 
@@ -349,104 +383,121 @@ composition is reported next to the printed label.
 ### Curve tracing
 
 - Shortest path (heapq Dijkstra, 8-connected) on a cost image: 1 on ink, 50 off ink, so
-  small gaps are bridged but labels are not followed. Optional waypoints split the path.
+small gaps are bridged but labels are not followed. Optional waypoints split the path.
 - Restricted to the bounding box of the endpoints and waypoints plus a 40 px margin.
 - For a binary `trace` segment the endpoints are the snapped junctions or the end-member
-  axis crossing; the seed pixel chooses the correct stroke when several are near.
+axis crossing; the seed pixel chooses the correct stroke when several are near.
 - A path that crosses more than 15 px of non-ink in total is reported as a trace gap.
+
+
 
 ### Curve sampling
 
 - Pixel path → (wt%, °C) with the calibration; sorted by wt%; linear interpolation on the
-  grid.
+grid.
 - The first and last points of a branch are replaced by the printed invariant or end-member
-  values, so every branch starts and ends exactly at its invariant.
+values, so every branch starts and ends exactly at its invariant.
 - If the drawn junction differs from its printed composition by more than 0.5 wt%, grid
-  points within `junctionTolerance_wt` of the printed composition are dropped (on the side
-  of the branch) and the omission is recorded in `liquidusSource.read`.
+points within `junctionTolerance_wt` of the printed composition are dropped (on the side
+of the branch) and the omission is recorded in `liquidusSource.read`.
 - Temperatures are rounded to 1 °C, compositions to 0.1 wt%.
 - Ternary polylines: path → wt% triples (calibration + warp), simplified with
-  Douglas–Peucker at 0.1 wt%, first and last points equal to the endpoint invariants.
+Douglas–Peucker at 0.1 wt%, first and last points equal to the endpoint invariants.
+
+
 
 ### Labels and figures (OCR)
 
 - `label_reader`: crop around the label, ×4 upscale, Tesseract `--psm 7` with a digit
-  whitelist. The guess and confidence are compared with the config label; differences are
-  review items.
+whitelist. The guess and confidence are compared with the config label; differences are
+review items.
 - `figure_indexer`: each page at 150 dpi in grey, Tesseract on the full page, regex
-  `Fig\.\s?3\.\d+` for captions and the following text; output `{figure, pdfPage,
-  printedPage, captionStart}`.
+`Fig\.\s?3\.\d+` for captions and the following text; output `{figure, pdfPage, printedPage, captionStart}`.
 
 ---
 
+
+
 ## NSRDS-NBS 61
+
+
 
 ### Text index
 
 - `pdftotext -layout` of the whole PDF into `nbs/nsrds-nbs-61-1.txt`; page breaks (`\f`)
-  give the PDF page; printed page = PDF page − 8 (`sources.json` page mapping).
+give the PDF page; printed page = PDF page − 8 (`sources.json` page mapping).
 - `nbs_text_normalizer` fixes recurrent OCR noise of the text layer before parsing:
 
-  | Raw | Normalized |
-  |---|---|
-  | `Si0 2`, `Si0,`, `SiO,`, `SiO.` | `SiO2` |
-  | `YlgO`, `MgoO` | `MgO` |
-  | `AI,O,`, `Al,O,`, `Al,0,`, `A1,0,` | `Al2O3` |
-  | `Ca0` | `CaO` |
-  | `K,0`, `K 2O`, `K,O` | `K2O` |
-  | `Na,O`, `Na,0` | `Na2O` |
-  | `:t`, `±o`, `=` before a number in the uncertainty column | `±` |
+  | Raw                                                       | Normalized |
+  | --------------------------------------------------------- | ---------- |
+  | `Si0 2`, `Si0,`, `SiO,`, `SiO.`                           | `SiO2`     |
+  | `YlgO`, `MgoO`                                            | `MgO`      |
+  | `AI,O,`, `Al,O,`, `Al,0,`, `A1,0,`                        | `Al2O3`    |
+  | `Ca0`                                                     | `CaO`      |
+  | `K,0`, `K 2O`, `K,O`                                      | `K2O`      |
+  | `Na,O`, `Na,0`                                            | `Na2O`     |
+  | `:t`, `±o`, `=` before a number in the uncertainty column | `±`        |
 
 - Entry line: entry number (4 digits), system (components joined by `-`), composition
-  (one value for binaries, `a-b-c` for ternaries, optional `APP`), temperature with optional
-  uncertainty or `APP`, reference numbers. Lines that look like entries but do not parse go
-  to `nsrds-nbs-61-1.unparsed.txt`.
+(one value for binaries, `a-b-c` for ternaries, optional `APP`), temperature with optional
+uncertainty or `APP`, reference numbers. Lines that look like entries but do not parse go
+to `nsrds-nbs-61-1.unparsed.txt`.
+
+
 
 ### Conversion and comparison
 
 - Composition basis: mol%. Binaries: the value is mol% of the first-named component of the
-  NBS system (which may differ from the order of `components`). Ternaries: values in the
-  order of the NBS system name.
+NBS system (which may differ from the order of `components`). Ternaries: values in the
+order of the NBS system name.
 - wt% via `OXIDE_MOLAR_MASS`: CaO 56.077, MgO 40.304, SiO2 60.084, Al2O3 101.961,
-  Na2O 61.979, K2O 94.196 g/mol.
+Na2O 61.979, K2O 94.196 g/mol.
 - ΔT = T(NBS) − T(atlas); Δ = largest absolute difference over the oxides, in wt%.
 - Each comparison is written as an NBS source of the invariant (`reported`,
-  `converted_wt`, `originalReference`, `comparison` text, as in `al2o3-mgo.json`).
+`converted_wt`, `originalReference`, `comparison` text, as in `al2o3-mgo.json`).
 - `nbs-suggest` lists every entry whose normalized system contains exactly the given
-  components, with converted wt% and temperature, for choosing entries in the config.
+components, with converted wt% and temperature, for choosing entries in the config.
+
+
 
 ### Status
 
-| Condition | Status |
-|---|---|
-| No NBS entry chosen | `extracted` |
+
+| Condition                                                                    | Status      |
+| ---------------------------------------------------------------------------- | ----------- |
+| No NBS entry chosen                                                          | `extracted` |
 | At least one chosen entry within tolerance (abs(ΔT) ≤ 10 °C and Δ ≤ 1.5 wt%) | `confirmed` |
-| Entries chosen, none within tolerance | `conflict` |
+| Entries chosen, none within tolerance                                        | `conflict`  |
+
 
 Approximate (`APP`) entries are compared like the others and marked "(approximate value)".
 Liquidus branches are always `extracted`.
 
 ---
 
+
+
 ## Output: binary system JSON
 
 Same schema and key order as the existing binary files (`al2o3-mgo.json`, `mgo-sio2.json`).
 
-| Key | From |
-|---|---|
-| `system`, `components`, `phases` | config |
-| `units` | fixed: `temperature_C` °C, `liquid_wt` wt%, `liquidus` `[wt% <x component>, °C]` |
-| `source` | config |
-| `nbsCrossCheck` | config `verbatim` (when present) |
-| `digitization.render` | generated (page, dpi, size, "full page coordinates") |
-| `digitization.calibration` | generated (tick pixels, rotation) |
-| `digitization.method` | fixed text |
-| `digitization.check` | generated: compound-line positions, line temperatures vs labels, digitized vs printed compositions |
-| `invariantPoints[]` | config (id, type, reaction, phases, label values, notes) + generated (`liquid_wt`, `status`, atlas source reading text and `pixel`, NBS sources) |
-| `liquidImmiscibility` | generated from the config block (boundary points, critical point) |
-| `solidSolutions`, `inversions` | config `verbatim` |
-| `liquidus[]` | generated points; `from`/`to` from config; `status` `extracted` |
-| `liquidusSource` | generated text: label end points, dropped points |
+
+| Key                              | From                                                                                                                                             |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `system`, `components`, `phases` | config                                                                                                                                           |
+| `units`                          | fixed: `temperature_C` °C, `liquid_wt` wt%, `liquidus` `[wt% <x component>, °C]`                                                                 |
+| `source`                         | config                                                                                                                                           |
+| `nbsCrossCheck`                  | config `verbatim` (when present)                                                                                                                 |
+| `digitization.render`            | generated (page, dpi, size, "full page coordinates")                                                                                             |
+| `digitization.calibration`       | generated (tick pixels, rotation)                                                                                                                |
+| `digitization.method`            | fixed text                                                                                                                                       |
+| `digitization.check`             | generated: compound-line positions, line temperatures vs labels, digitized vs printed compositions                                               |
+| `invariantPoints[]`              | config (id, type, reaction, phases, label values, notes) + generated (`liquid_wt`, `status`, atlas source reading text and `pixel`, NBS sources) |
+| `liquidImmiscibility`            | generated from the config block (boundary points, critical point)                                                                                |
+| `solidSolutions`, `inversions`   | config `verbatim`                                                                                                                                |
+| `liquidus[]`                     | generated points; `from`/`to` from config; `status` `extracted`                                                                                  |
+| `liquidusSource`                 | generated text: label end points, dropped points                                                                                                 |
+
 
 Id convention: `<prefix>-<temperature>` for binary and monotectic invariants,
 `<prefix>-<phase>-melting` for congruent compound melting.
@@ -464,49 +515,58 @@ Polyline format: `[[a, b, c], …]` in wt% in the order of `components`.
 
 ---
 
+
+
 ## Review outputs
 
 - **Overlay** (`overlays/<system>.png`): the diagram crop with detected ticks, invariant
-  lines, snapped junctions, traced paths and sampled points drawn in colour; legend with ids.
+lines, snapped junctions, traced paths and sampled points drawn in colour; legend with ids.
 - **Review list** (`review/<system>.md`): one line per item, grouped by kind:
 
-  | Kind | Raised when |
-  |---|---|
-  | `label-drawing` | drawn composition differs from the printed label by > 0.5 wt%, or line temperature by > 3 °C |
-  | `unlabelled` | value digitized without a printed label |
-  | `nbs-conflict` | an invariant ends as `conflict` |
-  | `nbs-approximate` | an `APP` entry was used |
-  | `trace-gap` | traced path crosses > 15 px of non-ink |
-  | `tick-residual` | tick residual > 2 px |
-  | `ocr-differs` | OCR label guess differs from the config label |
-  | `dropped-points` | grid points dropped near a junction |
+  | Kind              | Raised when                                                                                  |
+  | ----------------- | -------------------------------------------------------------------------------------------- |
+  | `label-drawing`   | drawn composition differs from the printed label by > 0.5 wt%, or line temperature by > 3 °C |
+  | `unlabelled`      | value digitized without a printed label                                                      |
+  | `nbs-conflict`    | an invariant ends as `conflict`                                                              |
+  | `nbs-approximate` | an `APP` entry was used                                                                      |
+  | `trace-gap`       | traced path crosses > 15 px of non-ink                                                       |
+  | `tick-residual`   | tick residual > 2 px                                                                         |
+  | `ocr-differs`     | OCR label guess differs from the config label                                                |
+  | `dropped-points`  | grid points dropped near a junction                                                          |
+
 
 The review list is copied into `OPEN_ITEMS.md` by hand after reading it.
 
 ---
+
+
 
 ## Validation
 
 `dataset_validator` checks the whole dataset folder. Errors make the exit code 1;
 warnings do not.
 
-| Code | Level | Rule |
-|---|---|---|
-| PD001 | error | Every JSON file parses |
-| PD002 | error | `liquid_wt` / `secondLiquid_wt` sum to 100 ± 0.1 |
-| PD003 | error | Invariant ids unique across all system files |
-| PD004 | error | Every phase id exists in `compounds.json` |
-| PD005 | error | Liquidus points sorted by composition; first/last point equal the referenced invariant or end-member (composition ± 0.05, temperature exact) |
-| PD006 | error | `status` is one of the `statusLegend` keys |
-| PD007 | error | `confirmed` has at least one NBS source within tolerance; `conflict` has NBS sources and none within tolerance |
-| PD008 | error | Every cited atlas figure is listed in `sources.json` → `figures` with the same pages |
-| PD009 | warning | Atlas invariant source without `pixel` |
-| PD010 | warning | `recalled` value present |
-| PD011 | error | Boundary-curve `path` ids exist in some system file |
-| PD012 | warning | `polyline_wt` still `null` |
-| PD013 | error | `printedPage` / `pdfPage` consistent with the page mapping of the source |
+
+| Code  | Level   | Rule                                                                                                                                         |
+| ----- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| PD001 | error   | Every JSON file parses                                                                                                                       |
+| PD002 | error   | `liquid_wt` / `secondLiquid_wt` sum to 100 ± 0.1                                                                                             |
+| PD003 | error   | Invariant ids unique across all system files                                                                                                 |
+| PD004 | error   | Every phase id exists in `compounds.json`                                                                                                    |
+| PD005 | error   | Liquidus points sorted by composition; first/last point equal the referenced invariant or end-member (composition ± 0.05, temperature exact) |
+| PD006 | error   | `status` is one of the `statusLegend` keys                                                                                                   |
+| PD007 | error   | `confirmed` has at least one NBS source within tolerance; `conflict` has NBS sources and none within tolerance                               |
+| PD008 | error   | Every cited atlas figure is listed in `sources.json` → `figures` with the same pages                                                         |
+| PD009 | warning | Atlas invariant source without `pixel`                                                                                                       |
+| PD010 | warning | `recalled` value present                                                                                                                     |
+| PD011 | error   | Boundary-curve `path` ids exist in some system file                                                                                          |
+| PD012 | warning | `polyline_wt` still `null`                                                                                                                   |
+| PD013 | error   | `printedPage` / `pdfPage` consistent with the page mapping of the source                                                                     |
+
 
 ---
+
+
 
 ## CLI interface
 
@@ -547,6 +607,8 @@ PYTHONPATH=python/src python3 python/src/scripts/extract_phase_diagram.py \
   --work-dir tmp/reports/python/phase-diagrams validate
 ```
 
+
+
 ### Console output example
 
 ```
@@ -561,40 +623,46 @@ PYTHONPATH=python/src python3 python/src/scripts/extract_phase_diagram.py \
 
 ---
 
+
+
 ## Make targets
 
 `scripts/make.d/09-phase-diagrams.mk`, all running in the `python` container:
 
-| Target | Command |
-|---|---|
-| `make pd-index` | `index-figures --source slag-atlas-1995 --pages 40-200` |
-| `make pd-tile PAGE=108 BOX="x0 y0 x1 y1" [SCALE=2]` | `tile` |
-| `make pd-calibrate SYSTEM=mgo-sio2` | `calibrate` |
-| `make pd-extract SYSTEM=mgo-sio2` | `extract` |
-| `make pd-curves SYSTEM=cao-mgo-sio2` | `trace-curves` |
-| `make pd-nbs-index` | `nbs-index` |
-| `make pd-nbs-suggest COMPONENTS="MgO SiO2"` | `nbs-suggest` |
-| `make pd-validate` | `validate` |
-| `make pd-test` | `pytest /app/tests/phase_diagrams/ -v` |
+
+| Target                                              | Command                                                 |
+| --------------------------------------------------- | ------------------------------------------------------- |
+| `make pd-index`                                     | `index-figures --source slag-atlas-1995 --pages 40-200` |
+| `make pd-tile PAGE=108 BOX="x0 y0 x1 y1" [SCALE=2]` | `tile`                                                  |
+| `make pd-calibrate SYSTEM=mgo-sio2`                 | `calibrate`                                             |
+| `make pd-extract SYSTEM=mgo-sio2`                   | `extract`                                               |
+| `make pd-curves SYSTEM=cao-mgo-sio2`                | `trace-curves`                                          |
+| `make pd-nbs-index`                                 | `nbs-index`                                             |
+| `make pd-nbs-suggest COMPONENTS="MgO SiO2"`         | `nbs-suggest`                                           |
+| `make pd-validate`                                  | `validate`                                              |
+| `make pd-test`                                      | `pytest /app/tests/phase_diagrams/ -v`                  |
+
 
 ---
+
+
 
 ## Tests
 
 - **Unit tests** on synthetic images drawn with Pillow (frame, ticks, horizontal lines,
-  curves, a fake label, a gap): calibration and rotation, tick detection and matching, line
-  detection, junction snapping, tracing (including gap bridging and not following a label),
-  sampling and endpoint rules, dropped points.
+curves, a fake label, a gap): calibration and rotation, tick detection and matching, line
+detection, junction snapping, tracing (including gap bridging and not following a label),
+sampling and endpoint rules, dropped points.
 - Composition conversion (round trip, the NBS entries already in the dataset: 6095 →
-  55.0 / 45.0 wt%, 6077 → 95.0 / 5.0 wt%).
+55.0 / 45.0 wt%, 6077 → 95.0 / 5.0 wt%).
 - NBS parsing on real text snippets with OCR noise; normalizer table; suggest filter.
 - Status resolver on the `al2o3-mgo` cases (`am-1995` confirmed, `am-1975` conflict).
 - Writer golden file; ternary filler on a small fixture (only `polyline_wt` changes,
-  rollback on mismatch).
+rollback on mismatch).
 - Validator: one passing fixture dataset and one fixture per error code.
 - **Regression** (`test_regression_atlas.py`, skipped without the atlas PDF): regenerating
-  `al2o3-mgo` and `mgo-sio2` from their configs reproduces the current files — invariant
-  values identical, liquidus within ±3 °C and ±0.2 wt%, same ids, statuses and NBS sources.
+`al2o3-mgo` and `mgo-sio2` from their configs reproduces the current files — invariant
+values identical, liquidus within ±3 °C and ±0.2 wt%, same ids, statuses and NBS sources.
 
 ```bash
 make pd-test
@@ -603,41 +671,51 @@ docker compose run --rm python python -m pytest /app/tests/phase_diagrams/ -v
 
 ---
 
+
+
 ## Acceptance
 
 1. `make pd-test` passes.
 2. `make pd-validate` reports no errors on the current dataset.
 3. Configs for `al2o3-mgo` and `mgo-sio2` regenerate their files within the regression
-   tolerance; the regenerated files replace the hand-made ones after review of the diff.
+  tolerance; the regenerated files replace the hand-made ones after review of the diff.
 4. CaO-MgO (Fig. 3.66, PDF p. 81) is extracted with the tool and passes user validation.
 
 ---
+
+
 
 ## Porting from the working scripts
 
 The first extraction sessions used ad-hoc scripts in `/tmp/sa` and `/tmp/ph`. They are
 kept in `scratch/` of the working folder as the reference for porting:
 
-| Scratch script | Module |
-|---|---|
-| `m64.py`, `m108.py` (calibration, `wt`, `T`) | `axis_calibration`, `binary_calibration`, `tick_detector` |
-| `m64_liq.py`, `m108_liq.py` (`trace`, `traceh`, `sample`) | `curve_tracer`, `curve_sampler` |
-| `tile.py` | `tile_renderer` |
-| `thick.py`, `*_thick.npy` | `stroke_width_filter` |
-| `cfit.py` (quadratic warp fit) | `ternary_calibration` (applies stored coefficients) |
-| `corners.py`, `junc.py`, `cms_fix.py` | `junction_locator` |
-| `labels.py`, `labels2.py` | `label_reader` |
-| `/tmp/ph/all.txt`, `nbs_main.json`, `nbs_wt.json` | `nbs_entry_index`, `nbs_matcher` |
-| caption OCR loop (session of Fig. 3.125) | `figure_indexer` |
+
+| Scratch script                                            | Module                                                    |
+| --------------------------------------------------------- | --------------------------------------------------------- |
+| `m64.py`, `m108.py` (calibration, `wt`, `T`)              | `axis_calibration`, `binary_calibration`, `tick_detector` |
+| `m64_liq.py`, `m108_liq.py` (`trace`, `traceh`, `sample`) | `curve_tracer`, `curve_sampler`                           |
+| `tile.py`                                                 | `tile_renderer`                                           |
+| `thick.py`, `*_thick.npy`                                 | `stroke_width_filter`                                     |
+| `cfit.py` (quadratic warp fit)                            | `ternary_calibration` (applies stored coefficients)       |
+| `corners.py`, `junc.py`, `cms_fix.py`                     | `junction_locator`                                        |
+| `labels.py`, `labels2.py`                                 | `label_reader`                                            |
+| `/tmp/ph/all.txt`, `nbs_main.json`, `nbs_wt.json`         | `nbs_entry_index`, `nbs_matcher`                          |
+| caption OCR loop (session of Fig. 3.125)                  | `figure_indexer`                                          |
+
 
 ---
 
+
+
 ## References
 
-| Source | Page mapping | Notes |
-|---|---|---|
-| Slag Atlas, 2nd ed., VDEh, Verlag Stahleisen 1995, chapter 3 | PDF page = printed page + 20 | Scanned, no text layer; binary systems before Fig. 3.148, ternary systems from Fig. 3.148 (PDF p. 119) |
-| NSRDS-NBS 61 Part I, Janz et al., NBS 1978 | PDF page = printed page + 8 | Text layer with OCR noise; compositions in mol% |
+
+| Source                                                       | Page mapping                 | Notes                                                                       |
+| ------------------------------------------------------------ | ---------------------------- | --------------------------------------------------------------------------- |
+| Slag Atlas, 2nd ed., VDEh, Verlag Stahleisen 1995, chapter 3 | PDF page = printed page + 20 | Scanned, no text layer; binaries Figs. 3.1–3.147, ternaries from Fig. 3.148 |
+| NSRDS-NBS 61 Part I, Janz et al., NBS 1978                   | PDF page = printed page + 8  | Text layer with OCR noise; compositions in mol%                             |
+
 
 Dataset conventions: `shared/processed/phase-diagrams/sources.json` (status legend,
 figures, NBS references) and `OPEN_ITEMS.md` (open decisions and checks).

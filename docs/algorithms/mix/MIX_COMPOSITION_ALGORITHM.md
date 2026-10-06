@@ -1,7 +1,7 @@
 # Mix Composition Algorithm
 
 **Service:** `backend/src/modules/refractory/services/composition/mix-composition.service.ts` (`MixCompositionService`)  
-**Endpoint:** `POST /api/v1/refractory/mix/composition` ([API spec §13](../api/REFRACTORY_API_SPEC.md))  
+**Endpoint:** `POST /api/v1/refractory/mix/composition` ([API spec §13](../../api/REFRACTORY_API_SPEC.md))  
 **Constants:** `constants/mix-composition.constants.ts` (`MIX_COMPOSITION_CONSTANTS`)  
 **Tests:** `backend/test/unit/refractory/services/composition/mix-composition.service.spec.ts`
 
@@ -9,7 +9,7 @@
 
 ## Purpose
 
-A refractory mix is a mechanical mix of library raw materials (binders, oxides, silicates, clays, carbides, nitrides, borates, fluorides). The calculation endpoints take the mix fractions and use this service internally for the fired composition and loss on ignition of each material: `/phase-equilibrium` ([FULL_PHASE_EQUILIBRIUM.md](FULL_PHASE_EQUILIBRIUM.md)) and `/refractoriness` ([REFRACTORINESS_ALGORITHM.md](REFRACTORINESS_ALGORITHM.md)). No endpoint takes a fixed list of oxides any more. This algorithm converts a mix into:
+A refractory mix is a mechanical mix of library raw materials (binders, oxides, silicates, clays, carbides, nitrides, borates, fluorides). The calculation endpoints take the mix fractions and use this service internally for the fired composition and loss on ignition of each material: `/phase-equilibrium` ([FULL_PHASE_EQUILIBRIUM.md](../phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md)) and `/refractoriness` ([REFRACTORINESS_ALGORITHM.md](../phase-equilibrium/REFRACTORINESS_ALGORITHM.md)). No endpoint takes a fixed list of oxides any more. This algorithm converts a mix into:
 
 - the composition of the **fired** mix (volatile components removed): every oxide, fluorides and other non-oxides;
 - the true density of the fired mix.

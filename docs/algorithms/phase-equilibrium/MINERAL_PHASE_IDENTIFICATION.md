@@ -1,6 +1,6 @@
 # Mineral Phases: Phase Catalog and Raw Material Mineralogy
 
-**Endpoint:** `POST /api/v1/refractory/phase-equilibrium` ([API spec §1](../api/REFRACTORY_API_SPEC.md)): `afterCooling` and `unreactedOriginalPhases`  
+**Endpoint:** `POST /api/v1/refractory/phase-equilibrium` ([API spec §1](../../api/REFRACTORY_API_SPEC.md)): `afterCooling` and `unreactedOriginalPhases`  
 **Calculation:** [FULL_PHASE_EQUILIBRIUM.md](FULL_PHASE_EQUILIBRIUM.md)  
 **Data:** `data/phase-diagrams/phase-catalog.data.ts` (`PHASE_CATALOG`), `mineralogy` of each mix component in `data/materials/*.data.ts`  
 **Tests:** `backend/test/unit/refractory/data/phase-catalog.spec.ts`, `backend/test/unit/refractory/data/mineralogy-consistency.spec.ts`

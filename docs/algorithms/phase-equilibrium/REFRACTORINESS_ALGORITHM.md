@@ -1,7 +1,7 @@
 # Refractoriness Algorithm (cone refractoriness and equilibrium melting of the fired mix)
 
 **Service:** `backend/src/modules/refractory/services/composition/refractoriness.service.ts` (`RefractorinessService`, rewritten)  
-**Endpoint:** `POST /api/v1/refractory/refractoriness` ([API spec §11](../api/REFRACTORY_API_SPEC.md))  
+**Endpoint:** `POST /api/v1/refractory/refractoriness` ([API spec §11](../../api/REFRACTORY_API_SPEC.md))  
 **Constants:** `constants/refractoriness.constants.ts` (`REFRACTORINESS_CONSTANTS`)  
 **Data:** `data/refractoriness/` (published cone values of reference materials, ASTM C24 cone temperatures, ASTM C27 classes, aluminosilicate formula with its validity range; every entry with a `DataSource`)  
 **Uses:** `MixCompositionService` (fired composition), the equilibrium of one composition of [FULL_PHASE_EQUILIBRIUM.md](FULL_PHASE_EQUILIBRIUM.md) (Step 5, main system + subsystems), `data/phase-diagrams/`  
@@ -36,7 +36,7 @@ No particle size and no hold time: the whole body is treated as one fully reacte
 
 ## Step 1 — fired composition
 
-`MixCompositionService` gives the fired composition: oxides, fluorides and non-oxides on the fired basis ([MIX_COMPOSITION_ALGORITHM.md](MIX_COMPOSITION_ALGORITHM.md)).
+`MixCompositionService` gives the fired composition: oxides, fluorides and non-oxides on the fired basis ([MIX_COMPOSITION_ALGORITHM.md](../mix/MIX_COMPOSITION_ALGORITHM.md)).
 
 - Carbides, nitrides and carbon are inert: they never melt and are reported as `inert_wt`.
 - Oxides and fluorides without diagram data go to `unmodelled_wt`, as in phase equilibrium.
@@ -90,7 +90,7 @@ ASTM C27 classifies fireclay and high-alumina refractories by Al2O3 content and 
 
 ## Outputs
 
-See [API spec §11](../api/REFRACTORY_API_SPEC.md): `refractoriness` (`temperature_C`, `coneEquivalent`, `uncertainty_C`, `criticalLiquid_pct`, `aluminosilicateFormula_C`, `astmC27`), `solidus_C`, `liquidus_C`, `liquidLevels[]`, `system`, `method`, `inert_wt`, `unmodelled_wt`, `warnings`.
+See [API spec §11](../../api/REFRACTORY_API_SPEC.md): `refractoriness` (`temperature_C`, `coneEquivalent`, `uncertainty_C`, `criticalLiquid_pct`, `aluminosilicateFormula_C`, `astmC27`), `solidus_C`, `liquidus_C`, `liquidLevels[]`, `system`, `method`, `inert_wt`, `unmodelled_wt`, `warnings`.
 
 ## Code layout
 

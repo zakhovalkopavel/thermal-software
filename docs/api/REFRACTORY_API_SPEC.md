@@ -54,7 +54,7 @@ Phases of a mix of library raw materials fired at `temperature` for `holdTime_ho
 
 The fired mineralogy (crystals and glass after cooling, unreacted original phases) is part of this response. There is no separate mineral-phases endpoint.
 
-Algorithm: [`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/FULL_PHASE_EQUILIBRIUM.md).
+Algorithm: [`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md).
 
 **Request body** (`PhaseEquilibriumInputDto`):
 ```json
@@ -321,7 +321,7 @@ Furnas model for multi-component packing (Furnas 1931). Simpler than CPM, no com
 
 ### `POST /participation`
 
-Reacted mass fraction of each size fraction during a firing. It uses the same shrinking-core grain reaction as §1 ([`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/FULL_PHASE_EQUILIBRIUM.md) Step 2):
+Reacted mass fraction of each size fraction during a firing. It uses the same shrinking-core grain reaction as §1 ([`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md) Step 2):
 - `δ(T, t) = δ_ref · √(t / t_ref) · exp(−E / (2R) · (1/T − 1/T_ref))`
 - `X = 1 − (1 − 2δ/d)³`, and `X = 1` when 2δ ≥ d.
 
@@ -476,7 +476,7 @@ Calculates drying and firing shrinkage over a temperature profile.
 
 ### `POST /refractoriness`
 
-Refractoriness (cone test, ASTM C24 / GOST 4069) of the fired mix, with solidus, liquidus and the temperatures at given liquid fractions, from the equilibrium of the whole fired composition (the same phase diagrams as §1, without grain size or hold time). The refractoriness is the temperature at which the equilibrium liquid reaches a critical fraction fitted to published cone values; aluminosilicates also get an empirical formula value, and ASTM C27 classes are checked. Refractoriness under load (ISO 1893) is not estimated. Every oxide and fluoride with diagram data counts; there is no oxide list in the request. Algorithm: [`REFRACTORINESS_ALGORITHM.md`](../algorithms/REFRACTORINESS_ALGORITHM.md).
+Refractoriness (cone test, ASTM C24 / GOST 4069) of the fired mix, with solidus, liquidus and the temperatures at given liquid fractions, from the equilibrium of the whole fired composition (the same phase diagrams as §1, without grain size or hold time). The refractoriness is the temperature at which the equilibrium liquid reaches a critical fraction fitted to published cone values; aluminosilicates also get an empirical formula value, and ASTM C27 classes are checked. Refractoriness under load (ISO 1893) is not estimated. Every oxide and fluoride with diagram data counts; there is no oxide list in the request. Algorithm: [`REFRACTORINESS_ALGORITHM.md`](../algorithms/phase-equilibrium/REFRACTORINESS_ALGORITHM.md).
 
 The thermal conductivity of a mix comes from `POST /mix/thermal` (§13b). The former `POST /thermal-conductivity` (8 oxides, component lookup that matched no oxide) is removed.
 
@@ -633,7 +633,7 @@ Calculates glass viscosity at a given temperature. Automatically selects the bes
 
 ### `POST /mix/composition`
 
-Chemical composition of a mix of library raw materials on the **fired basis**. Mix components are the materials returned by `GET /mix-components`. Algorithm: [`MIX_COMPOSITION_ALGORITHM.md`](../algorithms/MIX_COMPOSITION_ALGORITHM.md).
+Chemical composition of a mix of library raw materials on the **fired basis**. Mix components are the materials returned by `GET /mix-components`. Algorithm: [`MIX_COMPOSITION_ALGORITHM.md`](../algorithms/mix/MIX_COMPOSITION_ALGORITHM.md).
 
 **Request body** (`MixCompositionInputDto`):
 ```json
@@ -687,7 +687,7 @@ Numbers are unrounded.
 
 ### `POST /mix/thermal`
 
-Thermal properties of a **fired** library raw material, or mix, versus temperature. All fired phases are kept (SiC, TiN, AlN, C, … are not converted to oxides). Algorithm: [`MIX_THERMAL_ALGORITHM.md`](../algorithms/MIX_THERMAL_ALGORITHM.md).
+Thermal properties of a **fired** library raw material, or mix, versus temperature. All fired phases are kept (SiC, TiN, AlN, C, … are not converted to oxides). Algorithm: [`MIX_THERMAL_ALGORITHM.md`](../algorithms/mix/MIX_THERMAL_ALGORITHM.md).
 
 **Request body** (`MixThermalInputDto`):
 ```json
@@ -765,7 +765,7 @@ Rules:
 - `amorphous_wt`: calculated remainder = composition minus the phase oxides;
 - `source`.
 
-See [`MINERAL_PHASE_IDENTIFICATION.md`](../algorithms/MINERAL_PHASE_IDENTIFICATION.md).
+See [`MINERAL_PHASE_IDENTIFICATION.md`](../algorithms/phase-equilibrium/MINERAL_PHASE_IDENTIFICATION.md).
 
 ---
 
@@ -820,7 +820,7 @@ The global prefix in `main.ts` is `api/v1`. The controller is decorated with `@C
 
 | Endpoint | DTO exists | Controller method | Implemented |
 |----------|-----------|-------------------|-------------|
-| `/phase-equilibrium` | 🔄 fractions-based DTOs | ✅ | 🔄 phase diagrams + grain reaction ([`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/FULL_PHASE_EQUILIBRIUM.md)) |
+| `/phase-equilibrium` | 🔄 fractions-based DTOs | ✅ | 🔄 phase diagrams + grain reaction ([`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md)) |
 | `/blend-optimization` | ✅ | ✅ | ✅ |
 | `/psd/andreasen` | ❌ needs DTO | ❌ | ✅ service |
 | `/psd/funk-dinger` | ❌ needs DTO | ❌ | ✅ service |
@@ -830,7 +830,7 @@ The global prefix in `main.ts` is `api/v1`. The controller is decorated with `@C
 | `/water-demand` | ❌ needs DTO | ❌ | ✅ service |
 | `/water-demand/range` | ❌ needs DTO | ❌ | ✅ service |
 | `/shrinkage` | ✅ | ❌ | ✅ service |
-| `/refractoriness` | 🔄 fractions-based DTOs | ✅ | 🔄 phase-diagram melting ([`REFRACTORINESS_ALGORITHM.md`](../algorithms/REFRACTORINESS_ALGORITHM.md)) |
+| `/refractoriness` | 🔄 fractions-based DTOs | ✅ | 🔄 phase-diagram melting ([`REFRACTORINESS_ALGORITHM.md`](../algorithms/phase-equilibrium/REFRACTORINESS_ALGORITHM.md)) |
 | `/glass-viscosity` | ✅ | ❌ | ✅ service |
 | `/mix/composition` | ✅ | ✅ | ✅ (tests: `mix-composition.service.spec.ts`, `mix-composition-input.dto.spec.ts`) |
 | `/mix/thermal` | ✅ | ✅ | ✅ (tests: `mix-thermal.service.spec.ts`, `mix-thermal-utils.spec.ts`) |

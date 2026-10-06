@@ -27,7 +27,7 @@ Each category has a different set of available properties; the page shows what t
 | E10 | `GET` | `/refractory/material-categories` | categories (primary group) with their materials | implemented ([Step 3](STEP_03_MATERIALS_MODULE.md)) |
 | E5 | `GET` | `/refractory/materials/:materialId` | full entry of the selected material | implemented |
 | E9 | `GET` | `/refractory/mix-components` | which materials allow the calculated block | implemented |
-| C3 | `POST` | `/refractory/mix/thermal` | `{ fractions: [{ materialId, massFraction: 1 }], temperatures_C, porosity }` → fired phases, Cp coverage, λ reference, `points[]` (λ_s, λ_eff, Cp, a), true and bulk density, warnings | implemented ([algorithm](../algorithms/MIX_THERMAL_ALGORITHM.md)) |
+| C3 | `POST` | `/refractory/mix/thermal` | `{ fractions: [{ materialId, massFraction: 1 }], temperatures_C, porosity }` → fired phases, Cp coverage, λ reference, `points[]` (λ_s, λ_eff, Cp, a), true and bulk density, warnings | implemented ([algorithm](../algorithms/mix/MIX_THERMAL_ALGORITHM.md)) |
 
 ### 1.1 Why the calculated block uses C3
 

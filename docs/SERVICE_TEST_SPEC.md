@@ -276,7 +276,7 @@ Use the Jest + Nest TestingModule pattern for services that depend on Nest provi
 5) `refractoriness.service.ts` (rewritten: mix fractions → solidus, liquidus, liquid levels)
 - Public methods:
   - `calculate(dto: RefractorinessInputDto)`
-- Tests to implement: see [`REFRACTORINESS_ALGORITHM.md`](algorithms/REFRACTORINESS_ALGORITHM.md) § Tests (solidus at the data-file invariants, liquidus null above 2000 °C, inert share, levels non-decreasing, no standards without a recorded correlation)
+- Tests to implement: see [`REFRACTORINESS_ALGORITHM.md`](algorithms/phase-equilibrium/REFRACTORINESS_ALGORITHM.md) § Tests (solidus at the data-file invariants, liquidus null above 2000 °C, inert share, levels non-decreasing, no standards without a recorded correlation)
 
 6) `thermal-performance.service.ts` — removed with `POST /thermal-conductivity`; thermal properties are tested in `mix-thermal.service.spec.ts`
 

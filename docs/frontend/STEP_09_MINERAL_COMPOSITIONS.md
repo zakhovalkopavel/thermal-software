@@ -3,7 +3,7 @@
 **Priority:** HIGH  
 **Depends on:** [STEP_02_SHARED_CALC_COMPONENTS.md](STEP_02_SHARED_CALC_COMPONENTS.md), [STEP_03_MATERIALS_MODULE.md](STEP_03_MATERIALS_MODULE.md)  
 **Frontend root:** `frontend/src/modules/materials/sections/mineral-compositions/`  
-**Backend:** `refractory.controller.ts` (+ `POST /refractory/mix/composition` — approved and implemented, §2; `POST /refractory/phase-equilibrium` takes the fractions, [FULL_PHASE_EQUILIBRIUM.md](../algorithms/FULL_PHASE_EQUILIBRIUM.md))
+**Backend:** `refractory.controller.ts` (+ `POST /refractory/mix/composition` — approved and implemented, §2; `POST /refractory/phase-equilibrium` takes the fractions, [FULL_PHASE_EQUILIBRIUM.md](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md))
 
 ---
 
@@ -96,7 +96,7 @@ export type MixFraction = {
 
 ## 2. Mix composition (bulk composition card)
 
-> **Approved and implemented** (`MixCompositionService`, algorithm in [MIX_COMPOSITION_ALGORITHM.md](../algorithms/MIX_COMPOSITION_ALGORITHM.md), API in [REFRACTORY_API_SPEC.md §13](../api/REFRACTORY_API_SPEC.md)). **Change in step 3:** the accepted / other oxide split is merged into `oxides_wt`; `acceptedOxides_normalized` and the 5 % warning are removed. It replaces the legacy `MixLibraryService.calculateOxideComposition` stub, which returns `{}`. Depends on `MixComponentCatalogService` from [Step 3 §1.4](STEP_03_MATERIALS_MODULE.md).
+> **Approved and implemented** (`MixCompositionService`, algorithm in [MIX_COMPOSITION_ALGORITHM.md](../algorithms/mix/MIX_COMPOSITION_ALGORITHM.md), API in [REFRACTORY_API_SPEC.md §13](../api/REFRACTORY_API_SPEC.md)). **Change in step 3:** the accepted / other oxide split is merged into `oxides_wt`; `acceptedOxides_normalized` and the 5 % warning are removed. It replaces the legacy `MixLibraryService.calculateOxideComposition` stub, which returns `{}`. Depends on `MixComponentCatalogService` from [Step 3 §1.4](STEP_03_MATERIALS_MODULE.md).
 
 ### 2.1 Endpoint
 
@@ -192,7 +192,7 @@ Inside Docker: `docker compose exec backend npm run test -- mix-composition`.
 | Document | Entry |
 |----------|-------|
 | `docs/api/REFRACTORY_API_SPEC.md` | `POST /mix/composition` request, response, errors |
-| `docs/algorithms/MIX_COMPOSITION_ALGORITHM.md` (new) + `docs/algorithms/ALGORITHMS_INDEX.md` | classification table and formulas of §2.2 |
+| `docs/algorithms/mix/MIX_COMPOSITION_ALGORITHM.md` (new) + `docs/algorithms/README.md` | classification table and formulas of §2.2 |
 | `docs/INTERFACES_IMPLEMENTATION_INDEX.md` | new DTOs and enums |
 | `docs/migration/IMPLEMENTATION_STATUS.md` | new service and tests |
 
@@ -219,12 +219,12 @@ Every chemical analysis uses the **fractions**: phase equilibrium gets `complete
 | Analysis | Endpoint | Extra inputs | Key outputs |
 |----------|----------|--------------|-------------|
 | Phase equilibrium | `POST /refractory/phase-equilibrium` | `temperature` °C, `holdTime_hours` (default `MINERAL_COMPOSITIONS_UI.chemistry.defaultHoldTime_hours` = 2), `totalMass?` | totals at T (liquid with viscosity, glass parts rigid / softened with viscosity, crystals) and after cooling (glass parts with glass transition and softening point, crystals with origin); **unreacted original phases** (original %, unreacted %, share not reacted, unchanged / softened / transformed into); per material and per fraction reacted %; matrix composition, system, method, solidus, liquidus; warnings |
-| Refractoriness | `POST /refractory/refractoriness` ([algorithm](../algorithms/REFRACTORINESS_ALGORITHM.md)) | `liquidLevels_pct?` (default `[10, 25, 50]`) | refractoriness (temperature ± uncertainty, cone equivalent, aluminosilicate formula value when in range, ASTM C27 class and minimum when applicable), solidus, liquidus, temperature at each liquid level, system / method, inert and unmodelled %, warnings. No standard selector and no load-test values |
-| Effective λ | `POST /refractory/mix/thermal` ([algorithm](../algorithms/MIX_THERMAL_ALGORITHM.md)) | `temperatures_C` = the selected T plus the sweep grid; `porosity` (prefill from packing `porosity_initial`); a second call with porosity 0 | `points[]` (λ_solid, λ_eff, Cp, diffusivity), true and bulk density, warnings. Replaces the removed `/thermal-conductivity` |
+| Refractoriness | `POST /refractory/refractoriness` ([algorithm](../algorithms/phase-equilibrium/REFRACTORINESS_ALGORITHM.md)) | `liquidLevels_pct?` (default `[10, 25, 50]`) | refractoriness (temperature ± uncertainty, cone equivalent, aluminosilicate formula value when in range, ASTM C27 class and minimum when applicable), solidus, liquidus, temperature at each liquid level, system / method, inert and unmodelled %, warnings. No standard selector and no load-test values |
+| Effective λ | `POST /refractory/mix/thermal` ([algorithm](../algorithms/mix/MIX_THERMAL_ALGORITHM.md)) | `temperatures_C` = the selected T plus the sweep grid; `porosity` (prefill from packing `porosity_initial`); a second call with porosity 0 | `points[]` (λ_solid, λ_eff, Cp, diffusivity), true and bulk density, warnings. Replaces the removed `/thermal-conductivity` |
 
 The mineral-phases card uses `afterCooling` and `unreactedOriginalPhases` from the phase-equilibrium query; there is no separate mineral-phases endpoint.
 
-Algorithm: [FULL_PHASE_EQUILIBRIUM.md](../algorithms/FULL_PHASE_EQUILIBRIUM.md).
+Algorithm: [FULL_PHASE_EQUILIBRIUM.md](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md).
 
 Legacy UX reference: `legacy/refractory/public/phase-calculator.html`.
 

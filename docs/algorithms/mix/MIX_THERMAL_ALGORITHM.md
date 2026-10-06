@@ -1,7 +1,7 @@
 # Mix Thermal Algorithm (fired raw materials)
 
 **Service:** `backend/src/modules/refractory/services/thermal/mix-thermal.service.ts` (`MixThermalService`)  
-**Endpoint:** `POST /api/v1/refractory/mix/thermal` ([API spec §13b](../api/REFRACTORY_API_SPEC.md))  
+**Endpoint:** `POST /api/v1/refractory/mix/thermal` ([API spec §13b](../../api/REFRACTORY_API_SPEC.md))  
 **Constants:** `constants/mix-thermal.constants.ts` (`MIX_THERMAL_CONSTANTS`)  
 **Utils:** `utils/fired-phases.util.ts`, `utils/phase-specific-heat.util.ts`, `utils/maxwell-eucken-conductivity.util.ts`; air λ from the `Air` compound (`common/thermal/compound/gas/air.ts`) via `CompoundPropertyResolver`  
 **Tests:** `backend/test/unit/refractory/services/thermal/mix-thermal.service.spec.ts`, `backend/test/unit/refractory/utils/mix-thermal-utils.spec.ts`
