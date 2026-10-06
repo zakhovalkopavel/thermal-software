@@ -1,0 +1,200 @@
+{
+  "system": "Na2O-Al2O3-SiO2",
+  "components": ["Na2O", "Al2O3", "SiO2"],
+  "units": { "temperature_C": "°C", "liquid_wt": "wt%" },
+  "source": {
+    "ref": "slag-atlas-1995",
+    "figure": "Fig. 3.195",
+    "diagram": "Liquidus surface and compatibility relations in the Al2O3-Na2O-SiO2 system",
+    "printedPage": 117,
+    "pdfPage": 137,
+    "caption": "Drawn by Osborn, Muan [1] according to experimental results of Bowen, Schairer [2, 3], De Pablo-Galan, Foster [4], and Galakhov [5]: [1] E. F. Osborn, A. Muan, Ceramic Foundation 1960; [2] J. F. Schairer, N. L. Bowen, Am. J. Sci. 245 (1947) 193/204; [3] J. F. Schairer, N. L. Bowen, Am. J. Sci. 254 (1956) 129/95; [4] L. De Pablo-Galan, W. F. Foster, J. Am. Ceram. Soc. 42 (1959) 491/8; [5] F. Ya. Galakhov, Izv. Akad. Nauk SSSR (1959) 770/3. An enlarged inset right of the main figure covers the 1050–1280 °C region."
+  },
+  "variantChoice": {
+    "chosen": "Fig. 3.195",
+    "alternative": "Fig. 3.196 (printed p. 117, pdfPage 137): part of the liquidus surface at the Na2O-SiO2 edge as re-investigated by Moir, Glasser [6] (Phys. Chem. Glasses 17 (1976) 45/53). Adds the phase Na6Si8O19 (N3S8) and the labels 799, 755, 765, 808, 837.",
+    "reason": "Atlas text: \"The results reported by Bowen, Schairer [2, 3] have been generally accepted.\" N3S8 is not in the phase catalog."
+  },
+  "digitization": {
+    "render": "pdfPage 137 at 400 dpi (3306 × 4673 px); pixel = full-page coordinates",
+    "calibration": { "SiO2": [1940.5, 473.9], "Na2O": [1036.9, 2041.0], "Al2O3": [2843.0, 2042.5] },
+    "method": "Corners from least-squares fits of the three triangle edges. Boundary curves isolated by stroke width; junctions from intersections of line fits to the strokes around each point; saddle points = boundary × compound join (stoichiometric compound positions); edge points = line fit of the boundary end × triangle edge.",
+    "check": "Compound circles reproduce stoichiometry within 2 px ≈ 0.2 wt% (NAS6, NAS2, NS2, NS, N2S, A3S2, N·11A); NA within 10 px."
+  },
+  "phases": [
+    "silica", "corundum", "mullite", "albite", "nepheline",
+    "sodium-disilicate", "sodium-metasilicate", "sodium-orthosilicate"
+  ],
+  "compatibilityTriangles": {
+    "source": "Sub-solidus inset of Fig. 3.195 (upper left)",
+    "triangles": [
+      ["silica", "albite", "mullite"],
+      ["albite", "mullite", "corundum"],
+      ["albite", "nepheline", "corundum"],
+      ["silica", "albite", "sodium-disilicate"],
+      ["albite", "sodium-disilicate", "nepheline"],
+      ["sodium-disilicate", "sodium-metasilicate", "nepheline"],
+      ["sodium-metasilicate", "sodium-orthosilicate", "nepheline"]
+    ],
+    "notes": "Nepheline (and NaAlO2) form solid solutions drawn as dotted bands. Triangles with Na2O·Al2O3, β-alumina (Na2O·11Al2O3) and Na2O are drawn dashed and are outside the phase catalog."
+  },
+  "fields": {
+    "type": "ternary = 3 solids + liquid; saddle = temperature maximum on a boundary curve where it crosses the join of its two phases; compound-melting = liquid of an incongruently melting compound; binary = invariant on an edge",
+    "reaction": "eutectic | peritectic | null. Derived: eutectic if the liquid lies inside the triangle of its three phases; checked against the arrows on the boundary curves."
+  },
+  "invariantPoints": [
+    { "id": "nas-1050", "type": "ternary", "reaction": "eutectic", "phases": ["silica", "albite", "mullite"],
+      "temperature_C": 1050, "liquid_wt": { "Na2O": 7.4, "Al2O3": 13.3, "SiO2": 79.4 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label (main figure and inset)", "composition": "digitized", "pixel": [1994, 797] } ],
+      "notes": "Silica is tridymite here. Mullite weight in the triangle 0.02." },
+    { "id": "nas-1062", "type": "saddle", "reaction": null, "phases": ["silica", "albite"],
+      "temperature_C": 1062, "liquid_wt": { "Na2O": 8.1, "Al2O3": 13.4, "SiO2": 78.5 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label (main figure and inset)", "composition": "silica/albite boundary × SiO2–NAS6 join", "pixel": [1988, 811] } ],
+      "notes": "≈1 wt% from nas-1050; position approximate." },
+    { "id": "nas-1104", "type": "ternary", "reaction": "peritectic", "phases": ["albite", "mullite", "corundum"],
+      "temperature_C": 1104, "liquid_wt": { "Na2O": 11.0, "Al2O3": 20.6, "SiO2": 68.4 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label (main figure and inset)", "composition": "digitized", "pixel": [2027, 969] } ],
+      "notes": "Liquid outside the albite–mullite–corundum triangle; the albite/mullite boundary leaves the point towards nas-1050." },
+    { "id": "nas-1108", "type": "saddle", "reaction": null, "phases": ["albite", "corundum"],
+      "temperature_C": 1108, "liquid_wt": { "Na2O": 11.5, "Al2O3": 21.4, "SiO2": 67.1 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label (main figure and inset, arrows pointing away)", "composition": "albite/corundum boundary × NAS6–Al2O3 join", "pixel": [2030, 991] } ] },
+    { "id": "nas-1063", "type": "ternary", "reaction": "eutectic", "phases": ["albite", "nepheline", "corundum"],
+      "temperature_C": 1063, "liquid_wt": { "Na2O": 13.4, "Al2O3": 24.4, "SiO2": 62.2 }, "status": "conflict",
+      "sources": [
+        { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label '1063' (main figure, leader to the junction)", "composition": "digitized", "pixel": [2039, 1067] },
+        { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label '1163' (inset)", "composition": "same junction" }
+      ],
+      "notes": "Atlas-internal conflict. 1063 recommended: the inset marks nas-1108 as a maximum with the albite/corundum boundary falling towards this junction, which requires a value below 1108. Corundum weight in the triangle 0.02." },
+    { "id": "nas-1068", "type": "saddle", "reaction": null, "phases": ["albite", "nepheline"],
+      "temperature_C": 1068, "liquid_wt": { "Na2O": 14.3, "Al2O3": 23.6, "SiO2": 62.1 }, "status": "conflict",
+      "sources": [
+        { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label '1068' (main figure)", "composition": "albite/nepheline boundary × NAS6–NAS2 join", "pixel": [2024, 1068] },
+        { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label '1168' (inset)", "composition": "same point" }
+      ],
+      "notes": "Same atlas-internal conflict as nas-1063; 1068 recommended (consistent with nas-1063 = 1063)." },
+    { "id": "nas-740", "type": "ternary", "reaction": "eutectic", "phases": ["silica", "albite", "sodium-disilicate"],
+      "temperature_C": 740, "liquid_wt": { "Na2O": 21.7, "Al2O3": 4.2, "SiO2": 74.0 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label", "composition": "digitized", "pixel": [1783, 881] } ],
+      "notes": "Silica is quartz here." },
+    { "id": "nas-767", "type": "saddle", "reaction": null, "phases": ["albite", "sodium-disilicate"],
+      "temperature_C": 767, "liquid_wt": { "Na2O": 25.3, "Al2O3": 7.6, "SiO2": 67.1 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label (arrows pointing away)", "composition": "albite/NS2 boundary × NS2–NAS6 join", "pixel": [1780, 990] } ] },
+    { "id": "nas-732", "type": "ternary", "reaction": "eutectic", "phases": ["albite", "sodium-disilicate", "nepheline"],
+      "temperature_C": 732, "liquid_wt": { "Na2O": 26.3, "Al2O3": 12.1, "SiO2": 61.6 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label", "composition": "digitized", "pixel": [1813, 1076] } ] },
+    { "id": "nas-768", "type": "saddle", "reaction": null, "phases": ["sodium-disilicate", "nepheline"],
+      "temperature_C": 768, "liquid_wt": { "Na2O": 30.3, "Al2O3": 11.0, "SiO2": 58.7 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label (arrows pointing away)", "composition": "NS2/nepheline boundary × NS2–NAS2 join", "pixel": [1766, 1121] } ] },
+    { "id": "nas-760", "type": "ternary", "reaction": "eutectic", "phases": ["sodium-disilicate", "sodium-metasilicate", "nepheline"],
+      "temperature_C": 760, "liquid_wt": { "Na2O": 31.8, "Al2O3": 9.9, "SiO2": 58.3 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label", "composition": "digitized", "pixel": [1743, 1128] } ] },
+    { "id": "nas-955", "type": "ternary", "reaction": null, "phases": ["sodium-metasilicate", "sodium-orthosilicate", "nepheline"],
+      "temperature_C": 955, "liquid_wt": { "Na2O": 43.8, "Al2O3": 16.8, "SiO2": 39.4 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label", "composition": "digitized", "pixel": [1696, 1424] } ],
+      "notes": "Fields are not labelled; phases inferred from the sub-solidus triangle NS–N2S–NAS2 (nepheline as carnegieite). Liquid lies inside that triangle (eutectic geometry), but the arrows show the boundary towards 915 leaving the point, so the reaction type is left open. Outside refractory compositions (> 40 wt% Na2O)." },
+
+    { "id": "nas-edge-silica-mullite", "type": "binary", "reaction": "eutectic", "phases": ["silica", "mullite"],
+      "temperature_C": 1590, "liquid_wt": { "Na2O": 0.0, "Al2O3": 6.4, "SiO2": 93.6 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label '~1590'", "composition": "boundary end on the edge", "pixel": [1998, 575] } ],
+      "notes": "Superseded by the binary (systems/al2o3-sio2.json, as-eutectic: 1586 °C, 8.0 wt% Al2O3)." },
+    { "id": "nas-edge-mullite-corundum", "type": "binary", "reaction": null, "phases": ["mullite", "corundum"],
+      "temperature_C": 1840, "liquid_wt": { "Na2O": 0.0, "Al2O3": 78.5, "SiO2": 21.5 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label '1840'; mullite marked '~1850'", "composition": "end of the dashed boundary on the edge", "pixel": [2649, 1705] } ],
+      "notes": "Older congruent-mullite version (cf. Fig. 3.36). Superseded by the binary (systems/al2o3-sio2.json, as-mullite-peritectic: 1889 °C, 76.0 wt% Al2O3)." },
+    { "id": "nas-edge-silica-ns2", "type": "binary", "reaction": "eutectic", "phases": ["silica", "sodium-disilicate"],
+      "temperature_C": 789, "liquid_wt": { "Na2O": 25.6, "Al2O3": 0.0, "SiO2": 74.4 }, "status": "confirmed",
+      "sources": [
+        { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label", "composition": "boundary end on the edge", "pixel": [1709, 876] },
+        { "ref": "nsrds-nbs-61-1", "entry": 5096, "pdfPage": 99, "printedPage": 91,
+          "reported": { "system": "Na2O-SiO2", "composition_mol": { "Na2O": 25.2, "SiO2": 74.8 }, "temperature_C": 789, "uncertainty_C": null },
+          "converted_wt": { "Na2O": 25.8, "Al2O3": 0.0, "SiO2": 74.2 }, "originalReference": "2317",
+          "comparison": "ΔT = 0 °C, Δ = 0.2 wt%." },
+        { "ref": "nsrds-nbs-61-1", "entry": 5116, "pdfPage": 99, "printedPage": 91,
+          "reported": { "system": "Na2O-SiO2", "composition_mol": { "Na2O": 25.5, "SiO2": 74.5 }, "temperature_C": 793, "uncertainty_C": null },
+          "converted_wt": { "Na2O": 26.1, "Al2O3": 0.0, "SiO2": 73.9 }, "originalReference": "2316",
+          "comparison": "ΔT = +4 °C, Δ = 0.5 wt%." }
+      ],
+      "notes": "Silica is quartz here." },
+    { "id": "nas-edge-ns2-ns", "type": "binary", "reaction": "eutectic", "phases": ["sodium-disilicate", "sodium-metasilicate"],
+      "temperature_C": 837, "liquid_wt": { "Na2O": 38.0, "Al2O3": 0.0, "SiO2": 62.0 }, "status": "confirmed",
+      "sources": [
+        { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label", "composition": "boundary end on the edge", "pixel": [1597, 1069] },
+        { "ref": "nsrds-nbs-61-1", "entry": 5261, "pdfPage": 102, "printedPage": 94,
+          "reported": { "system": "Na2O-SiO2", "composition_mol": { "Na2O": 36.9, "SiO2": 63.1 }, "temperature_C": 837, "uncertainty_C": 1 },
+          "converted_wt": { "Na2O": 37.6, "Al2O3": 0.0, "SiO2": 62.4 }, "originalReference": "2317",
+          "comparison": "ΔT = 0 °C, Δ = 0.4 wt%." },
+        { "ref": "nsrds-nbs-61-1", "entry": 5286, "pdfPage": 102, "printedPage": 94,
+          "reported": { "system": "Na2O-SiO2", "composition_mol": { "Na2O": 37.2, "SiO2": 62.8 }, "temperature_C": 846, "uncertainty_C": null },
+          "converted_wt": { "Na2O": 37.9, "Al2O3": 0.0, "SiO2": 62.1 }, "originalReference": "2316",
+          "comparison": "ΔT = +9 °C, Δ = 0.1 wt%." }
+      ] },
+    { "id": "nas-edge-ns-n2s", "type": "binary", "reaction": "eutectic", "phases": ["sodium-metasilicate", "sodium-orthosilicate"],
+      "temperature_C": 1022, "liquid_wt": { "Na2O": 56.8, "Al2O3": 0.0, "SiO2": 43.2 }, "status": "confirmed",
+      "sources": [
+        { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label", "composition": "boundary end on the edge", "pixel": [1427, 1365] },
+        { "ref": "nsrds-nbs-61-1", "entry": 5596, "pdfPage": 108, "printedPage": 100,
+          "reported": { "system": "Na2O-SiO2", "composition_mol": { "Na2O": 56.1, "SiO2": 43.9 }, "temperature_C": 1022, "uncertainty_C": null },
+          "converted_wt": { "Na2O": 56.9, "Al2O3": 0.0, "SiO2": 43.1 }, "originalReference": "2316",
+          "comparison": "ΔT = 0 °C, Δ = 0.1 wt%." }
+      ],
+      "notes": "Outside refractory compositions." },
+    { "id": "nas-edge-n2s-melting", "type": "compound-melting", "reaction": "peritectic", "phases": ["sodium-orthosilicate"],
+      "temperature_C": 1120, "liquid_wt": { "Na2O": 59.3, "Al2O3": 0.0, "SiO2": 40.7 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "temperature": "printed label", "composition": "boundary end on the edge", "pixel": [1404, 1404] } ],
+      "notes": "End of the N2S field on the Na2O-rich side; the liquid (59.3 wt% Na2O) is not at the N2S composition (67.4 wt%), so N2S melts incongruently. The solid on the other side of the boundary is not labelled. Outside refractory compositions." }
+  ],
+  "inversions": [
+    { "phase": "silica", "change": "cristobalite → tridymite", "temperature_C": 1470, "source": "printed label, dash-dot line in the silica field" },
+    { "phase": "silica", "change": "tridymite → quartz", "temperature_C": 867, "source": "printed label, dashed line in the silica field" },
+    { "phase": "nepheline", "change": "carnegieite → nepheline (NaAlSiO4)",
+      "temperature_C": null,
+      "source": "Boundary between the carnegieite and nepheline fields (main figure and inset). Printed values along it: 1280 (maximum, on the NAS6–NAS2 join, arrows pointing away), 1270 (junction with corundum), 1248 (label on the curve towards 915), 915 (junction with NS).",
+      "points": [
+        { "temperature_C": 1280, "liquid_wt": { "Na2O": 17.6, "Al2O3": 28.9, "SiO2": 53.5 }, "pixel": [2043, 1203] },
+        { "temperature_C": 1270, "liquid_wt": { "Na2O": 16.9, "Al2O3": 29.2, "SiO2": 53.9 }, "pixel": [2052, 1196] },
+        { "temperature_C": 915, "liquid_wt": { "Na2O": 37.4, "Al2O3": 18.6, "SiO2": 43.9 }, "pixel": [1770, 1353] }
+      ],
+      "notes": "Same stoichiometry; modelled as one phase (nepheline), so these are not invariants of the model." }
+  ],
+  "notModelled": {
+    "region": "Na2O-Al2O3 side (Na2O·Al2O3, β-alumina Na2O·11Al2O3 fields)",
+    "notes": "Boundaries drawn dashed, no temperatures on the Na2O-Al2O3 edge. Corner labels: Na2O ~920, Al2O3 ~2020."
+  },
+  "unmatchedSourcePoints": [
+    { "ref": "nsrds-nbs-61-1", "entry": 5842, "pdfPage": 112, "printedPage": 104,
+      "reported": { "system": "Al2O3-Na2O", "composition_mol": { "Al2O3": 55.5, "Na2O": 44.5 }, "temperature_C": 1410, "uncertainty_C": null },
+      "converted_wt": { "Al2O3": 67.2, "Na2O": 32.8 }, "originalReference": "1457",
+      "notes": "No catalog phase on the Na2O-Al2O3 edge; the atlas gives no value there." }
+  ],
+  "otherAtlasData": {
+    "mulliteSolubility": "Na2O solubility in mullite reported not to exceed 0.4 mass% (Schneider [7], J. Am. Ceram. Soc. 67 (1984) C130/1).",
+    "nephelineSolidSolution": "Homogeneity range Na2O·Al2O3·2SiO2 to Na2O·Al2O3·(0.7)SiO2 (Badger, Hummel [9]; Tyabotina, Yakovlev [8])."
+  },
+  "boundaryCurves": [
+    { "fields": ["silica", "mullite"], "path": ["nas-edge-silica-mullite", "nas-1050"], "polyline_wt": null },
+    { "fields": ["silica", "albite"], "path": ["nas-1050", "nas-1062", "nas-740"], "polyline_wt": null },
+    { "fields": ["albite", "mullite"], "path": ["nas-1104", "nas-1050"], "polyline_wt": null },
+    { "fields": ["mullite", "corundum"], "path": ["nas-edge-mullite-corundum", "nas-1104"], "polyline_wt": null, "notes": "Drawn dashed." },
+    { "fields": ["albite", "corundum"], "path": ["nas-1104", "nas-1108", "nas-1063"], "polyline_wt": null },
+    { "fields": ["albite", "nepheline"], "path": ["nas-1063", "nas-1068", "nas-732"], "polyline_wt": null },
+    { "fields": ["nepheline", "corundum"], "path": ["nas-1063"], "polyline_wt": null, "notes": "Crosses the carnegieite inversion at 1270 °C and continues to the dashed β-alumina region." },
+    { "fields": ["silica", "sodium-disilicate"], "path": ["nas-edge-silica-ns2", "nas-740"], "polyline_wt": null },
+    { "fields": ["albite", "sodium-disilicate"], "path": ["nas-740", "nas-767", "nas-732"], "polyline_wt": null },
+    { "fields": ["sodium-disilicate", "nepheline"], "path": ["nas-732", "nas-768", "nas-760"], "polyline_wt": null },
+    { "fields": ["sodium-disilicate", "sodium-metasilicate"], "path": ["nas-edge-ns2-ns", "nas-760"], "polyline_wt": null },
+    { "fields": ["sodium-metasilicate", "nepheline"], "path": ["nas-760", "nas-955"], "polyline_wt": null, "notes": "Crosses the carnegieite inversion at 915 °C." },
+    { "fields": ["sodium-metasilicate", "sodium-orthosilicate"], "path": ["nas-edge-ns-n2s", "nas-955"], "polyline_wt": null },
+    { "fields": ["sodium-orthosilicate", null], "path": ["nas-edge-n2s-melting", "nas-955"], "polyline_wt": null, "notes": "Second field not labelled." }
+  ],
+  "isotherms": [
+    { "field": "silica", "temperature_C": 1600, "polyline_wt": null },
+    { "field": "silica", "temperature_C": 1400, "polyline_wt": null },
+    { "field": "silica", "temperature_C": 1200, "polyline_wt": null },
+    { "field": "silica", "temperature_C": 1000, "polyline_wt": null },
+    { "field": "sodium-disilicate", "temperature_C": 800, "polyline_wt": null },
+    { "field": "nepheline", "temperature_C": 1000, "polyline_wt": null },
+    { "field": "nepheline", "temperature_C": 1200, "polyline_wt": null },
+    { "field": "nepheline", "temperature_C": 1400, "polyline_wt": null, "notes": "Carnegieite field." },
+    { "field": "nepheline", "temperature_C": 1600, "polyline_wt": null, "notes": "Carnegieite field." }
+  ]
+}

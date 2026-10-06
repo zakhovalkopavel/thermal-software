@@ -1,0 +1,221 @@
+{
+  "title": "Phase catalog: stoichiometric solid phases of the modelled oxide systems",
+  "units": {
+    "oxideMoles": "mol of oxide per formula unit (wt% is computed in code with molarMass)",
+    "temperature_C": "°C"
+  },
+  "fields": {
+    "melting.behaviour": "congruent | incongruent (melts to another solid + liquid) | null",
+    "melting.products": "solid phase formed on incongruent melting",
+    "status": "see sources.json statusLegend"
+  },
+  "compounds": [
+    {
+      "id": "silica", "notation": "S", "formula": "SiO2", "oxideMoles": { "SiO2": 1 },
+      "notes": "Liquidus field labelled SiO2 (cristobalite above 1470 °C, tridymite to 867 °C, quartz below; Fig. 3.186). Fig. 3.186 prints 1723 °C for SiO2.",
+      "melting": { "behaviour": "congruent", "temperature_C": 1725, "products": null, "status": "extracted",
+        "sources": [
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.166", "printedPage": 105, "pdfPage": 125, "read": "printed label" },
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.35", "printedPage": 47, "pdfPage": 67, "read": "printed label" },
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.125", "printedPage": 88, "pdfPage": 108, "read": "printed label '1725' (cristobalite); cristobalite → tridymite at 1470 °C" }
+        ] }
+    },
+    {
+      "id": "corundum", "notation": "A", "formula": "Al2O3", "oxideMoles": { "Al2O3": 1 },
+      "notes": "Fig. 3.186 (Schairer & Bowen) prints the older value 2020 °C.",
+      "melting": { "behaviour": "congruent", "temperature_C": 2053, "products": null, "status": "extracted",
+        "sources": [
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.166", "printedPage": 105, "pdfPage": 125, "read": "printed label" },
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.35", "printedPage": 47, "pdfPage": 67, "read": "printed label" },
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.30", "printedPage": 44, "pdfPage": 64, "read": "printed label" }
+        ] }
+    },
+    {
+      "id": "lime", "notation": "C", "formula": "CaO", "oxideMoles": { "CaO": 1 },
+      "melting": { "behaviour": "congruent", "temperature_C": 2612, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.166", "printedPage": 105, "pdfPage": 125, "read": "printed label" } ] }
+    },
+    {
+      "id": "periclase", "notation": "M", "formula": "MgO", "oxideMoles": { "MgO": 1 },
+      "notes": "Fig. 3.187 prints the approximate value '~2800'.",
+      "melting": { "behaviour": "congruent", "temperature_C": 2822, "products": null, "status": "extracted",
+        "sources": [
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.30", "printedPage": 44, "pdfPage": 64, "read": "printed label '2822' at the MgO end of the liquidus" },
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.125", "printedPage": 88, "pdfPage": 108, "read": "printed label '2822' at the MgO end of the liquidus" },
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.187", "printedPage": 113, "pdfPage": 133, "read": "printed label '~2800'" }
+        ] }
+    },
+    {
+      "id": "mullite", "notation": "A3S2", "formula": "3Al2O3·2SiO2", "oxideMoles": { "Al2O3": 3, "SiO2": 2 },
+      "notes": "Solid solution 22.9–28.7 wt% SiO2 (systems/al2o3-sio2.json), modelled as A3S2. Incongruent melting per Fig. 3.35 (recommended, stable); congruent 1848 °C in Fig. 3.36 is metastable.",
+      "melting": { "behaviour": "incongruent", "temperature_C": 1889, "products": "corundum", "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.35", "printedPage": 47, "pdfPage": 67, "read": "digitized (peritectic line, axis reading ± 2 °C)" } ] }
+    },
+    {
+      "id": "anorthite", "notation": "CAS2", "formula": "CaO·Al2O3·2SiO2", "oxideMoles": { "CaO": 1, "Al2O3": 1, "SiO2": 2 },
+      "melting": { "behaviour": "congruent", "temperature_C": 1555, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.166", "printedPage": 105, "pdfPage": 125, "read": "printed label" } ] }
+    },
+    {
+      "id": "gehlenite", "notation": "C2AS", "formula": "2CaO·Al2O3·SiO2", "oxideMoles": { "CaO": 2, "Al2O3": 1, "SiO2": 1 },
+      "melting": { "behaviour": "congruent", "temperature_C": 1590, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.166", "printedPage": 105, "pdfPage": 125, "read": "printed label" } ] }
+    },
+    {
+      "id": "wollastonite", "notation": "CS", "formula": "CaO·SiO2", "oxideMoles": { "CaO": 1, "SiO2": 1 },
+      "notes": "Pseudowollastonite at the liquidus. Fig. 3.249: α-CS field around the CS point, β-CS further out; temperature not printed.",
+      "melting": { "behaviour": "congruent", "temperature_C": 1544, "products": null, "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "rankinite", "notation": "C3S2", "formula": "3CaO·2SiO2", "oxideMoles": { "CaO": 3, "SiO2": 2 },
+      "notes": "Fig. 3.249: the C3S2 point lies in the dicalcium-silicate field (incongruent → dicalcium-silicate); temperature not printed.",
+      "melting": { "behaviour": "incongruent", "temperature_C": 1464, "products": "dicalcium-silicate", "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "dicalcium-silicate", "notation": "C2S", "formula": "2CaO·SiO2", "oxideMoles": { "CaO": 2, "SiO2": 1 },
+      "melting": { "behaviour": "congruent", "temperature_C": 2130, "products": null, "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "tricalcium-silicate", "notation": "C3S", "formula": "3CaO·SiO2", "oxideMoles": { "CaO": 3, "SiO2": 1 },
+      "notes": "Stable only between ≈1250 °C and its incongruent melting (recalled). Fig. 3.249: the C3S point lies in the lime field (incongruent → lime confirmed); temperature not printed.",
+      "melting": { "behaviour": "incongruent", "temperature_C": 2070, "products": "lime", "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "tricalcium-aluminate", "notation": "C3A", "formula": "3CaO·Al2O3", "oxideMoles": { "CaO": 3, "Al2O3": 1 },
+      "melting": { "behaviour": "incongruent", "temperature_C": 1539, "products": "lime", "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "mayenite", "notation": "C12A7", "formula": "12CaO·7Al2O3", "oxideMoles": { "CaO": 12, "Al2O3": 7 },
+      "melting": { "behaviour": "congruent", "temperature_C": 1392, "products": null, "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "monocalcium-aluminate", "notation": "CA", "formula": "CaO·Al2O3", "oxideMoles": { "CaO": 1, "Al2O3": 1 },
+      "melting": { "behaviour": "congruent", "temperature_C": 1602, "products": null, "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "grossite", "notation": "CA2", "formula": "CaO·2Al2O3", "oxideMoles": { "CaO": 1, "Al2O3": 2 },
+      "melting": { "behaviour": "congruent", "temperature_C": 1762, "products": null, "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "hibonite", "notation": "CA6", "formula": "CaO·6Al2O3", "oxideMoles": { "CaO": 1, "Al2O3": 6 },
+      "melting": { "behaviour": "incongruent", "temperature_C": 1830, "products": "corundum", "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "spinel", "notation": "MA", "formula": "MgO·Al2O3", "oxideMoles": { "MgO": 1, "Al2O3": 1 },
+      "notes": "Solid solution from 6.5 to 39 mass% MgO at the eutectics (Fig. 3.30; hatched in Fig. 3.187), modelled as MA. Fig. 3.187 prints the approximate value '~2135'.",
+      "melting": { "behaviour": "congruent", "temperature_C": 2105, "products": null, "status": "extracted",
+        "sources": [
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.30", "printedPage": 44, "pdfPage": 64, "read": "printed label '2105' at the liquidus maximum (28.3 wt% MgO)" },
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.187", "printedPage": 113, "pdfPage": 133, "read": "printed label '~2135'" }
+        ] }
+    },
+    {
+      "id": "forsterite", "notation": "M2S", "formula": "2MgO·SiO2", "oxideMoles": { "MgO": 2, "SiO2": 1 },
+      "notes": "Fig. 3.187 prints the approximate value '~1900'.",
+      "melting": { "behaviour": "congruent", "temperature_C": 1890, "products": null, "status": "extracted",
+        "sources": [
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.125", "printedPage": 88, "pdfPage": 108, "read": "printed label '1890' at the liquidus maximum" },
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.187", "printedPage": 113, "pdfPage": 133, "read": "printed label '~1900'" }
+        ] }
+    },
+    {
+      "id": "enstatite", "notation": "MS", "formula": "MgO·SiO2", "oxideMoles": { "MgO": 1, "SiO2": 1 },
+      "notes": "Protoenstatite at the liquidus. Fig. 3.125 also shows Kambayashi & Kato's dashed liquidus suggesting congruent melting; not used.",
+      "melting": { "behaviour": "incongruent", "temperature_C": 1557, "products": "forsterite", "status": "extracted",
+        "sources": [
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.125", "printedPage": 88, "pdfPage": 108, "read": "printed label '1557' on the peritectic line; liquid at '61' mass% SiO2" },
+          { "ref": "slag-atlas-1995", "figure": "Fig. 3.187", "printedPage": 113, "pdfPage": 133, "read": "printed label at the end of the protoenstatite/forsterite boundary on the MgO-SiO2 edge (39.4 wt% MgO, SiO2 side of MS)" }
+        ] }
+    },
+    {
+      "id": "cordierite", "notation": "M2A2S5", "formula": "2MgO·2Al2O3·5SiO2", "oxideMoles": { "MgO": 2, "Al2O3": 2, "SiO2": 5 },
+      "notes": "Solid solution (M2A2S5 ss, Figs. 3.188–3.190), modelled at its stoichiometry.",
+      "melting": { "behaviour": "incongruent", "temperature_C": 1465, "products": "mullite", "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.187", "printedPage": 113, "pdfPage": 133, "read": "printed label on the mullite/cordierite boundary next to the cordierite point" } ] }
+    },
+    {
+      "id": "sapphirine", "notation": "M4A5S2", "formula": "4MgO·5Al2O3·2SiO2", "oxideMoles": { "MgO": 4, "Al2O3": 5, "SiO2": 2 },
+      "notes": "Stoichiometry from the legend of Fig. 3.187 and the circle on the figure. Solid solution (M4A5S2 ss, Figs. 3.188–3.190), modelled at its stoichiometry. Incongruent: the composition lies far outside the sapphirine primary field (bounded by mas-1453, mas-1460, mas-1482); melting temperature not printed.",
+      "melting": { "behaviour": "incongruent", "temperature_C": null, "products": null, "status": "missing", "sources": [] }
+    },
+    {
+      "id": "diopside", "notation": "CMS2", "formula": "CaO·MgO·2SiO2", "oxideMoles": { "CaO": 1, "MgO": 1, "SiO2": 2 },
+      "notes": "Pyroxene solid solution towards MgO·SiO2 (Figs. 3.250, 3.251), modelled as CMS2.",
+      "melting": { "behaviour": "congruent", "temperature_C": 1391.5, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.249", "printedPage": 134, "pdfPage": 154, "read": "printed label '1391,5' at the CMS2 point" } ] }
+    },
+    {
+      "id": "akermanite", "notation": "C2MS2", "formula": "2CaO·MgO·2SiO2", "oxideMoles": { "CaO": 2, "MgO": 1, "SiO2": 2 },
+      "notes": "Fig. 3.249: the C2MS2 point lies inside the akermanite field (congruent); no temperature printed at the point.",
+      "melting": { "behaviour": "congruent", "temperature_C": 1454, "products": null, "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "monticellite", "notation": "CMS", "formula": "CaO·MgO·SiO2", "oxideMoles": { "CaO": 1, "MgO": 1, "SiO2": 1 },
+      "notes": "Fig. 3.249: the CMS point lies in the periclase field (incongruent → periclase); temperature not printed. Solid solution towards forsterite (Fig. 3.250), modelled as CMS.",
+      "melting": { "behaviour": "incongruent", "temperature_C": 1503, "products": "periclase", "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "merwinite", "notation": "C3MS2", "formula": "3CaO·MgO·2SiO2", "oxideMoles": { "CaO": 3, "MgO": 1, "SiO2": 2 },
+      "notes": "Fig. 3.249: the C3MS2 point lies in the dicalcium-silicate field, outside the merwinite field (incongruent → dicalcium-silicate); temperature not printed.",
+      "melting": { "behaviour": "incongruent", "temperature_C": 1575, "products": "dicalcium-silicate", "status": "recalled", "sources": [ { "ref": "recalled" } ] }
+    },
+    {
+      "id": "k-feldspar", "notation": "KAS6", "formula": "K2O·Al2O3·6SiO2", "oxideMoles": { "K2O": 1, "Al2O3": 1, "SiO2": 6 },
+      "melting": { "behaviour": "incongruent", "temperature_C": 1150, "products": "leucite", "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.186", "printedPage": 112, "pdfPage": 132, "read": "printed label (inset a)" } ] }
+    },
+    {
+      "id": "leucite", "notation": "KAS4", "formula": "K2O·Al2O3·4SiO2", "oxideMoles": { "K2O": 1, "Al2O3": 1, "SiO2": 4 },
+      "melting": { "behaviour": "congruent", "temperature_C": 1693, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.186", "printedPage": 112, "pdfPage": 132, "read": "printed label at the leucite point" } ] }
+    },
+    {
+      "id": "kalsilite", "notation": "KAS2", "formula": "K2O·Al2O3·2SiO2", "oxideMoles": { "K2O": 1, "Al2O3": 1, "SiO2": 2 },
+      "notes": "KAlSiO4; orthorhombic above, hexagonal below 1540 °C (Fig. 3.186). Melting point is outside the figure.",
+      "melting": { "behaviour": null, "temperature_C": null, "products": null, "status": "missing", "sources": [] }
+    },
+    {
+      "id": "potassium-tetrasilicate", "notation": "KS4", "formula": "K2O·4SiO2", "oxideMoles": { "K2O": 1, "SiO2": 4 },
+      "melting": { "behaviour": "congruent", "temperature_C": 770, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.186", "printedPage": 112, "pdfPage": 132, "read": "printed label at the compound point" } ] }
+    },
+    {
+      "id": "potassium-disilicate", "notation": "KS2", "formula": "K2O·2SiO2", "oxideMoles": { "K2O": 1, "SiO2": 2 },
+      "melting": { "behaviour": "congruent", "temperature_C": 1045, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.186", "printedPage": 112, "pdfPage": 132, "read": "printed label at the compound point" } ] }
+    },
+    {
+      "id": "potassium-metasilicate", "notation": "KS", "formula": "K2O·SiO2", "oxideMoles": { "K2O": 1, "SiO2": 1 },
+      "melting": { "behaviour": "congruent", "temperature_C": 976, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.186", "printedPage": 112, "pdfPage": 132, "read": "printed label at the compound point" } ] }
+    },
+    {
+      "id": "albite", "notation": "NAS6", "formula": "Na2O·Al2O3·6SiO2", "oxideMoles": { "Na2O": 1, "Al2O3": 1, "SiO2": 6 },
+      "notes": "Congruent: the NAS6 point lies inside the albite field of Fig. 3.195.",
+      "melting": { "behaviour": "congruent", "temperature_C": 1118, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "read": "printed label at Na2O·Al2O3·6SiO2 (legend)" } ] }
+    },
+    {
+      "id": "nepheline", "notation": "NAS2", "formula": "Na2O·Al2O3·2SiO2", "oxideMoles": { "Na2O": 1, "Al2O3": 1, "SiO2": 2 },
+      "notes": "Carnegieite at high temperature (inversion boundary 915–1280 °C in Fig. 3.195); same stoichiometry, one phase in the model. Solid solution towards Na2O·Al2O3·(0.7)SiO2, modelled as NAS2.",
+      "melting": { "behaviour": "congruent", "temperature_C": 1526, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "read": "printed label at the compound point" } ] }
+    },
+    {
+      "id": "sodium-disilicate", "notation": "NS2", "formula": "Na2O·2SiO2", "oxideMoles": { "Na2O": 1, "SiO2": 2 },
+      "melting": { "behaviour": "congruent", "temperature_C": 874, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "read": "printed label at the compound point" } ] }
+    },
+    {
+      "id": "sodium-metasilicate", "notation": "NS", "formula": "Na2O·SiO2", "oxideMoles": { "Na2O": 1, "SiO2": 1 },
+      "melting": { "behaviour": "congruent", "temperature_C": 1089, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "read": "printed label at the compound point" } ] }
+    },
+    {
+      "id": "sodium-orthosilicate", "notation": "N2S", "formula": "2Na2O·SiO2", "oxideMoles": { "Na2O": 2, "SiO2": 1 },
+      "notes": "Outside refractory compositions; needed only to close the NS–N2S–NAS2 triangle.",
+      "melting": { "behaviour": "incongruent", "temperature_C": 1120, "products": null, "status": "extracted",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "read": "printed label at the end of the N2S field on the Na2O-SiO2 edge (59.3 wt% Na2O, not at the compound); product solid not labelled" } ] }
+    }
+  ]
+}
