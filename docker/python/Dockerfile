@@ -1,4 +1,30 @@
-ARG PYTHON_VERSION=3.14.3-slim
+ARG PYTHON_VERSION
+ARG TESSERACT_VERSION
+
+# Debian ships Tesseract 5.5.0 only; build the upstream release on the same base image
+FROM python:${PYTHON_VERSION} AS tesseract-build
+ARG TESSERACT_VERSION
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    pkg-config \
+    curl \
+    ca-certificates \
+    libleptonica-dev \
+    && rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL "https://github.com/tesseract-ocr/tesseract/archive/refs/tags/${TESSERACT_VERSION}.tar.gz" \
+      | tar -xz -C /tmp && \
+    cmake -S "/tmp/tesseract-${TESSERACT_VERSION}" -B /tmp/tesseract-build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/usr/local \
+      -DBUILD_SHARED_LIBS=ON \
+      -DBUILD_TRAINING_TOOLS=OFF \
+      -DBUILD_TESTS=OFF \
+      -DGRAPHICS_DISABLED=ON \
+      -DDISABLE_ARCHIVE=ON \
+      -DDISABLE_CURL=ON && \
+    cmake --build /tmp/tesseract-build -j"$(nproc)" && \
+    DESTDIR=/opt/tesseract cmake --install /tmp/tesseract-build
 
 FROM python:${PYTHON_VERSION}
 
@@ -20,7 +46,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext6 \
     libxrender-dev \
     libgomp1 \
-    tesseract-ocr \
+    libleptonica6 \
+    tesseract-ocr-osd \
     tesseract-ocr-eng \
     tesseract-ocr-fra \
     tesseract-ocr-deu \
@@ -41,6 +68,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
+
+COPY --from=tesseract-build /opt/tesseract/usr/local/ /usr/local/
+RUN ldconfig && tesseract --version
 
 # Set working directory
 WORKDIR /app

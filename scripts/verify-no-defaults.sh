@@ -14,6 +14,16 @@ else
     echo "✅ No default values found in Docker files"
 fi
 echo ""
+# Check for ARG defaults (ARG NAME=value)
+echo "Checking for ARG defaults (ARG NAME=value) ..."
+if grep -rnE "^\s*ARG\s+[A-Za-z_][A-Za-z0-9_]*=" docker/ 2>/dev/null; then
+    echo "❌ ERROR: Found ARG defaults in Dockerfiles!"
+    echo "   All values must come from .env files via build args"
+    ERRORS=$((ERRORS + 1))
+else
+    echo "✅ No ARG defaults found in Dockerfiles"
+fi
+echo ""
 # Check .env.example has all required variables
 echo "Checking .env.example completeness..."
 REQUIRED_VARS=(
@@ -41,6 +51,7 @@ REQUIRED_VARS=(
     "NODE_VERSION"
     "NGINX_VERSION"
     "PYTHON_VERSION"
+    "TESSERACT_VERSION"
 )
 for var in "${REQUIRED_VARS[@]}"; do
     if ! grep -q "^${var}=" .env.example; then

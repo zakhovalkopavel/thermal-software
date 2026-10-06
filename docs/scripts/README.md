@@ -17,6 +17,19 @@ This directory contains documentation for Python processing scripts.
 
 ---
 
+## 📈 Phase-Diagram Extraction
+
+### [PHASE_DIAGRAM_EXTRACTION_SPEC.md](PHASE_DIAGRAM_EXTRACTION_SPEC.md)
+**Specification for extracting phase-diagram data from the Slag Atlas and NSRDS-NBS 61**
+- Per-diagram config is the source of truth; binary system files regenerated, ternary curves filled in place
+- Package: `python/src/phase_diagrams/` — calibration, tracing, NBS matching, validation
+- CLI: `python/src/scripts/extract_phase_diagram.py`
+- Make commands: `make pd-extract SYSTEM=...`, `make pd-validate`, `make pd-test`
+- Source files: `shared/sources/` (atlas and NBS PDFs)
+- Output: `shared/processed/phase-diagrams/`; working files in `tmp/reports/python/phase-diagrams/`
+
+---
+
 ## 📚 OCR Extraction
 
 ### [OCR_SCRIPTS_GUIDE.md](OCR_SCRIPTS_GUIDE.md)
