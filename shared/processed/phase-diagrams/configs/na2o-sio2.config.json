@@ -1,0 +1,123 @@
+{
+  "system": "Na2O-SiO2",
+  "components": ["Na2O", "SiO2"],
+  "output": "systems/na2o-sio2.json",
+  "idPrefix": "ns",
+  "source": {
+    "ref": "slag-atlas-1995",
+    "figure": "Fig. 3.137",
+    "diagram": "Na2O-SiO2 phase diagram according to Kracek [1-3] (from 50 to 100 mass % SiO2) and Willgallis [4], with the additional compound 3Na2O·8SiO2",
+    "printedPage": 94,
+    "pdfPage": 114,
+    "caption": "Atlas text (printed p. 94): 'Fig. 3.137. Na2O-SiO2 phase diagram according to Kracek [1-3] (from 50 to 100 mass % SiO2) and Willgallis [4], with the additional compound 3Na2O·8SiO2 found by Williamson, Glasser [5] and confirmed by Mogensen, Christensen [6]. The phase equilibria involving 3Na2O·8SiO2 have been drawn after Glasser, Marr [7] and Lee et al. [8]. The phase relations in the Na2O-rich region of the system after D'Ans, Löffler [9] and Löffler [10]. For the SiO2-rich part of the system with tridymite stable only as a binary solution phase, see Holmquist [11]. For thermodynamic assessment of the system and calculated phase diagram, see Wu et al. [12].' References: [1] Kracek, F. C.: J. Am. Chem. Soc. 52 (1930), p. 1436/42; [2] Kracek, F. C.: J. Phys. Chem. 34 (1930), p. 1583/98; [3] Kracek, F. C.: J. Am. Chem. Soc. 61 (1939) No. 10, p. 2863/77; [4] Willgallis, A.: Glastech. Ber. 42 (1969) No. 12, p. 506/9; [5] Williamson, J., F. P. Glasser: Science 148 (1965) No. 6, p. 1589/91; [6] Mogensen, G., N. H. Christensen: Phys. Chem. Glasses 22 (1981) No. 1, p. 17/22; [7] Glasser, F. P., J. Marr: J. Am. Ceram. Soc. 62 (1979) No. 1-2, p. 42/7; [8] Lee, F. C., J. Marr, R. P. Gunawardane, F. P., Glasser: Br. Ceram. Trans. J. 90 (1991) No. 1, p. 8/11; [9] D'Ans, J., J. Löffler: Z. Anorg. Allg. Chem. 191 (1930) No. 1, p. 1/35; [10] Löffler, J.: Glastech. Ber. 42 (1969) No. 3, p. 92/6; [11] Holmquist, S. B.: J. Am. Ceram. Soc. 44 (1961) No. 2, p. 82/6; [12] Wu. P, G. Eriksson, A. D. Pelton: J. Am. Ceram. Soc. 76 (1993) No. 8, p. 2059/64."
+  },
+  "frameSearchBox": [1400, 300, 3060, 1600],
+  "axes": {
+    "x": { "component": "SiO2", "ticks": [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] },
+    "y": { "ticks": [1800, 1650, 1500, 1350, 1200, 1050, 900, 750, 600, 450, 300] }
+  },
+  "phases": ["sodium-oxide", "sodium-orthosilicate", "sodium-pyrosilicate", "sodium-metasilicate", "sodium-disilicate", "sodium-n3s8", "silica"],
+  "endMembers": {
+    "sodium-oxide": { "x": 0, "labelTemperature": 1133 },
+    "silica": { "x": 100, "labelTemperature": 1725 }
+  },
+  "invariants": [
+    { "id": "ns-eutectic-n-n2s", "type": "binary", "reaction": "eutectic", "phases": ["sodium-oxide", "sodium-orthosilicate"],
+      "label": { "temperature": null, "composition": null },
+      "seedPixel": [1672, 1118], "nbs": [],
+      "notes": "Na2O-rich region after D'Ans, Löffler [9] and Löffler [10] (caption): eutectic line and both liquidus curves drawn dashed, no printed values." },
+    { "id": "ns-orthosilicate-melting", "type": "compound-melting", "reaction": null, "phases": ["sodium-orthosilicate"],
+      "label": { "temperature": 1078, "composition": null },
+      "seedPixel": [1920, 907], "nbs": [],
+      "notes": "Congruent in this figure. The 960 °C line from the liquidus to the 2Na2O·SiO2 line is read as a polymorphic transition of 2Na2O·SiO2 (verbatim.inversions)." },
+    { "id": "ns-962", "type": "binary", "reaction": "eutectic", "phases": ["sodium-orthosilicate", "sodium-pyrosilicate"],
+      "label": { "temperature": 962, "composition": null },
+      "seedPixel": [1977, 995], "nbs": [],
+      "notes": "Drawn at the level of the 960 °C 2Na2O·SiO2 transition line (2 °C apart); composition not printed." },
+    { "id": "ns-pyrosilicate-melting", "type": "compound-melting", "reaction": null, "phases": ["sodium-pyrosilicate"],
+      "label": { "temperature": 1115, "composition": null },
+      "seedPixel": [2018, 879], "nbs": [],
+      "notes": "Congruent in this figure." },
+    { "id": "ns-1005", "type": "binary", "reaction": "eutectic", "phases": ["sodium-pyrosilicate", "sodium-metasilicate"],
+      "label": { "temperature": 1005, "composition": null },
+      "seedPixel": [2103, 961], "nbs": [5596],
+      "notes": "Composition not printed. NBS 5596 (Kracek) gives the Na2O·SiO2 eutectic towards the Na2O side at 1022 °C." },
+    { "id": "ns-metasilicate-melting", "type": "compound-melting", "reaction": null, "phases": ["sodium-metasilicate"],
+      "label": { "temperature": 1088, "composition": null },
+      "seedPixel": [2167, 902], "nbs": [],
+      "notes": "Congruent. Fig. 3.195 prints 1089 °C." },
+    { "id": "ns-837", "type": "binary", "reaction": "eutectic", "phases": ["sodium-metasilicate", "sodium-disilicate"],
+      "label": { "temperature": 837, "composition": 62 },
+      "seedPixel": [2356, 1090], "nbs": [5261, 5286],
+      "notes": "Composition printed in parentheses '(62)'." },
+    { "id": "ns-disilicate-melting", "type": "compound-melting", "reaction": null, "phases": ["sodium-disilicate"],
+      "label": { "temperature": 874, "composition": null },
+      "seedPixel": [2418, 1066], "nbs": [],
+      "notes": "Congruent." },
+    { "id": "ns-808", "type": "binary", "reaction": "peritectic", "phases": ["sodium-disilicate", "sodium-n3s8"],
+      "label": { "temperature": 808, "composition": 73.4 },
+      "seedPixel": [2528, 1117], "nbs": [],
+      "notes": "Incongruent melting of 3Na2O·8SiO2: Na2O·2SiO2 + liquid → 3Na2O·8SiO2 (after Glasser, Marr [7] and Lee et al. [8]). The printed '(73.4)' sits under the single drawn junction where the 808 line ends and the 799 line passes; assigned to this point." },
+    { "id": "ns-799", "type": "binary", "reaction": "eutectic", "phases": ["sodium-n3s8", "silica"],
+      "label": { "temperature": 799, "composition": null },
+      "seedPixel": [2531, 1123], "nbs": [5096, 5116],
+      "notes": "Silica is quartz (high quartz between the 573 and 870 °C lines). Drawn at the same junction as ns-808; composition digitized. NBS 5096 and 5116 (Kracek) are the Na2O·2SiO2 + silica eutectic of the version without 3Na2O·8SiO2." }
+  ],
+  "liquidus": [
+    { "phase": "sodium-oxide", "from": "end:sodium-oxide", "to": "ns-eutectic-n-n2s",
+      "segments": [ { "kind": "trace", "seedPixel": [1489, 906], "waypoints": [[1525, 940], [1562, 982], [1594, 1024], [1631, 1068], [1657, 1099]] } ],
+      "grid": [2, 4, 6, 8, 10, 12, 14] },
+    { "phase": "sodium-orthosilicate", "from": "ns-eutectic-n-n2s", "to": "ns-orthosilicate-melting",
+      "segments": [ { "kind": "trace", "seedPixel": [1684, 1102], "waypoints": [[1715, 1071], [1752, 1042], [1789, 1021], [1826, 1008], [1852, 1000], [1880, 955], [1897, 924]] } ],
+      "grid": [16, 18, 20, 22, 24, 26, 27, 28, 29, 30, 31, 32] },
+    { "phase": "sodium-orthosilicate", "from": "ns-orthosilicate-melting", "to": "ns-962",
+      "segments": [ { "kind": "trace", "seedPixel": [1953, 938] } ],
+      "grid": [33, 34, 35] },
+    { "phase": "sodium-pyrosilicate", "from": "ns-962", "to": "ns-pyrosilicate-melting",
+      "segments": [ { "kind": "trace", "seedPixel": [1993, 914] } ],
+      "grid": [37, 38, 39] },
+    { "phase": "sodium-pyrosilicate", "from": "ns-pyrosilicate-melting", "to": "ns-1005",
+      "segments": [ { "kind": "trace", "seedPixel": [2070, 911] } ],
+      "grid": [40, 41, 42, 43, 44] },
+    { "phase": "sodium-metasilicate", "from": "ns-1005", "to": "ns-metasilicate-melting",
+      "segments": [ { "kind": "trace", "seedPixel": [2127, 924] } ],
+      "grid": [45, 46, 47, 48, 49] },
+    { "phase": "sodium-metasilicate", "from": "ns-metasilicate-melting", "to": "ns-837",
+      "segments": [ { "kind": "trace", "seedPixel": [2227, 941], "waypoints": [[2333, 1060]] } ],
+      "grid": [50, 52, 54, 56, 58, 60, 61] },
+    { "phase": "sodium-disilicate", "from": "ns-837", "to": "ns-disilicate-melting",
+      "segments": [ { "kind": "trace", "seedPixel": [2383, 1073] } ],
+      "grid": [63, 64, 65] },
+    { "phase": "sodium-disilicate", "from": "ns-disilicate-melting", "to": "ns-808",
+      "segments": [ { "kind": "trace", "seedPixel": [2467, 1079], "waypoints": [[2500, 1098]] } ],
+      "grid": [67, 68, 69, 70, 71, 72] },
+    { "phase": "sodium-n3s8", "from": "ns-808", "to": "ns-799",
+      "segments": [ { "kind": "straight" } ],
+      "grid": [] },
+    { "phase": "silica", "from": "ns-799", "to": "end:silica",
+      "segments": [ { "kind": "trace" } ],
+      "grid": [74, 75, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98] }
+  ],
+  "junctionTolerance_wt": 1.5,
+  "verbatim": {
+    "endMemberSources": [
+      { "phase": "sodium-oxide", "temperature_C": 1133,
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.137", "printedPage": 94, "pdfPage": 114, "read": "printed label '1133' at the Na2O axis, where the dashed liquidus starts" } },
+      { "phase": "silica", "temperature_C": 1725,
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.137", "printedPage": 94, "pdfPage": 114, "read": "printed label '1725' at the SiO2 axis, where the silica liquidus ends" } }
+    ],
+    "inversions": [
+      { "phase": "sodium-orthosilicate", "change": "polymorphic transition (forms not named)", "temperature_C": 960, "source": "printed label '960' under the line from the 2Na2O·SiO2 liquidus (where the dashed and the full liquidus meet, ≈29 wt% SiO2; the traced liquidus kinks there, 963 °C at 29 wt%) to the 2Na2O·SiO2 line" },
+      { "phase": "silica", "change": "cristobalite → tridymite", "temperature_C": 1470, "source": "printed label '1470' on the line from the silica liquidus to the SiO2 axis; arrows 'Cristobalite' / 'Tridymite' at the SiO2 axis" },
+      { "phase": "silica", "change": "tridymite → high quartz", "temperature_C": 870, "source": "printed label '870' on the line from the silica liquidus to the SiO2 axis; arrow 'Tridymite' above. The liquidus between 799 and 870 °C is the quartz liquidus." },
+      { "phase": "silica", "change": "high quartz → low quartz", "temperature_C": 573, "source": "printed label '573' on the line from the Na2O·2SiO2 line to the SiO2 axis; arrows 'H-Quartz' / 'L-Quartz'" }
+    ],
+    "stabilityLimits": [
+      { "phase": "sodium-n3s8", "lowerLimit_C": 700, "source": "printed label '700' on the line from the Na2O·2SiO2 line to the SiO2 axis; the 3Na2O·8SiO2 line runs from this line up to the 808 line, with an arrow from the compound label" },
+      { "phase": "sodium-pyrosilicate", "lowerLimit_C": 402, "source": "printed label '402' under the line from the 2Na2O·SiO2 line to the Na2O·SiO2 line; the 3Na2O·2SiO2 line ends on it" }
+    ],
+    "silicaSolution": {
+      "notes": "Caption: for the SiO2-rich part with tridymite stable only as a binary solution phase, see Holmquist [11]; not drawn, silica modelled as pure SiO2."
+    }
+  }
+}

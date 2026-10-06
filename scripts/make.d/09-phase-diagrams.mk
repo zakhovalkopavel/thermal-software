@@ -15,9 +15,9 @@ SCALE    ?= 1
 pd-index: ## Caption OCR over the atlas → figure-index/slag-atlas-1995.json [PD_PAGES=40-200]
 	@$(PD_CLI) index-figures --source slag-atlas-1995 --pages $(PD_PAGES)
 
-pd-tile: ## Zoom tile with pixel rulers: PAGE=108 BOX="x0 y0 x1 y1" [SCALE=2]
-	@test -n "$(PAGE)" -a -n "$(BOX)" || (echo "usage: make pd-tile PAGE=108 BOX=\"x0 y0 x1 y1\" [SCALE=2]"; exit 2)
-	@$(PD_CLI) tile --page $(PAGE) --box $(BOX) --scale $(SCALE)
+pd-tile: ## Zoom tile with pixel rulers: PAGE=108 BOX="x0 y0 x1 y1" [SCALE=2] [OVERLAY=mgo-sio2]
+	@test -n "$(PAGE)" -a -n "$(BOX)" || (echo "usage: make pd-tile PAGE=108 BOX=\"x0 y0 x1 y1\" [SCALE=2] [OVERLAY=system]"; exit 2)
+	@$(PD_CLI) tile --page $(PAGE) --box $(BOX) --scale $(SCALE) $(if $(OVERLAY),--overlay $(OVERLAY))
 
 pd-calibrate: ## Detect frame and ticks of a binary config: SYSTEM=mgo-sio2
 	@test -n "$(SYSTEM)" || (echo "usage: make pd-calibrate SYSTEM=mgo-sio2"; exit 2)
@@ -46,8 +46,8 @@ pd-nbs-suggest: ## Candidate NBS entries: COMPONENTS="MgO SiO2"
 	@test -n "$(COMPONENTS)" || (echo "usage: make pd-nbs-suggest COMPONENTS=\"MgO SiO2\""; exit 2)
 	@$(PD_CLI) nbs-suggest $(COMPONENTS)
 
-pd-validate: ## Validate the phase-diagram dataset (exit 1 on errors)
-	@$(PD_CLI) validate
+pd-validate: ## Validate the phase-diagram dataset (exit 1 on errors) [SYSTEM=k2o-al2o3-sio2: with that candidate in place]
+	@$(PD_CLI) validate $(if $(SYSTEM),--candidate $(SYSTEM))
 
 pd-test: ## Run phase-diagram extraction tests (in python container)
 	@echo "🧪 Running phase-diagram extraction tests..."

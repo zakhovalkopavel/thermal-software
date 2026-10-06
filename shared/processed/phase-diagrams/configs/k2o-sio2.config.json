@@ -1,0 +1,90 @@
+{
+  "system": "K2O-SiO2",
+  "components": ["K2O", "SiO2"],
+  "output": "systems/k2o-sio2.json",
+  "idPrefix": "ks",
+  "source": {
+    "ref": "slag-atlas-1995",
+    "figure": "Fig. 3.117",
+    "diagram": "Sub-system K2O·SiO2-SiO2 after Kracek [1] and Kracek et al. [2]",
+    "printedPage": 85,
+    "pdfPage": 105,
+    "caption": "Atlas text (printed p. 85): 'Fig. 3.117. Sub-system K2O·SiO2-SiO2 after Kracek [1] and Kracek et al. [2]. The additional compound K2O·3SiO2, melting incongruently and reported by Eipeltauer, More [3] is indicated by a dashed line. For the phase equilibria in the SiO2-rich region of the system, with tridymite as a solution phase and not as the polymorph of pure silica, see Wollast [4] and Holmquist [5]. For thermodynamic assessment of the system and calculated phase diagram, see Wu at al. [6].' References: [1] Kracek, F. C.: J. Am. Chem. Soc. 52 (1930), p. 1436/42; [2] Kracek, F. C., N. L. Bowen, G. W. Morey: J. Phys. Chem. 41 (1937) No. 9, p. 1183/93; [3] Eipeltauer, E., A. More: Radex Rundsch. (1960) No. 4, p. 230/8; [4] Wollast, R.: Silicates Ind. 26 (1961) No. 2, p. 89/92; [5] Holmquist, S. B.: J. Am. Ceram. Soc. 44 (1961) No. 2, p. 82/6; [6] Wu, P., G. Eriksson, A. D. Pelton: J. Am. Ceram. Soc. 76 (1993) No. 8, p. 2059/64."
+  },
+  "frameSearchBox": [1400, 280, 3060, 1560],
+  "axes": {
+    "x": { "component": "SiO2", "ticks": [40, 50, 60, 70, 80, 90, 100] },
+    "y": { "ticks": [1800, 1600, 1400, 1200, 1000, 800, 600, 400] }
+  },
+  "phases": ["potassium-metasilicate", "potassium-disilicate", "potassium-tetrasilicate", "silica"],
+  "endMembers": {
+    "potassium-metasilicate": { "x": 38.9, "labelTemperature": 976 },
+    "silica": { "x": 100, "labelTemperature": 1725 }
+  },
+  "invariants": [
+    { "id": "ks-780", "type": "binary", "reaction": "eutectic", "phases": ["potassium-metasilicate", "potassium-disilicate"],
+      "label": { "temperature": 780, "composition": 45.5 },
+      "seedPixel": [1654, 1174], "nbs": [5062],
+      "notes": "Eutectic line and K2O·SiO2 liquidus drawn dashed; the line detector does not find the line, temperature and composition are the printed labels." },
+    { "id": "ks-disilicate-melting", "type": "compound-melting", "reaction": null, "phases": ["potassium-disilicate"],
+      "label": { "temperature": 1045, "composition": null },
+      "seedPixel": [1912, 960], "nbs": [],
+      "notes": "Congruent." },
+    { "id": "ks-742", "type": "binary", "reaction": "eutectic", "phases": ["potassium-disilicate", "potassium-tetrasilicate"],
+      "label": { "temperature": 742, "composition": 67.6 },
+      "seedPixel": [2196, 1203], "nbs": [4866],
+      "notes": "Kracek et al. version. The dashed K2O·3SiO2 alternative (Eipeltauer, More) is not modelled (verbatim.alternativeCompound)." },
+    { "id": "ks-tetrasilicate-melting", "type": "compound-melting", "reaction": null, "phases": ["potassium-tetrasilicate"],
+      "label": { "temperature": 770, "composition": null },
+      "seedPixel": [2299, 1181], "nbs": [],
+      "notes": "Congruent. The maximum lies on the 769 °C eutectic line (1 °C ≈ 0.8 px apart); the liquidus between the maximum and the 769 eutectic is not resolved." },
+    { "id": "ks-769", "type": "binary", "reaction": "eutectic", "phases": ["potassium-tetrasilicate", "silica"],
+      "label": { "temperature": 769, "composition": 72.5 },
+      "seedPixel": [2317, 1182], "nbs": [4992],
+      "notes": "Silica is quartz (high quartz between the 573 and 870 °C lines)." }
+  ],
+  "liquidus": [
+    { "phase": "potassium-metasilicate", "from": "end:potassium-metasilicate", "to": "ks-780",
+      "segments": [ { "kind": "trace", "seedPixel": [1503, 1023], "waypoints": [[1525, 1032], [1555, 1050], [1582, 1075], [1610, 1105], [1633, 1137]] } ],
+      "grid": [38.9, 40, 41, 42, 43, 44, 45] },
+    { "phase": "potassium-disilicate", "from": "ks-780", "to": "ks-disilicate-melting",
+      "segments": [ { "kind": "trace" } ],
+      "grid": [46, 47, 48, 49, 50, 51, 52, 53, 54, 55] },
+    { "phase": "potassium-disilicate", "from": "ks-disilicate-melting", "to": "ks-742",
+      "segments": [ { "kind": "trace" } ],
+      "grid": [57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67] },
+    { "phase": "potassium-tetrasilicate", "from": "ks-742", "to": "ks-tetrasilicate-melting",
+      "segments": [ { "kind": "trace", "seedPixel": [2225, 1194], "waypoints": [[2250, 1187], [2270, 1183]] } ],
+      "grid": [68, 69, 70, 71] },
+    { "phase": "potassium-tetrasilicate", "from": "ks-tetrasilicate-melting", "to": "ks-769",
+      "segments": [ { "kind": "straight" } ],
+      "grid": [] },
+    { "phase": "silica", "from": "ks-769", "to": "end:silica",
+      "segments": [ { "kind": "trace" } ],
+      "grid": [73, 74, 75, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100] }
+  ],
+  "junctionTolerance_wt": 1.5,
+  "verbatim": {
+    "endMemberSources": [
+      { "phase": "potassium-metasilicate", "temperature_C": 976,
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.117", "printedPage": 85, "pdfPage": 105, "read": "printed label '976' at the left frame edge (K2O·SiO2, 38.9 wt% SiO2 stoichiometric; the calibrated frame edge reads 38.7), where the dashed liquidus starts" },
+        "notes": "The figure covers the sub-system K2O·SiO2-SiO2 only; the K2O-rich side is not drawn." },
+      { "phase": "silica", "temperature_C": 1725,
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.117", "printedPage": 85, "pdfPage": 105, "read": "printed label '1725' at the SiO2 axis, where the silica liquidus ends" } }
+    ],
+    "alternativeCompound": {
+      "phase": "K2O·3SiO2 (not in the phase catalog)",
+      "reported": "Eipeltauer, More [3] (caption: melting incongruently, indicated by a dashed line)",
+      "read": "dashed vertical at 65.6 wt% SiO2 (x 2149 px; stoichiometric 65.7) from the bottom of the frame to a dashed horizontal line at ≈801 °C (y 1158 px, not printed) running from the K2O·2SiO2 line (56.1 wt%) to the K2O·2SiO2 liquidus at ≈66.5 wt% (x 2170 px)",
+      "notes": "Read as incongruent melting K2O·3SiO2 → K2O·2SiO2 + liquid at ≈801 °C. Not modelled: the full lines (Kracek et al.) give the K2O·2SiO2 + K2O·4SiO2 eutectic at 742 °C without K2O·3SiO2."
+    },
+    "inversions": [
+      { "phase": "silica", "change": "cristobalite → tridymite", "temperature_C": 1470, "source": "printed label '1470' on the line from the silica liquidus (≈90 wt% SiO2, traced 1471 °C at 90) to the SiO2 axis (line reads 1471); arrows 'Cristobalite' / 'Tridymite' at the SiO2 axis" },
+      { "phase": "silica", "change": "tridymite → high quartz", "temperature_C": 870, "source": "printed label '870' on the line from the silica liquidus (≈74.8 wt% SiO2) to the SiO2 axis (line reads 868–870.5); arrows 'Tridymite' / 'H-Quartz'. The liquidus between 769 and 870 °C is the quartz liquidus." },
+      { "phase": "silica", "change": "high quartz → low quartz", "temperature_C": 573, "source": "printed label '573' on the line from the K2O·4SiO2 line to the SiO2 axis (line reads 571–573.5); arrows 'H-Quartz' / 'L-Quartz'" }
+    ],
+    "silicaSolution": {
+      "notes": "Caption: for the SiO2-rich region with tridymite as a solution phase (not the polymorph of pure silica), see Wollast [4] and Holmquist [5]; not drawn, silica modelled as pure SiO2."
+    }
+  }
+}
