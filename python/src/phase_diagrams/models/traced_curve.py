@@ -8,12 +8,18 @@ from dataclasses import dataclass, field
 
 @dataclass
 class TracedCurve:
-    """Pixel path (stroke centre, page pixels) and the non-ink length it crossed."""
+    """Pixel path (stroke centre, page pixels) and the non-ink length it crossed.
+
+    ``kind`` (ternary curves): ``boundary``, ``isotherm``, ``inversion`` or ``immiscibility``;
+    ``temperature_C`` is set for isotherms.
+    """
 
     pixels: list[tuple[float, float]]
     gap_px: float = 0.0
     label: str = ""
     points: list[tuple[float, float]] = field(default_factory=list)
+    kind: str = ""
+    temperature_C: float | None = None
 
     @property
     def start(self) -> tuple[float, float]:

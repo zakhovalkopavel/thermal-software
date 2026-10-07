@@ -20,6 +20,7 @@ class ReviewItem:
         "tick-residual",
         "ocr-differs",
         "dropped-points",
+        "track-point-off-curve",
     )
 
     kind: str

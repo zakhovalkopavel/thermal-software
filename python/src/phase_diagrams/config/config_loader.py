@@ -54,6 +54,43 @@ def _curves_problems(data: dict) -> list[str]:
         _width_problem(data.get("strokeWidth_px"), "strokeWidth_px"),
         _width_problem(data.get("isothermStrokeWidth_px"), "isothermStrokeWidth_px"),
     ]
+    frame_mask = data.get("frameMask_px", 0)
+    if not isinstance(frame_mask, (int, float)) or frame_mask < 0:
+        problems.append("frameMask_px must be a number ≥ 0")
+    line_width = data.get("lineWidth_px")
+    if line_width is not None and (isinstance(line_width, bool) or not isinstance(line_width, (int, float)) or line_width <= 0):
+        problems.append("lineWidth_px must be a number > 0")
+    nodes = data.get("nodes", {})
+    for label, pixel in nodes.items():
+        if not isinstance(pixel, list) or len(pixel) != 2:
+            problems.append(f"node {label}: pixel must be [x, y]")
+    sections = ("curves", "isotherms", "inversions", "liquidImmiscibility")
+    used = [v for s in sections for e in data.get(s, []) for v in _pixel_values(e)]
+    used += list(data.get("endpointPixels", {}).values())
+    used += [e["pixel"] for e in data.get("edits", []) if e.get("pixel") is not None]
+    for number, region in enumerate(data.get("fields", []), start=1):
+        used += list(region.get("ring", [])) + ([region["seed"]] if region.get("seed") is not None else [])
+        if not region.get("name") or (len(region.get("ring", [])) < 3 and region.get("seed") is None):
+            problems.append(f"field {number}: needs name and a ring of ≥ 3 points or a seed")
+        if region.get("legend") is not None and not isinstance(region["legend"], str):
+            problems.append(f"field {number}: legend must be a string")
+    for label in sorted({v for v in used if isinstance(v, str)} - set(nodes)):
+        problems.append(f"unknown node label '{label}' (add it to nodes)")
+    for number, edit in enumerate(data.get("edits", []), start=1):
+        if not isinstance(edit.get("path"), str):
+            problems.append(f"edit {number}: path must be a string ('' = root)")
+        if edit.get("pixel") is None and not edit.get("set"):
+            problems.append(f"edit {number} ({edit.get('path')}): needs pixel or set")
+        if not isinstance(edit.get("set", {}), dict):
+            problems.append(f"edit {number} ({edit.get('path')}): set must map keys to values")
+    for section in ("curves", "isotherms", "inversions", "liquidImmiscibility"):
+        for entry in data.get(section, []):
+            for flag in ("new", "dashed"):
+                if not isinstance(entry.get(flag, False), bool):
+                    problems.append(f"{section} entry {entry.get('fields') or entry.get('field') or entry.get('phase')}: {flag} must be true or false")
+    for inversion in data.get("inversions", []):
+        if inversion.get("new") and not inversion.get("source"):
+            problems.append(f"inversion {inversion.get('phase')} {inversion.get('change')}: a new inversion needs source")
     for curve in data.get("curves", []):
         label = f"curve {'/'.join(f or '?' for f in curve.get('fields', []))}"
         if not curve.get("path"):
@@ -67,6 +104,9 @@ def _curves_problems(data: dict) -> list[str]:
         for key in ("startPixel", "endPixel"):
             if key not in isotherm:
                 problems.append(f"{label}: missing {key}")
+        part = isotherm.get("part", 1)
+        if isinstance(part, bool) or not isinstance(part, int) or part < 1:
+            problems.append(f"{label}: part must be a whole number ≥ 1")
         problems.append(_width_problem(isotherm.get("strokeWidth_px"), f"{label}: strokeWidth_px"))
         problems.extend(_waypoint_problems(isotherm.get("waypoints", []), label))
     for inversion in data.get("inversions", []):
@@ -86,12 +126,19 @@ def _curves_problems(data: dict) -> list[str]:
     return [p for p in problems if p]
 
 
+def _pixel_values(entry: dict) -> list:
+    values = [entry[k] for k in ("startPixel", "endPixel") if entry.get(k) is not None]
+    return values + [w.get("pixel") if isinstance(w, dict) else w for w in entry.get("waypoints", [])]
+
+
 def _waypoint_problems(waypoints: list, label: str) -> list[str]:
     problems = []
     for waypoint in waypoints:
         pixel = waypoint.get("pixel") if isinstance(waypoint, dict) else waypoint
+        if isinstance(pixel, str):
+            continue
         if not isinstance(pixel, list) or len(pixel) != 2:
-            problems.append(f"{label}: waypoint {waypoint} must be [x, y] or {{\"pixel\": [x, y], \"straight\": true}}")
+            problems.append(f"{label}: waypoint {waypoint} must be [x, y], a node label or {{\"pixel\": …, \"straight\": true}}")
     return problems
 
 

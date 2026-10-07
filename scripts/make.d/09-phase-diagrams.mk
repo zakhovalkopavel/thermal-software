@@ -10,7 +10,7 @@ PD_CLI   := docker-compose run --rm python python src/scripts/extract_phase_diag
 PD_PAGES ?= 40-200
 SCALE    ?= 1
 
-.PHONY: pd-index pd-tile pd-calibrate pd-extract pd-curves pd-compare pd-promote pd-nbs-index pd-nbs-suggest pd-validate pd-test
+.PHONY: pd-index pd-tile pd-calibrate pd-extract pd-curves pd-nodes pd-compare pd-promote pd-nbs-index pd-nbs-suggest pd-validate pd-test
 
 pd-index: ## Caption OCR over the atlas → figure-index/slag-atlas-1995.json [PD_PAGES=40-200]
 	@$(PD_CLI) index-figures --source slag-atlas-1995 --pages $(PD_PAGES)
@@ -30,6 +30,10 @@ pd-extract: ## Binary config → candidates/<system>.json, overlay, review, comp
 pd-curves: ## Ternary curves config → candidate with polyline_wt filled: SYSTEM=cao-mgo-sio2
 	@test -n "$(SYSTEM)" || (echo "usage: make pd-curves SYSTEM=cao-mgo-sio2"; exit 2)
 	@$(PD_CLI) trace-curves $(SYSTEM)
+
+pd-nodes: ## Numbered node map of a ternary (junctions, edge points, invariants, rings) → nodes/: SYSTEM=cao-mgo-sio2 [ORIGIN="x y"]
+	@test -n "$(SYSTEM)" || (echo "usage: make pd-nodes SYSTEM=cao-mgo-sio2 [ORIGIN=\"x y\"]"; exit 2)
+	@$(PD_CLI) nodes $(SYSTEM) $(if $(ORIGIN),--origin $(ORIGIN))
 
 pd-compare: ## Compare the candidate with the dataset file: SYSTEM=mgo-sio2
 	@test -n "$(SYSTEM)" || (echo "usage: make pd-compare SYSTEM=mgo-sio2"; exit 2)

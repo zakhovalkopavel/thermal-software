@@ -11,11 +11,11 @@ Subpackages
   models/      data classes (results, measurements, NBS entries, review items)
   config/      config data classes, config loader, source registry
   rendering/   PDF pages, zoom tiles, overlays
-  detection/   ink mask, frame, ticks, invariant lines, junctions
+  detection/   ink mask, line width (pixel scale), frame, ticks, invariant lines, junctions, skeleton, rings, dash ends, label boxes
   tracing/     curve tracing, sampling, simplification
   figures/     label OCR, caption parsing, figure index
   nbs/         NSRDS-NBS 61 text, entries, matching, statuses, composition conversion
-  builders/    calibration, binary system build, ternary curve fill
+  builders/    calibration, binary system build, ternary curve fill, node map
   output/      system JSON writer, review report
   validation/  dataset rules PD001–PD013
 
@@ -43,6 +43,8 @@ from phase_diagrams.models.nbs_comparison               import NbsComparison
 from phase_diagrams.models.review_item                  import ReviewItem
 from phase_diagrams.models.validation_issue             import ValidationIssue
 from phase_diagrams.models.system_comparison            import SystemComparison
+from phase_diagrams.models.diagram_node                 import DiagramNode
+from phase_diagrams.models.line_scale                   import LineScale
 
 from phase_diagrams.config.diagram_config               import DiagramConfig
 from phase_diagrams.config.curves_config                import CurvesConfig
@@ -55,8 +57,11 @@ from phase_diagrams.config.source_registry              import SourceRegistry
 from phase_diagrams.rendering.pdf_renderer              import render_page
 from phase_diagrams.rendering.tile_renderer             import render_tile
 from phase_diagrams.rendering.overlay_renderer          import render_overlay
+from phase_diagrams.rendering.ternary_overlay_renderer  import render_ternary_overlay
+from phase_diagrams.rendering.node_map_renderer         import render_node_map
 
 from phase_diagrams.detection.ink_mask                  import ink_mask
+from phase_diagrams.detection.line_width_meter          import measure_line_scale
 from phase_diagrams.detection.stroke_width_filter       import stroke_width_filter
 from phase_diagrams.detection.frame_detector            import detect_frame
 from phase_diagrams.detection.tick_detector             import detect_ticks
@@ -64,10 +69,19 @@ from phase_diagrams.detection.tick_matcher              import match_ticks
 from phase_diagrams.detection.horizontal_line_detector  import detect_horizontal_lines
 from phase_diagrams.detection.vertical_line_detector    import detect_vertical_lines
 from phase_diagrams.detection.junction_locator          import locate_junction
+from phase_diagrams.detection.skeletonizer              import skeletonize
+from phase_diagrams.detection.junction_detector         import detect_junctions
+from phase_diagrams.detection.ring_detector             import detect_rings
+from phase_diagrams.detection.dash_end_detector         import detect_dash_ends
+from phase_diagrams.detection.dash_mask                 import dash_mask
+from phase_diagrams.detection.text_detector             import detect_text_boxes
 
 from phase_diagrams.tracing.curve_tracer                import trace_path
 from phase_diagrams.tracing.curve_sampler               import sample_curve
 from phase_diagrams.tracing.polyline_simplifier         import simplify_polyline
+from phase_diagrams.tracing.quadratic_segment_fitter    import fit_quadratic_segment
+from phase_diagrams.tracing.convex_curve_fitter         import fit_convex_curve
+from phase_diagrams.tracing.divider_follower            import follow_divider
 
 from phase_diagrams.figures.label_reader                import read_label
 from phase_diagrams.figures.caption_parser              import parse_figure_captions
@@ -83,6 +97,8 @@ from phase_diagrams.nbs.composition_converter           import convert_compositi
 from phase_diagrams.builders.binary_calibrator          import calibrate_binary
 from phase_diagrams.builders.binary_system_builder      import build_binary_system
 from phase_diagrams.builders.ternary_curve_filler       import fill_ternary_curves
+from phase_diagrams.builders.ternary_structure_editor   import edit_ternary_structure
+from phase_diagrams.builders.node_map_builder           import build_node_map
 
 from phase_diagrams.output.system_json_writer           import write_system_json
 from phase_diagrams.output.review_report                import review_report
@@ -112,6 +128,8 @@ __all__ = [
     "ReviewItem",
     "ValidationIssue",
     "SystemComparison",
+    "DiagramNode",
+    "LineScale",
     # config
     "DiagramConfig",
     "CurvesConfig",
@@ -124,8 +142,11 @@ __all__ = [
     "render_page",
     "render_tile",
     "render_overlay",
+    "render_ternary_overlay",
+    "render_node_map",
     # detection
     "ink_mask",
+    "measure_line_scale",
     "stroke_width_filter",
     "detect_frame",
     "detect_ticks",
@@ -133,10 +154,19 @@ __all__ = [
     "detect_horizontal_lines",
     "detect_vertical_lines",
     "locate_junction",
+    "skeletonize",
+    "detect_junctions",
+    "detect_rings",
+    "detect_dash_ends",
+    "dash_mask",
+    "detect_text_boxes",
     # tracing
     "trace_path",
     "sample_curve",
     "simplify_polyline",
+    "fit_quadratic_segment",
+    "fit_convex_curve",
+    "follow_divider",
     # figures
     "read_label",
     "parse_figure_captions",
@@ -152,6 +182,8 @@ __all__ = [
     "calibrate_binary",
     "build_binary_system",
     "fill_ternary_curves",
+    "edit_ternary_structure",
+    "build_node_map",
     # output
     "write_system_json",
     "review_report",

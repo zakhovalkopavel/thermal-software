@@ -171,6 +171,21 @@ def test_straight_waypoint_bridges_a_hidden_stroke_instead_of_following_a_label(
     assert any("straight step (500, 400)→(400, 500)" in line for line in bridged.log)
 
 
+def test_second_piece_of_an_isotherm_fills_the_part_2_entry():
+    text = SYSTEM_TEXT.replace(
+        '{ "field": "silica", "temperature_C": 1400, "polyline_wt": null }',
+        '{ "field": "silica", "temperature_C": 1400, "polyline_wt": null },\n'
+        '    { "field": "silica", "temperature_C": 1400, "part": 2, "polyline_wt": null }',
+    )
+    isotherms = [{"field": "silica", "temperature_C": 1400, "startPixel": [600, 500], "endPixel": [700, 600]},
+                 {"field": "silica", "temperature_C": 1400, "part": 2, "startPixel": [500, 400], "endPixel": [300, 600]}]
+    fill = fill_ternary_curves(text, _config(curves=[], isotherms=isotherms), _mask(), _invariants(text))
+    first, second = (e["polyline_wt"] for e in json.loads(fill.text)["isotherms"])
+    assert first[0] != second[0]
+    assert second[0] == pytest.approx([21.4, 21.5, 57.1], abs=0.3)
+    assert any(line.startswith("isotherm silica 1400 part 2:") for line in fill.log)
+
+
 def test_unlabelled_field_is_allowed():
     text = SYSTEM_TEXT.replace('["silica", "wollastonite"]', '["silica", null]')
     config = _config(curves=[{"fields": ["silica", None], "path": ["tt-1", "tt-2"]}], isotherms=[])
@@ -199,6 +214,94 @@ def test_point_far_outside_the_triangle_is_an_error():
     config, mask = _edge_isotherm(270)
     with pytest.raises(ValueError, match="outside the triangle"):
         fill_ternary_curves(SYSTEM_TEXT, config, mask, _invariants(SYSTEM_TEXT))
+
+
+def test_dashed_isotherm_does_not_follow_a_solid_line_beside_it():
+    image = Image.new("L", (1000, 900), 255)
+    draw = ImageDraw.Draw(image)
+    draw.line([(350, 520), (650, 520)], fill=0, width=5)
+    for k in range(6):
+        a, b = k / 6, (k + 0.7) / 6
+        for (x0, y0), (x1, y1) in (((400, 510), (500, 480)), ((500, 480), (600, 510))):
+            draw.line([(x0 + a * (x1 - x0), y0 + a * (y1 - y0)), (x0 + b * (x1 - x0), y0 + b * (y1 - y0))], fill=0, width=5)
+    mask = ink_mask(np.array(image))
+    isotherm = {"field": "silica", "temperature_C": 1400, "startPixel": [400, 510], "endPixel": [600, 510]}
+    solid = fill_ternary_curves(SYSTEM_TEXT, _config(curves=[], isotherms=[isotherm]), mask, _invariants(SYSTEM_TEXT))
+    dashed = fill_ternary_curves(SYSTEM_TEXT, _config(curves=[], isotherms=[{**isotherm, "dashed": True}]), mask, _invariants(SYSTEM_TEXT))
+    assert max(p[2] for p in json.loads(solid.text)["isotherms"][0]["polyline_wt"]) < 42.0
+    assert max(p[2] for p in json.loads(dashed.text)["isotherms"][0]["polyline_wt"]) > 44.0
+
+
+def test_isotherm_is_split_where_a_track_point_lies_on_a_boundary():
+    image = Image.new("L", (1000, 900), 255)
+    draw = ImageDraw.Draw(image)
+    draw.line([(500, 400), (300, 600)], fill=0, width=5)
+    draw.line([(350, 400), (400, 500), (550, 550)], fill=0, width=5)
+    mask = ink_mask(np.array(image))
+    isotherm = {"field": "silica", "temperature_C": 1400, "startPixel": [350, 400], "endPixel": [550, 550], "waypoints": [[400, 500]]}
+    split = fill_ternary_curves(SYSTEM_TEXT, _config(isotherms=[isotherm]), mask, _invariants(SYSTEM_TEXT))
+    whole = fill_ternary_curves(SYSTEM_TEXT, _config(curves=[], isotherms=[isotherm]), mask, _invariants(SYSTEM_TEXT))
+    assert "isotherm silica 1400: split at (400, 500) (on a field divider)" in split.log
+    assert not any("split at" in line for line in whole.log)
+    assert any(line.startswith("isotherm silica 1400 [") and "through 3 track points" in line for line in whole.log)
+
+
+def test_isotherm_running_along_a_boundary_is_the_boundary_curve():
+    image = Image.new("L", (1000, 900), 255)
+    draw = ImageDraw.Draw(image)
+    draw.line([(500, 400), (300, 600)], fill=0, width=5)
+    draw.line([(350, 450), (450, 450)], fill=0, width=5)
+    draw.line([(400, 500), (550, 550)], fill=0, width=5)
+    mask = ink_mask(np.array(image))
+    isotherm = {"field": "silica", "temperature_C": 1400, "startPixel": [350, 450], "endPixel": [550, 550],
+                "waypoints": [[450, 450], [400, 500]]}
+    fill = fill_ternary_curves(SYSTEM_TEXT, _config(isotherms=[isotherm]), mask, _invariants(SYSTEM_TEXT))
+    assert "isotherm silica 1400: (450, 450)→(400, 500) runs along a field divider, copied from it" in fill.log
+    isotherm_pixels = next(c.pixels for c in fill.curves if c.kind == "isotherm")
+    along = [p for p in isotherm_pixels if 400 <= p[0] <= 448 and 455 <= p[1] <= 500]
+    assert along and all(abs(p[0] + p[1] - 900) <= 2.5 for p in along)
+
+
+def _dashes(draw, start, end, length_px, gap_px, ranges=((0.0, 1.0),)):
+    total = float(np.hypot(end[0] - start[0], end[1] - start[1]))
+    s = 0.0
+    while s < total:
+        a, b = s / total, min(s + length_px, total) / total
+        if any(lo <= a and b <= hi for lo, hi in ranges):
+            draw.line([(start[0] + a * (end[0] - start[0]), start[1] + a * (end[1] - start[1])),
+                       (start[0] + b * (end[0] - start[0]), start[1] + b * (end[1] - start[1]))], fill=0, width=5)
+        s += length_px + gap_px
+
+
+def test_dashed_isotherm_leaving_a_dashed_boundary_does_not_follow_it():
+    image = Image.new("L", (1000, 900), 255)
+    draw = ImageDraw.Draw(image)
+    _dashes(draw, (500, 400), (300, 600), 30, 6)
+    _dashes(draw, (480, 420), (330, 620), 8, 6, ranges=((0.0, 0.35), (0.8, 1.0)))
+    mask = ink_mask(np.array(image))
+    curves = [{"fields": ["silica", "wollastonite"], "path": ["tt-1", "tt-2"], "dashed": True}]
+    isotherm = {"field": "silica", "temperature_C": 1400, "dashed": True, "startPixel": [480, 420], "endPixel": [330, 620]}
+    fill = fill_ternary_curves(SYSTEM_TEXT, _config(curves=curves, isotherms=[isotherm]), mask, _invariants(SYSTEM_TEXT))
+    pixels = np.asarray(next(c.pixels for c in fill.curves if c.kind == "isotherm"))
+    start, chord = np.array([480.0, 420.0]), np.array([-150.0, 200.0]) / 250.0
+    offsets = np.abs((pixels[:, 0] - start[0]) * chord[1] - (pixels[:, 1] - start[1]) * chord[0])
+    assert offsets.max() <= 2.5
+
+
+def test_frame_mask_keeps_a_dashed_isotherm_off_the_triangle_edge():
+    image = Image.new("L", (1000, 900), 255)
+    draw = ImageDraw.Draw(image)
+    draw.line([(100, 800), (900, 800)], fill=0, width=5)
+    for k in range(6):
+        a, b = k / 6, (k + 0.7) / 6
+        for (x0, y0), (x1, y1) in (((200, 800), (300, 770)), ((300, 770), (400, 800))):
+            draw.line([(x0 + a * (x1 - x0), y0 + a * (y1 - y0)), (x0 + b * (x1 - x0), y0 + b * (y1 - y0))], fill=0, width=5)
+    mask = ink_mask(np.array(image))
+    isotherm = {"field": "silica", "temperature_C": 1400, "startPixel": [200, 800], "endPixel": [400, 800]}
+    on_frame = fill_ternary_curves(SYSTEM_TEXT, _config(curves=[], isotherms=[isotherm]), mask, _invariants(SYSTEM_TEXT))
+    masked = fill_ternary_curves(SYSTEM_TEXT, _config(curves=[], isotherms=[isotherm], frameMask_px=9), mask, _invariants(SYSTEM_TEXT))
+    assert max(p[2] for p in json.loads(on_frame.text)["isotherms"][0]["polyline_wt"]) < 1.0
+    assert max(p[2] for p in json.loads(masked.text)["isotherms"][0]["polyline_wt"]) > 2.5
 
 
 INVERSIONS_TEXT = SYSTEM_TEXT.replace(

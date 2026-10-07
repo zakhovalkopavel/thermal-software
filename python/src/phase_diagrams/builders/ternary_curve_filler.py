@@ -11,11 +11,18 @@ import math
 import re
 
 import numpy as np
+from PIL import Image, ImageDraw
 
 from phase_diagrams.tracing.curve_tracer import trace_path
 from phase_diagrams.config.curves_config import CurvesConfig
+from phase_diagrams.detection.dash_mask import dash_mask
 from phase_diagrams.detection.stroke_width_filter import stroke_width_filter
 from phase_diagrams.tracing.polyline_simplifier import simplify_polyline
+from phase_diagrams.tracing.quadratic_segment_fitter import fit_quadratic_segment
+from phase_diagrams.tracing.convex_curve_fitter import fit_convex_curve
+from phase_diagrams.tracing.divider_follower import follow_divider
+from phase_diagrams.detection.text_detector import detect_text_boxes
+from phase_diagrams.models.line_scale import LineScale
 from phase_diagrams.models.review_item import ReviewItem
 from phase_diagrams.models.ternary_calibration import TernaryCalibration
 from phase_diagrams.models.ternary_fill import TernaryFill
@@ -23,21 +30,54 @@ from phase_diagrams.models.traced_curve import TracedCurve
 
 _TRACE_GAP_PX = 15.0
 _SAME_PIXEL_PX = 2.0
+_MIN_ARC_PX = 6.0
+_ON_DIVIDER_PX = 5.0
+_GUIDE_PX = 10.0
+_DIVIDER_BAND_PX = 11
+_TRACK_POINT_PX = 3.0
+_TEXT_MARGIN_PX = 2
 _SIMPLIFY_WT = 0.1
 _EDGE_WT = 0.3
 _POLYLINE_KEY = re.compile(r'"polyline_wt"\s*:\s*')
 
 
-def fill_ternary_curves(text: str, config: CurvesConfig, mask: np.ndarray, invariants: dict[str, dict]) -> TernaryFill:
+def fill_ternary_curves(
+    text: str,
+    config: CurvesConfig,
+    mask: np.ndarray,
+    invariants: dict[str, dict],
+    scale: LineScale | None = None,
+) -> TernaryFill:
     """Trace every configured curve and isotherm and write its polyline into ``text``.
 
     ``mask`` is the plain ink mask of the page; each entry is traced on the mask
     filtered to its ``strokeWidth_px``. ``invariants`` maps every invariant id of
-    the dataset to its entry (``liquid_wt``, ``sources``).
+    the dataset to its entry (``liquid_wt``, ``sources``). The pixel tolerances
+    are for the reference line width, scaled by ``scale``; config pixel values
+    (``strokeWidth_px``, ``frameMask_px``) are taken as given.
     Config pixels (end points, waypoints, isotherm ends) are in the stored
     coordinates of the system file; ``pixelOrigin`` converts them to page pixels.
     Path points drawn at the same pixel are joined directly; an ``endPixel``
     extends a curve past its last path point (open end, not an invariant).
+    With ``frameMask_px`` the triangle edges are erased from the tracing mask,
+    so that no trace runs along the frame. Printed labels (text boxes) are
+    erased from the tracing mask, and only traced pixels on ink are used as
+    stroke data, so letters and dash gaps never shape a curve. Inversions,
+    branches and isotherms are traced with the dividers traced before them
+    erased as well, so they never take a boundary's ink as their own; whether a
+    stretch runs along a divider is decided on the mask without them. For boundaries,
+    inversions and immiscibility branches, the curve between two consecutive
+    track points (path points, waypoints, ends) is one quadratic arc through
+    both, fitted to the stroke; a straight waypoint joins its segment by a
+    straight line (stroke hidden). A stretch of an inversion, branch or
+    isotherm that runs along a boundary (or, for isotherms, an inversion or
+    branch) between two track points is a copy of that curve, its ends moved
+    onto it. Isotherms are traced last and split at those stretches and at the
+    track points lying on a divider; each piece, inside one field, is one
+    inflection-free curve of degree ≤ 4 (two points: the degree closest to the
+    stroke; three or more: through the inner points). A ``dashed`` entry is traced on the
+    dashes of the mask only (no stroke-width filter), so it cannot follow a
+    solid line.
     An inversion entry (matched by ``phase`` and ``change``) gets ``polyline_wt``
     appended when it has none; that is the only key the filler may add there.
     Liquid-immiscibility branches are written, in config order, as
@@ -45,6 +85,7 @@ def fill_ternary_curves(text: str, config: CurvesConfig, mask: np.ndarray, invar
     Raises ValueError for unmatched config entries, missing end pixels or a
     write that would change anything other than the filled polylines.
     """
+    s = scale or LineScale()
     system = json.loads(text)
     components = list(system["components"])
     calibration = TernaryCalibration.from_system(system, config.pixel_origin)
@@ -76,32 +117,97 @@ def fill_ternary_curves(text: str, config: CurvesConfig, mask: np.ndarray, invar
             out.append([wt[c] for c in components])
         return out
 
-    filtered: dict[tuple[float, float], np.ndarray] = {}
+    filtered: dict[tuple[float, float] | str, np.ndarray] = {}
+    frame = _frame_band(mask.shape, calibration, config.frame_mask_px) if config.frame_mask_px > 0 else None
+    dividers: list[list[tuple[float, float]]] = []
+    guide_px = s.length(_GUIDE_PX)
 
-    def trace(start, end, waypoints, label, width) -> TracedCurve:
-        if width not in filtered:
-            filtered[width] = stroke_width_filter(mask, width)
+    def tracing_mask(width, dashed, divider_count) -> np.ndarray:
+        key = ("dashed" if dashed else width, divider_count)
+        if "text" not in filtered:
+            filtered["text"] = _text_band(mask, s)
+        if key not in filtered:
+            erased = filtered["text"].copy()
+            if frame is not None:
+                erased |= frame
+            if divider_count:
+                erased |= _divider_band(mask.shape, dividers[:divider_count], s.count(_DIVIDER_BAND_PX))
+            filtered[key] = (dash_mask(mask, scale=s) if dashed else stroke_width_filter(mask, width)) & ~erased
+        return filtered[key]
+
+    def trace(start, end, waypoints, label, width, dashed=False, kind="", temperature=None) -> TracedCurve:
+        ink = tracing_mask(width, dashed, len(dividers) if kind != "boundary" else 0)
+        plain = tracing_mask(width, dashed, 0)
         page = calibration.stored_to_page
         stops = [page(*start)] + [page(*w["pixel"]) for w in waypoints] + [page(*end)]
         straight = [False] + [w["straight"] for w in waypoints] + [False]
-        pixels: list[tuple[float, float]] = []
+        forced = [False] + [w.get("split", False) for w in waypoints] + [False]
+        strokes: list[list[tuple[float, float]]] = [[]]
+        guides: list[list[tuple[float, float]]] = [[]]
         gap = 0.0
-        run = 0
-        for k in range(1, len(stops) + 1):
-            if k < len(stops) and not straight[k]:
-                continue
-            if k - 1 > run:
-                part = trace_path(filtered[width], stops[run], stops[k - 1], stops[run + 1:k - 1], label=label)
-                pixels.extend(part.pixels if not pixels else part.pixels[1:])
-                gap += part.gap_px
-            if k < len(stops):
-                pixels.extend([stops[k - 1], stops[k]] if not pixels else [stops[k]])
-                log.append(f"{label}: straight step {_px(stops[k - 1])}→{_px(stops[k])} "
-                           f"({math.dist(stops[k - 1], stops[k]):.0f} px, hidden stroke)")
-            run = k
-        curve = TracedCurve(pixels=pixels, gap_px=gap, label=label)
+        for k in range(1, len(stops)):
+            a, b = stops[k - 1], stops[k]
+            stroke: list[tuple[float, float]] = []
+            guide: list[tuple[float, float]] = []
+            if straight[k]:
+                log.append(f"{label}: straight step {_px(a)}→{_px(b)} ({math.dist(a, b):.0f} px, hidden stroke)")
+            elif math.dist(a, b) >= s.length(_MIN_ARC_PX):
+                traced = trace_path(ink, a, b, label=label, scale=s)
+                gap += traced.gap_px
+                stroke = [p for p in traced.pixels if _on(ink, p)]
+                guide = stroke
+                if ink is not plain and _near_divider(a, dividers, guide_px) and _near_divider(b, dividers, guide_px):
+                    guide = [p for p in trace_path(plain, a, b, label=label, scale=s).pixels if _on(plain, p)]
+            strokes.append(stroke)
+            guides.append(guide)
+        breaks = list(range(len(stops)))
+        copies: dict[int, list[tuple[float, float]]] = {}
+        if kind != "boundary":
+            for k in range(1, len(stops)):
+                along = follow_divider(stops[k - 1], stops[k], guides[k], dividers, tolerance_px=guide_px,
+                                       on_px=s.length(_ON_DIVIDER_PX), scale=s)
+                if along is not None:
+                    copies[k] = along
+                    log.append(f"{label}: {_px(stops[k - 1])}→{_px(stops[k])} runs along a field divider, "
+                               "copied from it")
+            for k, along in copies.items():
+                stops[k - 1], stops[k] = along[0], along[-1]
+            for k, along in copies.items():
+                along[0], along[-1] = stops[k - 1], stops[k]
+        if kind == "isotherm":
+            ends = {k for c in copies for k in (c - 1, c)}
+            inner = [k for k in range(1, len(stops) - 1)
+                     if k in ends or forced[k] or _near_divider(stops[k], dividers, s.length(_ON_DIVIDER_PX))]
+            for k in inner:
+                reason = "split waypoint" if forced[k] else "on a field divider"
+                log.append(f"{label}: split at {_px(stops[k])} ({reason})")
+            breaks = [0] + inner + [len(stops) - 1]
+        pixels: list[tuple[float, float]] = []
+        for i, j in zip(breaks, breaks[1:]):
+            a, b = stops[i], stops[j]
+            if j - i == 1:
+                if j in copies:
+                    part = copies[j]
+                elif straight[j] or not strokes[j]:
+                    part = [a, b]
+                elif kind == "isotherm":
+                    part, degree, _ = fit_convex_curve(strokes[j], [a, b], scale=s)
+                    if degree > 2:
+                        log.append(f"{label} [{_px(a)}→{_px(b)}]: degree {degree} (closer to the printed line)")
+                else:
+                    part = fit_quadratic_segment(strokes[j], a, b, scale=s)
+            else:
+                data = [p for k in range(i + 1, j + 1) for p in strokes[k]]
+                part, degree, offset = fit_convex_curve(data, stops[i:j + 1], scale=s)
+                log.append(f"{label} [{_px(a)}→{_px(b)}]: degree {degree} through {j - i + 1} track points")
+                if offset > s.length(_TRACK_POINT_PX):
+                    review.append(ReviewItem("track-point-off-curve", label,
+                                             f"a track point between {_px(a)} and {_px(b)} is {offset:.1f} px off the "
+                                             "fitted curve (no inflection-free curve of degree ≤ 4 passes through all)"))
+            pixels.extend(part if not pixels else part[1:])
+        curve = TracedCurve(pixels=pixels, gap_px=gap, label=label, kind=kind, temperature_C=temperature)
         curves.append(curve)
-        if curve.gap_px > _TRACE_GAP_PX:
+        if curve.gap_px > s.length(_TRACE_GAP_PX):
             review.append(ReviewItem("trace-gap", label, f"path crosses {curve.gap_px:.0f} px of non-ink"))
         return curve
 
@@ -120,11 +226,11 @@ def fill_ternary_curves(text: str, config: CurvesConfig, mask: np.ndarray, invar
         polyline: list[list[float]] = []
         for k in range(len(ends) - 1):
             a_id, b_id = path[k], path[k + 1] if k + 1 < len(path) else None
-            if b_id is not None and not assigned[k] and math.dist(ends[k], ends[k + 1]) <= _SAME_PIXEL_PX:
+            if b_id is not None and not assigned[k] and math.dist(ends[k], ends[k + 1]) <= s.length(_SAME_PIXEL_PX):
                 points = [point_wt(a_id), point_wt(b_id)]
                 log.append(f"{label} [{a_id}→{b_id}]: drawn at the same pixel, joined directly")
             else:
-                curve = trace(ends[k], ends[k + 1], assigned[k], f"{label} [{a_id}→{b_id or 'open end'}]", entry["strokeWidth_px"])
+                curve = trace(ends[k], ends[k + 1], assigned[k], f"{label} [{a_id}→{b_id or 'open end'}]", entry["strokeWidth_px"], entry["dashed"], "boundary")
                 points = to_wt(curve.pixels)
                 points[0] = point_wt(a_id)
                 if b_id is not None:
@@ -133,21 +239,7 @@ def fill_ternary_curves(text: str, config: CurvesConfig, mask: np.ndarray, invar
             polyline.extend(simplified if not polyline else simplified[1:])
         polylines[("boundaryCurves", index)] = _rounded(polyline, label, log)
         log.append(f"{label}: {len(polyline)} points")
-
-    isotherms = system.get("isotherms", [])
-    for entry in config.isotherms:
-        index = next(
-            (i for i, c in enumerate(isotherms)
-             if c.get("field") == entry["field"] and c.get("temperature_C") == entry["temperature_C"]),
-            None,
-        )
-        if index is None:
-            raise ValueError(f"{config.name}: no isotherm {entry['field']} {entry['temperature_C']}")
-        label = f"isotherm {entry['field']} {entry['temperature_C']}"
-        curve = trace(entry["startPixel"], entry["endPixel"], entry["waypoints"], label, entry["strokeWidth_px"])
-        polyline = simplify_polyline(to_wt(curve.pixels), _SIMPLIFY_WT)
-        polylines[("isotherms", index)] = _rounded(polyline, label, log)
-        log.append(f"{label}: {len(polyline)} points")
+    dividers.extend(c.pixels for c in curves if c.kind == "boundary")
 
     inversions = system.get("inversions", [])
     for entry in config.inversions:
@@ -158,7 +250,7 @@ def fill_ternary_curves(text: str, config: CurvesConfig, mask: np.ndarray, invar
         if index is None:
             raise ValueError(f"{config.name}: no inversion {entry['phase']} '{entry['change']}'")
         label = f"inversion {entry['phase']} {entry['change']}"
-        curve = trace(entry["startPixel"], entry["endPixel"], entry["waypoints"], label, entry["strokeWidth_px"])
+        curve = trace(entry["startPixel"], entry["endPixel"], entry["waypoints"], label, entry["strokeWidth_px"], entry["dashed"], "inversion")
         polyline = simplify_polyline(to_wt(curve.pixels), _SIMPLIFY_WT)
         polylines[("inversions", index)] = _rounded(polyline, label, log)
         log.append(f"{label}: {len(polyline)} points")
@@ -168,9 +260,28 @@ def fill_ternary_curves(text: str, config: CurvesConfig, mask: np.ndarray, invar
         raise ValueError(f"{config.name}: liquidImmiscibility branches configured but the system file has no liquidImmiscibility object")
     for number, entry in enumerate(config.liquid_immiscibility, start=1):
         label = f"liquid immiscibility branch {number}"
-        curve = trace(entry["startPixel"], entry["endPixel"], entry["waypoints"], label, entry["strokeWidth_px"])
+        curve = trace(entry["startPixel"], entry["endPixel"], entry["waypoints"], label, entry["strokeWidth_px"], entry["dashed"], "immiscibility")
         polyline = simplify_polyline(to_wt(curve.pixels), _SIMPLIFY_WT)
         branches.append(_rounded(polyline, label, log))
+        log.append(f"{label}: {len(polyline)} points")
+
+    dividers.extend(c.pixels for c in curves if c.kind in ("inversion", "immiscibility"))
+    isotherms = system.get("isotherms", [])
+    for entry in config.isotherms:
+        index = next(
+            (i for i, c in enumerate(isotherms)
+             if c.get("field") == entry["field"] and c.get("temperature_C") == entry["temperature_C"]
+             and c.get("part", 1) == entry["part"]),
+            None,
+        )
+        part = f" part {entry['part']}" if entry["part"] > 1 else ""
+        if index is None:
+            raise ValueError(f"{config.name}: no isotherm {entry['field']} {entry['temperature_C']}{part}")
+        label = f"isotherm {entry['field']} {entry['temperature_C']}{part}"
+        curve = trace(entry["startPixel"], entry["endPixel"], entry["waypoints"], label, entry["strokeWidth_px"], entry["dashed"], "isotherm",
+                      entry["temperature_C"])
+        polyline = simplify_polyline(to_wt(curve.pixels), _SIMPLIFY_WT)
+        polylines[("isotherms", index)] = _rounded(polyline, label, log)
         log.append(f"{label}: {len(polyline)} points")
 
     new_text = _replace_polylines(text, polylines)
@@ -201,6 +312,51 @@ def _add_units_entry(text: str, unit: str) -> str:
     body = text[match.end():close].rstrip()
     separator = ", " if body.strip() else " "
     return text[:match.end()] + body + f'{separator}"polyline_wt": {json.dumps(unit, ensure_ascii=False)} ' + text[close:]
+
+
+def _text_band(mask: np.ndarray, scale: LineScale) -> np.ndarray:
+    """Mask of the printed labels (text boxes grown by ``_TEXT_MARGIN_PX``)."""
+    band = np.zeros(mask.shape, bool)
+    m = scale.count(_TEXT_MARGIN_PX)
+    for x0, y0, x1, y1 in detect_text_boxes(mask, scale=scale):
+        band[max(0, y0 - m):y1 + m, max(0, x0 - m):x1 + m] = True
+    return band
+
+
+def _on(ink: np.ndarray, point: tuple[float, float]) -> bool:
+    return bool(ink[int(round(point[1])), int(round(point[0]))])
+
+
+def _divider_band(shape: tuple[int, ...], dividers: list[list[tuple[float, float]]], width_px: int) -> np.ndarray:
+    """Mask of the drawn dividers (traced polylines, ``width_px`` wide)."""
+    band = Image.new("1", (shape[1], shape[0]), 0)
+    draw = ImageDraw.Draw(band)
+    for line in dividers:
+        if len(line) >= 2:
+            draw.line([tuple(p) for p in line], fill=1, width=width_px, joint="curve")
+    return np.array(band, dtype=bool)
+
+
+def _near_divider(point: tuple[float, float], dividers: list[list[tuple[float, float]]], px: float) -> bool:
+    """Whether ``point`` lies within ``px`` of one of the divider polylines (page pixels)."""
+    p = np.asarray(point, float)
+    for line in dividers:
+        if len(line) < 2:
+            continue
+        pts = np.asarray(line, float)
+        a, seg = pts[:-1], np.diff(pts, axis=0)
+        u = np.clip(((p - a) * seg).sum(axis=1) / np.maximum((seg ** 2).sum(axis=1), 1e-12), 0.0, 1.0)
+        if float(np.linalg.norm(a + u[:, None] * seg - p, axis=1).min()) <= px:
+            return True
+    return False
+
+
+def _frame_band(shape: tuple[int, ...], calibration: TernaryCalibration, width_px: float) -> np.ndarray:
+    """Mask of the triangle edges (straight lines between the corner pixels), ``width_px`` wide."""
+    band = Image.new("1", (shape[1], shape[0]), 0)
+    corners = [calibration.stored_to_page(*calibration.corners[c]) for c in calibration.components]
+    ImageDraw.Draw(band).line([*corners, corners[0]], fill=1, width=max(1, round(width_px)))
+    return np.array(band, dtype=bool)
 
 
 def _px(point: tuple[float, float]) -> str:

@@ -5,8 +5,9 @@ extract_phase_diagram.py — CLI entry point: phase-diagram data from the Slag A
 Output
 ------
   reports/phase-diagrams/candidates/<system>.json   (extract / trace-curves; compared with the dataset file)
-  reports/phase-diagrams/{renders,tiles,overlays,review,figure-index,nbs,replaced}/   (working files)
+  reports/phase-diagrams/{renders,tiles,nodes,overlays,review,figure-index,nbs,replaced}/   (working files)
   shared/processed/phase-diagrams/systems/<system>.json   (only via promote, after validation)
+  shared/processed/phase-diagrams/overlays/<system>.png   (copied by promote with its system file)
 
 Implementation
 --------------
@@ -26,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
 from datetime import datetime
@@ -37,20 +39,27 @@ from PIL.PngImagePlugin import PngInfo
 
 from phase_diagrams import (
     CurvesConfig,
+    LineScale,
     NbsEntry,
     NbsMatcher,
     SourceRegistry,
     build_binary_system,
+    build_node_map,
     build_nbs_index,
     calibrate_binary,
     compare_systems,
+    edit_ternary_structure,
     fill_ternary_curves,
     index_figures,
     ink_mask,
     load_config,
+    measure_line_scale,
     merge_figure_index,
+    render_node_map,
     render_overlay,
     render_page,
+    render_ternary_overlay,
+    TernaryCalibration,
     render_tile,
     review_report,
     validate_dataset,
@@ -89,6 +98,11 @@ def _build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("trace-curves", help="Ternary curves config → candidate with polyline_wt filled, overlay, review")
     s.add_argument("system")
 
+    s = sub.add_parser("nodes", help="Numbered junctions, edge points, invariants and rings of a ternary → nodes/")
+    s.add_argument("system")
+    s.add_argument("--origin", type=float, nargs=2, metavar=("X", "Y"),
+                   help="pixelOrigin (default: from the curves config, else 0 0)")
+
     s = sub.add_parser("compare", help="Compare the candidate with the dataset file")
     s.add_argument("system")
 
@@ -111,6 +125,13 @@ def _say(command: str, message: str) -> None:
 
 def _page_image(registry: SourceRegistry, work: Path, ref: str, page: int):
     return render_page(registry.pdf_path(ref), page, dpi=400, cache_dir=work / "renders", cache_stem=ref)
+
+
+def _line_scale(command: str, mask: np.ndarray, line_width_px: float | None) -> LineScale:
+    """Pixel scale of the page: ``lineWidth_px`` from the config, else measured on ``mask``."""
+    scale = LineScale(line_width_px, "config") if line_width_px else measure_line_scale(mask)
+    _say(command, f"line width {scale.line_px:g} px ({scale.source}) → pixel tolerances × {scale.factor:g}")
+    return scale
 
 
 def _load_nbs(work: Path) -> NbsMatcher | None:
@@ -293,25 +314,93 @@ def _cmd_trace_curves(args, dataset: Path, registry: SourceRegistry, work: Path)
     text = system_path.read_text(encoding="utf-8")
     image = _page_image(registry, work, _ATLAS, config.pdf_page)
     mask = ink_mask(image)
+    scale = _line_scale("trace-curves", mask, config.line_width_px)
     invariants: dict[str, dict] = {}
     for path in sorted((dataset / "systems").glob("*.json")):
         for point in json.loads(path.read_text(encoding="utf-8")).get("invariantPoints", []):
             invariants.setdefault(point["id"], point)
-    fill = fill_ternary_curves(text, config, mask, invariants)
+    text, edit_log = edit_ternary_structure(text, config)
+    for line in edit_log:
+        _say("trace-curves", line)
+    invariants.update({point["id"]: point for point in json.loads(text).get("invariantPoints", [])})
+    fill = fill_ternary_curves(text, config, mask, invariants, scale)
     for line in fill.log:
         _say("trace-curves", line)
-    pixels = [p for curve in fill.curves for p in curve.pixels]
-    if pixels:
-        box = (min(p[0] for p in pixels), min(p[1] for p in pixels), max(p[0] for p in pixels), max(p[1] for p in pixels))
-        overlay = work / "overlays" / f"{args.system}.png"
-        overlay.parent.mkdir(parents=True, exist_ok=True)
-        _save_png(render_overlay(image, box, fill.curves), overlay)
-        _say("trace-curves", f"overlay → {overlay}")
+    calibration = TernaryCalibration.from_system(json.loads(fill.text), config.pixel_origin)
+    page = calibration.stored_to_page
+    corners = [page(*calibration.corners[c]) for c in calibration.components]
+    box = (min(p[0] for p in corners), min(p[1] for p in corners), max(p[0] for p in corners), max(p[1] for p in corners))
+    fields = [
+        {"name": f["name"], "legend": f["legend"], "ring": [page(*p) for p in f["ring"]],
+         "seed": page(*f["seed"]) if f["seed"] else None}
+        for f in config.fields
+    ]
+    rendered, field_log = render_ternary_overlay(image, box, fill.curves, fields, corners, scale=scale)
+    for line in field_log:
+        _say("trace-curves", line)
+    overlay = work / "overlays" / f"{args.system}.png"
+    overlay.parent.mkdir(parents=True, exist_ok=True)
+    _save_png(rendered, overlay)
+    _say("trace-curves", f"overlay → {overlay}; {len(config.fields) - len(field_log)} of {len(config.fields)} fields filled")
     review = work / "review" / f"{args.system}.md"
     review.parent.mkdir(parents=True, exist_ok=True)
-    review.write_text(review_report(args.system, fill.review, fill.log), encoding="utf-8")
+    review.write_text(review_report(args.system, fill.review, edit_log + fill.log), encoding="utf-8")
     _say("trace-curves", f"{fill.filled} polylines filled; review: {len(fill.review)} items → {review}")
     _write_candidate("trace-curves", dataset, work, config.system_file, fill.text, review)
+    return 0
+
+
+_NODE_TILE_PX = 650
+_NODE_TILE_OVERLAP_PX = 60
+_NODE_TILE_SCALE = 1.25
+_NODE_OVERVIEW_SCALE = 2.0
+_NODE_OVERVIEW_FONT_PX = 30
+
+
+def _cmd_nodes(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
+    system = json.loads((dataset / "systems" / f"{args.system}.json").read_text(encoding="utf-8"))
+    curves = dataset / "configs" / f"{args.system}.curves.config.json"
+    config = load_config(curves) if curves.exists() else None
+    if args.origin:
+        origin = (args.origin[0], args.origin[1])
+    else:
+        origin = config.pixel_origin if config else (0.0, 0.0)
+    image = _page_image(registry, work, _ATLAS, int(system["source"]["pdfPage"]))
+    mask = ink_mask(image)
+    nodes = build_node_map(system, mask, origin, _line_scale("nodes", mask, config.line_width_px if config else None))
+    folder = work / "nodes"
+    folder.mkdir(parents=True, exist_ok=True)
+    for old in folder.glob(f"{args.system}-r*c*.png"):
+        old.unlink()
+    (folder / f"{args.system}.json").write_text(
+        json.dumps([n.to_dict() for n in nodes], ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
+    )
+    components = "/".join(system["components"])
+    rows = [f"# Node map — {args.system}\n", f"Pixels in stored coordinates (pixelOrigin {origin[0]:g}, {origin[1]:g}); wt% {components}.\n",
+            "| Label | Kind | Pixel | wt% | Invariant |", "| --- | --- | --- | --- | --- |"]
+    for n in nodes:
+        rows.append(f"| {n.label} | {n.kind} | {n.pixel[0]:.0f}, {n.pixel[1]:.0f} | "
+                    f"{' / '.join(f'{v:.1f}' for v in n.wt)} | {n.invariant or ''} |")
+    (folder / f"{args.system}.md").write_text("\n".join(rows) + "\n", encoding="utf-8")
+    corners = [(x + origin[0], y + origin[1]) for x, y in system["digitization"]["calibration"].values()]
+    x0, y0 = (int(min(c[i] for c in corners)) - 30 for i in (0, 1))
+    x1, y1 = (int(max(c[i] for c in corners)) + 30 for i in (0, 1))
+    columns = max(1, -(-(x1 - x0) // _NODE_TILE_PX))
+    rows_count = max(1, -(-(y1 - y0) // _NODE_TILE_PX))
+    width, height = (x1 - x0) / columns, (y1 - y0) / rows_count
+    for r in range(rows_count):
+        for c in range(columns):
+            box = (max(0, int(x0 + c * width - _NODE_TILE_OVERLAP_PX)), max(0, int(y0 + r * height - _NODE_TILE_OVERLAP_PX)),
+                   min(image.shape[1], int(x0 + (c + 1) * width + _NODE_TILE_OVERLAP_PX)),
+                   min(image.shape[0], int(y0 + (r + 1) * height + _NODE_TILE_OVERLAP_PX)))
+            out = folder / f"{args.system}-r{r + 1}c{c + 1}.png"
+            render_node_map(image, nodes, box, _NODE_TILE_SCALE, origin).save(out)
+    whole = (max(0, x0), max(0, y0), min(image.shape[1], x1), min(image.shape[0], y1))
+    render_node_map(image, nodes, whole, _NODE_OVERVIEW_SCALE, origin, legend=True,
+                    font_px=_NODE_OVERVIEW_FONT_PX).save(folder / f"{args.system}-overview.png")
+    counts = {kind: sum(1 for n in nodes if n.kind == kind) for kind in ("corner", "invariant", "junction", "edge", "dash-end", "ring")}
+    _say("nodes", f"{len(nodes)} nodes ({', '.join(f'{v} {k}' for k, v in counts.items())}) → {folder}/{args.system}.md, "
+                  f"{rows_count * columns} tiles {args.system}-r*c*.png, {args.system}-overview.png")
     return 0
 
 
@@ -350,6 +439,14 @@ def _cmd_promote(args, dataset: Path, work: Path) -> int:
     current.parent.mkdir(parents=True, exist_ok=True)
     current.write_text(text, encoding="utf-8")
     _say("promote", f"promoted → {current}")
+    overlay = work / "overlays" / f"{args.system}.png"
+    if overlay.exists():
+        shared = dataset / "overlays" / overlay.name
+        shared.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(overlay, shared)
+        _say("promote", f"overlay → {shared}")
+    else:
+        _say("promote", f"no overlay {overlay}; the dataset overlay is left as it is")
     return 0
 
 
@@ -420,6 +517,7 @@ def main(argv: list[str] | None = None) -> int:
             "calibrate": lambda: _cmd_calibrate(args, dataset, registry, work),
             "extract": lambda: _cmd_extract(args, dataset, registry, work),
             "trace-curves": lambda: _cmd_trace_curves(args, dataset, registry, work),
+            "nodes": lambda: _cmd_nodes(args, dataset, registry, work),
             "nbs-index": lambda: _cmd_nbs_index(args, registry, work),
         }
         return handlers[args.command]()

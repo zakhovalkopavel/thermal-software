@@ -11,6 +11,7 @@ figures of the Slag Atlas, cross-checked against NSRDS-NBS 61, in a reproducible
 | `candidates/<system>.json` (binary systems)                                                  | `configs/<system>.config.json` + measurements on the atlas page | Regenerated completely, in the working folder     |
 | `candidates/<system>.json` (ternary: `polyline_wt` of boundary curves, isotherms and inversion curves, `liquidImmiscibility.polylines_wt` filled) | `configs/<system>.curves.config.json` + measurements            | Copy of the dataset file; nothing else changes    |
 | `systems/<system>.json` in the dataset                                                       | A candidate, after user validation (`promote`)                  | Copied only if the dataset still validates        |
+| `overlays/<system>.png` in the dataset                                                       | The review overlay of the promoted candidate (`promote`)        | Copied with the system file                       |
 | Review overlay, review list, comparison, renders, indexes                                    | Same run                                                        | Working files, not committed                      |
 | Validation report                                                                            | Whole dataset                                                   | Console, exit code                                |
 
@@ -72,6 +73,7 @@ phase-diagram rework, see `docs/algorithms/phase-equilibrium/FULL_PHASE_EQUILIBR
 | `shared/sources/compound-data/`                                                        | Slag Atlas, NSRDS-NBS 61 (Parts I, II, IV) and JANAF PDFs; paths in `sources.json` | ignored by `shared/sources/.gitignore` (large files) |
 | `shared/processed/phase-diagrams/`                                                     | Dataset: `compounds.json`, `sources.json`, `OPEN_ITEMS.md`, `systems/` | ignored by `shared/.gitignore`; commit with `git add -f` |
 | `shared/processed/phase-diagrams/configs/`                                             | Per-diagram configs                                                    | same as above                                            |
+| `shared/processed/phase-diagrams/overlays/`                                            | Review overlay of each promoted system (written by `promote`)          | same as above                                            |
 | `tmp/reports/python/phase-diagrams/` (`/app/reports/phase-diagrams/` in the container) | Working files                                                          | ignored (`tmp/*`)                                        |
 
 
@@ -84,6 +86,7 @@ Working folder layout:
 tmp/reports/python/phase-diagrams/
   renders/        slag-atlas-1995-p108-400dpi.png        ← page renders (cache)
   tiles/          p108-2280-2650-2930-3060-x1.png        ← zoom tiles with pixel rulers
+  nodes/          cao-mgo-sio2.{md,json}, -r1c1.png …     ← node map: numbered points for topology hints
   overlays/       mgo-sio2.png                           ← traced curves, invariants, ticks on the scan
   review/         mgo-sio2.md                            ← items to check + comparison with the dataset file
   candidates/     mgo-sio2.json                          ← extract / trace-curves output, waiting for validation
@@ -131,6 +134,8 @@ python/
         review_item.py               ← ReviewItem
         validation_issue.py          ← ValidationIssue
         system_comparison.py         ← SystemComparison: differences + notes (candidate vs dataset)
+        diagram_node.py              ← DiagramNode: labelled node-map point (junction, edge, invariant, ring)
+        line_scale.py                ← LineScale: page line width → factor for the pixel tolerances
       config/
         diagram_config.py            ← DiagramConfig (binary config)
         curves_config.py             ← CurvesConfig (ternary curves config)
@@ -143,8 +148,11 @@ python/
         pdf_renderer.py              ← render_page(pdf, page, dpi) with cache
         tile_renderer.py             ← render_tile(page image, box, scale) with pixel rulers
         overlay_renderer.py          ← review PNG
+        ternary_overlay_renderer.py  ← ternary review PNG: field fills, one colour per curve kind
+        node_map_renderer.py         ← tile with the numbered node-map points
       detection/
         ink_mask.py                  ← ink_mask(image, threshold)
+        line_width_meter.py          ← measure_line_scale(mask): mean stroke width of the page
         stroke_width_filter.py       ← keep strokes in a width range (drops text and arrows)
         frame_detector.py            ← detect_frame(mask, search_box)
         tick_detector.py             ← detect_ticks(mask, frame) → pixel positions per edge
@@ -152,10 +160,19 @@ python/
         horizontal_line_detector.py  ← detect_horizontal_lines(mask, frame) → MeasuredLine[]
         vertical_line_detector.py    ← compound lines (vertical strokes) for the calibration check
         junction_locator.py          ← snap a seed pixel to a curve × line junction
+        skeletonizer.py              ← skeletonize(mask): Zhang–Suen centre lines
+        junction_detector.py         ← detect_junctions(mask): line junctions and crossings (node map)
+        ring_detector.py             ← detect_rings(mask): small drawn circles (compound compositions)
+        dash_end_detector.py         ← detect_dash_ends(mask): where dashed-line ends meet a line
+        dash_mask.py                 ← dash_mask(mask): dashes only (tracing of dashed lines)
+        text_detector.py             ← detect_text_boxes(mask): printed labels (glyph groups, loop blobs)
       tracing/
         curve_tracer.py              ← trace_path(mask, start, end, waypoints) (heapq Dijkstra)
         curve_sampler.py             ← sample a TracedCurve on a wt% grid with endpoint rules
         polyline_simplifier.py       ← Douglas–Peucker in wt% space (ternary polylines)
+        quadratic_segment_fitter.py  ← fit_quadratic_segment: one quadratic arc between two track points
+        convex_curve_fitter.py       ← fit_convex_curve: inflection-free Bézier (degree ≤ 4) of an isotherm piece
+        divider_follower.py          ← follow_divider: the divider stretch a curve runs along between two track points
       figures/
         label_reader.py              ← Tesseract on a crop → guess + confidence
         caption_parser.py            ← figure captions and labels in the OCR text of one page
@@ -171,6 +188,9 @@ python/
         binary_calibrator.py         ← calibrate_binary(mask, config): frame + ticks → CalibrationResult
         binary_system_builder.py     ← config + measurements → system dict
         ternary_curve_filler.py      ← fills polyline_wt in an existing ternary file
+        node_label_resolver.py       ← resolve_node_labels: node labels in config text → invariant id or pixel
+        ternary_structure_editor.py  ← config edits: move/rename points, set keys, append entries
+        node_map_builder.py          ← build_node_map(system, mask): numbered points for topology hints
       output/
         system_json_writer.py        ← compact layout writer (binary files)
         review_report.py             ← review markdown
@@ -195,6 +215,12 @@ python/
       test_status_resolver.py
       test_system_json_writer.py
       test_ternary_curve_filler.py
+      test_ternary_structure_editor.py
+      test_quadratic_segment_fitter.py
+      test_convex_curve_fitter.py
+      test_divider_follower.py
+      test_ternary_overlay_renderer.py
+      test_node_map.py               ← skeleton, junctions, rings, node labels in the curves config
       test_dataset_validator.py
       test_candidates.py             ← comparison, promotion check on a temporary dataset copy
       test_regression_atlas.py       ← needs the atlas PDF; skipped when absent
@@ -320,12 +346,19 @@ sequenceDiagram
 
 ### Ternary curves
 
-1. Write `configs/<system>.curves.config.json` (waypoints, isotherm seeds, pixel origin).
-2. `make pd-curves SYSTEM=cao-mgo-sio2` writes a candidate copy of the system file with
+1. `make pd-nodes SYSTEM=cao-mgo-sio2` writes the node map (`nodes/<system>.md`, `.json` and
+   tiles `nodes/<system>-r*c*.png`, plus `nodes/<system>-overview.png`: the whole diagram at
+   2×, 30 px labels placed clear of each other, legend of the kinds). The user gives the topology by labels, e.g.
+   `I1->X2->I5` (boundary, arrow direction), `E3-D6-D9 1600` (isotherm), `X14-X15 straight`
+   (hidden under a label), `add near (x, y)` for a point the map missed.
+2. Write `configs/<system>.curves.config.json`: the used labels in `nodes` (pixels copied from
+   `nodes/<system>.json`), boundary curves with intermediate labels as waypoints, isotherms
+   from label to label (a crossing shared by an isotherm and a boundary keeps them continuous).
+3. `make pd-curves SYSTEM=cao-mgo-sio2` writes a candidate copy of the system file with
    `polyline_wt` filled, the overlay and the review list. Check the traces on
    `make pd-tile PAGE=… BOX=… OVERLAY=cao-mgo-sio2` zooms.
-3. `make pd-validate SYSTEM=cao-mgo-sio2` (dataset with the candidate in place).
-4. Stop for user validation, `make pd-promote SYSTEM=cao-mgo-sio2`, validate; the user commits.
+4. `make pd-validate SYSTEM=cao-mgo-sio2` (dataset with the candidate in place).
+5. Stop for user validation, `make pd-promote SYSTEM=cao-mgo-sio2`, validate; the user commits.
 
 
 
@@ -342,6 +375,10 @@ sequenceDiagram
 - `promote` validates a temporary copy of the dataset with the candidate in place
   (`validate_with_candidate`); with errors it refuses (exit 1) and the dataset is untouched.
   Differences do not block promotion: they are what the user validated.
+- After writing the system file, `promote` copies the working overlay `overlays/<system>.png`
+  (from the same `extract` / `trace-curves` run as the candidate) to the dataset's
+  `overlays/<system>.png`, so the dataset keeps the picture the user validated. Without a
+  working overlay the dataset overlay is left as it is (logged).
 - `validate --candidate SYSTEM` (`make pd-validate SYSTEM=…`) runs the same check without
   writing, so a candidate can be validated before the user review.
 
@@ -506,16 +543,31 @@ References: `end:<phase>` = end-member melting point, `<id>` = invariant liquid,
 }
 ```
 
-- Curves are matched to `boundaryCurves[]` by `fields` and `path`; isotherms by `field` and
-`temperature_C`; inversions to `inversions[]` by `phase` and `change`. Unmatched config
-entries are errors.
+- Curves are matched to `boundaryCurves[]` by `fields` and `path`; isotherms by `field`,
+`temperature_C` and `part`; inversions to `inversions[]` by `phase` and `change`. Unmatched config
+entries are errors. An isotherm drawn as several pieces in one field (e.g. a closed loop that
+re-enters it) sets `"part": 2, 3, …` on every piece after the first (default 1); the system
+file entry carries the same `part` (absent = 1).
 - `inversions` (optional): a polymorph boundary drawn as a line between two fields that the
 model merges into one phase (carnegieite / nepheline), so it is not a boundary curve. Traced
 like an isotherm from `startPixel` to `endPixel` with the curve stroke width.
+- `nodes` (optional): node-map labels → pixels (`{ "X12": [x, y] }`). Any pixel of the config
+(`endpointPixels`, `startPixel`, `endPixel`, waypoints, also `{ "pixel": "X12", "straight": true }`)
+may be a label; an unknown label is a config error.
 - `liquidImmiscibility` (optional): branches of the two-liquid boundary on the liquidus surface,
 each traced like an inversion. They are written in config order to
 `liquidImmiscibility.polylines_wt` (one polyline per branch); the system file must already
-have a `liquidImmiscibility` object.
+have a `liquidImmiscibility` object (or an edit that adds it).
+- `dashed` (optional, any entry): trace on the dashes only, see § Curve tracing.
+- `frameMask_px` (optional, default 0 = off): a band of this width along the triangle edges
+(straight lines between the calibration corners) is erased from the tracing mask, so that a
+dashed isotherm ending on an edge is not traced along the solid frame.
+- `lineWidth_px` (optional, > 0): the page's line width, replacing the measured one (§ Pixel
+scale). Only for a page where the measurement is misled (e.g. mostly solid fills).
+- `edits` (optional): structure edits applied before tracing, see § Ternary structure edits:
+`{ "path": "invariantPoints.cms-1373", "pixel": "I2•", "set": { "id": "cms-1379", "temperature_C": 1379 } }`.
+- `new: true` on a curve, isotherm or inversion (with optional `notes`; an inversion also
+`temperature_C` and `source`) appends it to the system file before it is traced.
 - End pixels come from the invariant sources (`pixel`) of the system file. Points defined in
 another system file (edge points) need `endpointPixels`.
 - All config pixels (`endpointPixels`, waypoints, isotherm ends) are in the stored coordinates
@@ -526,6 +578,13 @@ nearest segment. Every path invariant is an exact polyline vertex (its `liquid_w
 previous point (waypoint or segment start) by a straight line, for a stroke hidden by a label;
 the tracer would otherwise follow the letters (ink costs 1, a gap 50 per pixel). Put the
 previous point on the last visible pixel before the label. Each straight step is logged.
+`{ "pixel": …, "split": true }` splits an isotherm there (a field edge the 5 px divider test
+misses, e.g. a point on the far side of a bold boundary stroke), see § Curve tracing.
+- `fields` (optional, review overlay only): `[{ "name": "C3S", "ring": ["E25", "I17", "I18", "E26"] }]`,
+the field's corner points in order (labels or pixels), optional `seed` pixel. The overlay
+fills the region around the seed (default: the interior point of the ring farthest from it).
+Optional `legend`: the full text for the legend (e.g. `"C3S: tricalcium silicate (Ca3SiO5)"`);
+the short `name` is written in the field.
 - Polylines are rounded to 0.1 wt%. A component down to −0.3 wt% (stroke ending on an edge)
 is set to 0 and taken from the largest component (logged); further outside is an error.
 - `endPixel`: open end of a curve that leaves the figure; traced from the last path point,
@@ -542,6 +601,26 @@ command passes the plain ink mask and each entry is traced on the mask filtered 
 
 
 ## Algorithms
+
+
+
+### Pixel scale
+
+- The code holds no diagram data; its pixel tolerances (distances, dash and label sizes,
+search radii, overlay fonts and line widths) are written for lines 4.25 px wide, the mean line
+width of atlas pages rendered at 400 dpi, and scaled to the page.
+- Line width = 2 × ink area / outline length of the plain ink mask (a stroke of width w and
+length L has area w·L and an outline of about 2·L): the length-weighted mean width of lines,
+dashes and letters. It follows the render resolution and the line weight of the source. Atlas
+pages measure 3.8–4.5 px (400 dpi); the same pages measure about 3.2 px at 300 dpi and 6.2 px at 600 dpi.
+- Factor = line width / 4.25, rounded to quarters (at least 0.25), so the pages of one source,
+whose widths differ by a few per cent, share one factor (all atlas pages: 1). Distances scale
+with the factor, areas with its square, whole-pixel sizes are rounded (at least 1).
+- `trace-curves` and `nodes` measure the page (or take `lineWidth_px` from the curves config)
+and log `line width … px (measured|config) → pixel tolerances × factor`. Config pixel values
+(`strokeWidth_px`, `frameMask_px`, coordinates) are per diagram and taken as given.
+- Binary extraction (`calibrate`, `extract`) and the display tiles (`tile`, node-map tiles)
+still use the reference pixel values.
 
 
 
@@ -603,6 +682,42 @@ the level is the length-weighted mean. Each invariant is matched to the line nea
 4. End members: the printed melting point moved 8 px inside the frame and snapped to the
    nearest stroke in its column.
 
+### Node map
+
+Numbered points of a ternary for topology hints (`pd-nodes`), inside the triangle (+8 px):
+
+1. Ink components smaller than 60 px (text, isolated dashes) are dropped; holes ≤ 30 px filled.
+2. Zhang–Suen skeleton. A branch ending freely within 10 px + 2.5 × local half width of a
+   junction is a spur (arrowhead, letter touching a line) and is removed (3 rounds).
+3. Junction = skeleton pixel with ≥ 3 transitions in its 8-neighbourhood; clusters merged
+   within 10 px. Junctions within 10 px of a triangle edge are `edge` points, moved onto the
+   edge line; one at a 10 % tick with no solid line 28–42 px inside (±15 px along the edge)
+   is the bare tick and dropped.
+4. Invariants of the system file (atlas `pixel`) are always nodes (`invariant`, with id);
+   detected junctions within 12 px of one are dropped, as are junctions on a ring.
+5. Rings: round holes (circularity ≥ 0.75, 6–30 px, aspect 0.8–1.25) with ink all round and
+   mostly white 8 px further out; holes in letters (a similar small component close by in any
+   direction) are skipped. Ring compositions check the calibration against compound
+   stoichiometry.
+6. Label boxes (`detect_text_boxes`): groups of ≥ 3 glyphs (components 14–50 px, eigenvalue
+   ratio < 9, sizes within 1.6×, box gap ≤ 0.8× size, each round or lying across the line to
+   its neighbour, so dashes of one line do not group), and glued blobs (largest side ≤ 90 px)
+   containing a small hole (12–400 px, side ≤ 25: 0, 4, 6, 8, 9, O) that is not a ring.
+   Junctions and dash ends inside a box padded 6 px are dropped, rings inside a box too.
+7. Dash ends (`dash-end`): a dash is a component of 12–59 px with eigenvalue ratio ≥ 4 and
+   mean width ≤ 8 px, not touching a label box; each end, and each free skeleton end of a
+   solid line not on the frame (direction over the last 12 px), is extended up to 45 px.
+   A frame pixel (triangle edges drawn 3 px) is the node; within 25 px of the frame other
+   solid ink (tick strokes) is passed over. A solid line hit is the node. For a dash, a
+   heavier stroke (ratio ≥ 9, ≥ 3× its area) or a non-dash shape ≥ 2.5× its area (dashes of
+   two lines touching) gives the crossing of the ray with that shape's axis (sine ≥ 0.4).
+   Other ink or a label box ends the ray. Dropped within 10 px of another node.
+8. Corners: the three calibration corners are always nodes (`corner`, the component in the
+   `invariant` column); other points within 12 px of a corner, except invariants, are dropped.
+9. Labels, one letter per kind, in reading order (bands of 50 px, then x): `V` corner,
+   `I` invariant, `X` crossing, `E` edge point, `D` dash end, `C` ring. Crossings hidden under labels are
+   not found; text glued to a line without a closed loop can still give extra points.
+
 ### Curve tracing
 
 - Shortest path (heapq Dijkstra, 8-connected) on a cost image: 1 on ink, 50 off ink, so
@@ -611,6 +726,44 @@ small gaps are bridged but labels are not followed. Optional waypoints split the
 - For a binary `trace` segment the endpoints are the snapped junctions or the end-member
 axis crossing; the seed pixel chooses the correct stroke when several are near.
 - A path that crosses more than 15 px of non-ink in total is reported as a trace gap.
+- Ternary entries with `dashed: true` are traced on `dash_mask(mask)`: only components with a
+largest box side of 8–59 px, axis ratio ≥ 1.5 and mean width ≤ 12 px (bold dashes) are ink, so the path
+cannot run along a solid boundary, a compound join or the frame next to the dashes. The gaps
+between dashes are counted as trace gaps (expected for a dashed line).
+- Ternary curve shape. The traced path only supplies stroke pixels; the written curve is
+smooth. A label lying on a curve is typography: the curve continues under it. Text boxes
+(`detect_text_boxes`, grown by 2 px) are erased from the tracing mask, and only traced pixels
+on ink are stroke data, so letters and the gaps of dashed or dotted lines never enter a fit.
+For inversions, immiscibility branches and isotherms the field dividers already traced are
+erased as well (an 11 px band along each polyline), so their trace and stroke never use the ink
+of a boundary they start on or run next to, e.g. a boundary drawn with gaps whose pieces pass
+the dash test. The copy decision below still uses a trace on the mask without that band.
+  - Same curve as the boundary: a stretch of an inversion, immiscibility branch or isotherm
+  between two consecutive track points that both lie within 5 px of one divider, or both
+  within 10 px and running along it (median stroke distance ≤ 3 px; without a stroke the
+  chord midpoint within 5 px), is copied from that divider (`follow_divider`); both track
+  points move onto it. (An isotherm drawn along a bold boundary cannot be traced on the
+  thin-stroke mask, so on-divider points need no stroke check.)
+  Inversions and branches follow boundaries; isotherms follow boundaries, inversions and
+  branches. Each copy is logged.
+  - Boundaries, inversions, immiscibility branches: between two consecutive track points
+  (path points, waypoints, ends) one quadratic Bézier through both (`fit_quadratic_segment`):
+  the control point is fitted to the stroke by least squares (outliers beyond max(4 px,
+  2.5 × median) dropped) and kept within the chord's extent, so there is no inflection and no
+  turning back. A straight step is a straight line.
+  - Isotherms are traced after those curves. The track is split at every track point within
+  5 px of a boundary, inversion or immiscibility branch (field dividers), or marked
+  `"split": true`, and at both ends of every copied stretch; each piece lies inside one
+  field. A piece of two points is one Bézier of degree ≤ 4 without inflection: the lowest
+  degree with 75 % of the stroke within 2 px, else the one closest to the stroke (degree > 2
+  is logged); a piece of three or more points is one Bézier of degree ≤ 4 without inflection
+  (`fit_convex_curve`): the inner track points pull with weight 1000, the stroke pixels with
+  weight 1 (outliers dropped); degrees 2, 3, 4 are tried and the lowest one passing within
+  2.5 px of every inner point, with 75 % of the stroke within 2 px, is kept (a curve with an
+  inflection or turning back along the chord is rejected). Straight steps add no stroke data
+  inside such a piece. A track point left > 3 px off the curve is a `track-point-off-curve`
+  review item. Equal ends give a closed loop.
+  - Curves are sampled every 3 px before conversion to wt% and simplification.
 
 
 
@@ -750,6 +903,36 @@ changes allowed.
 Polyline format: `[[a, b, c], …]` in wt% in the order of `components`; `polylines_wt` is a list
 of such polylines.
 
+### Ternary structure edits
+
+`ternary_structure_editor` runs in `trace-curves` before the filler and applies the config
+`edits` and `new` entries to the file text, with the same rule: the result is parsed again and
+must equal the old file with exactly the requested changes, otherwise nothing is written.
+
+- An edit addresses one entry by a dotted `path`: object keys, list indexes, or the `id` of a
+list element (`invariantPoints.cms-1373`); `""` is the root.
+- `set` maps dotted keys below the entry (`sources.0.temperature`) to values. An existing value
+is replaced in place; a missing last key is appended to its object (on a new line when the
+object's members are one per line).
+- Setting `id` of an invariant renames it in every `boundaryCurves[].path` (logged).
+- `pixel` (stored coordinates, or a node label) moves a point: an entry with `liquid_wt` gets the
+calibrated composition at that pixel and its `slag-atlas-1995` source the pixel; an entry with
+`wt` (an `otherAtlasData` point) gets `wt` and `pixel`. Pixels are stored as whole pixels and the
+composition is computed from the stored pixel (0.1 wt%, third component = 100 − the others).
+- `new: true` appends the entry, one per line like the previous element: a curve as
+`{ fields, path, polyline_wt: null, notes? }`, an isotherm as
+`{ field, temperature_C, polyline_wt: null, notes? }`, an inversion as
+`{ phase, change, temperature_C, source, notes? }`. A `new` entry that already exists is an error.
+- Node labels (`X23`, `I2•`, `D101•`: kind letter V, I, X, E, D or C, number, optional •) are
+working names of the node map and the config `nodes`; the node map renumbers them on every run.
+In the written `set` values and `new` entries (notes, sources) each label is replaced by the
+nearest invariant id within 2 px of its pixel (invariant pixels after all edits), else by its
+stored pixel `[x, y]` (`resolve_node_labels`, logged). A label missing from `nodes` is an error.
+The config notes may keep the labels; the system file never contains them.
+- Every edit and appended entry is logged in the console and in the review file. The comparer
+lists the structural changes (invariant ids and values, entry counts) as DIFF lines before
+promotion.
+
 ---
 
 
@@ -758,6 +941,16 @@ of such polylines.
 
 - **Overlay** (`overlays/<system>.png`): the diagram crop with detected ticks, invariant
 lines, snapped junctions, traced paths and sampled points drawn in colour; legend with ids.
+For a ternary (`trace-curves`, `render_ternary_overlay`) the crop covers the triangle; one
+colour per curve kind (boundaries blue, isotherms red, inversions green, two-liquid boundary
+magenta); the regions bounded by the frame, boundaries, inversions and immiscibility
+branches are filled semi-transparently, one colour per config `fields` entry, named at the
+seed (legend: the entry's `legend` text, default its name). A seed on a line, or in a region
+already filled by another field (missing divider), is logged and not filled. Every isotherm
+piece has its temperature written above it, along the curve (bottom to top along a piece
+steeper than 75°): at its middle, or at the nearest place along it (40/60/30/70/20/80 % of
+its length) where the label covers no field name and no earlier label. A field name that
+would still cover a label moves to the nearest free point of its region (≤ 60 px from the seed).
 - **Review list** (`review/<system>.md`): one line per item, grouped by kind:
 
   | Kind              | Raised when                                                                                  |
@@ -770,6 +963,7 @@ lines, snapped junctions, traced paths and sampled points drawn in colour; legen
   | `tick-residual`   | tick residual > 2 px                                                                         |
   | `ocr-differs`     | OCR label guess differs from the config label                                                |
   | `dropped-points`  | grid points dropped near a junction                                                          |
+  | `track-point-off-curve` | an isotherm track point is > 3 px off its inflection-free curve                        |
 
 
 The review list is copied into `OPEN_ITEMS.md` by hand after reading it.
@@ -827,6 +1021,10 @@ commands:
   extract SYSTEM   Binary config → candidates/<system>.json, overlay, review list, comparison
   trace-curves SYSTEM
                    Ternary curves config → candidate with polyline_wt filled, overlay, review list
+  nodes SYSTEM [--origin X Y]
+                   Node map of a ternary → nodes/<system>.{md,json}, tiles nodes/<system>-r*c*.png,
+                   nodes/<system>-overview.png (whole diagram, legend)
+                   (origin default: pixelOrigin of the curves config, else 0 0)
   compare SYSTEM   Candidate vs dataset file (exit 1 on differences)
   promote SYSTEM   Candidate → dataset if the dataset still validates (exit 1 if not)
   nbs-index        Dump and parse NSRDS-NBS 61 → nbs/
@@ -878,6 +1076,7 @@ The CLI runs in the `python` container only (principle 6).
 | `make pd-calibrate SYSTEM=mgo-sio2`                 | `calibrate`                                             |
 | `make pd-extract SYSTEM=mgo-sio2`                   | `extract`                                               |
 | `make pd-curves SYSTEM=cao-mgo-sio2`                | `trace-curves`                                          |
+| `make pd-nodes SYSTEM=cao-mgo-sio2 [ORIGIN="x y"]`  | `nodes [--origin x y]`                                  |
 | `make pd-compare SYSTEM=mgo-sio2`                   | `compare`                                               |
 | `make pd-promote SYSTEM=mgo-sio2`                   | `promote` (after user validation)                       |
 | `make pd-nbs-index`                                 | `nbs-index`                                             |
