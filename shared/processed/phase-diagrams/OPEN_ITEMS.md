@@ -61,11 +61,11 @@ When an item is resolved: update the value, its `status` and `sources` in the JS
 
 - [ ] Page warp: the compound circles are displaced up to 13 px (≈0.8 wt%) from stoichiometry with the corners alone; all compositions use a quadratic correction fitted to corners + 10 circles (`digitization.warpCorrection`, residual ≤ 0.25 wt%).
 - [ ] `cms-merwinite-c2s-periclase`: junction drawn without a temperature label.
-- [ ] `cms-akermanite-c2s-merwinite`: drawn at the same junction as `cms-1400` (not resolved); temperature not printed.
+- [ ] `cms-akermanite-c2s-merwinite`: moved to its own junction (akermanite/C2S × akermanite/merwinite × merwinite/C2S) at [824, 1304] → [48.5, 8.3, 43.2], ≈1.5 wt% from `cms-1400`, with a new short akermanite/C2S boundary between them (curves candidate, 2o); temperature not printed.
 - [ ] `cms-1454`: printed at a cross mark on the wollastonite/akermanite boundary, ≈1 wt% from the CS–C2MS2 join crossing; 1454 equals the recalled akermanite melting point, while a saddle must be lower. Confirm the reading.
 - [ ] `cms-1490`: label sits between two junctions; assigned to the nearest (monticellite + merwinite + periclase).
-- [ ] `cms-1373` (and the pyroxene label 1387): the scan glyphs resemble 1973 / 1987; read as 1373 / 1387 from context.
-- [ ] `cms-1376` and `cms-1400`: ≈1.4 wt% apart in the narrow rankinite strip; positions approximate.
+- [x] `cms-1373` → `cms-1379` (decision 2026-10): the scan glyphs read '1973' (tile p154-1130-950-1290-1030-x5), taken as 1379; point moved to the marked junction [1179, 1015] → [18.9, 18.8, 62.3] (curves candidate, 2o). The pyroxene label 1387 is read the same way.
+- [ ] `cms-1376` and `cms-1400`: ≈1 wt% apart in the narrow rankinite strip. `cms-1376` moved to the wollastonite/rankinite/akermanite junction [792, 1272] → [49.3, 5.5, 45.2]; its label is printed at [799, 1262] (curves candidate, 2o).
 - [ ] Dash-dot line parallel to the β-CS/CMS2 boundary (labels 1336, 1368, 1360): meaning not stated; kept in `otherAtlasData`, not used.
 - [ ] Pyroxene polymorph points (Pi / Oen / Pen; labels 1387, 1410, 1419, 1445): the 1419 leader is ambiguous and the wedge between lines B and C is unlabelled; all three fields are modelled as enstatite, so these are not model invariants.
 - [ ] Classification sensitive to digitizing: `cms-1385` (forsterite weight −0.025).
@@ -263,6 +263,32 @@ Config `configs/mgo-al2o3-sio2.curves.config.json`; all pixels are PDF p. 133 pa
   - the small dome near the bottom edge.
 - [ ] NSRDS-NBS 61: the only MgO-Al2O3-SiO2 entry, 5802 (1345 °C), is already linked to `mas-1355` (2c); no entries for curves.
 
+## 2o. Verify traced curves (Fig. 3.249, CaO-MgO-SiO2)
+
+Config `configs/cao-mgo-sio2.curves.config.json`; all pixels are PDF p. 154 page pixels (`pixelOrigin` 0, 0; measured line width 4.5 px → pixel tolerances × 1). Candidate: 27 boundary curves (26 + the new akermanite/C2S piece), 45 isotherm pieces, 4 inversion curves and the two-liquid boundary (2 branches) filled; `units.polyline_wt` added by the tool. Validation with the candidate in place: 0 errors.
+
+- [ ] Structure edits (decisions 2026-10), applied by the tool before tracing:
+  - `cms-1373` → `cms-1379` at [1179, 1015] (2d);
+  - `cms-1376` at [792, 1272], `cms-akermanite-c2s-merwinite` at [824, 1304], `cms-1367` at the end of its label leader [1032, 1190] → [33.0, 16.2, 50.8];
+  - dashed wollastonite line: top point printed '1336' (tile p154-900-1000-1010-1060-x5), taken as 1338 at [965, 1024];
+  - new inversion `orthoenstatite (Oen) → protoenstatite (Pen)` (line 1419 → 1445, drawn only near both ends); the '1445' leader points to the forsterite boundary at [1292, 1074], not to the Pen/MS line (tile p154-1170-960-1420-1110-x4);
+  - `liquidImmiscibility` object added (two liquids in the cristobalite field along the SiO2 corner; not modelled).
+- [ ] Pi, Oen and Pen (MS-based solution phases) are all modelled as enstatite; the review overlay fills Pen and the MS area as one region "Pen (MS)", since only the 1500 isotherm runs between them.
+- [ ] Wollastonite 1500: the thin α-CS/β-CS curve around CS is stored both as the wollastonite inversion and, per the topology decision, as the wollastonite 1500 isotherm. No temperature is printed along it.
+- [ ] Closed 1400 isotherm cms-1454 → cms-1376 → [765, 1271] → [764, 1289] → cms-1400 → cms-1454 (user topology 2026-10), stored as `akermanite 1400 part 2` (thin line cms-1400 → cms-1454, then along the wollastonite/akermanite boundary) and `rankinite 1400` (along the wollastonite/rankinite boundary, across the strip, along the rankinite/C2S boundary). The loop passes through `cms-1376` (1376 °C) while it is labelled 1400: please confirm.
+- [ ] Corrected 1500 isotherm [681, 1288] → [846, 1323] → [873, 1334] → cms-1490 → cms-1502 → [1392, 1050] → [1381, 987] → [914, 956] → [876, 951] (user topology 2026-10): C2S 1500 (from the edge to the merwinite/C2S boundary at [846, 1323], then along it), merwinite 1500 (across the field under the printed '1438' to cms-1490), periclase 1500 (along the monticellite/periclase boundary), forsterite, enstatite and silica 1500.
+- [ ] Fitted curves that miss a track point (no inflection-free curve of degree ≤ 4 passes through all):
+  - silica 1500, between (1381, 987) and (876, 951): 5.7 px;
+  - wollastonite 1400, between (879, 1228) and (943, 1011): 6.6 px;
+  - C2S 1700, between (661, 1324) and (885, 1426): 4.7 px.
+- [ ] C2S 2100: between [623, 1394] and [657, 1427] the dashes lie on two unlabelled solid lines from the C2S point; track points on the dash stub [642, 1410] and the dash in the turn [653, 1447]; the end is the centre of the last dash at the CaO-SiO2 edge [586, 1457] (tile p154-570-1380-700-1470-x6).
+- [ ] Periclase 1700: from [1170, 1379] to the forsterite/periclase boundary the dashes merge with a thin line and the boundary; bridged straight through the row centre (3 straight steps, 45–81 px).
+- [ ] Periclase 2300 starts at `cms-edge-lime-periclase` [877, 1956], whose temperature is 2370 °C from NBS 6180 only (section 3): an isotherm below the edge temperature cannot reach it. Either the edge point is lower than 2370 °C or the curve ends elsewhere.
+- [ ] Long trace gaps are dash gaps of dashed curves: periclase 1700–2700 (119–428 px), lime 2000–2400 (104–180 px), forsterite 1700/1800 (≈155 px), C2S 1700–2100 (95–140 px), wollastonite 1500 (145 px), the silica cristobalite/tridymite inversion (245 px, including a 157 px straight step (1306, 982)→(1149, 975) across a label).
+- [ ] Two-liquid boundary: branch 1 [1160, 461] → [1205, 478]; branch 2 [932, 854] → [1449, 905], drawn in two pieces with ≈100 px undrawn in the middle, (1216, 896)→(1316, 900), bridged straight; one value within 0.3 wt% outside the triangle set to 0.
+- [ ] Phase assignment of the isotherm pieces and the field rings of the review overlay: from the field labels and the boundary network; please check against the figure.
+- [ ] NSRDS-NBS 61: `make pd-nbs-suggest COMPONENTS="CaO MgO SiO2"` finds no ternary entries; no entries for curves.
+
 ## 3. Verify recalled values (replace with a page reference or delete)
 
 ### Compound melting points (`compounds.json`)
@@ -369,7 +395,7 @@ Config `configs/mgo-al2o3-sio2.curves.config.json`; all pixels are PDF p. 133 pa
 - [x] KAS: 16 boundary curves and 8 labelled isotherms (silica 1000–1600, leucite 1000–1600) from Fig. 3.186 → `systems/k2o-al2o3-sio2.json`; readings to verify in 2l
 - [x] NAS: 14 boundary curves, 9 labelled isotherms (silica 1000–1600, NS2 800, nepheline/carnegieite 1000–1600) and the carnegieite/nepheline inversion curve from Fig. 3.195 → `systems/na2o-al2o3-sio2.json`; readings to verify in 2m
 - [ ] MAS: 17 boundary curves, 16 labelled isotherms, the silica 1470 inversion curve and the two-liquid boundary from Fig. 3.187: candidate traced, waiting for validation (2n)
-- [ ] CMS: 26 boundary curves and 12 labelled isotherms (silica 1400/1600, forsterite 1600/1800, C2S 1800, lime 2000–2400, periclase 2000–2600)
+- [ ] CMS: 27 boundary curves, 45 isotherm pieces (1400–2700), 4 inversion curves and the two-liquid boundary from Fig. 3.249: validated and promoted 2026-10-07 with `overlays/cao-mgo-sio2.png`; open questions in 2o
 
 ## 6. Unmatched NBS entries (kept for reference, not used)
 
