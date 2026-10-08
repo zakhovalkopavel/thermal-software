@@ -5,6 +5,8 @@ extract_phase_diagram.py — CLI entry point: phase-diagram data from the Slag A
 Output
 ------
   reports/phase-diagrams/candidates/<system>.json   (extract / trace-curves; compared with the dataset file)
+  reports/phase-diagrams/starts/<system>.json       (new: starting file of a ternary, read until it is promoted)
+  shared/processed/phase-diagrams/configs/<system>.curves.config.json   (new: written only when absent)
   reports/phase-diagrams/{renders,tiles,nodes,overlays,review,figure-index,nbs,replaced}/   (working files)
   shared/processed/phase-diagrams/systems/<system>.json   (only via promote, after validation)
   shared/processed/phase-diagrams/overlays/<system>.png   (copied by promote with its system file)
@@ -30,6 +32,7 @@ import json
 import shutil
 import subprocess
 import sys
+import textwrap
 from datetime import datetime
 from pathlib import Path
 
@@ -43,25 +46,37 @@ from phase_diagrams import (
     NbsEntry,
     NbsMatcher,
     SourceRegistry,
+    boundary_arrow_segments,
     build_binary_system,
     build_node_map,
     build_nbs_index,
+    build_ternary_start,
+    build_topology_report,
     calibrate_binary,
     compare_systems,
+    corner_components,
+    detect_triangles,
+    display_caption,
+    display_formula,
     edit_ternary_structure,
     fill_ternary_curves,
+    find_system_figures,
     index_figures,
     ink_mask,
     load_config,
     measure_line_scale,
     merge_figure_index,
+    new_system_checklist,
     render_node_map,
     render_overlay,
     render_page,
     render_ternary_overlay,
     TernaryCalibration,
+    read_corner_labels,
     render_tile,
     review_report,
+    system_components,
+    triangle_reading_order,
     validate_dataset,
     validate_with_candidate,
     write_system_json,
@@ -95,6 +110,12 @@ def _build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("extract", help="Binary config → candidates/<system>.json, overlay, review list, comparison")
     s.add_argument("system")
 
+    s = sub.add_parser("new", help="New ternary: find its figure, calibrate the triangle → starting file + curves config")
+    s.add_argument("system", help="system id, e.g. cao-feox-sio2")
+    s.add_argument("--figure", help="figure number when the index has several, e.g. 3.226")
+    s.add_argument("--triangle", type=int, help="triangle number when the page has several")
+    s.add_argument("--corners", nargs=3, metavar=("TOP", "LEFT", "RIGHT"), help="corner components when the labels are not read")
+
     s = sub.add_parser("trace-curves", help="Ternary curves config → candidate with polyline_wt filled, overlay, review")
     s.add_argument("system")
 
@@ -125,6 +146,14 @@ def _say(command: str, message: str) -> None:
 
 def _page_image(registry: SourceRegistry, work: Path, ref: str, page: int):
     return render_page(registry.pdf_path(ref), page, dpi=400, cache_dir=work / "renders", cache_stem=ref)
+
+
+_HOST_REPORTS = Path("tmp/reports/python")
+
+
+def _host(path: Path) -> str:
+    """Path from the repository root; compose.yml mounts ./tmp/reports/python at the container's reports/."""
+    return str(_HOST_REPORTS.joinpath(*path.parts[1:])) if path.parts and path.parts[0] == "reports" else str(path)
 
 
 def _line_scale(command: str, mask: np.ndarray, line_width_px: float | None) -> LineScale:
@@ -306,11 +335,194 @@ def _cmd_extract(args, dataset: Path, registry: SourceRegistry, work: Path) -> i
     return 0
 
 
+def _system_path(dataset: Path, work: Path, relative: str) -> Path:
+    """The dataset system file, else the starting file of ``new`` (system not promoted yet)."""
+    path = dataset / relative
+    if path.exists():
+        return path
+    start = work / "starts" / Path(relative).name
+    if start.exists():
+        return start
+    raise FileNotFoundError(f"no {relative} in the dataset and no starting file {_host(start)}; run pd-new first")
+
+
+def _figure_number(figure: str) -> tuple[int, ...]:
+    return tuple(int(v) for v in figure.removeprefix("Fig.").strip().split(".") if v.isdigit())
+
+
+_LARGE_TRIANGLE = 0.4
+
+
+def _ask(question: str, parse):
+    """``parse(reply)`` of the first reply it accepts; None without a terminal, on q, Ctrl-D or Ctrl-C."""
+    if not sys.stdin.isatty():
+        return None
+    while True:
+        try:
+            reply = input(f"{question}: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return None
+        if reply.lower() in ("q", "quit"):
+            return None
+        value = parse(reply)
+        if value is not None:
+            return value
+        print(f"  not an answer: {reply!r}")
+
+
+def _number(reply: str, count: int) -> int | None:
+    return int(reply) if reply.isdigit() and 1 <= int(reply) <= count else None
+
+
+def _corner_order(reply: str, components: list[str]) -> list[str] | None:
+    by_name = {c.lower(): c for c in components}
+    order = [by_name.get(word.lower()) for word in reply.split()]
+    return order if None not in order and sorted(order) == sorted(components) else None
+
+
+def _cmd_new(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
+    components = system_components(args.system)
+    relative = f"systems/{args.system}.json"
+    if (dataset / relative).exists():
+        raise ValueError(f"{relative} is already in the dataset; edit its curves config and run pd-curves")
+    index_path = work / "figure-index" / f"{_ATLAS}.json"
+    if not index_path.exists():
+        raise FileNotFoundError(f"no figure index {_host(index_path)}; run pd-index first")
+    index = json.loads(index_path.read_text(encoding="utf-8"))
+    found = find_system_figures(index, components)
+    if args.figure:
+        wanted = f"Fig. {args.figure.removeprefix('Fig.').strip()}"
+        chosen = [e for e in found if e["figure"] == wanted] or [e for e in index if e["figure"] == wanted]
+        if not chosen:
+            raise ValueError(f"{wanted} is not in the figure index")
+        figure = next((e for e in chosen if e.get("captionStart")), chosen[0])
+    else:
+        if not found:
+            raise ValueError(f"no caption in the figure index names {'-'.join(components)}; give FIGURE= or run pd-index "
+                             "over more pages")
+        figures = [e for i, e in enumerate(found) if e["figure"] not in {f["figure"] for f in found[:i]}]
+        if len(figures) == 1:
+            figure = figures[0]
+        else:
+            _say("new", f"{'-'.join(display_formula(c) for c in components)}: {len(figures)} figures in the caption index")
+            for number, entry in enumerate(figures, start=1):
+                print(f"  {number}) {entry['figure']}, page {entry['printedPage']} (pdfPage {entry['pdfPage']})")
+                print(textwrap.fill(display_caption(entry.get("captionStart") or "", components), width=100,
+                                    initial_indent=" " * 5, subsequent_indent=" " * 5))
+            number = _ask(f"Figure [1-{len(figures)}, q = quit]", lambda reply: _number(reply, len(figures)))
+            if number is None:
+                _say("new", f"no figure chosen; or: make pd-new SYSTEM={args.system} "
+                            f"FIGURE=<e.g. {figures[0]['figure'].removeprefix('Fig. ')}>")
+                return 0
+            figure = figures[number - 1]
+    page = int(figure["pdfPage"])
+    _say("new", f"{'-'.join(components)}: {figure['figure']}, pdfPage {page} (printed {figure['printedPage']})")
+
+    image = _page_image(registry, work, _ATLAS, page)
+    mask = ink_mask(image)
+    scale = _line_scale("new", mask, None)
+    triangles = detect_triangles(mask, scale)
+    if not triangles:
+        raise ValueError(f"no ternary triangle found on pdfPage {page}")
+    base = triangles[0][2][0] - triangles[0][1][0]
+    large = triangle_reading_order([t for t in triangles if t[2][0] - t[1][0] >= _LARGE_TRIANGLE * base], image.shape[1])
+    for number, (top, left, right) in enumerate(large, start=1):
+        _say("new", f"triangle {number}: top ({top[0]:.1f}, {top[1]:.1f}), left ({left[0]:.1f}, {left[1]:.1f}), "
+                    f"right ({right[0]:.1f}, {right[1]:.1f}), base {right[0] - left[0]:.0f} px")
+    if args.triangle:
+        if not 1 <= args.triangle <= len(large):
+            raise ValueError(f"TRIANGLE must be 1–{len(large)}")
+        number = args.triangle
+    elif len(large) == 1:
+        number = 1
+    else:
+        on_page = sorted({e["figure"] for e in index if int(e["pdfPage"]) == page}, key=_figure_number)
+        if len(on_page) == len(large) and figure["figure"] in on_page:
+            number = on_page.index(figure["figure"]) + 1
+            _say("new", f"triangle {number}: {figure['figure']} is figure {number} of {', '.join(on_page)} on the page "
+                        "(reading order); TRIANGLE= to choose another")
+        else:
+            number = _ask(f"Triangle of {figure['figure']} [1-{len(large)}, reading order; q = quit]",
+                          lambda reply: _number(reply, len(large)))
+            if number is None:
+                _say("new", f"no triangle chosen; or: make pd-new SYSTEM={args.system} "
+                            f"FIGURE={figure['figure'].removeprefix('Fig. ')} TRIANGLE=<number>")
+                return 0
+    corners = dict(zip(("top", "left", "right"), large[number - 1]))
+
+    readings = read_corner_labels(image, corners)
+    for name, reading in readings.items():
+        _say("new", f"{name} corner ({corners[name][0]:.1f}, {corners[name][1]:.1f}): read {reading['text']!r}")
+    if args.corners:
+        if sorted(args.corners) != sorted(components):
+            raise ValueError(f"CORNERS must name each of {', '.join(components)} once (top left right)")
+        assignment = dict(zip(("top", "left", "right"), args.corners))
+    else:
+        assignment = corner_components({k: v["text"] for k, v in readings.items()}, components)
+        if assignment is None and not args.triangle and len(large) > 1:
+            matching = []
+            for other in (n for n in range(1, len(large) + 1) if n != number):
+                other_corners = dict(zip(("top", "left", "right"), large[other - 1]))
+                other_readings = read_corner_labels(image, other_corners)
+                other_assignment = corner_components({k: v["text"] for k, v in other_readings.items()}, components)
+                if other_assignment:
+                    matching.append((other, other_corners, other_readings, other_assignment))
+            if len(matching) == 1:
+                number, corners, readings, assignment = matching[0]
+                _say("new", f"the labels of triangle {number} name {'-'.join(components)}, those of the chosen one do "
+                            f"not: triangle {number} used; TRIANGLE= to choose another")
+                for name, reading in readings.items():
+                    _say("new", f"{name} corner ({corners[name][0]:.1f}, {corners[name][1]:.1f}): read {reading['text']!r}")
+    for name, reading in readings.items():
+        tile = work / "tiles" / f"{args.system}-corner-{name}.png"
+        tile.parent.mkdir(parents=True, exist_ok=True)
+        render_tile(image, reading["box"], 1.0).save(tile)
+    if assignment is None:
+        _say("new", f"corner labels not recognised (triangle {number}); see tiles/{args.system}-corner-*.png")
+        order = _ask(f"Corners top left right (of {' '.join(components)}; q = quit)",
+                     lambda reply: _corner_order(reply, components))
+        if order is None:
+            raise ValueError(f"corner labels not recognised; give CORNERS=\"<top> <left> <right>\" "
+                             f"(of {' '.join(components)}) or TRIANGLE=")
+        assignment = dict(zip(("top", "left", "right"), order))
+    _say("new", "corner components: " + ", ".join(f"{k} {v}" for k, v in assignment.items())
+         + f" (verify on tiles/{args.system}-corner-*.png)")
+
+    system_text, config_text = build_ternary_start(args.system, components, figure, corners, assignment,
+                                                   (image.shape[1], image.shape[0]), scale.line_px)
+    start = work / "starts" / f"{args.system}.json"
+    start.parent.mkdir(parents=True, exist_ok=True)
+    start.write_text(system_text, encoding="utf-8")
+    _say("new", f"starting file → {_host(start)} (pd-curves and pd-nodes use it until pd-promote)")
+    config = dataset / "configs" / f"{args.system}.curves.config.json"
+    if config.exists():
+        _say("new", f"curves config kept: {config}")
+    else:
+        config.write_text(config_text, encoding="utf-8")
+        _say("new", f"curves config → {config}")
+    listed = any(f.get("figure") == figure["figure"] for f in registry.data["sources"][_ATLAS].get("figures", []))
+    if not listed:
+        entry = {"system": "-".join(components), "figure": figure["figure"], "diagram": "<from the caption>",
+                 "printedPage": figure["printedPage"], "pdfPage": page}
+        _say("new", f"sources.json → sources.{_ATLAS}.figures needs (before pd-promote, PD008): "
+                    f"{json.dumps(entry, ensure_ascii=False)}")
+    compounds = json.loads((dataset / "compounds.json").read_text(encoding="utf-8")).get("compounds", [])
+    for line in new_system_checklist(components, compounds):
+        _say("new", line)
+    pairs = [f"{a} {b}" for i, a in enumerate(components) for b in components[i + 1:]]
+    _say("new", "next: " + "; ".join(f'make pd-nbs-suggest COMPONENTS="{p}"' for p in pairs)
+         + f"; make pd-curves SYSTEM={args.system}; make pd-nodes SYSTEM={args.system}")
+    return 0
+
+
 def _cmd_trace_curves(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
     config = load_config(dataset / "configs" / f"{args.system}.curves.config.json")
     if not isinstance(config, CurvesConfig):
         raise ValueError(f"{args.system}: expected a curves config")
-    system_path = dataset / config.system_file
+    system_path = _system_path(dataset, work, config.system_file)
+    if not system_path.is_relative_to(dataset):
+        _say("trace-curves", f"system not in the dataset yet: starting file {_host(system_path)}")
     text = system_path.read_text(encoding="utf-8")
     image = _page_image(registry, work, _ATLAS, config.pdf_page)
     mask = ink_mask(image)
@@ -358,16 +570,18 @@ _NODE_OVERVIEW_FONT_PX = 30
 
 
 def _cmd_nodes(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
-    system = json.loads((dataset / "systems" / f"{args.system}.json").read_text(encoding="utf-8"))
     curves = dataset / "configs" / f"{args.system}.curves.config.json"
     config = load_config(curves) if curves.exists() else None
+    system_path = _system_path(dataset, work, config.system_file if config else f"systems/{args.system}.json")
+    system = json.loads(system_path.read_text(encoding="utf-8"))
     if args.origin:
         origin = (args.origin[0], args.origin[1])
     else:
         origin = config.pixel_origin if config else (0.0, 0.0)
     image = _page_image(registry, work, _ATLAS, int(system["source"]["pdfPage"]))
     mask = ink_mask(image)
-    nodes = build_node_map(system, mask, origin, _line_scale("nodes", mask, config.line_width_px if config else None))
+    scale = _line_scale("nodes", mask, config.line_width_px if config else None)
+    nodes = build_node_map(system, mask, origin, scale)
     folder = work / "nodes"
     folder.mkdir(parents=True, exist_ok=True)
     for old in folder.glob(f"{args.system}-r*c*.png"):
@@ -382,6 +596,10 @@ def _cmd_nodes(args, dataset: Path, registry: SourceRegistry, work: Path) -> int
         rows.append(f"| {n.label} | {n.kind} | {n.pixel[0]:.0f}, {n.pixel[1]:.0f} | "
                     f"{' / '.join(f'{v:.1f}' for v in n.wt)} | {n.invariant or ''} |")
     (folder / f"{args.system}.md").write_text("\n".join(rows) + "\n", encoding="utf-8")
+    candidate = _candidate(work, config.system_file) if config else None
+    source = candidate if candidate is not None and candidate.exists() else system_path
+    reported = json.loads(source.read_text(encoding="utf-8")) if source == candidate else system
+    arrows = boundary_arrow_segments(reported, origin)
     corners = [(x + origin[0], y + origin[1]) for x, y in system["digitization"]["calibration"].values()]
     x0, y0 = (int(min(c[i] for c in corners)) - 30 for i in (0, 1))
     x1, y1 = (int(max(c[i] for c in corners)) + 30 for i in (0, 1))
@@ -394,13 +612,25 @@ def _cmd_nodes(args, dataset: Path, registry: SourceRegistry, work: Path) -> int
                    min(image.shape[1], int(x0 + (c + 1) * width + _NODE_TILE_OVERLAP_PX)),
                    min(image.shape[0], int(y0 + (r + 1) * height + _NODE_TILE_OVERLAP_PX)))
             out = folder / f"{args.system}-r{r + 1}c{c + 1}.png"
-            render_node_map(image, nodes, box, _NODE_TILE_SCALE, origin).save(out)
+            render_node_map(image, nodes, box, _NODE_TILE_SCALE, origin, arrows=arrows).save(out)
     whole = (max(0, x0), max(0, y0), min(image.shape[1], x1), min(image.shape[0], y1))
-    render_node_map(image, nodes, whole, _NODE_OVERVIEW_SCALE, origin, legend=True,
-                    font_px=_NODE_OVERVIEW_FONT_PX).save(folder / f"{args.system}-overview.png")
+    overview = folder / f"{args.system}-overview.png"
+    render_node_map(image, nodes, whole, _NODE_OVERVIEW_SCALE, origin, legend=True, font_px=_NODE_OVERVIEW_FONT_PX,
+                    arrows=arrows).save(overview)
+    compounds = json.loads((dataset / "compounds.json").read_text(encoding="utf-8")).get("compounds", [])
+    user_nodes = {k: v for k, v in config.nodes.items() if k.endswith("•")} if config else None
+    shared = [p for path in sorted((dataset / "systems").glob("*.json"))
+              for p in json.loads(path.read_text(encoding="utf-8")).get("invariantPoints", [])]
+    topology = folder / f"{args.system}-topology.md"
+    topology.write_text(build_topology_report(args.system, reported, nodes, user_nodes, compounds, origin, scale,
+                                              config.fields if config else None, shared, _host(source)),
+                        encoding="utf-8")
     counts = {kind: sum(1 for n in nodes if n.kind == kind) for kind in ("corner", "invariant", "junction", "edge", "dash-end", "ring")}
-    _say("nodes", f"{len(nodes)} nodes ({', '.join(f'{v} {k}' for k, v in counts.items())}) → {folder}/{args.system}.md, "
-                  f"{rows_count * columns} tiles {args.system}-r*c*.png, {args.system}-overview.png")
+    _say("nodes", f"{len(nodes)} nodes ({', '.join(f'{v} {k}' for k, v in counts.items())})")
+    _say("nodes", f"node list       → {_host(folder / f'{args.system}.md')}")
+    _say("nodes", f"node map        → {_host(overview)} (+ {rows_count * columns} tiles {args.system}-r*c*.png; "
+                  f"{len(arrows)} stored arrows)")
+    _say("nodes", f"topology report → {_host(topology)} (from {_host(source)})")
     return 0
 
 
@@ -516,6 +746,7 @@ def main(argv: list[str] | None = None) -> int:
             "tile": lambda: _cmd_tile(args, registry, work),
             "calibrate": lambda: _cmd_calibrate(args, dataset, registry, work),
             "extract": lambda: _cmd_extract(args, dataset, registry, work),
+            "new": lambda: _cmd_new(args, dataset, registry, work),
             "trace-curves": lambda: _cmd_trace_curves(args, dataset, registry, work),
             "nodes": lambda: _cmd_nodes(args, dataset, registry, work),
             "nbs-index": lambda: _cmd_nbs_index(args, registry, work),

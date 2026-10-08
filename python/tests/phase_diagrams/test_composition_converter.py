@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import pytest
 
+from phase_diagrams.figures.formula_molar_mass import formula_molar_mass
 from phase_diagrams.nbs.composition_converter import convert_composition
 
 
@@ -23,6 +24,19 @@ def test_round_trip_without_rounding():
     assert back == pytest.approx(wt)
 
 
-def test_unknown_oxide_raises():
-    with pytest.raises(KeyError):
-        convert_composition({"FeO": 50.0, "SiO2": 50.0}, "wt")
+def test_oxide_without_a_fixed_formula_raises():
+    with pytest.raises(KeyError, match="FeOx"):
+        convert_composition({"FeOx": 50.0, "SiO2": 50.0}, "wt")
+
+
+@pytest.mark.parametrize("formula, mass", [
+    ("CaO", 56.077), ("MgO", 40.304), ("SiO2", 60.084), ("Al2O3", 101.961), ("Na2O", 61.979), ("K2O", 94.196),
+    ("TiO2", 79.866), ("Fe2O3", 159.688),
+])
+def test_molar_mass_from_the_atomic_weights(formula, mass):
+    assert formula_molar_mass(formula) == pytest.approx(mass, abs=0.001)
+
+
+@pytest.mark.parametrize("formula", ["FeOx", "XyO", "sio2"])
+def test_formula_without_a_fixed_composition_has_no_molar_mass(formula):
+    assert formula_molar_mass(formula) is None

@@ -83,6 +83,38 @@ def _page_mapping(data):
     _point(data)["sources"][1]["pdfPage"] = 117
 
 
+def _ternary_point(data, point_id: str, temperature: float, kind: str = "ternary", reaction: str | None = "eutectic"):
+    data[TERNARY]["invariantPoints"].append(
+        {"id": point_id, "type": kind, "reaction": reaction, "phases": ["periclase", "silica"], "temperature_C": temperature,
+         "liquid_wt": {"MgO": 50.0, "SiO2": 50.0}, "status": "extracted", "sources": []})
+
+
+def _bad_arrows(data):
+    data[TERNARY]["boundaryCurves"][0]["arrows"] = ["down"]
+
+
+def _uphill_arrow(data):
+    _ternary_point(data, "tt-1900", 1900, reaction="peritectic")
+    data[TERNARY]["boundaryCurves"][0].update(path=["ms-1850", "tt-1900"], arrows=[">"])
+
+
+def _arrow_into_binary_eutectic(data):
+    data[TERNARY]["boundaryCurves"][0]["arrows"] = ["<"]
+
+
+def _isotherms(data, *entries):
+    line = [[40.0, 60.0], [45.0, 55.0]]
+    data[TERNARY]["isotherms"] = [{"field": "silica", "polyline_wt": line, **e} for e in entries]
+
+
+def _inferred_off_step(data):
+    _isotherms(data, {"temperature_C": 1600}, {"temperature_C": 1650, "inferred": {"from": [1600], "step": 100}})
+
+
+def _inferred_from_unprinted(data):
+    _isotherms(data, {"temperature_C": 1600}, {"temperature_C": 1700, "inferred": {"from": [1600, 1800], "step": 100}})
+
+
 @pytest.mark.parametrize(
     "modify, code, level",
     [
@@ -101,10 +133,49 @@ def _page_mapping(data):
         (_unknown_path_id, "PD011", "error"),
         (_null_polyline, "PD012", "warning"),
         (_page_mapping, "PD013", "error"),
+        (_bad_arrows, "PD014", "error"),
+        (_uphill_arrow, "PD015", "warning"),
+        (_arrow_into_binary_eutectic, "PD016", "warning"),
+        (_inferred_off_step, "PD017", "error"),
+        (_inferred_from_unprinted, "PD018", "warning"),
     ],
 )
 def test_rule(dataset_factory, modify, code, level):
     assert (code, level) in _codes(dataset_factory(modify))
+
+
+def test_isotherm_inferred_between_printed_neighbours_is_valid(dataset_factory):
+    def modify(data):
+        _isotherms(data, {"temperature_C": 1600}, {"temperature_C": 1800},
+                   {"temperature_C": 1700, "inferred": {"from": [1600, 1800], "step": 100}})
+    assert validate_dataset(dataset_factory(modify)) == []
+
+
+def _with_arrows(path: list[str], arrows: list[str], *points):
+    def modify(data):
+        for point in points:
+            _ternary_point(data, *point)
+        data[TERNARY]["boundaryCurves"][0].update(path=path, arrows=arrows)
+    return modify
+
+
+def test_arrows_down_from_the_binary_eutectic_into_a_ternary_eutectic_are_valid(dataset_factory):
+    modify = _with_arrows(["ms-1850", "tt-1500"], [">"], ("tt-1500", 1500))
+    assert validate_dataset(dataset_factory(modify)) == []
+
+
+def test_saddle_with_arrows_away_on_both_sides_is_valid_and_an_arrow_into_it_is_not(dataset_factory):
+    points = (("tt-1400", 1400), ("tt-1600", 1600, "saddle", None), ("tt-1500", 1500))
+    path = ["tt-1400", "tt-1600", "tt-1500"]
+    assert validate_dataset(dataset_factory(_with_arrows(path, ["<", ">"], *points))) == []
+    issues = validate_dataset(dataset_factory(_with_arrows(path, ["<", "<"], *points)))
+    assert {i.message.split(":")[0] for i in issues if i.code == "PD016"} == {"tt-1600", "tt-1500"}
+    assert any(i.code == "PD015" for i in issues)
+
+
+def test_unknown_arrow_is_not_checked(dataset_factory):
+    modify = _with_arrows(["ms-1850", "tt-1900"], ["?"], ("tt-1900", 1900))
+    assert validate_dataset(dataset_factory(modify)) == []
 
 
 def _compound_end(composition):

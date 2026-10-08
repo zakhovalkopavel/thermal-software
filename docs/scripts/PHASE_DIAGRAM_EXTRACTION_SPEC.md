@@ -87,6 +87,7 @@ tmp/reports/python/phase-diagrams/
   renders/        slag-atlas-1995-p108-400dpi.png        ← page renders (cache)
   tiles/          p108-2280-2650-2930-3060-x1.png        ← zoom tiles with pixel rulers
   nodes/          cao-mgo-sio2.{md,json}, -r1c1.png …     ← node map: numbered points for topology hints
+                  cao-mgo-sio2-topology.md                ← topology report in node labels
   overlays/       mgo-sio2.png                           ← traced curves, invariants, ticks on the scan
   review/         mgo-sio2.md                            ← items to check + comparison with the dataset file
   candidates/     mgo-sio2.json                          ← extract / trace-curves output, waiting for validation
@@ -115,9 +116,11 @@ python/
     phase_diagrams/
       __init__.py                    ← public API re-exports
       constants/
-        oxide_molar_mass.py          ← OXIDE_MOLAR_MASS
+        atomic_mass.py               ← ATOMIC_MASS (standard atomic weights; molar masses via formula_molar_mass)
+        oxide_formulas.py            ← OXIDE_FORMULAS (caption display)
         status_tolerance.py          ← STATUS_TOLERANCE (ΔT 10 °C, Δ 1.5 wt%)
         comparison_tolerance.py      ← COMPARISON_TOLERANCE (±3 °C, ±0.2 wt% box)
+        boundary_arrows.py           ← BOUNDARY_ARROWS (> < <> ?)
       models/                        ← dataclasses
         frame.py                     ← Frame: four fitted edge lines, corners
         measured_line.py             ← MeasuredLine: y, temperature, x-extent
@@ -149,7 +152,8 @@ python/
         tile_renderer.py             ← render_tile(page image, box, scale) with pixel rulers
         overlay_renderer.py          ← review PNG
         ternary_overlay_renderer.py  ← ternary review PNG: field fills, one colour per curve kind
-        node_map_renderer.py         ← tile with the numbered node-map points
+        node_map_renderer.py         ← tile with the numbered node-map points (+ stored arrows)
+        arrowheads.py                ← arrowheads(points, arrow, …): triangles of a stored boundary arrow
       detection/
         ink_mask.py                  ← ink_mask(image, threshold)
         line_width_meter.py          ← measure_line_scale(mask): mean stroke width of the page
@@ -191,6 +195,8 @@ python/
         node_label_resolver.py       ← resolve_node_labels: node labels in config text → invariant id or pixel
         ternary_structure_editor.py  ← config edits: move/rename points, set keys, append entries
         node_map_builder.py          ← build_node_map(system, mask): numbered points for topology hints
+        topology_report_builder.py   ← build_topology_report(name, system, nodes, …): field circuits, points, routes in node labels
+        boundary_arrow_segments.py   ← boundary_arrow_segments(system, origin): page-pixel boundary pieces with their arrows
       output/
         system_json_writer.py        ← compact layout writer (binary files)
         review_report.py             ← review markdown
@@ -198,6 +204,7 @@ python/
       validation/
         dataset_validator.py         ← validate the whole dataset → ValidationIssue[]
         candidate_validator.py       ← validate the dataset with a candidate in place (temporary copy)
+        inferred_temperature_check.py ← inferred_temperature_problem(T, inferred): arithmetic of an inferred isotherm temperature
     scripts/
       extract_phase_diagram.py       ← CLI entry point (thin wrapper)
   tests/
@@ -344,11 +351,60 @@ sequenceDiagram
 
 
 
+### New ternary system
+
+`make pd-new SYSTEM=cao-feox-sio2` prepares a ternary that has no data yet, so that
+`pd-nodes` and `pd-curves` can run on it:
+
+1. The system id gives the components (`cao-feox-sio2` → CaO, FeOx, SiO2; a trailing `x` stays).
+2. The caption index `figure-index/slag-atlas-1995.json` (`make pd-index` first) is searched
+   for captions naming exactly these components, compared by letters (OCR writes `Ca0`,
+   `FeO,`, `Fe,0,`; FeO and Fe2O3 both match FeOx; a four-oxide caption is not a match, nor
+   a reference such as `For the base system CaO-SiO2-TiO2 see Fig. 3.264`).
+   Several figures: they are listed, numbered, with pages and the caption start (wrapped,
+   cut at a whole word, formulas with subscript characters: the system as the component
+   formulas, `CaO-FeO,-SiO,` → `CaO-FeOₓ-SiO₂`; other formulas when the recognised text has
+   the shape of a component or of `OXIDE_FORMULAS`, `7Ca0'2Si0,,14Fe,0,,` →
+   `7CaO·2SiO₂·14Fe₂O₃,` (a comma cannot tell Fe₂O₃ from Fe₃O₄: the earlier one is shown);
+   charges as superscripts, `Fe2+` → `Fe²⁺`. Display only: captions for the data are read
+   verbatim from tiles), and the user types the number
+   (q quits, nothing written). `FIGURE=3.226` skips the question; without a terminal the
+   list is printed and nothing is written.
+3. The triangles on the page are detected (§ Algorithms, Triangle detection); those with a
+   base of at least 40 % of the largest are kept, in the reading order of a two-column page
+   (a triangle reaching 10 % of the page width past the middle on both sides is read on its
+   own; otherwise the left column top-down, then the right one). With several, the figure's
+   position among the page's figures in the index chooses; otherwise the user types the
+   triangle number (or gives `TRIANGLE=n`). When the chosen triangle's corner labels do not
+   name the components and exactly one other triangle's labels do, that one is used.
+4. The corner labels are read (tesseract on boxes above the top corner and below the base
+   corners) and matched to the components; at least two corners must be named, the third
+   takes the remaining one. Otherwise the user types the corners top, left, right (or gives
+   `CORNERS="top left right"`). Corner tiles
+   `tiles/<system>-corner-{top,left,right}.png` are written for the check.
+5. Outputs: the starting file `starts/<system>.json` (calibration, figure and pages,
+   `diagram` and `caption` null, empty phases, invariants, curves, isotherms, inversions)
+   and, only when absent, `configs/<system>.curves.config.json` (stroke widths from the
+   measured line width). `pd-nodes` and `pd-curves` read the dataset file when it exists,
+   otherwise the starting file. Nothing is written to `systems/`.
+6. It prints the checklist of the system (`new_system_checklist`): molar masses of the
+   components (none for FeOx), the phases compounds.json already has for the system
+   (compounds whose oxides all have component letters, so Fe2O3 phases count for FeOx),
+   and each component without a single-oxide phase (to add before the system file names
+   it, PD004); then the `sources.json` figure entry the promotion needs (PD008), the NBS
+   pair commands (`pd-nbs-suggest` for each component pair) and the next steps.
+
+Then: caption and diagram verbatim from a zoomed tile into the candidate (`edits` with
+`path: "source"`), phases and invariants through the curves config, as in § Ternary curves.
+
 ### Ternary curves
 
 1. `make pd-nodes SYSTEM=cao-mgo-sio2` writes the node map (`nodes/<system>.md`, `.json` and
    tiles `nodes/<system>-r*c*.png`, plus `nodes/<system>-overview.png`: the whole diagram at
-   2×, 30 px labels placed clear of each other, legend of the kinds). The user gives the topology by labels, e.g.
+   2×, 30 px labels placed clear of each other, legend of the kinds) and the topology report
+   `nodes/<system>-topology.md` (field circuits, temperature points, compound rings and curve
+   routes of the dataset file in node labels); it prints the paths from the repository root.
+   The user gives the topology by labels, e.g.
    `I1->X2->I5` (boundary, arrow direction), `E3-D6-D9 1600` (isotherm), `X14-X15 straight`
    (hidden under a label), `add near (x, y)` for a point the map missed.
 2. Write `configs/<system>.curves.config.json`: the used labels in `nodes` (pixels copied from
@@ -417,6 +473,8 @@ the left edge, so the tick pixels are already levels.
 features `f = [1, x, y, x², xy, y²]` with `x = (px − 1100)/1000`, `y = (py − 1100)/1000`;
 ideal pixel = `f · C`; then barycentric. Read from the system file, never refitted by the
 curve filler.
+- Inverse (`to_page`, wt% → pixel): barycentric inverse to the ideal pixel, then 20
+fixed-point steps `p ← p + (ideal target − warp(p))` when a warp is present.
 
 ---
 
@@ -559,6 +617,12 @@ each traced like an inversion. They are written in config order to
 `liquidImmiscibility.polylines_wt` (one polyline per branch); the system file must already
 have a `liquidImmiscibility` object (or an edit that adds it).
 - `dashed` (optional, any entry): trace on the dashes only, see § Curve tracing.
+- `arrows` (optional, curves): the printed arrow of each path segment, plus one for an open
+end (`endPixel`): `>` points towards the next path point, `<` towards the previous one, `<>`
+away from a maximum inside the segment (not a model point), `?` not readable. Arrows point
+towards falling liquidus temperature. Written to `boundaryCurves[].arrows` of the candidate
+(the filler may set only `polyline_wt` and `arrows` there); checked by PD014–PD016. Example:
+`"path": ["nas-1050", "nas-1062", "nas-740"], "arrows": ["<", ">"]` (saddle 1062, arrows away from it).
 - `frameMask_px` (optional, default 0 = off): a band of this width along the triangle edges
 (straight lines between the calibration corners) is erased from the tracing mask, so that a
 dashed isotherm ending on an edge is not traced along the solid frame.
@@ -568,6 +632,24 @@ scale). Only for a page where the measurement is misled (e.g. mostly solid fills
 `{ "path": "invariantPoints.cms-1373", "pixel": "I2•", "set": { "id": "cms-1379", "temperature_C": 1379 } }`.
 - `new: true` on a curve, isotherm or inversion (with optional `notes`; an inversion also
 `temperature_C` and `source`) appends it to the system file before it is traced.
+- `invariants` (optional): new invariant points, each with `new: true`, `id`, `type`, `reaction`,
+`phases`, `temperature_C` (null when not printed), `pixel` (stored coordinates or a node label),
+the atlas reading texts `temperature` (default "not printed") and `composition` (default
+"digitized"), and optional `notes`. They are appended before the curves, so a curve `path` or an
+edit may use their ids. Existing points are changed with `edits`; an entry without `new` is a
+config error. Example (a junction hidden by a label, placed where two line fits cross):
+`{ "id": "nas-nepheline-corundum-beta-alumina", "type": "ternary", "reaction": "peritectic", "phases": [ … ], "temperature_C": null, "pixel": [2103, 1346], "composition": "intersection of line fits …", "new": true }`.
+- `inferred` (optional, isotherms): an isotherm without a printed temperature,
+`{ "from": [labelled °C, …], "step": °C }`. `from` holds one or two printed isotherm temperatures
+of the same field, `step` the interval between neighbouring lines (n unlabelled lines between
+T1 and T2: step = (T2 − T1)/(n + 1)); the temperature is a whole, non-zero number of steps from
+each anchor and, with two anchors, strictly between them (`inferred_temperature_problem`, a
+config error otherwise). One anchor (a line outside the printed ones) needs the step confirmed
+for that field. A `new` entry carries `inferred` into the system file; the overlay writes the
+temperature in parentheses, the topology report adds "(inferred from …, step …)". Example:
+`{ "field": "nepheline", "temperature_C": 1500, "new": true, "inferred": { "from": [1400, 1600], "step": 100 }, … }`.
+- An isotherm with an inflection (S-shaped) needs a `split` waypoint at the inflection: the
+pieces between splits are fitted as one inflection-free curve each.
 - End pixels come from the invariant sources (`pixel`) of the system file. Points defined in
 another system file (edge points) need `endpointPixels`.
 - All config pixels (`endpointPixels`, waypoints, isotherm ends) are in the stored coordinates
@@ -718,6 +800,41 @@ Numbered points of a ternary for topology hints (`pd-nodes`), inside the triangl
    `I` invariant, `X` crossing, `E` edge point, `D` dash end, `C` ring. Crossings hidden under labels are
    not found; text glued to a line without a closed loop can still give extra points.
 
+The overview and tiles also show the stored boundary arrows (magenta, 20 × 16 page px; `?` as a
+magenta `?`) from the same file as the topology report (the `pd-curves` candidate when one
+exists). `boundary_arrow_segments` cuts each `polyline_wt` at the vertex nearest (wt%) to each
+inner path point; each piece gets its arrow at its middle (`rendering/arrowheads.py`, shared with
+the overlay).
+
+### Topology report
+
+`pd-nodes` also writes `nodes/<system>-topology.md` (`build_topology_report`): the system
+file written in node-map labels, for the user to check against the figure. It reads the
+`pd-curves` candidate when one exists (so config `arrows` show before promotion), otherwise
+the dataset file; the header and the log name the file. The node map always uses the dataset
+file, so its labels stay stable.
+
+- A pixel takes the label of the nearest node, or of a config point whose name ends in `•`,
+  within 10 px (rings excluded); otherwise `[x, y]` (stored pixel). Invariants of the system
+  file use their atlas pixel; curve ends that are invariants of other system files (binary
+  edge points) are placed by their wt%, a missing oxide counting as 0.
+- **Field circuits**: per phase, its boundary curves (path invariants, plus the polyline end
+  for a one-point path) chained by shared ends. Two edge ends of the phase are joined along
+  the triangle edge, through the corners, when no other boundary end lies on the edge between
+  them. A gap is written `?`; a field with `null` phase is listed as `(no phase)`. Between
+  two labels of a boundary segment the stored arrow is written `→` / `←` (towards falling
+  temperature, in the reading order of the circuit), `←→` (away from a maximum inside it),
+  or `-` (no arrow or `?`, and along the triangle edge), e.g. `p: I1 → I2 ← I3 - V1 - I1`.
+- **Field rings of the config** (overlay), if the config has `fields`.
+- **Points with a temperature**: invariants (`—` when not printed), inversion points with a
+  temperature and pixel, `otherAtlasData` items with a pixel and a numeric `label` or `temperature_C`.
+- **Compound rings**: the compound of `compounds.json` within 1.5 wt% (max oxide difference)
+  and the invariant on the ring (10 px), if any.
+- **Isotherms, inversions, two-liquid branches**: start label, every labelled point within
+  5 px of the polyline in order along it, end label; `not traced` without a polyline.
+
+Pixel sizes are for the reference line width, scaled like the node map.
+
 ### Curve tracing
 
 - Shortest path (heapq Dijkstra, 8-connected) on a cost image: 1 on ink, 50 off ink, so
@@ -835,8 +952,10 @@ to `nsrds-nbs-61-1.unparsed.txt`.
 - Composition basis: mol%. Binaries: the value is mol% of the first-named component of the
 NBS system (which may differ from the order of `components`). Ternaries: values in the
 order of the NBS system name.
-- wt% via `OXIDE_MOLAR_MASS`: CaO 56.077, MgO 40.304, SiO2 60.084, Al2O3 101.961,
-Na2O 61.979, K2O 94.196 g/mol.
+- wt% via `formula_molar_mass`: the molar mass of any oxide formula from `ATOMIC_MASS`
+(CaO 56.077, MgO 40.304, SiO2 60.084, Al2O3 101.961, Na2O 61.979, K2O 94.196,
+TiO2 79.866 g/mol), so a new system needs no table entry. A formula without a fixed
+composition (FeOx) has none: conversion raises, compound matching skips it.
 - ΔT = T(NBS) − T(atlas); Δ = largest absolute difference over the oxides, in wt%.
 - Each comparison is written as an NBS source of the invariant (`reported`,
 `converted_wt`, `originalReference`, `comparison` text, as in `al2o3-mgo.json`).
@@ -923,6 +1042,12 @@ composition is computed from the stored pixel (0.1 wt%, third component = 100 �
 `{ fields, path, polyline_wt: null, notes? }`, an isotherm as
 `{ field, temperature_C, polyline_wt: null, notes? }`, an inversion as
 `{ phase, change, temperature_C, source, notes? }`. A `new` entry that already exists is an error.
+- A config `invariants` entry is appended to `invariantPoints` (before the new curves) as
+`{ id, type, reaction, phases, temperature_C, liquid_wt, status: "extracted", sources: [atlas], notes? }`:
+`liquid_wt` is the calibrated composition at its pixel (as for a moved point), the atlas source
+takes `figure`, `printedPage` and `pdfPage` from the file's `source`, plus the reading texts and
+the whole-pixel `pixel`. An id that already exists is an error. Its pixel counts for node-label
+resolution like the other invariants.
 - Node labels (`X23`, `I2•`, `D101•`: kind letter V, I, X, E, D or C, number, optional •) are
 working names of the node map and the config `nodes`; the node map renumbers them on every run.
 In the written `set` values and `new` entries (notes, sources) each label is replaced by the
@@ -951,6 +1076,11 @@ piece has its temperature written above it, along the curve (bottom to top along
 steeper than 75°): at its middle, or at the nearest place along it (40/60/30/70/20/80 % of
 its length) where the label covers no field name and no earlier label. A field name that
 would still cover a label moves to the nearest free point of its region (≤ 60 px from the seed).
+A boundary segment with a stored config `arrow` gets an orange arrowhead (22 × 18 px at the
+reference line width, white outline) at its middle in the stored direction (`<>`: two heads at
+a quarter and three quarters of its length, pointing away from the middle), or an orange `?`
+when the arrow is not readable, to compare with the printed arrow underneath; isotherm labels
+keep clear of them, and the legend gets a row "Stored arrows (towards falling temperature)".
 - **Review list** (`review/<system>.md`): one line per item, grouped by kind:
 
   | Kind              | Raised when                                                                                  |
@@ -993,6 +1123,11 @@ warnings do not.
 | PD011 | error   | Boundary-curve `path` ids exist in some system file                                                                                          |
 | PD012 | warning | `polyline_wt` still `null`                                                                                                                   |
 | PD013 | error   | `printedPage` / `pdfPage` consistent with the page mapping of the source                                                                     |
+| PD014 | error   | Boundary-curve `arrows`: one of `>` `<` `<>` `?` per path segment (plus one for an open end)                                                 |
+| PD015 | warning | A `>` / `<` arrow between two points with temperatures points from the higher to the lower temperature                                     |
+| PD016 | warning | Arrow pattern at a point (arrows of all its boundary segments in the system, `?` and missing arrows skipped): ternary eutectic none away; binary eutectic none into it; saddle none into it; ternary peritectic, when every segment has an arrow, at least one in and one away |
+| PD017 | error   | Isotherm `inferred`: `from` one or two numbers, `step` > 0, temperature a whole non-zero number of steps from each anchor and between two anchors |
+| PD018 | warning | Isotherm `inferred` anchor that is not a printed (non-inferred) isotherm of the same field |
 
 
 ---
@@ -1019,11 +1154,14 @@ commands:
                    over the page (the overlay PNG stores its page origin)
   calibrate SYSTEM Detect frame and ticks; print tick pixels and residuals; overlay
   extract SYSTEM   Binary config → candidates/<system>.json, overlay, review list, comparison
+  new SYSTEM [--figure 3.226] [--triangle N] [--corners TOP LEFT RIGHT]
+                   New ternary: figure from the caption index, triangle corners, corner labels
+                   → starts/<system>.json and configs/<system>.curves.config.json (if absent)
   trace-curves SYSTEM
                    Ternary curves config → candidate with polyline_wt filled, overlay, review list
   nodes SYSTEM [--origin X Y]
                    Node map of a ternary → nodes/<system>.{md,json}, tiles nodes/<system>-r*c*.png,
-                   nodes/<system>-overview.png (whole diagram, legend)
+                   nodes/<system>-overview.png (whole diagram, legend), nodes/<system>-topology.md
                    (origin default: pixelOrigin of the curves config, else 0 0)
   compare SYSTEM   Candidate vs dataset file (exit 1 on differences)
   promote SYSTEM   Candidate → dataset if the dataset still validates (exit 1 if not)
@@ -1075,6 +1213,7 @@ The CLI runs in the `python` container only (principle 6).
 | `make pd-tile PAGE=108 BOX="x0 y0 x1 y1" [SCALE=2] [OVERLAY=mgo-sio2]` | `tile` (`--overlay`: zoom on the review overlay) |
 | `make pd-calibrate SYSTEM=mgo-sio2`                 | `calibrate`                                             |
 | `make pd-extract SYSTEM=mgo-sio2`                   | `extract`                                               |
+| `make pd-new SYSTEM=cao-feox-sio2 [FIGURE=3.226] [TRIANGLE=1] [CORNERS="SiO2 CaO FeOx"]` | `new` |
 | `make pd-curves SYSTEM=cao-mgo-sio2`                | `trace-curves`                                          |
 | `make pd-nodes SYSTEM=cao-mgo-sio2 [ORIGIN="x y"]`  | `nodes [--origin x y]`                                  |
 | `make pd-compare SYSTEM=mgo-sio2`                   | `compare`                                               |

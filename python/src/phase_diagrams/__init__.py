@@ -11,22 +11,24 @@ Subpackages
   models/      data classes (results, measurements, NBS entries, review items)
   config/      config data classes, config loader, source registry
   rendering/   PDF pages, zoom tiles, overlays
-  detection/   ink mask, line width (pixel scale), frame, ticks, invariant lines, junctions, skeleton, rings, dash ends, label boxes
+  detection/   ink mask, line width (pixel scale), frame, ticks, invariant lines, junctions, skeleton, rings, dash ends, label boxes, ternary triangles
   tracing/     curve tracing, sampling, simplification
-  figures/     label OCR, caption parsing, figure index
+  figures/     label OCR, caption parsing, figure index, figure search by system, caption display, corner labels
   nbs/         NSRDS-NBS 61 text, entries, matching, statuses, composition conversion
-  builders/    calibration, binary system build, ternary curve fill, node map
+  builders/    calibration, binary system build, ternary start files, new-system checklist, ternary curve fill, node map, topology report
   output/      system JSON writer, review report
-  validation/  dataset rules PD001–PD013
+  validation/  dataset rules PD001–PD018
 
 Spec
 ----
   docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md
 """
 
-from phase_diagrams.constants.oxide_molar_mass          import OXIDE_MOLAR_MASS
+from phase_diagrams.constants.atomic_mass               import ATOMIC_MASS
 from phase_diagrams.constants.status_tolerance          import STATUS_TOLERANCE
 from phase_diagrams.constants.comparison_tolerance      import COMPARISON_TOLERANCE
+from phase_diagrams.constants.boundary_arrows           import BOUNDARY_ARROWS
+from phase_diagrams.constants.oxide_formulas            import OXIDE_FORMULAS
 
 from phase_diagrams.models.frame                        import Frame
 from phase_diagrams.models.measured_line                import MeasuredLine
@@ -59,6 +61,7 @@ from phase_diagrams.rendering.tile_renderer             import render_tile
 from phase_diagrams.rendering.overlay_renderer          import render_overlay
 from phase_diagrams.rendering.ternary_overlay_renderer  import render_ternary_overlay
 from phase_diagrams.rendering.node_map_renderer         import render_node_map
+from phase_diagrams.rendering.arrowheads                import arrowheads
 
 from phase_diagrams.detection.ink_mask                  import ink_mask
 from phase_diagrams.detection.line_width_meter          import measure_line_scale
@@ -75,6 +78,8 @@ from phase_diagrams.detection.ring_detector             import detect_rings
 from phase_diagrams.detection.dash_end_detector         import detect_dash_ends
 from phase_diagrams.detection.dash_mask                 import dash_mask
 from phase_diagrams.detection.text_detector             import detect_text_boxes
+from phase_diagrams.detection.triangle_detector         import detect_triangles
+from phase_diagrams.detection.triangle_reading_order    import triangle_reading_order
 
 from phase_diagrams.tracing.curve_tracer                import trace_path
 from phase_diagrams.tracing.curve_sampler               import sample_curve
@@ -87,6 +92,14 @@ from phase_diagrams.figures.label_reader                import read_label
 from phase_diagrams.figures.caption_parser              import parse_figure_captions
 from phase_diagrams.figures.figure_indexer              import index_figures
 from phase_diagrams.figures.figure_index_merger         import merge_figure_index
+from phase_diagrams.figures.system_components           import system_components
+from phase_diagrams.figures.formula_letters             import formula_letters
+from phase_diagrams.figures.formula_display             import display_formula
+from phase_diagrams.figures.formula_molar_mass          import formula_molar_mass
+from phase_diagrams.figures.figure_finder               import find_system_figures
+from phase_diagrams.figures.caption_display             import display_caption
+from phase_diagrams.figures.corner_label_reader         import read_corner_labels
+from phase_diagrams.figures.corner_components           import corner_components
 
 from phase_diagrams.nbs.nbs_text_normalizer             import NbsTextNormalizer
 from phase_diagrams.nbs.nbs_entry_index                 import build_nbs_index
@@ -99,6 +112,10 @@ from phase_diagrams.builders.binary_system_builder      import build_binary_syst
 from phase_diagrams.builders.ternary_curve_filler       import fill_ternary_curves
 from phase_diagrams.builders.ternary_structure_editor   import edit_ternary_structure
 from phase_diagrams.builders.node_map_builder           import build_node_map
+from phase_diagrams.builders.topology_report_builder    import build_topology_report
+from phase_diagrams.builders.boundary_arrow_segments    import boundary_arrow_segments
+from phase_diagrams.builders.ternary_start_builder      import build_ternary_start
+from phase_diagrams.builders.new_system_checklist       import new_system_checklist
 
 from phase_diagrams.output.system_json_writer           import write_system_json
 from phase_diagrams.output.review_report                import review_report
@@ -106,12 +123,15 @@ from phase_diagrams.output.system_comparer              import compare_systems
 
 from phase_diagrams.validation.dataset_validator        import validate_dataset
 from phase_diagrams.validation.candidate_validator      import validate_with_candidate
+from phase_diagrams.validation.inferred_temperature_check import inferred_temperature_problem
 
 __all__ = [
     # constants
-    "OXIDE_MOLAR_MASS",
+    "ATOMIC_MASS",
     "STATUS_TOLERANCE",
     "COMPARISON_TOLERANCE",
+    "BOUNDARY_ARROWS",
+    "OXIDE_FORMULAS",
     # models
     "Frame",
     "MeasuredLine",
@@ -144,6 +164,7 @@ __all__ = [
     "render_overlay",
     "render_ternary_overlay",
     "render_node_map",
+    "arrowheads",
     # detection
     "ink_mask",
     "measure_line_scale",
@@ -160,6 +181,8 @@ __all__ = [
     "detect_dash_ends",
     "dash_mask",
     "detect_text_boxes",
+    "detect_triangles",
+    "triangle_reading_order",
     # tracing
     "trace_path",
     "sample_curve",
@@ -172,6 +195,14 @@ __all__ = [
     "parse_figure_captions",
     "index_figures",
     "merge_figure_index",
+    "system_components",
+    "formula_letters",
+    "display_formula",
+    "formula_molar_mass",
+    "find_system_figures",
+    "display_caption",
+    "read_corner_labels",
+    "corner_components",
     # nbs
     "NbsTextNormalizer",
     "build_nbs_index",
@@ -184,6 +215,10 @@ __all__ = [
     "fill_ternary_curves",
     "edit_ternary_structure",
     "build_node_map",
+    "build_topology_report",
+    "boundary_arrow_segments",
+    "build_ternary_start",
+    "new_system_checklist",
     # output
     "write_system_json",
     "review_report",
@@ -191,4 +226,5 @@ __all__ = [
     # validation
     "validate_dataset",
     "validate_with_candidate",
+    "inferred_temperature_problem",
 ]

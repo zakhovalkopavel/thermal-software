@@ -1,5 +1,5 @@
 """
-phase_diagrams.builders.ternary_structure_editor — Apply the structure edits of a curves config to a ternary file: move, rename or re-date points, set keys, append boundary curves, isotherms and inversions.
+phase_diagrams.builders.ternary_structure_editor — Apply the structure edits of a curves config to a ternary file: move, rename or re-date points, set keys, append invariant points, boundary curves, isotherms and inversions.
 
 Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Ternary structure edits
 """
@@ -28,7 +28,11 @@ def edit_ternary_structure(text: str, config: CurvesConfig) -> tuple[str, list[s
     gets the composition at that pixel and its atlas source the pixel; an entry
     with ``wt`` gets ``wt`` and ``pixel``. Pixels are rounded to whole pixels.
     ``new`` curves, isotherms and inversions are appended with ``polyline_wt``
-    null (the filler fills them); an existing match is an error.
+    null (the filler fills them); an existing match is an error. A new isotherm
+    keeps its config ``inferred`` (temperature not printed). Config ``invariants``
+    are appended to ``invariantPoints`` with the composition at their pixel,
+    status ``extracted`` and one atlas source (figure and pages from the file's
+    ``source``, the reading texts and the pixel); an existing id is an error.
     Node labels in the written ``set`` values and entries (notes) are replaced by
     the invariant id at that pixel after all edits, else the stored pixel
     (``resolve_node_labels``), so the system file never refers to the node map.
@@ -77,11 +81,29 @@ def edit_ternary_structure(text: str, config: CurvesConfig) -> tuple[str, list[s
                     text = _set_key(text, expected, f"boundaryCurves.{index}", "path", path, config.name)
                     log.append(f"boundary curve {curve['fields']}: path id {old_id} → {new_id}")
 
+    source = system.get("source") or {}
+    figure = {k: source[k] for k in ("figure", "printedPage", "pdfPage") if k in source} if source.get("ref") == _ATLAS_REF else {}
+    for entry in config.invariants:
+        if any(p.get("id") == entry["id"] for p in expected.get("invariantPoints", [])):
+            raise ValueError(f"{config.name}: new invariant {entry['id']} already exists")
+        pixel = [round(entry["pixel"][0]), round(entry["pixel"][1])]
+        value = {"id": entry["id"], "type": entry["type"], "reaction": entry["reaction"], "phases": entry["phases"],
+                 "temperature_C": entry["temperature_C"], "liquid_wt": composition(pixel), "status": "extracted",
+                 "sources": [{"ref": _ATLAS_REF, **figure, "temperature": entry["temperature"],
+                              "composition": entry["composition"], "pixel": pixel}]}
+        if entry["notes"]:
+            value["notes"] = entry["notes"]
+        value = resolved(value, f"new invariant {entry['id']}")
+        text = _append(text, "invariantPoints", value)
+        expected.setdefault("invariantPoints", []).append(value)
+        log.append(f"new invariant: {entry['id']} at {pixel} → {json.dumps(value['liquid_wt'], ensure_ascii=False)}")
+
     appended = (
         ("boundaryCurves", config.curves, lambda e: {"fields": e["fields"], "path": e["path"]},
          lambda c, e: c.get("fields") == e["fields"] and c.get("path") == e["path"]),
         ("isotherms", config.isotherms,
-         lambda e: {"field": e["field"], "temperature_C": e["temperature_C"], **({"part": e["part"]} if e["part"] > 1 else {})},
+         lambda e: {"field": e["field"], "temperature_C": e["temperature_C"], **({"part": e["part"]} if e["part"] > 1 else {}),
+                    **({"inferred": e["inferred"]} if e.get("inferred") else {})},
          lambda c, e: c.get("field") == e["field"] and c.get("temperature_C") == e["temperature_C"] and c.get("part", 1) == e["part"]),
         ("inversions", config.inversions, lambda e: {"phase": e["phase"], "change": e["change"], "temperature_C": e["temperature_C"], "source": e["source"]},
          lambda c, e: c.get("phase") == e["phase"] and c.get("change") == e["change"]),
@@ -125,6 +147,8 @@ def _final_invariant_pixels(system: dict, config: CurvesConfig) -> dict[str, tup
             (s.get("pixel") for s in point.get("sources", []) if s.get("ref") == _ATLAS_REF and s.get("pixel")), None)
         if pixel is not None:
             out[point["id"]] = (float(pixel[0]), float(pixel[1]))
+    for entry in config.invariants:
+        out.setdefault(entry["id"], (float(round(entry["pixel"][0])), float(round(entry["pixel"][1]))))
     return out
 
 
@@ -194,13 +218,18 @@ def _set_key(text: str, data: dict, path: str, key: str, value, name: str) -> st
 
 
 def _append(text: str, key: str, value: dict) -> str:
-    """Append ``value`` to the top-level array ``key``, one entry per line like the previous one."""
+    """Append ``value`` to the top-level array ``key``, one entry per line like the previous one (the first entry of an empty array written over several lines on its own line)."""
     open_index = _span(text, "")[0]
     member = next((m for m in _members(text, open_index) if m[0] == key), None)
     if member is None:
         raise ValueError(f"no '{key}' array in system file")
     elements = list(_members(text, member[2]))
     if not elements:
+        inner = text[member[2] + 1:member[3] - 1]
+        if "\n" in inner:
+            line_start = text.rfind("\n", 0, member[1]) + 1
+            indent = text[line_start:member[1]] + "  "
+            return text[:member[2] + 1] + f"\n{indent}{_inline(value)}" + text[member[2] + 1:]
         return text[:member[2] + 1] + f" {_inline(value)} " + text[member[2] + 1:]
     last_start, last_end = elements[-1][2], elements[-1][3]
     line_start = text.rfind("\n", 0, last_start) + 1

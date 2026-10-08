@@ -129,13 +129,15 @@ after user validation. All commands run in the `python` container.
 ```bash
 make pd-calibrate SYSTEM=mgo-sio2         # frame, ticks, residuals, calibration overlay
 make pd-extract SYSTEM=mgo-sio2           # binary config → candidate + comparison with the dataset file
+make pd-new SYSTEM=cao-feox-sio2          # new ternary: figure (FIGURE= if several), triangle, corners → starting file + curves config
+make pd-nodes SYSTEM=cao-mgo-sio2         # node map + topology report of a ternary
 make pd-curves SYSTEM=cao-mgo-sio2        # ternary boundary curves → candidate with polyline_wt
 make pd-compare SYSTEM=mgo-sio2           # candidate vs dataset file (exit 1 on differences)
 make pd-promote SYSTEM=mgo-sio2           # candidate → dataset (after validation; refused on errors)
 make pd-tile PAGE=108 BOX="x0 y0 x1 y1"   # zoom tile with pixel rulers
 make pd-nbs-index                         # dump and parse NSRDS-NBS 61 (once)
 make pd-nbs-suggest COMPONENTS="MgO SiO2" # candidate NBS entries
-make pd-validate                          # dataset rules PD001–PD013
+make pd-validate                          # dataset rules PD001–PD018
 make pd-test                              # unit + regression tests
 ```
 

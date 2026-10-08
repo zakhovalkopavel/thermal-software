@@ -7,6 +7,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from phase_diagrams.constants.boundary_arrows import BOUNDARY_ARROWS
+from phase_diagrams.validation.inferred_temperature_check import inferred_temperature_problem
 
 def _pixel(value, nodes: dict[str, tuple[float, float]] | None = None) -> tuple[float, float]:
     if isinstance(value, str):
@@ -25,6 +27,45 @@ def _waypoint(value, nodes: dict[str, tuple[float, float]]) -> dict:
 
 def _width(value) -> tuple[float, float] | None:
     return None if value is None else (float(value[0]), float(value[1]))
+
+
+def _arrows(entry: dict) -> list[str] | None:
+    value = entry.get("arrows")
+    if value is None:
+        return None
+    segments = len(entry["path"]) - 1 + (1 if entry.get("endPixel") else 0)
+    if not isinstance(value, list) or len(value) != segments or any(v not in BOUNDARY_ARROWS for v in value):
+        raise ValueError(f"curve {entry['fields']} {entry['path']}: arrows must give one of "
+                         f"{' '.join(BOUNDARY_ARROWS)} per segment ({segments})")
+    return list(value)
+
+
+def _inferred(entry: dict) -> dict | None:
+    value = entry.get("inferred")
+    if value is None:
+        return None
+    problem = inferred_temperature_problem(entry["temperature_C"], value)
+    if problem:
+        raise ValueError(f"isotherm {entry['field']} {entry['temperature_C']}: {problem}")
+    return {"from": list(value["from"]), "step": value["step"]}
+
+
+def _invariant(entry: dict, nodes: dict[str, tuple[float, float]]) -> dict:
+    if not entry.get("new"):
+        raise ValueError(f"invariant {entry.get('id')}: config invariants are only appended (set \"new\": true); "
+                         "change an existing point with edits")
+    return {
+        "id": entry["id"],
+        "type": entry["type"],
+        "reaction": entry.get("reaction"),
+        "phases": list(entry["phases"]),
+        "temperature_C": entry.get("temperature_C"),
+        "pixel": _pixel(entry["pixel"], nodes),
+        "temperature": entry.get("temperature", "not printed"),
+        "composition": entry.get("composition", "digitized"),
+        "new": True,
+        "notes": entry.get("notes"),
+    }
 
 
 @dataclass
@@ -51,6 +92,18 @@ class CurvesConfig:
     on every piece after the first; the system file entry carries the same ``part``.
     ``fields`` (review overlay only) are ``{"name", "legend", "ring": [pixels], "seed": pixel or None}``;
     ``name`` is drawn in the field, ``legend`` (default: the name) in the legend.
+    A curve ``arrows`` (or None) gives the printed arrow of each path segment, plus
+    one for an open end: ``>`` towards the next path point, ``<`` towards the previous
+    one, ``<>`` pointing away from a maximum inside the segment, ``?`` not readable;
+    it is written to the boundary curve of the system file.
+    An isotherm without a printed temperature sets ``inferred``
+    ``{"from": [labelled °C, …], "step": °C}`` (one or two labelled isotherms of the field
+    and the interval between lines; checked by ``inferred_temperature_problem``); a ``new``
+    entry carries it into the system file.
+    ``invariants`` are new invariant points (``new`` required): ``id``, ``type``,
+    ``reaction``, ``phases``, ``temperature_C`` (None when not printed), ``pixel``
+    and the atlas reading texts ``temperature`` and ``composition``; the
+    composition is computed from the pixel when the point is appended.
     """
 
     system_file: str
@@ -61,6 +114,7 @@ class CurvesConfig:
     curves: list[dict] = field(default_factory=list)
     isotherms: list[dict] = field(default_factory=list)
     inversions: list[dict] = field(default_factory=list)
+    invariants: list[dict] = field(default_factory=list)
     liquid_immiscibility: list[dict] = field(default_factory=list)
     edits: list[dict] = field(default_factory=list)
     fields: list[dict] = field(default_factory=list)
@@ -87,6 +141,7 @@ class CurvesConfig:
                 "path": list(c["path"]),
                 "waypoints": waypoints(c),
                 "endPixel": pixel(c["endPixel"]) if c.get("endPixel") else None,
+                "arrows": _arrows(c),
                 "strokeWidth_px": _width(c.get("strokeWidth_px")) or width,
                 "dashed": bool(c.get("dashed", False)),
                 "new": bool(c.get("new", False)),
@@ -98,6 +153,7 @@ class CurvesConfig:
             {
                 "field": i["field"],
                 "temperature_C": i["temperature_C"],
+                "inferred": _inferred(i),
                 "part": int(i.get("part", 1)),
                 "startPixel": pixel(i["startPixel"]),
                 "endPixel": pixel(i["endPixel"]),
@@ -153,6 +209,7 @@ class CurvesConfig:
             curves=curves,
             isotherms=isotherms,
             inversions=inversions,
+            invariants=[_invariant(v, nodes) for v in data.get("invariants", [])],
             liquid_immiscibility=liquid_immiscibility,
             edits=edits,
             fields=fields,

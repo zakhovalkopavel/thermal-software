@@ -13,6 +13,7 @@ from scipy import ndimage
 
 from phase_diagrams.models.line_scale import LineScale
 from phase_diagrams.models.traced_curve import TracedCurve
+from phase_diagrams.rendering.arrowheads import arrowheads
 
 _LINES = {
     "boundary": ((0, 60, 220), 3, "Field boundaries"),
@@ -21,6 +22,9 @@ _LINES = {
     "immiscibility": ((200, 0, 200), 3, "Two-liquid boundary"),
 }
 _DIVIDERS = ("boundary", "inversion", "immiscibility")
+_ARROW = ((255, 120, 0), "Stored arrows (towards falling temperature)")
+_ARROW_LENGTH_PX = 22
+_ARROW_HALF_WIDTH_PX = 9
 _BARRIER_PX = 3
 _FILL_ALPHA = 85
 _SEED_SEARCH_PX = 6
@@ -70,6 +74,10 @@ def render_ternary_overlay(
     to top along a steep piece), at its middle or the nearest place clear of field names
     and earlier labels; a field name still covering a label moves to the nearest free
     point of its region (up to 60 px from the seed).
+    An inferred isotherm temperature (not printed) is written in parentheses.
+    A boundary segment with a stored ``arrow`` gets an orange arrowhead at its middle
+    (``<>``: two, at a quarter and three quarters, pointing away from the middle),
+    or an orange ``?`` when the arrow is not readable; labels keep clear of them.
     ``info["pageOrigin"]`` ("x0,y0") is the page pixel of the top-left corner.
     ``margin`` defaults to 60 px and ``font_px`` to 22 px; these, the line widths,
     the legend layout and the search distances are for the reference line width,
@@ -131,11 +139,27 @@ def render_ternary_overlay(
                 draw.line([local(p) for p in curve.pixels], fill=colour, width=s.count(width))
     occupied = np.zeros((size[1], size[0]), bool)
     labels = np.zeros((size[1], size[0]), bool)
+    arrow_length, arrow_half = s.length(_ARROW_LENGTH_PX), s.length(_ARROW_HALF_WIDTH_PX)
+    for curve in curves:
+        if curve.kind != "boundary" or curve.arrow is None or len(curve.pixels) < 2:
+            continue
+        points = np.asarray([local(p) for p in curve.pixels], float)
+        if curve.arrow == "?":
+            length = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(points, axis=0), axis=1))])
+            centre = tuple(np.interp(length[-1] / 2, length, points[:, i]) for i in (0, 1))
+            draw.text(centre, "?", fill=_ARROW[0], font=small, anchor="mm", stroke_width=stroke, stroke_fill=(255, 255, 255))
+            occupied[_box(draw, centre, "?", small, stroke, occupied.shape)] = True
+            continue
+        for head in arrowheads(points, curve.arrow, arrow_length, arrow_half, s.length(_DIRECTION_SPAN_PX)):
+            draw.polygon(head, fill=_ARROW[0], outline=(255, 255, 255))
+            xs, ys = zip(*head)
+            occupied[max(0, int(min(ys))):max(0, int(max(ys)) + 1), max(0, int(min(xs))):max(0, int(max(xs)) + 1)] = True
     for name, _, _, seed, _ in placed:
         occupied[_box(draw, seed, name, small, stroke, occupied.shape)] = True
     for curve in curves:
         if curve.kind == "isotherm" and curve.temperature_C is not None and len(curve.pixels) > 1:
-            ink = _label_above(out, occupied, [local(p) for p in curve.pixels], f"{curve.temperature_C:g}", small,
+            text = f"({curve.temperature_C:g})" if curve.inferred else f"{curve.temperature_C:g}"
+            ink = _label_above(out, occupied, [local(p) for p in curve.pixels], text, small,
                                _LINES["isotherm"][0], stroke, s)
             if ink is not None:
                 occupied[ink[0]] |= ink[1]
@@ -155,6 +179,12 @@ def render_ternary_overlay(
             draw.line([(pad, y), (swatch, y)], fill=colour, width=s.count(width) + 1)
             draw.text((text_x, pad + row * line_height), text, fill=colour, font=font)
             row += 1
+    if any(c.kind == "boundary" and c.arrow is not None for c in curves):
+        y = pad + row * line_height + font_px // 2
+        for head in arrowheads([(pad, y), (swatch, y)], ">", arrow_length, arrow_half, 1.0):
+            draw.polygon(head, fill=_ARROW[0], outline=(255, 255, 255))
+        draw.text((text_x, pad + row * line_height), _ARROW[1], fill=_ARROW[0], font=font)
+        row += 1
     for _, legend, colour, _, _ in placed:
         top = pad + row * line_height
         draw.rectangle([pad, top + stroke, swatch, top + font_px], fill=(*colour, 160), outline=_TEXT)

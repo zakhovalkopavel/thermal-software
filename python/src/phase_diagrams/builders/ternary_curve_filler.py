@@ -1,5 +1,5 @@
 """
-phase_diagrams.builders.ternary_curve_filler — Fill ``polyline_wt`` of boundary curves, isotherms and inversion curves, and the liquid-immiscibility branches, in a ternary file.
+phase_diagrams.builders.ternary_curve_filler — Fill ``polyline_wt`` (and boundary ``arrows``) of boundary curves, isotherms and inversion curves, and the liquid-immiscibility branches, in a ternary file.
 
 Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Ternary curves, § Ternary files
 """
@@ -80,10 +80,11 @@ def fill_ternary_curves(
     solid line.
     An inversion entry (matched by ``phase`` and ``change``) gets ``polyline_wt``
     appended when it has none; that is the only key the filler may add there.
+    A boundary curve with config ``arrows`` gets them set (appended when absent).
     Liquid-immiscibility branches are written, in config order, as
     ``liquidImmiscibility.polylines_wt`` (appended when absent).
     Raises ValueError for unmatched config entries, missing end pixels or a
-    write that would change anything other than the filled polylines.
+    write that would change anything other than the filled polylines and arrows.
     """
     s = scale or LineScale()
     system = json.loads(text)
@@ -212,6 +213,7 @@ def fill_ternary_curves(
         return curve
 
     boundary = system.get("boundaryCurves", [])
+    arrows: dict[int, list[str]] = {}
     for entry in config.curves:
         index = next(
             (i for i, c in enumerate(boundary) if c.get("fields") == entry["fields"] and c.get("path") == entry["path"]),
@@ -231,6 +233,7 @@ def fill_ternary_curves(
                 log.append(f"{label} [{a_id}→{b_id}]: drawn at the same pixel, joined directly")
             else:
                 curve = trace(ends[k], ends[k + 1], assigned[k], f"{label} [{a_id}→{b_id or 'open end'}]", entry["strokeWidth_px"], entry["dashed"], "boundary")
+                curve.arrow = entry["arrows"][k] if entry.get("arrows") else None
                 points = to_wt(curve.pixels)
                 points[0] = point_wt(a_id)
                 if b_id is not None:
@@ -239,6 +242,9 @@ def fill_ternary_curves(
             polyline.extend(simplified if not polyline else simplified[1:])
         polylines[("boundaryCurves", index)] = _rounded(polyline, label, log)
         log.append(f"{label}: {len(polyline)} points")
+        if entry.get("arrows") is not None:
+            arrows[index] = entry["arrows"]
+            log.append(f"{label}: arrows {' '.join(entry['arrows'])}")
     dividers.extend(c.pixels for c in curves if c.kind == "boundary")
 
     inversions = system.get("inversions", [])
@@ -280,16 +286,20 @@ def fill_ternary_curves(
         label = f"isotherm {entry['field']} {entry['temperature_C']}{part}"
         curve = trace(entry["startPixel"], entry["endPixel"], entry["waypoints"], label, entry["strokeWidth_px"], entry["dashed"], "isotherm",
                       entry["temperature_C"])
+        curve.inferred = entry.get("inferred") is not None
         polyline = simplify_polyline(to_wt(curve.pixels), _SIMPLIFY_WT)
         polylines[("isotherms", index)] = _rounded(polyline, label, log)
         log.append(f"{label}: {len(polyline)} points")
 
     new_text = _replace_polylines(text, polylines)
-    new_text = _set_inversion_polylines(new_text, {i: v for (k, i), v in polylines.items() if k == "inversions"})
+    new_text = _set_entry_keys(new_text, "inversions", "polyline_wt", {i: v for (k, i), v in polylines.items() if k == "inversions"})
+    new_text = _set_entry_keys(new_text, "boundaryCurves", "arrows", arrows)
     new_text = _set_immiscibility_polylines(new_text, branches)
     expected = copy.deepcopy(system)
     for (key, index), polyline in polylines.items():
         expected[key][index]["polyline_wt"] = polyline
+    for index, value in arrows.items():
+        expected["boundaryCurves"][index]["arrows"] = value
     if branches:
         expected["liquidImmiscibility"]["polylines_wt"] = branches
     units_missing = bool(polylines or branches) and "polyline_wt" not in system.get("units", {})
@@ -299,7 +309,7 @@ def fill_ternary_curves(
         expected.setdefault("units", {})["polyline_wt"] = unit
         log.append(f"units.polyline_wt added: {unit}")
     if json.loads(new_text) != expected:
-        raise ValueError(f"{config.name}: rewrite changed more than polyline_wt; file left unchanged")
+        raise ValueError(f"{config.name}: rewrite changed more than polyline_wt and arrows; file left unchanged")
     return TernaryFill(text=new_text, curves=curves, filled=len(polylines) + len(branches), units_missing=units_missing, review=review, log=log)
 
 
@@ -418,13 +428,13 @@ def _replace_polylines(text: str, polylines: dict[tuple[str, int], list[list[flo
     return _apply_edits(text, edits)
 
 
-def _set_inversion_polylines(text: str, polylines: dict[int, list[list[float]]]) -> str:
-    """Set ``polyline_wt`` of the n-th ``inversions`` entry; appended before its ``}`` when the entry has none."""
-    if not polylines:
+def _set_entry_keys(text: str, array: str, key: str, values: dict[int, object]) -> str:
+    """Set ``key`` of the n-th entry of ``array``; appended before its ``}`` when the entry has none."""
+    if not values:
         return text
-    key_match = re.search(r'"inversions"\s*:\s*\[', text)
+    key_match = re.search(rf'"{array}"\s*:\s*\[', text)
     if key_match is None:
-        raise ValueError("no 'inversions' array in system file")
+        raise ValueError(f"no '{array}' array in system file")
     end = _closing_index(text, key_match.end() - 1)
     objects: list[tuple[int, int]] = []
     index = key_match.end()
@@ -433,7 +443,7 @@ def _set_inversion_polylines(text: str, polylines: dict[int, list[list[float]]])
             objects.append((index, _closing_index(text, index)))
             index = objects[-1][1]
         index += 1
-    edits = [_key_edit(text, *objects[index], "polyline_wt", value) for index, value in polylines.items()]
+    edits = [_key_edit(text, *objects[index], key, value) for index, value in values.items()]
     return _apply_edits(text, edits)
 
 

@@ -115,8 +115,25 @@ def test_rollback_when_other_keys_would_change():
     text = SYSTEM_TEXT.replace(
         '"path": ["tt-1", "tt-2"], "polyline_wt": null', '"path": ["tt-1", "tt-2"]'
     )
-    with pytest.raises(ValueError, match="changed more than polyline_wt"):
+    with pytest.raises(ValueError, match="changed more than polyline_wt and arrows"):
         fill_ternary_curves(text, _config(isotherms=[]), _mask(), _invariants(text))
+
+
+def test_arrows_are_written_to_the_matched_boundary_curve_and_kept_on_refill():
+    config = _config(curves=[{"fields": ["silica", "wollastonite"], "path": ["tt-1", "tt-2"], "arrows": ["<"]}], isotherms=[])
+    fill = fill_ternary_curves(SYSTEM_TEXT, config, _mask(), _invariants(SYSTEM_TEXT))
+    curves = json.loads(fill.text)["boundaryCurves"]
+    assert curves[0]["arrows"] == ["<"]
+    assert "arrows" not in curves[1] and "arrows" not in curves[2]
+    assert [c.arrow for c in fill.curves if c.kind == "boundary"] == ["<"]
+    assert fill_ternary_curves(fill.text, config, _mask(), _invariants(SYSTEM_TEXT)).text == fill.text
+
+
+def test_arrows_need_one_value_per_segment():
+    with pytest.raises(ValueError, match="arrows"):
+        _config(curves=[{"fields": ["silica", "lime"], "path": ["tt-1"], "endPixel": [400, 500], "arrows": [">", ">"]}])
+    with pytest.raises(ValueError, match="arrows"):
+        _config(curves=[{"fields": ["silica", "wollastonite"], "path": ["tt-1", "tt-2"], "arrows": ["down"]}])
 
 
 def test_missing_units_entry_is_added():

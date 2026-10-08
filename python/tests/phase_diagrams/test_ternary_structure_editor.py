@@ -100,6 +100,51 @@ def test_second_piece_of_an_isotherm_in_the_same_field_is_appended_as_part_2():
                                              {"field": "silica", "temperature_C": 1400, "part": 2, "polyline_wt": None}]
 
 
+def test_new_unlabelled_isotherm_keeps_its_inferred_temperature():
+    config = _config(isotherms=[{"field": "silica", "temperature_C": 1300, "startPixel": [0, 0], "endPixel": [1, 1], "new": True,
+                                 "inferred": {"from": [1200, 1400], "step": 100}}])
+    text, _ = edit_ternary_structure(SYSTEM_TEXT, config)
+    assert json.loads(text)["isotherms"][1] == {"field": "silica", "temperature_C": 1300,
+                                                "inferred": {"from": [1200, 1400], "step": 100}, "polyline_wt": None}
+
+
+def test_new_invariant_gets_the_composition_at_its_pixel_and_an_atlas_source():
+    config = _config(invariants=[{"id": "tt-x", "type": "ternary", "reaction": "peritectic", "phases": ["silica", "lime", "wollastonite"],
+                                  "temperature_C": None, "pixel": [300.4, 599.6], "composition": "line fits crossed",
+                                  "new": True, "notes": "hidden by a label"}])
+    text, log = edit_ternary_structure(SYSTEM_TEXT, config)
+    point = json.loads(text)["invariantPoints"][2]
+    assert point == {"id": "tt-x", "type": "ternary", "reaction": "peritectic", "phases": ["silica", "lime", "wollastonite"],
+                     "temperature_C": None, "liquid_wt": {"CaO": 60.7, "MgO": 10.7, "SiO2": 28.6}, "status": "extracted",
+                     "sources": [{"ref": "slag-atlas-1995", "temperature": "not printed", "composition": "line fits crossed",
+                                  "pixel": [300, 600]}],
+                     "notes": "hidden by a label"}
+    assert '\n    { "id": "tt-x", ' in text
+    assert any("new invariant: tt-x" in line for line in log)
+
+
+@pytest.mark.parametrize("entry, message", [
+    ({"id": "tt-2", "type": "ternary", "phases": [], "pixel": [0, 0], "new": True}, "already exists"),
+    ({"id": "tt-y", "type": "ternary", "phases": [], "pixel": [0, 0]}, "only appended"),
+])
+def test_invariant_entry_errors(entry, message):
+    with pytest.raises(ValueError, match=message):
+        edit_ternary_structure(SYSTEM_TEXT, _config(invariants=[entry]))
+
+
+@pytest.mark.parametrize("temperature, inferred", [
+    (1350, {"from": [1200, 1400], "step": 100}),
+    (1500, {"from": [1200, 1400], "step": 100}),
+    (1400, {"from": [1400], "step": 100}),
+    (1300, {"from": [], "step": 100}),
+    (1300, {"from": [1400], "step": 0}),
+])
+def test_inferred_temperature_off_the_steps_is_a_config_error(temperature, inferred):
+    with pytest.raises(ValueError, match="isotherm silica"):
+        _config(isotherms=[{"field": "silica", "temperature_C": temperature, "startPixel": [0, 0], "endPixel": [1, 1],
+                            "inferred": inferred}])
+
+
 def test_node_labels_in_written_text_become_invariant_ids_or_pixels():
     config = _config(
         nodes={"X7": [300, 600], "D12•": [410.5, 520], "X9": [500.6, 401]},

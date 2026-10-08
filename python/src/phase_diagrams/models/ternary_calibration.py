@@ -9,6 +9,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+_WARP_STEPS = 20
+
 
 @dataclass
 class TernaryCalibration:
@@ -63,3 +65,14 @@ class TernaryCalibration:
         ix, iy = self.ideal(sx, sy)
         weights = self._inverse @ np.array([ix, iy, 1.0]) * 100.0
         return {c: float(w) for c, w in zip(self.components, weights)}
+
+    def to_page(self, wt: list[float] | dict[str, float]) -> tuple[float, float]:
+        """Page pixel of a wt% triple (inverse of ``to_wt``; the warp is inverted by fixed-point steps)."""
+        values = np.array([wt[c] for c in self.components] if isinstance(wt, dict) else wt, dtype=float)
+        target = np.linalg.inv(self._inverse) @ (values / values.sum())
+        sx, sy = float(target[0]), float(target[1])
+        if self.warp is not None:
+            for _ in range(_WARP_STEPS):
+                ix, iy = self.ideal(sx, sy)
+                sx, sy = sx + float(target[0]) - ix, sy + float(target[1]) - iy
+        return self.stored_to_page(sx, sy)

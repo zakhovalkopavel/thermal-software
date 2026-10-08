@@ -1,5 +1,6 @@
 """Tests for phase_diagrams.rendering.ternary_overlay_renderer."""
 import numpy as np
+import pytest
 
 from phase_diagrams.models.traced_curve import TracedCurve
 from phase_diagrams.rendering.ternary_overlay_renderer import render_ternary_overlay
@@ -64,12 +65,42 @@ def test_isotherm_temperature_is_written_above_the_curve():
     assert _reddish(rendered, (280, 403, 320, 420)) == 0
 
 
+def test_inferred_isotherm_temperature_is_written_in_parentheses():
+    printed = TracedCurve(pixels=[(200.0, 400.0), (400.0, 400.0)], label="i", kind="isotherm", temperature_C=1500)
+    inferred = TracedCurve(pixels=[(200.0, 400.0), (400.0, 400.0)], label="i", kind="isotherm", temperature_C=1500, inferred=True)
+    box = (240, 375, 360, 398)
+    assert _reddish(_render([inferred], [])[0], box) > _reddish(_render([printed], [])[0], box)
+
+
 def test_isotherm_temperature_moves_away_from_a_field_name():
     isotherm = TracedCurve(pixels=[(200.0, 400.0), (400.0, 400.0)], label="i", kind="isotherm", temperature_C=1500)
     fields = [{"name": "FIELD", "ring": [(300, 100), (100, 450), (500, 450)], "seed": (300, 390)}]
     rendered, _ = _render([isotherm], fields)
     assert _reddish(rendered, (280, 380, 320, 397)) == 0
     assert _reddish(rendered, (200, 380, 400, 397)) > 10
+
+
+def _orange(rendered, box):
+    x0, y0 = (int(v) for v in rendered.info["pageOrigin"].split(","))
+    pixels = np.asarray(rendered)[box[1] - y0:box[3] - y0, box[0] - x0:box[2] - x0].reshape(-1, 3).astype(int)
+    return int(((pixels[:, 0] > 200) & (pixels[:, 1] > 80) & (pixels[:, 1] < 170) & (pixels[:, 2] < 80)).sum())
+
+
+@pytest.mark.parametrize("arrow, wide_side", [(">", "left"), ("<", "right")])
+def test_stored_arrow_is_drawn_at_the_middle_pointing_its_way(arrow, wide_side):
+    boundary = TracedCurve(pixels=[(200.0, 300.0), (400.0, 300.0)], label="b", kind="boundary", arrow=arrow)
+    rendered, _ = _render([boundary], [])
+    left, right = _orange(rendered, (280, 285, 300, 315)), _orange(rendered, (300, 285, 320, 315))
+    assert (left > right) == (wide_side == "left") and max(left, right) > 20
+    assert _orange(rendered, (200, 285, 260, 315)) == 0
+
+
+def test_unreadable_arrow_is_drawn_as_a_question_mark_and_no_arrow_draws_nothing():
+    marked = TracedCurve(pixels=[(200.0, 300.0), (400.0, 300.0)], label="b", kind="boundary", arrow="?")
+    plain = TracedCurve(pixels=[(200.0, 400.0), (400.0, 400.0)], label="c", kind="boundary")
+    rendered, _ = _render([marked, plain], [])
+    assert _orange(rendered, (285, 280, 315, 320)) > 5
+    assert _orange(rendered, (285, 380, 315, 420)) == 0
 
 
 def test_legend_shows_the_legend_text_and_the_field_its_name():

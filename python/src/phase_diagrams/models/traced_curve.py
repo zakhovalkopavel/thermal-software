@@ -11,7 +11,10 @@ class TracedCurve:
     """Pixel path (stroke centre, page pixels) and the non-ink length it crossed.
 
     ``kind`` (ternary curves): ``boundary``, ``isotherm``, ``inversion`` or ``immiscibility``;
-    ``temperature_C`` is set for isotherms.
+    ``temperature_C`` is set for isotherms. ``arrow`` (boundary segments) is the
+    stored printed arrow: ``>`` along ``pixels``, ``<`` against, ``<>`` away from
+    the middle, ``?`` not readable, None not recorded. ``inferred`` marks an isotherm
+    whose temperature is not printed (config ``inferred``).
     """
 
     pixels: list[tuple[float, float]]
@@ -20,6 +23,8 @@ class TracedCurve:
     points: list[tuple[float, float]] = field(default_factory=list)
     kind: str = ""
     temperature_C: float | None = None
+    arrow: str | None = None
+    inferred: bool = False
 
     @property
     def start(self) -> tuple[float, float]:
