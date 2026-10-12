@@ -163,6 +163,14 @@ def _wagner25(T: float, v: Vars) -> float:
     return v["Pc"] * math.exp((v["a"] * t + v["b"] * t ** 1.5 + v["c"] * t ** 2.5 + v["d"] * t ** 5) / Tr)
 
 
+def _sutherland(T: float, v: Vars) -> float:
+    return v["y0"] * (T / v["T0"]) ** 1.5 * (v["T0"] + v["S"]) / (T + v["S"])
+
+
+def _power_law(T: float, v: Vars) -> float:
+    return v["y0"] * (T / v["T0"]) ** v["n"]
+
+
 _METHODS: dict[str, Callable[[float, Vars], float]] = {
     "linear": _linear,
     "quadratic": _quadratic,
@@ -185,4 +193,6 @@ _METHODS: dict[str, Callable[[float, Vars], float]] = {
     "ppds12": _ppds12,
     "dipprN106": _dippr_n106,
     "wagner25": _wagner25,
+    "sutherland": _sutherland,
+    "powerLaw": _power_law,
 }

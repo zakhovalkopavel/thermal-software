@@ -31,6 +31,7 @@ from chemicals_tables.identifier import Identifier
 from chemicals_tables.property_value import PropertyValue
 from chemicals_tables.raw_value import RawValue
 from chemicals_tables.source_entry import SourceEntry
+from chemicals_tables.transport_value import TransportValue
 from compound_data.class_override import ClassOverride
 from compound_data.compound_record import CompoundRecord
 from compound_data.constants.class_overrides import CLASS_OVERRIDES
@@ -208,6 +209,8 @@ def _move_unidentified(result: MergeResult, overrides: dict[str, FormulaOverride
                 for phase, values in phases.items():
                     target.equations.setdefault(prop, {}).setdefault(phase, []).extend(values)
             target.raw.extend(record.raw)
+            for prop, values in record.transport.items():
+                target.transport.setdefault(prop, []).extend(values)
             _sort_by_priority(target)
             del result.records[record.id]
             moved.append({"from": record.id, "cas": record.cas, "formula": record.hill, "name": record.name,
@@ -280,6 +283,8 @@ def _add_value(record: CompoundRecord, entry: SourceEntry) -> None:
         record.equations.setdefault(entry.property, {}).setdefault(entry.phase or "none", []).append(value)
     elif isinstance(value, RawValue):
         record.raw.append(value)
+    elif isinstance(value, TransportValue):
+        record.transport.setdefault(entry.property, []).append(value)
 
 
 def _priority(value: Any) -> int:

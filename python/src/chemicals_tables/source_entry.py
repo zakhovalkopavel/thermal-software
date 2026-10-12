@@ -11,6 +11,7 @@ from typing import Optional, Union
 from chemicals_tables.equation_value import EquationValue
 from chemicals_tables.property_value import PropertyValue
 from chemicals_tables.raw_value import RawValue
+from chemicals_tables.transport_value import TransportValue
 
 
 @dataclass
@@ -25,6 +26,6 @@ class SourceEntry:
     formula: Optional[str]
     label: Optional[str]
     property: str
-    value: Union[PropertyValue, EquationValue, RawValue]
+    value: Union[PropertyValue, EquationValue, RawValue, TransportValue]
     phase: Optional[str] = None
     smiles: Optional[str] = None

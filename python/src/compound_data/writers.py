@@ -3,8 +3,9 @@ compound_data.writers — JSON files of the compound dataset.
 
 Writes one file per compound (``compound_files``): ``<out_dir>/inorganic/<Element>/<formula>-<name>.json``
 and ``<out_dir>/organic/<family>/<formula>-<name>.json``, entries keyed by CAS (``noCas`` without one);
-plus ``unresolved.json``, ``index.json``, ``units.json`` and ``sources.json`` in ``<out_dir>``, and the
-CAS list for the PubChem step (``write_missing_cas``, in the report directory).
+plus ``unresolved.json``, ``index.json``, ``units.json``, ``sources.json`` and ``interactions.json``
+(transport data of species pairs) in ``<out_dir>``, and the CAS list for the PubChem step
+(``write_missing_cas``, in the report directory).
 Values cite their row as ``ref: [RefKey, line, fileKey]``; ``sources.json`` maps the file keys to
 the pinned repository files and gives the URL templates of the JANAF table ids (``janaf``) and the
 NASA datasets of the ``nasa7`` / ``nasa9`` keys (``nasa``).
@@ -23,6 +24,7 @@ from typing import Any, Iterable, Optional
 from chemicals_tables.chemicals_source import ChemicalsSource
 from chemicals_tables.constants.planned_equation_types import PLANNED_EQUATION_TYPES
 from chemicals_tables.constants.source_tables import SOURCE_TABLES
+from chemicals_tables.table_spec import TableSpec
 from compound_data.compound_file import CompoundFile
 from compound_data.compound_units import compound_units
 from compound_data.constants.pubchem_source import PUBCHEM_TABLE
@@ -38,11 +40,13 @@ JANAF_DATASET = "shared/processed/JANAF/index.json"
 def write_compound_sources(
     out_dir: Path, chem: ChemicalsSource, generated_at: str, janaf: Optional[JanafSource] = None,
     pubchem_cache: Optional[str] = None, nasa: Optional[dict[str, Any]] = None,
+    transport_tables: Iterable[TableSpec] = (),
 ) -> Path:
     """Write ``sources.json``: repository, commit, license, the file-key → file map, the JANAF and NASA links.
 
     With ``pubchem_cache`` (the cache was read), the map gets ``idPubchemRest`` (a local file, ``url: null``)
-    and a ``pubchem`` block with the compound URL template for ``pubchemCid``.
+    and a ``pubchem`` block with the compound URL template for ``pubchemCid``. ``transport_tables`` add
+    their file keys (the local transport-parameters file, ``url: null``).
     """
     payload: dict[str, Any] = {
         "generatedAt": generated_at,
@@ -74,8 +78,21 @@ def write_compound_sources(
             "name": PUBCHEM_TABLE.name, "path": pubchem_cache, "ref": None, "url": None,
         }
         payload["pubchem"] = {"api": PUBCHEM_API, "cache": pubchem_cache, "compoundUrl": PUBCHEM_COMPOUND_URL}
+    for table in transport_tables:
+        payload["files"][table.key] = {"name": table.name, "path": table.path, "ref": table.ref.value, "url": None}
     path = _write(out_dir / "sources.json", payload)
-    logger.info("[output] Written → %s  (%d files)", path, len(SOURCE_TABLES))
+    logger.info("[output] Written → %s  (%d files)", path, len(payload["files"]))
+    return path
+
+
+def write_interactions(out_dir: Path, interactions: list[dict[str, Any]], generated_at: str) -> Path:
+    """Write ``interactions.json``: transport data of species pairs (Svehla 1995 diffusion, ions, electron).
+
+    ``ids`` are the record ids of the two species (null without a record); values are in the units of ``units.json``.
+    """
+    path = _write(out_dir / "interactions.json", {"generatedAt": generated_at, "count": len(interactions),
+                                                  "interactions": interactions})
+    logger.info("[output] Written → interactions.json  (%d pairs)", len(interactions))
     return path
 
 
@@ -133,6 +150,7 @@ def write_compound_index(files: Iterable[CompoundFile], out_dir: Path, generated
             "refs": record.refs(),
             "properties": sorted(record.properties),
             "equations": record.equation_phases(),
+            "transport": sorted(record.transport),
             "janaf": record.janaf,
             "nasa7": record.nasa7,
             "nasa9": record.nasa9,

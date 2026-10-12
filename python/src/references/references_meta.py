@@ -62,4 +62,8 @@ REFERENCES_META: dict[RefKey, ReferenceMeta] = {
     RefKey.TRC1994:         {'index': 40, 'name': 'Thermodynamics Research Center — Thermodynamics of Organic Compounds in the Gas State, Vol. II, TRC', 'year': '1994'},
     RefKey.VDI2010:         {'index': 41, 'name': 'VDI e.V. (ed.) — VDI Heat Atlas, 2nd ed., Springer', 'year': '2010'},
     RefKey.Magalhaes2013:   {'index': 42, 'name': 'Magalhães, A.L.; Lito, P.F.; Da Silva, F.A.; Silva, C.M. — Simple and Accurate Correlations for Diffusion Coefficients of Solutes in Liquids and Supercritical Fluids, J. Supercrit. Fluids 76', 'year': '2013', 'url': 'https://doi.org/10.1016/j.supflu.2013.02.002'},
+    RefKey.Svehla1962:      {'index': 43, 'name': 'Svehla R.A. — Estimated Viscosities and Thermal Conductivities of Gases at High Temperatures, NASA TR R-132', 'year': '1962'},
+    RefKey.Itean1961:       {'index': 44, 'name': 'Itean E.C., Glueck A.R., Svehla R.A. — Collision Integrals for a Modified Stockmayer Potential, NASA TN D-481', 'year': '1961'},
+    RefKey.Svehla1995:      {'index': 45, 'name': 'Svehla R.A. — Transport Coefficients for the NASA Lewis Chemical Equilibrium Program, NASA TM-4647', 'year': '1995'},
+    RefKey.Mamedov2014:     {'index': 46, 'name': 'Mamedov B.A., Somuncu E. — Analytical treatment of second virial coefficient over Lennard-Jones (2n–n) potential, J. Mol. Struct. 1068', 'year': '2014'},
 }

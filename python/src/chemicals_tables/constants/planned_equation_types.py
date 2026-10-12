@@ -20,4 +20,6 @@ PLANNED_EQUATION_TYPES: frozenset[str] = frozenset({
     "ppds12",
     "dipprN106",
     "wagner25",
+    "sutherland",
+    "powerLaw",
 })

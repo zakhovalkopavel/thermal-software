@@ -3,7 +3,7 @@
 **Status:** Implemented (`python/src/chemical_formula/`, `chemicals_tables/`, `pubchem/`, `dataset_layout/`, `compound_data/`, see [Packages](#packages)). The backend methods of the planned equation types are the next step.
 **Purpose:** Merge the CalebBell/chemicals data tables copied into `shared/sources/compound-data/chemicals/` into JSON datasets, one small file per compound. Inorganic compounds are placed by their main element and organic compounds by functional family, with an `index.json` linking them and a `units.json` listing the units. Every coefficient row is stored as a ready-to-use backend `EquationValue`.
 
-Sources: CRC 95th ed., Perry 8th ed., Poling 5th ed., Yaws 2014, TRC 1994, Zabransky 1996, NIST WebBook Shomate and VDI Heat Atlas PPDS.
+Sources: CRC 95th ed., Perry 8th ed., Poling 5th ed., Yaws 2014, TRC 1994, Zabransky 1996, NIST WebBook Shomate and VDI Heat Atlas PPDS, plus the hand-transcribed transport parameters of White (Viscous Fluid Flow 3e), NASA TN D-481, Mamedov & Somuncu 2014 and Svehla 1995 (see [Transport parameters](#transport-parameters)).
 
 The build also parses the NIST-JANAF copy with the `janaf` package and lists the matching table ids in each record (see [JANAF table ids](#janaf-table-ids)). Implementing the planned equation types in the backend is the next step (see [Planned equation types](#planned-equation-types)).
 
@@ -128,6 +128,14 @@ The list below is the summary used by this dataset.
   - **Enthalpy of vaporization, `ppds12`:** ΔHvap = R·Tc·(a·τ^(1/3) + b·τ^(2/3) + c·τ + d·τ² + e·τ⁶), `vars {Tc, a..e}` (from A..E), J/mol.
   - **Surface tension, `dipprN106`:** σ = c1·τ^(c2 + c3·Tr + c4·Tr² + c5·Tr³), `vars {Tc, c1..c5}` (from A..E), N/m.
   - **Vapor pressure, `wagner25`:** ln(P) = ln(Pc) + (a·τ + b·τ^1.5 + c·τ^2.5 + d·τ⁵)/Tr, `vars {Tc, Pc, a, b, c, d}`, Pa.
+- **`sutherland`** (White Tables 1-2, 1-3, A-6; gas viscosity and thermal conductivity):
+  - Formula: y = y0·(T/T0)^1.5·(T0 + S)/(T + S).
+  - `vars {y0, T0, S}` (y0 = μ0 [Pa s] or k0 [W/(m K)]), `min/max` = the 2 % range of Tables 1-2 / 1-3 (`error: 2`), `null` for Table A-6. Ref `White3`.
+  - Analytic integral exists (y0·T0^-1.5·(T0 + S)·∫T^1.5/(T + S) dT).
+- **`powerLaw`** (same tables):
+  - Formula: y = y0·(T/T0)^n.
+  - `vars {y0, T0, n}`, `min/max` = the range of the printed error (`error` = ± %), `null` for Table A-6. Ref `White3`.
+  - Analytic integral exists.
   - **Plain polynomials:** gas viscosity, gas thermal conductivity and liquid thermal conductivity are a + b·T + c·T² + d·T³ + e·T⁴. They map to the **existing** `quartic` type.
   - **VDI ranges:**
     - Liquid properties get `min = Tm` and `max = Tc` from the VDI surface-tension and boiling-temperature rows of the same CAS. Both rows come from the same book, and the row used is cited in `rangeRef`.
@@ -148,6 +156,10 @@ flowchart LR
   shomateJson["WebBook Shomate JSON"] --> shomateParser["parse_shomate_json"]
   zabransky["Zabransky.tsv"] --> zabParser["parse_zabransky"]
   vdi["8 VDI PPDS files"] --> vdiParser["parse_vdi_ppds"]
+  transport["transport-parameters.json (White, TN D-481, Mamedov 2014, Svehla 1995)"] --> transportParser["parse_transport_parameters"]
+  transportParser --> merger
+  transportParser --> interactions["resolve interactions (record ids by CAS)"]
+  interactions --> interactionsFile["interactions.json"]
   identity["IDENTITY_OVERRIDES (rows without CAS and formula)"] --> merger
   ids["Inorganic db + pubchem small/large"] --> resolver["load_identifiers"]
   resolver --> missingCas["missing-cas.txt (step 1 output)"]
@@ -198,12 +210,36 @@ Property names follow the backend where a name exists (`enthalpyFormation298`, `
   - Collection: criticalTemperature, criticalPressure, criticalVolume, acentricFactor.
   - `Yaws Hf S0 (g)`: enthalpyFormation298 and entropy298 for the gas phase.
   - Boiling Points: boilingPoint.
-- **Lennard-Jones parameters** (`Viscosity/PolingLJ.tsv`, ref `Poling5`, 75 rows; `Viscosity/MagalhaesLJ.tsv`, ref `Magalhaes2013`, 322 rows): collisionDiameter σ (source Å × 1e-10 → m, rounded to 12 significant digits) and epsilonToKb ε/k_B [K]. Poling's `Air` row has CAS 132259-10-0, which PubChem gives to Hoe 166, so it lands on that record (see the report's PubChem section).
+- **Lennard-Jones parameters** (`Viscosity/PolingLJ.tsv`, ref `Poling5`, 75 rows; `Viscosity/MagalhaesLJ.tsv`, ref `Magalhaes2013`, 322 rows): collisionDiameter σ (source Å × 1e-10 → m, rounded to 12 significant digits) and epsilonToKb ε/k_B [K], tagged `potential: "lennardJones"` (`PropertyColumn.extra`). Poling's `Air` row has CAS 132259-10-0, which PubChem gives to Hoe 166, so it lands on that record (see the report's PubChem section).
 - **Identifiers:**
   - CAS is resolved through `Inorganic db.tsv`, then `pubchem small`, then `pubchem large`, then the PubChem cache (see [PubChem identifiers](#pubchem-identifiers)), then the source's own formula column. Only CAS numbers that appear in the tables are loaded.
   - The PubChem compound id is kept as `pubchemCid` (the `Inorganic db` uses negative ids for compounds PubChem does not have; those give none).
   - The formula is cleaned of footnote prefixes (Perry `22 SO2` becomes `SO2`) and of trailing spaces.
   - `Mr` = MW / 1000.
+
+---
+
+## Transport parameters
+
+`shared/sources/transport-parameters.json` is a hand transcription (printed units, with `sources`, per-table `columns`, notes and one object per printed row). `compound_data.parsers.transport_parameters.parse_transport_parameters` turns it into source entries that merge by CAS like the chemicals rows. Each table has its own file key, so every value cites `[RefKey, line, fileKey]` with the line of the row's opening `{`; `sources.json` lists the keys with `path` = the file and `url: null`.
+
+| Table id | File key | Ref | Stored as |
+|---|---|---|---|
+| `white-table-1-2` | `white12` | `White3` (`originalRef: NBS1955`) | gas viscosity `powerLaw` + `sutherland` |
+| `white-table-1-3` | `white13` | `White3` | gas thermal conductivity `powerLaw` + `sutherland` |
+| `white-table-a-6` | `whiteA6` | `White3` | gas viscosity `sutherland` / `powerLaw` from the SI columns, `min/max = null` |
+| `white-table-a-7` | `whiteA7` | `White3` (`originalRef: Svehla1962`) | `collisionDiameter`, `epsilonToKb`, `potential: lennardJones` |
+| `itean1961-table-3` | `itean1961T3` | `Itean1961` (NASA TN D-481 Table III) | σ, ε/k, `stockmayerDelta`, `dipoleMoment` [C m], `potential: stockmayer` |
+| `mamedov2014-table-1` | `mamedov2014T1` | `Mamedov2014` | σ, ε/k, `potential: lennardJones`, `basis: secondVirial` |
+| `svehla1995-table-1` | `svehla1995T1` | `Svehla1995` (NASA TM-4647 Table I) | `transport` block + potential parameters; pairs → `interactions.json` |
+
+- **Equations:** White's power law and Sutherland law become the planned types `powerLaw` and `sutherland` (see [Planned equation types](#planned-equation-types)) under `equations.viscosity.gas` / `equations.thermalConductivity.gas`. `error` is the printed ± % (2 for the Sutherland range). Tables 1-2 / 1-3 print SI; Table A-6 prints °R and slug/(ft h), so its precomputed `si` columns are used.
+- **Potential parameters:** every σ (Å × 1e-10 → m) and ε/k goes to `collisionDiameter` / `epsilonToKb` with `potential` (`lennardJones`, `stockmayer`, `correspondingStates`) next to `ref`, so values fitted to different potentials are never mixed up. New scalar properties: `stockmayerDelta` δ = μ²/(2εσ³), `dipoleMoment` (D × 3.33564e-30 → C m), `rhoStar`, `V0Star` (corresponding states, Boushehri et al. 1987). Mamedov's values are fitted to second virial coefficients (`basis: secondVirial`); its 4 benzene mixture rows are skipped and reported (`transportMixtureSkipped`).
+- **Svehla 1995 Table I** (how the NASA Lewis transport fits were obtained):
+  - A pure-species viscosity or conductivity row with a CAS becomes `transport.<viscosity | thermalConductivity>` on the record: `{methods, matchTemperatureK?, ref}`, the methods in printed order with σ in m and `epsilonToK` renamed `epsilonToKb` (units: `units.json` → `transport`).
+  - The σ, ε/k, δ, ρ*, V0* of its `lennardJones` / `stockmayer` / `correspondingStates` methods are also written as properties, with `potential`, `basis`, `citation` (the printed source) and `TminK` next to `ref`.
+  - All other rows (binary diffusion, ion and electron pairs, H6F6) go to `interactions.json` with `ids` (the record of each species by CAS or `otherCas`, `null` for the electron, ions and H6F6). A CAS without record is reported as `transportInteractionNoRecord`.
+- The CLI options are `--transport-file` (default `shared/sources/transport-parameters.json`) and `--no-transport`; a missing file logs a warning.
 
 ---
 
@@ -242,6 +278,7 @@ shared/processed/compound-data/
 ├── units.json          unit of every property, equation result, Mr and temperature
 ├── sources.json        repository, commit, license, the file keys of ref: [RefKey, line, fileKey], JANAF and NASA links
 ├── unresolved.json     source rows whose CAS or formula could not be resolved
+├── interactions.json   Svehla 1995 transport data of species pairs, with the record ids of both species
 ├── inorganic/
 │   ├── Al/Al2O3-electrocorundum.json, Al/Al-aluminum.json, ...
 │   ├── C/CO2-carbon-dioxide.json, C/HCN-hydrogen-cyanide.json, ...   (30 inorganic carbon compounds)
@@ -296,11 +333,11 @@ The compound files carry no units, no source links and no `generatedAt` (a rebui
 }
 ```
 
-Entry fields: `name` (identifier name, else the first source label), `Mr` [kg/mol], `smiles` (structure line notation, e.g. `CCO`; used for the organic families), `inchikey` (hashed IUPAC InChI, a lookup key for PubChem and other databases), `pubchemCid` (PubChem compound id; page `sources.json` → `pubchem.compoundUrl`), `families`, `identifierRef`, `otherCas`, `properties`, `equations`, `raw`, `janaf`, `nasa7`, `nasa9`. Compounds that no identifier source knows have no `Mr`, `smiles`, `inchikey`, `pubchemCid` or `identifierRef`.
+Entry fields: `name` (identifier name, else the first source label), `Mr` [kg/mol], `smiles` (structure line notation, e.g. `CCO`; used for the organic families), `inchikey` (hashed IUPAC InChI, a lookup key for PubChem and other databases), `pubchemCid` (PubChem compound id; page `sources.json` → `pubchem.compoundUrl`), `families`, `identifierRef`, `otherCas`, `properties`, `equations`, `raw`, `transport` (see [Transport parameters](#transport-parameters)), `janaf`, `nasa7`, `nasa9`. Compounds that no identifier source knows have no `Mr`, `smiles`, `inchikey`, `pubchemCid` or `identifierRef`.
 
 ### units.json
 
-Built by `compound_data.compound_units`: scalar property units come from the `PropertyColumn` of each table spec (the build fails if two columns of one property disagree), equation result units from `compound_data/constants/units.py`. Raw rows keep their source unit in `values.unit`.
+Built by `compound_data.compound_units`: scalar property units come from the `PropertyColumn` of each table spec and of `TRANSPORT_COLUMNS` (the build fails if two columns of one property disagree), equation result units and the `transport` method field units (`sigma` m, `epsilonToKb` K, `TminK` K, ...) from `compound_data/constants/units.py`. Raw rows keep their source unit in `values.unit`.
 
 ```json
 {
@@ -308,7 +345,8 @@ Built by `compound_data.compound_units`: scalar property units come from the `Pr
   "Mr": "kg/mol",
   "temperature": "K",
   "properties": {"acentricFactor": "1", "boilingPoint": "K", "criticalPressure": "Pa", "density": "kg/m3", "...": "..."},
-  "equations": {"heatCapacity": "J/(mol K)", "viscosity": "Pa s", "thermalConductivity": "W/(m K)", "...": "..."}
+  "equations": {"heatCapacity": "J/(mol K)", "viscosity": "Pa s", "thermalConductivity": "W/(m K)", "...": "..."},
+  "transport": {"sigma": "m", "epsilonToKb": "K", "delta": "1", "TminK": "K", "matchTemperatureK": "K", "...": "..."}
 }
 ```
 
@@ -347,7 +385,7 @@ Built by `compound_data.compound_units`: scalar property units come from the `Pr
 }
 ```
 
-With the PubChem cache, `files` also has `idPubchemRest` (`path` = the cache, `url: null`: the cache is local, so use `pubchemCid` for a link).
+With the PubChem cache, `files` also has `idPubchemRest` (`path` = the cache, `url: null`: the cache is local, so use `pubchemCid` for a link). With the transport parameters, `files` also has the 7 transport table keys (`path` = `shared/sources/transport-parameters.json`, `url: null`).
 
 Perry files Al2O3 under 39377-45-2 (a PubChem ionic entry) and CRC under 1344-28-1. Both CAS are in the identifier databases, so both entries stay in `inorganic/Al/Al2O3-electrocorundum.json` (named after 1344-28-1, the lower CAS). Both appear in `index.json` `byFormula.Al2O3`, and the report lists them in `sharedFormulas`. The JANAF CAS index gives 1344-28-1 for all six Al2O3 tables, so only that record has `janaf`.
 
@@ -357,7 +395,7 @@ Perry files Al2O3 under 39377-45-2 (a PubChem ionic entry) and CRC under 1344-28
 - Rows used from other tables are cited the same way: `tcRef` (DIPPR 114 Tc from Yaws) and `rangeRef` (VDI liquid Tm/Tc).
 - The identifiers (formula, MW, SMILES) carry `identifierRef: [line, fileKey]` (the identifier databases have no RefKey).
 - `sources.json` maps each file key (`TableSpec.key` in `constants/source_tables.py`) to the table name, repo path, RefKey and file URL pinned to the commit in `PROVENANCE.txt`. The row URL is `lineUrl` = `{url}#L{line}`.
-- Per-row details sit next to `ref`: `variant` (polymorph from a CRC label such as `Aluminum oxide (α)`, or the Perry 2-151 subphase, `glass` for Perry `gls` rows), `error` (Perry %, footnoted cells stay text such as `"1a"`), `dataType` and `uncertainty` (Zabransky).
+- Per-row details sit next to `ref`: `variant` (polymorph from a CRC label such as `Aluminum oxide (α)`, or the Perry 2-151 subphase, `glass` for Perry `gls` rows), `error` (Perry %, footnoted cells stay text such as `"1a"`; White ± %), `dataType` and `uncertainty` (Zabransky), `potential`, `basis`, `citation`, `TminK` and `originalRef` (transport parameters; `originalRef` is the RefKey White took the table from).
 - The build report keeps the full form (table, label, line, URL) for every conflict and issue.
 
 `ChemicalsSource` builds the URLs as `{repository}/blob/{commit}/{path}#L{line}`, with the path percent-encoded. If `PROVENANCE.txt` has no commit, it falls back to `master` and logs a warning, the same rule as `JanafSource`.
@@ -434,7 +472,7 @@ The chemicals identifier files are a partial PubChem sample: 3,976 CAS numbers o
 
 `index.json` holds:
 - `generatedAt`, `count` and `equationTypes`;
-- `compounds`, keyed by record id (the CAS, or `formula:<F>`), one entry per compound with its location (`file`, `hill`, `entry`: the record is at `file` → `entries[entry]`), `displayFormula`, `formula` when it differs from `hill`, name, class, group, families, refs (with `NISTJANAF` when it has JANAF ids, `NASA7` / `NASA9` when it has NASA keys), which properties and equation phases it has, `janaf`, `nasa7`, `nasa9` and `otherCas`; null and empty fields are left out;
+- `compounds`, keyed by record id (the CAS, or `formula:<F>`), one entry per compound with its location (`file`, `hill`, `entry`: the record is at `file` → `entries[entry]`), `displayFormula`, `formula` when it differs from `hill`, name, class, group, families, refs (with `NISTJANAF` when it has JANAF ids, `NASA7` / `NASA9` when it has NASA keys), which properties and equation phases it has, the properties of its `transport` block, `janaf`, `nasa7`, `nasa9` and `otherCas`; null and empty fields are left out;
 - the lookups `byFormula`, `byElement` (sorted keys), `byFamily` and `byOtherCas` (moved CAS → record id).
 
 It holds no property values.
@@ -455,6 +493,7 @@ It holds no property values.
 - `zabranskyNoCas` (Pentaethoxyuranium, given an identity by `IDENTITY_OVERRIDES`) and `zabranskySplineSplit`;
 - `equationIssues`: non-positive or non-finite values at `min`, `max` or 298.15 K, `maxAtOrAboveTc` for `dipprN114` and `zabranskyQuasiPolynomial`, and formulas that cannot be evaluated. Zeros at T ≥ Tc are expected for `ppds12` and `dipprN106` and are not reported;
 - `checks`: one check point per equation (mid-range, else 298.15 K) with the `evaluate_equation` value, for the backend implementation of the planned types;
+- `transportMixtureSkipped` (Mamedov benzene mixture rows), `transportInteractionNoRecord` (a pair species whose CAS has no record), `transportUnknownTable`, and the counts `transportEntries`, `transportRecords` (records with a `transport` block) and `transportInteractions`;
 - the JANAF sections listed in [JANAF table ids](#janaf-table-ids) and the NASA sections listed in [NASA species keys](#nasa-species-keys).
 
 ---
@@ -486,8 +525,8 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
   - `organic_family.py` `OrganicFamilyClassifier` with `constants/organic_families.py` `ORGANIC_FAMILIES` and `UNCLASSIFIED` (RDKit; not imported by the package `__init__`, so `pubchem` and `janaf` do not load RDKit), and `formula_family.py` `formula_family` (family from the formula alone, no RDKit; used by the merger, the JANAF-only records and the JANAF placement).
 - **`dataset_layout/`**, the folder and file layout shared with the JANAF dataset: `compound_file_name.py` `compound_file_name` / `name_slug`, `unique_file_paths.py` `unique_file_paths` (case-insensitive collisions), `clear_dataset_dir.py` `clear_dataset_dir`.
 - **`chemicals_tables/`**, the CalebBell/chemicals tables → source entries:
-  - models: `source_link.py` `SourceLink`, `property_value.py` `PropertyValue`, `equation_value.py` `EquationValue` (type, ref, vars, min, max, k, source, raw), `raw_value.py` `RawValue`, `source_entry.py` `SourceEntry` (one parsed value before merging), `identifier.py` `Identifier`, `table_spec.py` `TableSpec`, `coefficient_spec.py` `CoefficientSpec` (columns mapped to vars, type, k, property, phase, Tmin/Tmax columns, ref), `property_column.py`, `chemicals_source.py` `ChemicalsSource` (whose `file_url(path, line)` percent-encodes the path);
-  - constants: `constants/equation_type.py` `EquationType` (a StrEnum with the existing `equation-type.dto.ts` values plus the planned ones), `constants/planned_equation_types.py` `PLANNED_EQUATION_TYPES` (dipprN114, trcCp, shomate, zabranskySpline, zabranskyQuasiPolynomial, dipprN101, ppds9, ppds10, ppds12, dipprN106, wagner25), `constants/source_tables.py` `SOURCE_TABLES`, `constants/coefficient_tables.py` `COEFFICIENT_TABLES` (Poling, Perry 2-153 DIPPR 100/114, 2-312, 2-313, 2-314, TRC), `constants/gas_constant.py` `GAS_CONSTANT`, `constants/identity_overrides.py` `IDENTITY_OVERRIDES`;
+  - models: `source_link.py` `SourceLink`, `property_value.py` `PropertyValue`, `equation_value.py` `EquationValue` (type, ref, vars, min, max, k, source, raw), `raw_value.py` `RawValue`, `transport_value.py` `TransportValue` (Svehla methods, match temperature), `source_entry.py` `SourceEntry` (one parsed value before merging), `identifier.py` `Identifier`, `table_spec.py` `TableSpec`, `coefficient_spec.py` `CoefficientSpec` (columns mapped to vars, type, k, property, phase, Tmin/Tmax columns, ref), `property_column.py`, `chemicals_source.py` `ChemicalsSource` (whose `file_url(path, line)` percent-encodes the path);
+  - constants: `constants/equation_type.py` `EquationType` (a StrEnum with the existing `equation-type.dto.ts` values plus the planned ones), `constants/planned_equation_types.py` `PLANNED_EQUATION_TYPES` (dipprN114, trcCp, shomate, zabranskySpline, zabranskyQuasiPolynomial, dipprN101, ppds9, ppds10, ppds12, dipprN106, wagner25, sutherland, powerLaw), `constants/source_tables.py` `SOURCE_TABLES`, `constants/coefficient_tables.py` `COEFFICIENT_TABLES` (Poling, Perry 2-153 DIPPR 100/114, 2-312, 2-313, 2-314, TRC), `constants/gas_constant.py` `GAS_CONSTANT`, `constants/identity_overrides.py` `IDENTITY_OVERRIDES`;
   - parsers: `parsers/property_table.py` `parse_property_table`, `parsers/coefficient_table.py` `parse_coefficient_table`, `parsers/perry_151.py` `parse_perry_151` (linearHyperbolic or quadratic per row), `parsers/crc_molten_density.py` `parse_crc_molten_density`, `parsers/shomate_json.py` `parse_shomate_json` (per-phase `ranges`, line of each CAS key), `parsers/zabransky.py` `parse_zabransky` (spline rows per CAS and data type → one piecewise equation; quasi-polynomial rows → single equations), `parsers/vdi_ppds.py` `parse_vdi_ppds` (8 files, liquid ranges from the VDI Tm/Tc rows), `parsers/identifiers.py` `load_identifiers`, `parsers/provenance.py` `read_chemicals_source`, `parsers/tsv_reader.py`, `parsers/number.py` (integers stay integers), `parsers/cas.py`;
   - logic: `source_entries.py` `parse_source_entries` (all parsers + identity overrides), `identity_override.py` `IdentityOverride`, `identity_resolver.py` `apply_identity_overrides`, `label_variant.py` `label_variant` (trailing `(...)` of a source label), `report_issue.py`;
   - `equation_eval.py` `evaluate_equation`, a Python copy of the backend `calculate` formulas for existing and planned types. It clamps T to min/max when they are set, then applies `k`. It is used by the tests and the sanity report, and is the reference for the next step's TypeScript methods.
@@ -497,19 +536,20 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
   - `parsers/cas_list.py` `read_cas_list`, `parsers/pubchem_cache.py` `read_pubchem_cache`, `pubchem_cache_writer.py` `write_pubchem_cache`;
   - `constants/pubchem.py` (API, properties, cache path and columns, statuses, pacing).
 - **`compound_data/`**, merge and output (step 1):
-  - `builder.py` `build_compound_data` (parse → identifiers → merge → checks → JANAF → NASA; `BuildResult.missing_cas`, `BuildResult.nasa`);
+  - `builder.py` `build_compound_data` (parse → identifiers → merge → checks → JANAF → NASA → interaction ids; `BuildResult.missing_cas`, `BuildResult.nasa`, `BuildResult.transport_tables`, `BuildResult.interactions`);
+  - `parsers/transport_parameters.py` `parse_transport_parameters` with `constants/transport_source.py` (`TRANSPORT_TABLES`, `ORIGINAL_REFS`, `TRANSPORT_COLUMNS`, `POTENTIALS`), see [Transport parameters](#transport-parameters);
   - `merger.py` `merge_compounds` (with the detach and unidentified rules), `compound_record.py` `CompoundRecord`, `formula_override.py` with `constants/formula_overrides.py` `FORMULA_OVERRIDES`, `constants/source_priority.py` `SOURCE_PRIORITY`, `class_override.py` `ClassOverride` with `constants/class_overrides.py` `CLASS_OVERRIDES`;
   - `pubchem_identifiers.py` `load_pubchem_identifiers` (cache rows → `Identifier`), `constants/pubchem_source.py` (`PUBCHEM_TABLE`, `MISSING_CAS_FILE`);
   - `janaf_links.py` `attach_janaf`, `parsers/janaf_cas_index.py` `read_janaf_cas_index`, `constants/janaf_cas_index.py` `JANAF_CAS_INDEX`;
   - `nasa_links.py` `attach_nasa`, `nasa7_species`, `nasa9_species` (`NasaSpecies`: key, elements, phase, H°(298.15) of the fit), `constants/nasa_source.py` (file names, datasets, `HF_TOLERANCE`, `HF_TOLERANCE_SINGLE`);
   - `equation_check.py` `check_equations`;
   - `compound_file.py` `CompoundFile`, `compound_files.py` `compound_files` (records → files, see [File layout](#file-layout)), `compound_units.py` `compound_units` with `constants/units.py`;
-  - `writers.py` `write_compound_json`, `write_unresolved`, `write_compound_index`, `write_compound_units`, `write_compound_sources` and `write_missing_cas`, following the pattern of [janaf/writers.py](../../python/src/janaf/writers.py), with `allow_nan=False`.
+  - `writers.py` `write_compound_json`, `write_unresolved`, `write_compound_index`, `write_compound_units`, `write_compound_sources`, `write_interactions` and `write_missing_cas`, following the pattern of [janaf/writers.py](../../python/src/janaf/writers.py), with `allow_nan=False`.
 - **Equation property names:** heatCapacity, viscosity, thermalConductivity, density, enthalpyVaporization, surfaceTension and vaporPressure. The VDI enthalpy of vaporization, surface tension and vapor pressure are stored under the `liquid` phase.
 
 ### CLI and Make
 
-- CLI `python/src/scripts/build_compound_data.py`, with arguments `--source-dir`, `--janaf-dir`, `--no-janaf`, `--nasa-dir` (default `shared/sources/NASA`), `--no-nasa`, `--pubchem-cache`, `--no-pubchem`, `--out-dir` (cleared after a successful build, before writing), `--report-dir` and `-v`.
+- CLI `python/src/scripts/build_compound_data.py`, with arguments `--source-dir`, `--janaf-dir`, `--no-janaf`, `--nasa-dir` (default `shared/sources/NASA`), `--no-nasa`, `--pubchem-cache`, `--no-pubchem`, `--transport-file` (default `shared/sources/transport-parameters.json`), `--no-transport`, `--out-dir` (cleared after a successful build, before writing), `--report-dir` and `-v`.
 - CLI `python/src/scripts/fetch_pubchem_identifiers.py`, with arguments `--cas-file` (default `reports/compound-data/missing-cas.txt`), `--cache`, `--retry STATUS...`, `--limit`, `--delay`, `--save-every` and `-v`; exit code 2 when PubChem blocks or stays busy, 130 on Ctrl+C.
 - Make file `scripts/make.d/11-compound-data.mk`, with targets `compound-data-build` (step 1), `compound-data-pubchem` (step 2, then step 1 again) and `compound-data-test` (all five test folders).
 
@@ -524,6 +564,8 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
   - `[40] TRC1994`: *Thermodynamics of Organic Compounds in the Gas State*, TRC/CRC 1994. Chemicals cites Kabo and Roganov, Vol. II; confirm the authors against the book.
   - `[41] VDI2010`: VDI Heat Atlas, 2nd ed., Springer 2010, PPDS coefficients.
   - `[42] Magalhaes2013`: Magalhães, Lito, Da Silva, Silva, J. Supercrit. Fluids 76 (2013) 94–114, Lennard-Jones σ and ε/k from viscosity data (`MagalhaesLJ.tsv`).
+  - `[43] Svehla1962` (NASA TR R-132, the original of White Table A-7), `[44] Itean1961` (NASA TN D-481, Stockmayer force constants), `[45] Svehla1995` (NASA TM-4647, Table I) and `[46] Mamedov2014` (Mamedov & Somuncu, Lennard-Jones parameters from second virial coefficients): the transport parameters.
+  - `White3` [20]: Tables 1-2, 1-3, A-6 and A-7.
 - **Existing references to extend:**
   - `Perry8` [34]: add Tables 2-151, 2-153 (DIPPR 100 and 114) and 2-313.
   - `Poling5` [7]: mention the chemicals copy of the databank and the Lennard-Jones table (Appendix B, `PolingLJ.tsv`).
@@ -556,7 +598,8 @@ One folder per package: `python/tests/chemical_formula/` (formulas, classes, mai
   - `volume_VDI_PPDS(300, 126.19, 313, ...) = 313.0`;
   - `PPDS12`;
   - `EQ106`;
-  - `Wagner`.
+  - `Wagner`;
+  - `sutherland` and `powerLaw` for White's air row (μ(400 K) ≈ 2.29e-5 Pa s, y0 at T0, clamping).
 - **Ranges:**
   - A Shomate entry with 2 ranges picks the right range.
   - A VDI liquid entry takes Tm/Tc from the cited row.
@@ -588,7 +631,8 @@ One folder per package: `python/tests/chemical_formula/` (formulas, classes, mai
   - Every `ref`, `identifierRef`, `tcRef` and `rangeRef` names a file key listed in `sources.json`, with the same RefKey.
   - `sources.json` has `repository`, `sourceCommit`, `sourceTree`, unique file keys and `%20`-encoded URLs pinned to the commit.
   - Provenance parsing reads the repository and commit, and falls back to `master` with a warning.
-- **Lennard-Jones** (`chemicals_tables/test_parsers.py`): Poling and Magalhães rows give collisionDiameter 3.758e-10 m (exact after scaling) and epsilonToKb with `[Poling5, line, "polingLJ"]` / `[Magalhaes2013, line, "magalhaesLJ"]`.
+- **Lennard-Jones** (`chemicals_tables/test_parsers.py`): Poling and Magalhães rows give collisionDiameter 3.758e-10 m (exact after scaling) and epsilonToKb with `potential: "lennardJones"` and `[Poling5, line, "polingLJ"]` / `[Magalhaes2013, line, "magalhaesLJ"]`.
+- **Transport parameters** (`compound_data/test_transport_parameters.py`, fixture file with one row per kind): row lines point at the row's `{`; White power law and Sutherland with range, `error` and `originalRef`; Table A-6 from the SI columns without range; A-7, TN D-481 and Mamedov values in SI with `potential` / `basis`, the mixture row reported; Svehla pure rows → `TransportValue` (σ in m, `epsilonToKb`) plus potential properties with `citation` and `TminK`, pairs and electron rows → interactions; interaction ids by CAS and `otherCas` with `transportInteractionNoRecord`; the committed file parses with every table known and valid CAS check digits. `test_writers.py`: the record `transport` block, index `transport`, `interactions.json`, the transport keys in `sources.json` (every ref resolves) and the transport units.
 - **NASA keys** (`test_nasa_links.py`): CO2 with a wrong ΔfH° reported and `CO2#2` linked, gas and liquid keys checked against their own phase, an isomer picked by ΔfH°, two agreeing organic records ambiguous, the 20 kJ/mol tolerance for inorganic and single candidates (not for radical isomers), name suffixes (`n-butane` / `isobutane`, truncated `n-octa`, `tr2-butene`), deuterated records skipped, unchecked links (inorganic without ΔfH° yes, numbered duplicates and organic isomers no), ions / electron / D / `Air` / unparsed keys skipped, a formula without record, H°(298.15) of NASA-7 and NASA-9 CH4 fits (−74.6 kJ/mol), record and index fields, refs, the `sources.json` `nasa` block and a missing NASA folder.
 - **JANAF ids** (`test_janaf_links.py`): CAS match to one record, formula fallback onto every record, CAS formula mismatch, new records (with the CSV CAS or `formula:<Hill>`), ions and deuterium skipped, `Mo1O2.750`, CSV Hill normalisation, the builder reading a JANAF copy, and the `sources.json` `janaf` block.
 
@@ -619,5 +663,6 @@ One folder per package: `python/tests/chemical_formula/` (formulas, classes, mai
    - `inorganic/Al/Al-aluminum.json` `entries` has only `7429-90-5`, with `otherCas: ["3303-34-2"]` and the Perry solid/liquid Cp; with the current PubChem cache (1,207 CAS) the report has 23 `unknownCasMoved` and 84 `unknownCasKept` (15,802 records in 15,707 files).
    - Methane `74-82-8` has `collisionDiameter` 3.758e-10 m (Poling) and 3.58484e-10 m (Magalhães); 327 records have Lennard-Jones values.
    - NASA keys: methane `["CH4"]` in both; water `["H2O", "H2O(L)", "H2O(s)"]`; n-butane / isobutane get `C4H10,n-butane` / `C4H10,isobutane`; carbon dioxide has NASA-7 `CO2` and no NASA-9 key, oxygen no NASA-9 key, benzene NASA-9 only `C6H6(L)` (the NASA-9 `CO2`, `O2`, `C6H6` are in `nasa9HfMismatch`). Counts: NASA-7 932 species → 660 records (712 unchecked), NASA-9 1,706 → 1,152 (861 unchecked); 4 / 121 ambiguous, 10 / 369 ΔfH° mismatches.
-   - `sources.json` lists 31 file keys, the `janaf` and the `nasa` blocks; `units.json` has every property of the index; no compound file has `generatedAt`, `units`, `tables` or `source` blocks.
+   - Transport: 423 entries, 64 records with a `transport` block, 45 interactions (19 with a `null` id: electron, ions, H6F6), 4 `transportMixtureSkipped`. Nitrogen `7727-37-9` has gas viscosity `powerLaw` (y0 1.663e-5, n 0.67, 220–1500 K, `error: 3`) and `sutherland` (S 107, 100–1500 K), `transport.viscosity` with `matchTemperatureK: 2200`, and a `correspondingStates` `rhoStar` 0.108; argon has White A-7 σ 3.542e-10 m (`originalRef: Svehla1962`) and Mamedov σ 3.4e-10 m (`basis: secondVirial`).
+   - `sources.json` lists 39 file keys (with the 7 transport keys), the `janaf` and the `nasa` blocks; `units.json` has every property of the index; no compound file has `generatedAt`, `units`, `tables` or `source` blocks.
    - A second build leaves no stale files (the output folder is cleared first).

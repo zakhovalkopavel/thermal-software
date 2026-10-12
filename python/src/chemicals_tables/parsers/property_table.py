@@ -34,7 +34,8 @@ def parse_property_table(source_dir: Path, table: TableSpec, chem: ChemicalsSour
                 cas=cas, formula=formula, label=label, property=prop.property,
                 value=PropertyValue(
                     value=float(f"{value * prop.scale:.12g}") if prop.scale != 1.0 else value,
-                    ref=table.ref, source=chem.link(table, line, label, variant=label_variant(label)),
+                    ref=table.ref,
+                    source=chem.link(table, line, label, variant=label_variant(label), **dict(prop.extra)),
                     phase=prop.phase,
                 ),
             ))

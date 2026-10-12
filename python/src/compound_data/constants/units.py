@@ -20,3 +20,21 @@ EQUATION_UNITS: dict[str, str] = {
     "vaporPressure": "Pa",
 }
 """Result unit of each equation property (after ``k``); equations take T in ``TEMPERATURE_UNIT``."""
+
+TRANSPORT_UNITS: dict[str, str] = {
+    "sigma": "m",
+    "epsilonToKb": "K",
+    "delta": "1",
+    "alpha": "1",
+    "rhoStar": "1",
+    "V0Star": "1",
+    "AStar": "1",
+    "Z": "1",
+    "TminK": "K",
+    "TmaxK": "K",
+    "prandtlCalculatedToK": "K",
+    "ratioFixedAboveK": "K",
+    "matchTemperatureK": "K",
+    "electronPressureAtm": "atm",
+}
+"""Units of the numeric fields of ``transport`` methods (records) and ``interactions.json``."""

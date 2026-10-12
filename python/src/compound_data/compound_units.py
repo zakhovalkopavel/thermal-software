@@ -9,7 +9,8 @@ from typing import Any
 
 from chemicals_tables.constants.coefficient_tables import COEFFICIENT_TABLES
 from chemicals_tables.constants.source_tables import SOURCE_TABLES
-from compound_data.constants.units import EQUATION_UNITS, MOLAR_MASS_UNIT, TEMPERATURE_UNIT
+from compound_data.constants.transport_source import TRANSPORT_COLUMNS
+from compound_data.constants.units import EQUATION_UNITS, MOLAR_MASS_UNIT, TEMPERATURE_UNIT, TRANSPORT_UNITS
 
 
 def property_units() -> dict[str, str]:
@@ -17,6 +18,7 @@ def property_units() -> dict[str, str]:
     units: dict[str, str] = {}
     columns = [c for t in SOURCE_TABLES.values() for c in t.columns.values()]
     columns += [c for spec in COEFFICIENT_TABLES for c in spec.scalars.values()]
+    columns += list(TRANSPORT_COLUMNS.values())
     for column in columns:
         known = units.setdefault(column.property, column.unit)
         if known != column.unit:
@@ -31,4 +33,5 @@ def compound_units() -> dict[str, Any]:
         "temperature": TEMPERATURE_UNIT,
         "properties": property_units(),
         "equations": EQUATION_UNITS,
+        "transport": TRANSPORT_UNITS,
     }

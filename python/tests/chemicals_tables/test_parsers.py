@@ -336,10 +336,12 @@ class TestPropertyTable:
         sigma = next(e for e in poling if e.property == "collisionDiameter")
         assert sigma.value.value == 3.758e-10
         assert (sigma.formula, sigma.label) == ("CH4", "methane")
-        assert sigma.value.to_dict() == {"value": 3.758e-10, "ref": ["Poling5", 2, "polingLJ"]}
+        assert sigma.value.to_dict() == {"value": 3.758e-10, "potential": "lennardJones",
+                                         "ref": ["Poling5", 2, "polingLJ"]}
         magalhaes = parse_property_table(source, SOURCE_TABLES["Magalhaes Lennard-Jones"], chem)
         eps = next(e for e in magalhaes if e.property == "epsilonToKb")
-        assert eps.value.to_dict() == {"value": 167.15, "ref": ["Magalhaes2013", 2, "magalhaesLJ"]}
+        assert eps.value.to_dict() == {"value": 167.15, "potential": "lennardJones",
+                                       "ref": ["Magalhaes2013", 2, "magalhaesLJ"]}
         assert next(e for e in magalhaes if e.property == "collisionDiameter").value.value == 3.58484e-10
 
 

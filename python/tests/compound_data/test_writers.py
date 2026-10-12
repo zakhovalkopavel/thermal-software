@@ -15,12 +15,16 @@ from chemicals_tables.identifier import Identifier
 from chemicals_tables.property_value import PropertyValue
 from chemicals_tables.raw_value import RawValue
 from chemicals_tables.source_entry import SourceEntry
+from chemicals_tables.source_link import SourceLink
+from chemicals_tables.transport_value import TransportValue
 from compound_data.compound_files import compound_files
+from compound_data.constants.transport_source import TRANSPORT_FILE, TRANSPORT_TABLES
 from compound_data.compound_units import compound_units, property_units
 from compound_data.constants.units import EQUATION_UNITS
 from compound_data.merger import merge_compounds
 from compound_data.writers import (
-    write_compound_index, write_compound_json, write_compound_sources, write_compound_units, write_unresolved,
+    write_compound_index, write_compound_json, write_compound_sources, write_compound_units, write_interactions,
+    write_unresolved,
 )
 from references import RefKey
 
@@ -292,7 +296,83 @@ class TestLayout:
         ]
 
 
+class TestTransport:
+    @pytest.fixture
+    def transport_out(self, tmp_path, chem, classifier):
+        svehla, white = TRANSPORT_TABLES["svehla1995-table-1"], TRANSPORT_TABLES["white-table-a-7"]
+
+        def link(spec, line, **extra):
+            return SourceLink(table=spec.name, key=spec.key, url=spec.path, ref=spec.ref, line=line, label="N2",
+                              extra=extra)
+
+        entries = [
+            SourceEntry("7727-37-9", "N2", "N2", "viscosity", TransportValue(
+                RefKey.Svehla1995, [{"method": "experimental", "TmaxK": 2200}], link(svehla, 40),
+                match_temperature=2200,
+            )),
+            SourceEntry("7727-37-9", "N2", "N2", "collisionDiameter", PropertyValue(
+                3.798e-10, RefKey.White3, link(white, 12, potential="lennardJones", originalRef="Svehla1962"),
+            )),
+        ]
+        ids = {"7727-37-9": Identifier("7727-37-9", "N2", 28.0134, "N#N", None, "nitrogen",
+                                       chem.link(SOURCE_TABLES["Inorganic db"], 3, "nitrogen"))}
+        records = list(merge_compounds(entries, ids, classifier).records.values())
+        paths, index = _write_all(records, tmp_path)
+        interactions = [{"species": ["CH4", "O2"], "ids": ["74-82-8", None], "cas": ["74-82-8", "7782-44-7"],
+                         "property": "diffusion", "methods": [{"method": "exp6"}],
+                         "ref": ["Svehla1995", 70, "svehla1995T1"]}]
+        write_interactions(tmp_path, interactions, GENERATED)
+        sources = write_compound_sources(tmp_path, chem, GENERATED, transport_tables=TRANSPORT_TABLES.values())
+        return tmp_path, paths, index, sources
+
+    def test_record_transport_block(self, transport_out):
+        out, _, _, _ = transport_out
+        n2 = _read(out, "inorganic/N/N2-nitrogen.json")["entries"]["7727-37-9"]
+        assert n2["transport"] == {"viscosity": [{
+            "methods": [{"method": "experimental", "TmaxK": 2200}], "matchTemperatureK": 2200,
+            "ref": ["Svehla1995", 40, "svehla1995T1"],
+        }]}
+        assert n2["properties"]["collisionDiameter"] == [{
+            "value": 3.798e-10, "potential": "lennardJones", "originalRef": "Svehla1962",
+            "ref": ["White3", 12, "whiteA7"],
+        }]
+
+    def test_index_lists_transport(self, transport_out):
+        _, _, index, _ = transport_out
+        entry = json.loads(index.read_text(encoding="utf-8"))["compounds"]["7727-37-9"]
+        assert entry["transport"] == ["viscosity"]
+        assert entry["refs"] == ["Svehla1995", "White3"]
+
+    def test_interactions_file(self, transport_out):
+        out, _, _, _ = transport_out
+        data = _read(out, "interactions.json")
+        assert (data["generatedAt"], data["count"]) == (GENERATED, 1)
+        assert data["interactions"][0]["ids"] == ["74-82-8", None]
+
+    def test_sources_list_transport_keys(self, transport_out):
+        out, paths, _, sources = transport_out
+        files = json.loads(sources.read_text(encoding="utf-8"))["files"]
+        assert len(files) == len(SOURCE_TABLES) + len(TRANSPORT_TABLES)
+        assert files["svehla1995T1"] == {"name": "Svehla 1995 Table I", "path": TRANSPORT_FILE,
+                                         "ref": "Svehla1995", "url": None}
+        refs = [r for path in paths for r in _all_refs(json.loads(path.read_text(encoding="utf-8")))]
+        refs += [i["ref"] for i in _read(out, "interactions.json")["interactions"]]
+        for *ref_key, _, key in refs:
+            assert key in files and ref_key == ([files[key]["ref"]] if files[key]["ref"] else [])
+
+    def test_transport_keys_are_unique(self):
+        keys = [t.key for t in SOURCE_TABLES.values()] + [t.key for t in TRANSPORT_TABLES.values()]
+        assert len(keys) == len(set(keys))
+
+
 class TestUnits:
+    def test_transport_units(self):
+        data = compound_units()
+        assert data["properties"]["collisionDiameter"] == "m"
+        assert data["properties"]["dipoleMoment"] == "C m"
+        assert data["properties"]["stockmayerDelta"] == "1"
+        assert data["transport"]["sigma"] == "m" and data["transport"]["TminK"] == "K"
+
     def test_units_file(self, written):
         out, _, _, _ = written
         data = _read(out, "units.json")

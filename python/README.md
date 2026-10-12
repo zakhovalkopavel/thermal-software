@@ -51,7 +51,7 @@ python/
 │   ├── chemical_formula/ # formula parsing, Hill and IUPAC formulas, main element, inorganic/organic class (formula and RDKit bond rules), RDKit families
 │   ├── dataset_layout/   # compound file names, collision handling, output folder clearing (compound-data + JANAF)
 │   ├── chemicals_tables/ # CalebBell/chemicals tables → source entries (one export per file)
-│   │   ├── *.py                 # models (SourceLink, PropertyValue, EquationValue, SourceEntry, Identifier, ...)
+│   │   ├── *.py                 # models (SourceLink, PropertyValue, EquationValue, TransportValue, SourceEntry, Identifier, ...)
 │   │   ├── source_entries.py    # parse_source_entries (all parsers + identity overrides)
 │   │   ├── equation_eval.py     # evaluate_equation (backend calculate, existing + planned types)
 │   │   ├── constants/           # tables, coefficient layouts, equation types, identity overrides
@@ -60,14 +60,14 @@ python/
 │   ├── compound_data/    # source entries → compound JSON (one export per file)
 │   │   ├── __init__.py          # Public API re-exports
 │   │   ├── merger.py            # merge_compounds (by CAS, formula resolution, detach)
-│   │   ├── builder.py           # build_compound_data (parsers → merge → checks → JANAF ids)
+│   │   ├── builder.py           # build_compound_data (parsers → merge → checks → JANAF ids → interaction ids)
 │   │   ├── pubchem_identifiers.py  # PubChem cache rows → identifiers
 │   │   ├── janaf_links.py       # attach_janaf (JANAF table ids by CAS, then Hill formula)
 │   │   ├── compound_files.py    # compound_files (records → one file per inorganic formula / organic compound)
 │   │   ├── compound_units.py    # compound_units (units.json content)
-│   │   ├── writers.py           # compound files, unresolved.json, index.json, units.json, sources.json, missing-cas.txt
-│   │   ├── constants/           # formula overrides, class overrides, source priority, PubChem table, units
-│   │   └── parsers/             # JANAF CAS index
+│   │   ├── writers.py           # compound files, unresolved.json, index.json, units.json, sources.json, interactions.json, missing-cas.txt
+│   │   ├── constants/           # formula overrides, class overrides, source priority, PubChem table, transport tables, units
+│   │   └── parsers/             # JANAF CAS index, transport-parameters.json
 │   ├── phase_diagrams/   # Slag Atlas / NSRDS-NBS 61 phase-diagram extraction (one export per file)
 │   │   ├── __init__.py       # Public API re-exports
 │   │   ├── constants/  models/  config/      # constants, dataclasses, configs + source registry
@@ -94,7 +94,7 @@ python/
     ├── dataset_layout/   # File name, collision and clearing tests
     ├── chemicals_tables/ # Chemicals table parser tests (fixtures from real chemicals rows, shared)
     ├── pubchem/          # PubChem client (throttling, pauses), results, cache tests
-    ├── compound_data/    # Merge, writers, JANAF links, PubChem identifiers tests
+    ├── compound_data/    # Merge, writers, JANAF links, PubChem identifiers, transport parameters tests
     ├── phase_diagrams/   # Phase-diagram extraction tests (synthetic images, golden files)
     └── ocr/              # OCR module tests
         ├── test_coordinate_parsing.py
@@ -174,13 +174,13 @@ make janaf-test                   # run unit tests (janaf + dataset_layout)
 
 ### Compound Data (`src/chemical_formula/`, `src/chemicals_tables/`, `src/pubchem/`, `src/dataset_layout/`, `src/compound_data/`)
 
-Merges the CRC, Perry, Poling, Yaws, TRC, Zabransky, NIST WebBook Shomate and VDI PPDS tables from CalebBell/chemicals into one record per CAS. Inorganic compounds go to `inorganic/<main element>/`, one file per formula holding all its CAS entries (Al₂O₃ → `inorganic/Al/Al2O3-electrocorundum.json`, TiO₂ → `inorganic/Ti/TiO2-titanium-dioxide.json`, NH₃ → `inorganic/N/NH3-ammonia.json`); the main element is the metal, else the least electronegative element, ignoring O and H. Inorganic files are named with the IUPAC formula (`displayFormula`: TiF4, ZnB4O9, HNO3); `hill` stays the lookup key. Organic compounds go to `organic/<family>/`, one file per compound (`organic/alcohols/C2H6O-ethanol.json`), by RDKit SMARTS family. A carbon compound is organic when its structure has a C–H or C–halogen bond (or, without a metal, a C–C bond, a C–NH bond or a carbon ring), with a few CAS overrides (HCN inorganic) and a formula fallback for compounds without SMILES; those also get the family their formula alone fixes (halocarbons → `halogenated`, CnH2n+2 → `alkanes`). Every coefficient row is a backend `EquationValue` (`{type, ref, vars, min, max, k}`); types the backend does not implement yet are marked `planned` in `index.json` and never become `def`. Every value cites its source row as `ref: [RefKey, line, fileKey]`; `sources.json` maps the file keys to the files at the pinned chemicals commit. The build also parses the NIST-JANAF copy (`janaf` package) and lists the matching JANAF table ids in each record (`janaf`). It also parses the NASA-7 / NASA-9 sources (`nasa_thermo` package) and lists the matching species keys (`nasa7`, `nasa9`, all phases), matched by Hill formula and name suffix and checked by ΔfH°(298.15) against the record, so a key that names another species (NASA-9 `CO2`, `O2`, `C6H6`) stays off. Lennard-Jones σ and ε/k come from the Poling and Magalhães tables (`collisionDiameter` in m, `epsilonToKb` in K). The build is offline and writes the CAS numbers that the chemicals identifier files miss (`missing-cas.txt`); a separate, slow second step (`make compound-data-pubchem`, `pubchem` package) looks them up in PubChem into a local cache, pacing itself by PubChem's throttling header and stopping when PubChem refuses, then rebuilds. Units are in `units.json`; the JSON format is described by the backend interfaces in `backend/src/common/thermal/utils/compound-data/`.
+Merges the CRC, Perry, Poling, Yaws, TRC, Zabransky, NIST WebBook Shomate and VDI PPDS tables from CalebBell/chemicals into one record per CAS. Inorganic compounds go to `inorganic/<main element>/`, one file per formula holding all its CAS entries (Al₂O₃ → `inorganic/Al/Al2O3-electrocorundum.json`, TiO₂ → `inorganic/Ti/TiO2-titanium-dioxide.json`, NH₃ → `inorganic/N/NH3-ammonia.json`); the main element is the metal, else the least electronegative element, ignoring O and H. Inorganic files are named with the IUPAC formula (`displayFormula`: TiF4, ZnB4O9, HNO3); `hill` stays the lookup key. Organic compounds go to `organic/<family>/`, one file per compound (`organic/alcohols/C2H6O-ethanol.json`), by RDKit SMARTS family. A carbon compound is organic when its structure has a C–H or C–halogen bond (or, without a metal, a C–C bond, a C–NH bond or a carbon ring), with a few CAS overrides (HCN inorganic) and a formula fallback for compounds without SMILES; those also get the family their formula alone fixes (halocarbons → `halogenated`, CnH2n+2 → `alkanes`). Every coefficient row is a backend `EquationValue` (`{type, ref, vars, min, max, k}`); types the backend does not implement yet are marked `planned` in `index.json` and never become `def`. Every value cites its source row as `ref: [RefKey, line, fileKey]`; `sources.json` maps the file keys to the files at the pinned chemicals commit. The build also parses the NIST-JANAF copy (`janaf` package) and lists the matching JANAF table ids in each record (`janaf`). It also parses the NASA-7 / NASA-9 sources (`nasa_thermo` package) and lists the matching species keys (`nasa7`, `nasa9`, all phases), matched by Hill formula and name suffix and checked by ΔfH°(298.15) against the record, so a key that names another species (NASA-9 `CO2`, `O2`, `C6H6`) stays off. Lennard-Jones σ and ε/k come from the Poling and Magalhães tables (`collisionDiameter` in m, `epsilonToKb` in K, tagged `potential`). The hand-transcribed `shared/sources/transport-parameters.json` adds White's power-law and Sutherland fits of gas viscosity and conductivity (planned types `powerLaw`, `sutherland`), Lennard-Jones and Stockmayer parameters (White A-7, NASA TN D-481, Mamedov 2014), and Svehla 1995's transport methods: pure species as a `transport` block on the record, species pairs in `interactions.json`. The build is offline and writes the CAS numbers that the chemicals identifier files miss (`missing-cas.txt`); a separate, slow second step (`make compound-data-pubchem`, `pubchem` package) looks them up in PubChem into a local cache, pacing itself by PubChem's throttling header and stopping when PubChem refuses, then rebuilds. Units are in `units.json`; the JSON format is described by the backend interfaces in `backend/src/common/thermal/utils/compound-data/`.
 
 **Spec**: [docs/scripts/COMPOUND_DATA_SPEC.md](../docs/scripts/COMPOUND_DATA_SPEC.md)
 
-**Source files**: `shared/sources/compound-data/chemicals/` (`chemicals/<repo path>`, `dev/data/janaf/janaf_tables_index.csv`, `PROVENANCE.txt`), `shared/sources/compound-data/nist-janaf/` (optional; `--no-janaf` skips it) and `shared/sources/compound-data/pubchem/pubchem-cas.tsv` (optional; `--no-pubchem` skips it)
+**Source files**: `shared/sources/compound-data/chemicals/` (`chemicals/<repo path>`, `dev/data/janaf/janaf_tables_index.csv`, `PROVENANCE.txt`), `shared/sources/compound-data/nist-janaf/` (optional; `--no-janaf` skips it), `shared/sources/compound-data/pubchem/pubchem-cas.tsv` (optional; `--no-pubchem` skips it) and `shared/sources/transport-parameters.json` (optional; `--no-transport` skips it)
 
-**Output**: `shared/processed/compound-data/` (`inorganic/`, `organic/`, `unresolved.json`, `index.json`, `units.json`, `sources.json`; cleared before writing); report `tmp/reports/python/compound-data/report.json`
+**Output**: `shared/processed/compound-data/` (`inorganic/`, `organic/`, `unresolved.json`, `index.json`, `units.json`, `sources.json`, `interactions.json`; cleared before writing); report `tmp/reports/python/compound-data/report.json`
 
 **Make commands**:
 ```bash

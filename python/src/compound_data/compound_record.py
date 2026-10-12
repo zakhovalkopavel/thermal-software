@@ -13,6 +13,7 @@ from chemicals_tables.equation_value import EquationValue
 from chemicals_tables.property_value import PropertyValue
 from chemicals_tables.raw_value import RawValue
 from chemicals_tables.source_link import SourceLink
+from chemicals_tables.transport_value import TransportValue
 from references import RefKey
 
 
@@ -25,6 +26,8 @@ class CompoundRecord:
     table ids with the same Hill formula; the tables themselves are in ``shared/processed/JANAF/``.
     ``nasa7`` / ``nasa9`` list the species keys of ``shared/processed/NASA/nasa7.json`` / ``nasa9.json``
     (all phases) whose formula and ΔfH°(298.15) match the record (see nasa_links).
+    ``transport`` holds, per property (viscosity, thermalConductivity), how a source obtained it
+    (Svehla 1995 methods, see transport_parameters).
     ``other_cas`` are source CAS numbers whose rows were moved onto this record (unknown CAS, see merger).
     ``display_formula`` is the IUPAC element order for inorganic compounds (``iupac_formula``), else ``hill``.
     """
@@ -47,6 +50,7 @@ class CompoundRecord:
     properties: dict[str, list[PropertyValue]] = field(default_factory=dict)
     equations: dict[str, dict[str, list[EquationValue]]] = field(default_factory=dict)
     raw: list[RawValue] = field(default_factory=list)
+    transport: dict[str, list[TransportValue]] = field(default_factory=dict)
     janaf: list[str] = field(default_factory=list)
     nasa7: list[str] = field(default_factory=list)
     nasa9: list[str] = field(default_factory=list)
@@ -57,6 +61,7 @@ class CompoundRecord:
         keys = {v.ref.value for values in self.properties.values() for v in values}
         keys |= {v.ref.value for phases in self.equations.values() for values in phases.values() for v in values}
         keys |= {r.ref.value for r in self.raw}
+        keys |= {v.ref.value for values in self.transport.values() for v in values}
         if self.janaf:
             keys.add(RefKey.NISTJANAF.value)
         if self.nasa7:
@@ -93,6 +98,9 @@ class CompoundRecord:
                 for prop, phases in sorted(self.equations.items())
             },
             "raw": [r.to_dict() for r in self.raw],
+            "transport": {
+                prop: [v.to_dict() for v in values] for prop, values in sorted(self.transport.items())
+            },
             "janaf": self.janaf,
             "nasa7": self.nasa7,
             "nasa9": self.nasa9,

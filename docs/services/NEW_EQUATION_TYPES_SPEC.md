@@ -18,6 +18,10 @@ Types:
 - `ppds12`
 - `dipprN106`
 - `wagner25`
+- `sutherland`
+- `powerLaw`
+
+`sutherland` and `powerLaw` come from White, *Viscous Fluid Flow* (`White3`), not from chemicals; their test values are computed from the printed formulas.
 
 The VDI gas viscosity, gas thermal conductivity and liquid thermal conductivity polynomials use the existing `quartic` type, so they need nothing here.
 
@@ -201,6 +205,29 @@ Types without a closed-form antiderivative use `gaussLegendre20` from `backend/s
 - **Dataset:** Pa, ref `VDI2010`.
 - **Test:** `calculate(100, {Tc: 190.551, Pc: 4599200, a: -6.02242, b: 1.26652, c: -0.5707, d: -1.366}, 90.7, 190.551)` = 34415.004762637 (methane).
 
+### `sutherland`
+
+- **Source:** White, *Viscous Fluid Flow* 3e, Eqs. (1-36) and (1-44b); Tables 1-2, 1-3 and A-6 (`shared/sources/transport-parameters.json`). Gas viscosity and thermal conductivity.
+- **Vars:** `{ y0, T0, S }`: y0 = μ0 [Pa s] or k0 [W/(m K)] at T0 [K], Sutherland constant S [K]. The backend gas compounds keep their own `sutherlandParams {mu0, T0, S}`; this type is the `EquationValue` form of the same law.
+- **Formula:** y = y0·(T/T0)^1.5·(T0 + S)/(T + S)
+- **Integral (closed form):** with u = √T,
+  ∫y·dT = y0·(T0 + S)/T0^1.5 · 2·[T^1.5/3 − S·√T + S^1.5·atan(√(T/S))]
+- **Dataset:** Pa·s or W/(m K), no `k`, ref `White3`; `min/max` = the printed 2 % range (`error: 2`), `null` for Table A-6.
+- **Tests** (air, Table 1-2: y0 = 1.716e-5, T0 = 273, S = 111):
+  - `calculate(400, ..., 170, 1900)` = 2.2870392825210138e-05; `calculate(273, ...)` = y0.
+  - `integral(500) − integral(300)` = 0.004556162304455864.
+
+### `powerLaw`
+
+- **Source:** White, *Viscous Fluid Flow* 3e, Eqs. (1-35) and (1-44a); the same tables.
+- **Vars:** `{ y0, T0, n }`
+- **Formula:** y = y0·(T/T0)^n
+- **Integral (closed form):** ∫y·dT = y0·T0/(n + 1)·(T/T0)^(n + 1) (every printed n is positive).
+- **Dataset:** Pa·s or W/(m K), no `k`, ref `White3`; `min/max` = the range of the printed error, `error` = ± %; `null` for Table A-6.
+- **Tests** (air, Table 1-2: y0 = 1.716e-5, T0 = 273, n = 0.666):
+  - `calculate(400, ..., 210, 1900)` = 2.2131197548169116e-05; below 210 K it equals `calculate(210)`.
+  - `integral(500) − integral(300)` = 0.004415881357539366.
+
 ---
 
 ## Test checklist per type
@@ -234,4 +261,5 @@ Model each spec on `dippr-equation-102-method.spec.ts`:
 - Zabransky, M., Ruzicka, V., Majer, V., and Domalski, E. S., Heat Capacity of Liquids: Critical Review and Recommended Values, AIP, 1996 (`Zabransky1996`).
 - VDI Heat Atlas, 2nd ed., Springer, 2010 (`VDI2010`).
 - NIST Chemistry WebBook, Shomate coefficients (`NISTWebBook`).
+- White, F.M., Viscous Fluid Flow, 3rd ed., McGraw-Hill, 2006, Tables 1-2, 1-3, A-6 (`White3`).
 - DIPPR Project 801, equation forms 101, 106 and 114.

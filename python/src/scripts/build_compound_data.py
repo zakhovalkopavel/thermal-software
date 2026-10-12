@@ -20,6 +20,13 @@ Sources (shared/sources/NASA/)
                            nasa_thermo package; their species keys are attached to the records by Hill
                            formula and checked by ΔfH°(298.15) (keys of shared/processed/NASA/*.json)
 
+Sources (shared/sources/transport-parameters.json)
+--------------------------------------------------
+  Hand transcription of White (Viscous Fluid Flow 3e) Tables 1-2, 1-3, A-6, A-7, NASA TN D-481 Table III
+  (Stockmayer), Mamedov & Somuncu 2014 Table 1 and Svehla 1995 (NASA TM-4647) Table I:
+  power-law / Sutherland equations, σ and ε/k tagged by potential, and Svehla's transport methods
+  (the pure species on the records, the pairs in interactions.json)
+
 Sources (shared/sources/compound-data/pubchem/)
 -----------------------------------------------
   pubchem-cas.tsv        — PubChem identifiers of the CAS numbers the chemicals identifier files miss,
@@ -39,6 +46,8 @@ Output (shared/processed/compound-data/)
   units.json               — unit of every property, equation result, Mr and temperature
   sources.json             — repository, commit, license, the file keys used in ref: [RefKey, line, fileKey],
                              the JANAF URL templates and the NASA datasets of the nasa7 / nasa9 keys
+  interactions.json        — Svehla 1995 transport data of species pairs (diffusion, ions, electron),
+                             with the record ids of both species
 
 Report (tmp/reports/python/compound-data/report.json, /app/reports in the container)
 ------------------------------------------------------------------------------------
@@ -99,6 +108,11 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--no-pubchem", action="store_true", help="Do not use the PubChem identifier cache")
     p.add_argument(
+        "--transport-file", metavar="FILE", type=Path, default=Path("shared/sources/transport-parameters.json"),
+        help="Transport parameters (White, TN D-481, Mamedov 2014, Svehla 1995) (default: %(default)s)",
+    )
+    p.add_argument("--no-transport", action="store_true", help="Do not read the transport parameters")
+    p.add_argument(
         "--out-dir", metavar="DIR", type=Path, default=Path("shared/processed/compound-data"),
         help="Output directory (default: %(default)s)",
     )
@@ -122,15 +136,15 @@ def main(argv: list[str] | None = None) -> int:
     from compound_data.constants.pubchem_source import MISSING_CAS_FILE
     from compound_data.compound_files import compound_files
     from compound_data.writers import (
-        write_compound_index, write_compound_json, write_compound_sources, write_compound_units, write_missing_cas,
-        write_unresolved,
+        write_compound_index, write_compound_json, write_compound_sources, write_compound_units, write_interactions,
+        write_missing_cas, write_unresolved,
     )
     from dataset_layout.clear_dataset_dir import clear_dataset_dir
 
     try:
         result = build_compound_data(
             args.source_dir, None if args.no_janaf else args.janaf_dir, None if args.no_pubchem else args.pubchem_cache,
-            None if args.no_nasa else args.nasa_dir,
+            None if args.no_nasa else args.nasa_dir, None if args.no_transport else args.transport_file,
         )
         generated_at = datetime.now(timezone.utc).isoformat()
         files = compound_files(result.merge.records.values())
@@ -139,7 +153,9 @@ def main(argv: list[str] | None = None) -> int:
         write_unresolved(args.out_dir, result.merge.unresolved, generated_at)
         write_compound_index(files, args.out_dir, generated_at)
         write_compound_units(args.out_dir)
-        write_compound_sources(args.out_dir, result.chem, generated_at, result.janaf, result.pubchem_cache, result.nasa)
+        write_compound_sources(args.out_dir, result.chem, generated_at, result.janaf, result.pubchem_cache, result.nasa,
+                               result.transport_tables)
+        write_interactions(args.out_dir, result.interactions, generated_at)
 
         args.report_dir.mkdir(parents=True, exist_ok=True)
         report_path = args.report_dir / "report.json"

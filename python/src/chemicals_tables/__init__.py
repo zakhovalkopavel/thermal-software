@@ -4,7 +4,8 @@ chemicals_tables — Parsers of the CalebBell/chemicals data tables into source 
 Reads the CRC, Perry, Poling, Yaws, TRC, Zabransky, NIST WebBook Shomate and VDI PPDS tables and the
 identifier databases copied into ``shared/sources/compound-data/chemicals/``. Every row becomes a
 ``SourceEntry`` (CAS, formula, label, property) holding a ``PropertyValue``, a backend ``EquationValue``
-or a ``RawValue``, each citing its file row through a ``SourceLink``.
+or a ``RawValue``, each citing its file row through a ``SourceLink``. ``TransportValue`` (Svehla 1995 methods)
+is produced by the transport-parameters parser of ``compound_data``.
 
 Sub-modules
 -----------
@@ -38,6 +39,7 @@ from chemicals_tables.raw_value             import RawValue
 from chemicals_tables.source_entries        import parse_source_entries
 from chemicals_tables.source_entry          import SourceEntry
 from chemicals_tables.source_link           import SourceLink
+from chemicals_tables.transport_value       import TransportValue
 
 __all__ = [
     "ChemicalsSource",
@@ -51,4 +53,5 @@ __all__ = [
     "read_chemicals_source",
     "SourceEntry",
     "SourceLink",
+    "TransportValue",
 ]

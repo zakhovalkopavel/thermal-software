@@ -1,0 +1,4975 @@
+{
+  "$comment": "Transport-property parameters transcribed by hand from the scans in this folder. Values keep the printed units; units are given per column. Lennard-Jones σ is in Å and ε/k in K.",
+  "sources": {
+    "White2006": {
+      "refKey": "White3",
+      "citation": "White, Frank M. — Viscous Fluid Flow, 3rd ed. McGraw-Hill, New York, 2006.",
+      "files": [
+        "white p27.png",
+        "white p28.png",
+        "white p31.png",
+        "white p577.png",
+        "white p580.png"
+      ]
+    },
+    "Svehla1962": {
+      "refKey": null,
+      "citation": "Svehla, R.A. — Estimated Viscosities and Thermal Conductivities of Gases at High Temperatures. NASA TR R-132, 1962."
+    },
+    "Itean1961": {
+      "refKey": null,
+      "citation": "Itean, Eugene C.; Glueck, Alan R.; Svehla, Roger A. — Collision Integrals for a Modified Stockmayer Potential. NASA Technical Note D-481, Lewis Research Center, Cleveland, Ohio, January 1961.",
+      "files": [
+        "svehla collision.png",
+        "Collision Integrals for a Modified Stockmayer Potential (Svehla 1995).pdf"
+      ],
+      "note": "The PDF file name says 1995, but its title page reads NASA TN D-481, January 1961."
+    },
+    "Mamedov2014": {
+      "refKey": null,
+      "citation": "Mamedov, B.A.; Somuncu, E. — Analytical treatment of second virial coefficient over Lennard-Jones (2n–n) potential and its application to molecular systems. Journal of Molecular Structure 1068 (2014) 164–169.",
+      "affiliation": "Department of Physics, Faculty of Arts and Sciences, Gaziosmanpaşa University, Tokat, Turkey"
+    },
+    "Svehla1995": {
+      "refKey": null,
+      "citation": "Svehla, R.A. — Transport Coefficients for the NASA Lewis Chemical Equilibrium Program. NASA TM-4647, 1995."
+    }
+  },
+  "tables": [
+    {
+      "id": "white-table-1-2",
+      "title": "Power-law and Sutherland-law viscosity parameters for gases [Eqs. (1-35) and (1-36)]",
+      "source": "White2006",
+      "refKey": "White3",
+      "page": 28,
+      "file": "white p28.png",
+      "originalSource": {
+        "text": "Data from Hilsenrath et al. (1955).",
+        "refKey": "NBS1955"
+      },
+      "property": "viscosity",
+      "equations": {
+        "powerLaw": {
+          "label": "(1-35)",
+          "form": "mu/mu0 = (T/T0)^n"
+        },
+        "sutherland": {
+          "label": "(1-36)",
+          "form": "mu/mu0 = (T/T0)^(3/2) * (T0 + S)/(T + S)"
+        }
+      },
+      "columns": {
+        "T0": {
+          "unit": "K",
+          "description": "Reference temperature"
+        },
+        "mu0": {
+          "unit": "Pa·s",
+          "description": "Viscosity at T0 (printed as N·s/m²)"
+        },
+        "n": {
+          "unit": "1",
+          "description": "Power-law exponent, Eq. (1-35)"
+        },
+        "powerLawError": {
+          "description": "Power-law error, % (±), over the temperature range in K"
+        },
+        "S": {
+          "unit": "K",
+          "description": "Sutherland constant, Eq. (1-36)"
+        },
+        "sutherlandRange2Pct": {
+          "unit": "K",
+          "description": "Temperature range for 2% error of Eq. (1-36)"
+        }
+      },
+      "footnotes": [
+        "No data given above maximum temperature listed. Formulas inaccurate below minimum temperature listed."
+      ],
+      "rows": [
+        {
+          "gas": "Air",
+          "formula": "Air",
+          "cas": "132259-10-0",
+          "T0": 273,
+          "mu0": 1.716e-05,
+          "n": 0.666,
+          "powerLawError": {
+            "percent": 4,
+            "Tmin": 210,
+            "Tmax": 1900
+          },
+          "S": 111,
+          "sutherlandRange2Pct": {
+            "Tmin": 170,
+            "Tmax": 1900
+          }
+        },
+        {
+          "gas": "Argon",
+          "formula": "Ar",
+          "cas": "7440-37-1",
+          "T0": 273,
+          "mu0": 2.125e-05,
+          "n": 0.72,
+          "powerLawError": {
+            "percent": 3,
+            "Tmin": 200,
+            "Tmax": 1500
+          },
+          "S": 144,
+          "sutherlandRange2Pct": {
+            "Tmin": 120,
+            "Tmax": 1500
+          }
+        },
+        {
+          "gas": "CO2",
+          "formula": "CO2",
+          "cas": "124-38-9",
+          "T0": 273,
+          "mu0": 1.37e-05,
+          "n": 0.79,
+          "powerLawError": {
+            "percent": 5,
+            "Tmin": 209,
+            "Tmax": 1700
+          },
+          "S": 222,
+          "sutherlandRange2Pct": {
+            "Tmin": 190,
+            "Tmax": 1700
+          }
+        },
+        {
+          "gas": "CO",
+          "formula": "CO",
+          "cas": "630-08-0",
+          "T0": 273,
+          "mu0": 1.657e-05,
+          "n": 0.71,
+          "powerLawError": {
+            "percent": 2,
+            "Tmin": 230,
+            "Tmax": 1500
+          },
+          "S": 136,
+          "sutherlandRange2Pct": {
+            "Tmin": 130,
+            "Tmax": 1500
+          }
+        },
+        {
+          "gas": "N2",
+          "formula": "N2",
+          "cas": "7727-37-9",
+          "T0": 273,
+          "mu0": 1.663e-05,
+          "n": 0.67,
+          "powerLawError": {
+            "percent": 3,
+            "Tmin": 220,
+            "Tmax": 1500
+          },
+          "S": 107,
+          "sutherlandRange2Pct": {
+            "Tmin": 100,
+            "Tmax": 1500
+          }
+        },
+        {
+          "gas": "O2",
+          "formula": "O2",
+          "cas": "7782-44-7",
+          "T0": 273,
+          "mu0": 1.919e-05,
+          "n": 0.69,
+          "powerLawError": {
+            "percent": 2,
+            "Tmin": 230,
+            "Tmax": 2000
+          },
+          "S": 139,
+          "sutherlandRange2Pct": {
+            "Tmin": 190,
+            "Tmax": 2000
+          }
+        },
+        {
+          "gas": "H2",
+          "formula": "H2",
+          "cas": "1333-74-0",
+          "T0": 273,
+          "mu0": 8.411e-06,
+          "n": 0.68,
+          "powerLawError": {
+            "percent": 2,
+            "Tmin": 80,
+            "Tmax": 1100
+          },
+          "S": 97,
+          "sutherlandRange2Pct": {
+            "Tmin": 220,
+            "Tmax": 1100
+          }
+        },
+        {
+          "gas": "Steam",
+          "formula": "H2O",
+          "cas": "7732-18-5",
+          "T0": 350,
+          "mu0": 1.12e-05,
+          "n": 1.15,
+          "powerLawError": {
+            "percent": 3,
+            "Tmin": 280,
+            "Tmax": 1500
+          },
+          "S": 1064,
+          "sutherlandRange2Pct": {
+            "Tmin": 360,
+            "Tmax": 1500
+          }
+        }
+      ]
+    },
+    {
+      "id": "white-table-1-3",
+      "title": "Power-law and Sutherland-law thermal-conductivity parameters for gases [Eqs. (1-44a) and (1-44b)]",
+      "source": "White2006",
+      "refKey": "White3",
+      "page": 31,
+      "file": "white p31.png",
+      "originalSource": {
+        "text": "Data from White (1988).",
+        "refKey": null
+      },
+      "property": "thermalConductivity",
+      "equations": {
+        "powerLaw": {
+          "label": "(1-44a)",
+          "form": "k/k0 = (T/T0)^n"
+        },
+        "sutherland": {
+          "label": "(1-44b)",
+          "form": "k/k0 = (T/T0)^(3/2) * (T0 + S)/(T + S)"
+        }
+      },
+      "columns": {
+        "T0": {
+          "unit": "K",
+          "description": "Reference temperature"
+        },
+        "k0": {
+          "unit": "W/(m·K)",
+          "description": "Thermal conductivity at T0"
+        },
+        "n": {
+          "unit": "1",
+          "description": "Power-law exponent, Eq. (1-44a)"
+        },
+        "powerLawError": {
+          "description": "Power-law error, % (±), over the temperature range in K"
+        },
+        "S": {
+          "unit": "K",
+          "description": "Sutherland constant, Eq. (1-44b)"
+        },
+        "sutherlandRange2Pct": {
+          "unit": "K",
+          "description": "Temperature range for ±2% error of Eq. (1-44b)"
+        }
+      },
+      "notes": [
+        "Steam uses T0 = 300 K here but T0 = 350 K in Table 1-2."
+      ],
+      "rows": [
+        {
+          "gas": "Air",
+          "formula": "Air",
+          "cas": "132259-10-0",
+          "T0": 273,
+          "k0": 0.0241,
+          "n": 0.81,
+          "powerLawError": {
+            "percent": 3,
+            "Tmin": 210,
+            "Tmax": 2000
+          },
+          "S": 194,
+          "sutherlandRange2Pct": {
+            "Tmin": 160,
+            "Tmax": 2000
+          }
+        },
+        {
+          "gas": "Argon",
+          "formula": "Ar",
+          "cas": "7440-37-1",
+          "T0": 273,
+          "k0": 0.0163,
+          "n": 0.73,
+          "powerLawError": {
+            "percent": 4,
+            "Tmin": 210,
+            "Tmax": 1800
+          },
+          "S": 170,
+          "sutherlandRange2Pct": {
+            "Tmin": 150,
+            "Tmax": 1800
+          }
+        },
+        {
+          "gas": "CO2",
+          "formula": "CO2",
+          "cas": "124-38-9",
+          "T0": 273,
+          "k0": 0.0146,
+          "n": 1.3,
+          "powerLawError": {
+            "percent": 2,
+            "Tmin": 180,
+            "Tmax": 700
+          },
+          "S": 1800,
+          "sutherlandRange2Pct": {
+            "Tmin": 180,
+            "Tmax": 700
+          }
+        },
+        {
+          "gas": "CO",
+          "formula": "CO",
+          "cas": "630-08-0",
+          "T0": 273,
+          "k0": 0.0232,
+          "n": 0.82,
+          "powerLawError": {
+            "percent": 2,
+            "Tmin": 210,
+            "Tmax": 800
+          },
+          "S": 180,
+          "sutherlandRange2Pct": {
+            "Tmin": 200,
+            "Tmax": 800
+          }
+        },
+        {
+          "gas": "N2",
+          "formula": "N2",
+          "cas": "7727-37-9",
+          "T0": 273,
+          "k0": 0.0242,
+          "n": 0.74,
+          "powerLawError": {
+            "percent": 3,
+            "Tmin": 210,
+            "Tmax": 1200
+          },
+          "S": 150,
+          "sutherlandRange2Pct": {
+            "Tmin": 200,
+            "Tmax": 1200
+          }
+        },
+        {
+          "gas": "O2",
+          "formula": "O2",
+          "cas": "7782-44-7",
+          "T0": 273,
+          "k0": 0.0244,
+          "n": 0.84,
+          "powerLawError": {
+            "percent": 2,
+            "Tmin": 220,
+            "Tmax": 1200
+          },
+          "S": 240,
+          "sutherlandRange2Pct": {
+            "Tmin": 200,
+            "Tmax": 1200
+          }
+        },
+        {
+          "gas": "H2",
+          "formula": "H2",
+          "cas": "1333-74-0",
+          "T0": 273,
+          "k0": 0.168,
+          "n": 0.72,
+          "powerLawError": {
+            "percent": 2,
+            "Tmin": 200,
+            "Tmax": 1000
+          },
+          "S": 120,
+          "sutherlandRange2Pct": {
+            "Tmin": 200,
+            "Tmax": 1000
+          }
+        },
+        {
+          "gas": "Steam",
+          "formula": "H2O",
+          "cas": "7732-18-5",
+          "T0": 300,
+          "k0": 0.0181,
+          "n": 1.35,
+          "powerLawError": {
+            "percent": 2,
+            "Tmin": 300,
+            "Tmax": 900
+          },
+          "S": 2200,
+          "sutherlandRange2Pct": {
+            "Tmin": 300,
+            "Tmax": 700
+          }
+        }
+      ]
+    },
+    {
+      "id": "white-table-a-6",
+      "title": "Sutherland and power-law constants for gas viscosity",
+      "source": "White2006",
+      "refKey": "White3",
+      "page": 577,
+      "file": "white p577.png",
+      "originalSource": {
+        "text": "Chapman and Cowling (1970).",
+        "refKey": null
+      },
+      "property": "viscosity",
+      "equations": {
+        "powerLaw": {
+          "label": "(1-35)",
+          "form": "mu/mu0 = (T/T0)^n"
+        },
+        "sutherland": {
+          "label": "(1-36)",
+          "form": "mu/mu0 = (T/T0)^(3/2) * (T0 + S)/(T + S)"
+        }
+      },
+      "columns": {
+        "printed.T0": {
+          "unit": "°R"
+        },
+        "printed.mu0": {
+          "unit": "slug/(ft·h)"
+        },
+        "printed.S": {
+          "unit": "°R"
+        },
+        "n": {
+          "unit": "1"
+        },
+        "si.T0": {
+          "unit": "K",
+          "description": "°R / 1.8"
+        },
+        "si.mu0": {
+          "unit": "Pa·s",
+          "description": "slug/(ft·h) × 47.88025898 / 3600"
+        },
+        "si.S": {
+          "unit": "K",
+          "description": "°R / 1.8"
+        }
+      },
+      "notes": [
+        "Blank cells in the printed table are null.",
+        "SI values are converted here and rounded to 6 significant digits; the printed values are authoritative."
+      ],
+      "rows": [
+        {
+          "gas": "Ammonia",
+          "formula": "NH3",
+          "cas": "7664-41-7",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.000722,
+            "S": 679
+          },
+          "n": 0.981,
+          "si": {
+            "T0": 273.111,
+            "mu0": 9.60265e-06,
+            "S": 377.222
+          }
+        },
+        {
+          "gas": "Chlorine",
+          "formula": "Cl2",
+          "cas": "7782-50-5",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.00097,
+            "S": 585
+          },
+          "n": 1.0,
+          "si": {
+            "T0": 273.111,
+            "mu0": 1.29011e-05,
+            "S": 325.0
+          }
+        },
+        {
+          "gas": "Deuterium",
+          "formula": "D2",
+          "cas": "7782-39-0",
+          "printed": {
+            "T0": 545.7,
+            "mu0": 0.000974,
+            "S": null
+          },
+          "n": 0.699,
+          "si": {
+            "T0": 303.167,
+            "mu0": 1.29543e-05,
+            "S": null
+          }
+        },
+        {
+          "gas": "Ethylene",
+          "formula": "C2H4",
+          "cas": "74-85-1",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.000722,
+            "S": 407
+          },
+          "n": null,
+          "si": {
+            "T0": 273.111,
+            "mu0": 9.60265e-06,
+            "S": 226.111
+          }
+        },
+        {
+          "gas": "Helium",
+          "formula": "He",
+          "cas": "7440-59-7",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.001406,
+            "S": 143
+          },
+          "n": 0.666,
+          "si": {
+            "T0": 273.111,
+            "mu0": 1.86999e-05,
+            "S": 79.4444
+          }
+        },
+        {
+          "gas": "Hydrogen chloride",
+          "formula": "HCl",
+          "cas": "7647-01-0",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.00103,
+            "S": 643
+          },
+          "n": 1.03,
+          "si": {
+            "T0": 273.111,
+            "mu0": 1.36991e-05,
+            "S": 357.222
+          }
+        },
+        {
+          "gas": "Hydrogen sulfide",
+          "formula": "H2S",
+          "cas": "7783-06-4",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.00088,
+            "S": 596
+          },
+          "n": null,
+          "si": {
+            "T0": 273.111,
+            "mu0": 1.17041e-05,
+            "S": 331.111
+          }
+        },
+        {
+          "gas": "Krypton",
+          "formula": "Kr",
+          "cas": "7439-90-9",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.001744,
+            "S": 338
+          },
+          "n": null,
+          "si": {
+            "T0": 273.111,
+            "mu0": 2.31953e-05,
+            "S": 187.778
+          }
+        },
+        {
+          "gas": "Methane",
+          "formula": "CH4",
+          "cas": "74-82-8",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.000902,
+            "S": 356
+          },
+          "n": 0.873,
+          "si": {
+            "T0": 273.111,
+            "mu0": 1.19967e-05,
+            "S": 197.778
+          }
+        },
+        {
+          "gas": "Methyl chloride",
+          "formula": "CH3Cl",
+          "cas": "74-87-3",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.000743,
+            "S": 817
+          },
+          "n": null,
+          "si": {
+            "T0": 273.111,
+            "mu0": 9.88195e-06,
+            "S": 453.889
+          }
+        },
+        {
+          "gas": "Neon",
+          "formula": "Ne",
+          "cas": "7440-01-9",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.002233,
+            "S": 110
+          },
+          "n": 0.657,
+          "si": {
+            "T0": 273.111,
+            "mu0": 2.96991e-05,
+            "S": 61.1111
+          }
+        },
+        {
+          "gas": "Nitric oxide",
+          "formula": "NO",
+          "cas": "10102-43-9",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.001346,
+            "S": 230
+          },
+          "n": 0.78,
+          "si": {
+            "T0": 273.111,
+            "mu0": 1.79019e-05,
+            "S": 127.778
+          }
+        },
+        {
+          "gas": "Nitrous oxide",
+          "formula": "N2O",
+          "cas": "10024-97-2",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.001015,
+            "S": 493
+          },
+          "n": 0.89,
+          "si": {
+            "T0": 273.111,
+            "mu0": 1.34996e-05,
+            "S": 273.889
+          }
+        },
+        {
+          "gas": "Sulfur dioxide",
+          "formula": "SO2",
+          "cas": "7446-09-5",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.00088,
+            "S": 749
+          },
+          "n": null,
+          "si": {
+            "T0": 273.111,
+            "mu0": 1.17041e-05,
+            "S": 416.111
+          }
+        },
+        {
+          "gas": "Xenon",
+          "formula": "Xe",
+          "cas": "7440-63-3",
+          "printed": {
+            "T0": 491.6,
+            "mu0": 0.001579,
+            "S": 454
+          },
+          "n": null,
+          "si": {
+            "T0": 273.111,
+            "mu0": 2.10008e-05,
+            "S": 252.222
+          }
+        }
+      ]
+    },
+    {
+      "id": "white-table-a-7",
+      "title": "Molecular parameters for dilute-gas transport properties, Eqs. (1-33) and (1-41)",
+      "source": "White2006",
+      "refKey": "White3",
+      "page": 580,
+      "file": "white p580.png",
+      "originalSource": {
+        "text": "R.A. Svehla, NASA Tech. Rep. R-132, 1962.",
+        "source": "Svehla1962"
+      },
+      "potential": "lennardJones",
+      "equations": {
+        "viscosity": {
+          "label": "(1-33)",
+          "form": "mu = 2.68e-6 * sqrt(M*T) / (sigma^2 * Omega_v)",
+          "units": "mu kg/(m·s), M g/mol, T K, sigma Å",
+          "page": 27,
+          "file": "white p27.png"
+        },
+        "collisionIntegralFit": {
+          "label": "(1-34)",
+          "form": "Omega_v = 1.147*(T/Te)^-0.145 + (T/Te + 0.5)^-2.0",
+          "accuracy": "±2 percent",
+          "page": 27,
+          "file": "white p27.png"
+        },
+        "thermalConductivity": {
+          "label": "(1-41)",
+          "form": null,
+          "note": "Eq. (1-41) is on a page that was not provided."
+        }
+      },
+      "columns": {
+        "sigma": {
+          "unit": "Å",
+          "description": "Collision diameter"
+        },
+        "epsilonToK": {
+          "unit": "K",
+          "description": "Te = ε/k, effective temperature (well depth)"
+        }
+      },
+      "rows": [
+        {
+          "gas": "H2",
+          "formula": "H2",
+          "cas": "1333-74-0",
+          "sigma": 2.827,
+          "epsilonToK": 59.7
+        },
+        {
+          "gas": "He",
+          "formula": "He",
+          "cas": "7440-59-7",
+          "sigma": 2.551,
+          "epsilonToK": 10.22
+        },
+        {
+          "gas": "Ar",
+          "formula": "Ar",
+          "cas": "7440-37-1",
+          "sigma": 3.542,
+          "epsilonToK": 93.3
+        },
+        {
+          "gas": "Air",
+          "formula": "Air",
+          "cas": "132259-10-0",
+          "sigma": 3.711,
+          "epsilonToK": 78.6
+        },
+        {
+          "gas": "CO2",
+          "formula": "CO2",
+          "cas": "124-38-9",
+          "sigma": 3.941,
+          "epsilonToK": 195.2
+        },
+        {
+          "gas": "CO",
+          "formula": "CO",
+          "cas": "630-08-0",
+          "sigma": 3.69,
+          "epsilonToK": 91.7
+        },
+        {
+          "gas": "O2",
+          "formula": "O2",
+          "cas": "7782-44-7",
+          "sigma": 3.467,
+          "epsilonToK": 106.7
+        },
+        {
+          "gas": "N2",
+          "formula": "N2",
+          "cas": "7727-37-9",
+          "sigma": 3.798,
+          "epsilonToK": 71.4
+        },
+        {
+          "gas": "NO",
+          "formula": "NO",
+          "cas": "10102-43-9",
+          "sigma": 3.492,
+          "epsilonToK": 116.7
+        },
+        {
+          "gas": "N2O",
+          "formula": "N2O",
+          "cas": "10024-97-2",
+          "sigma": 3.828,
+          "epsilonToK": 232.4
+        },
+        {
+          "gas": "Cl2",
+          "formula": "Cl2",
+          "cas": "7782-50-5",
+          "sigma": 4.217,
+          "epsilonToK": 316.0
+        },
+        {
+          "gas": "CH4",
+          "formula": "CH4",
+          "cas": "74-82-8",
+          "sigma": 3.758,
+          "epsilonToK": 148.6
+        }
+      ]
+    },
+    {
+      "id": "itean1961-table-3",
+      "title": "Force constants for polar molecules",
+      "source": "Itean1961",
+      "refKey": null,
+      "page": 24,
+      "pdfPage": 26,
+      "file": "svehla collision.png",
+      "potential": "modifiedStockmayer",
+      "equations": {
+        "delta": {
+          "form": "delta = mu^2 / (2 * epsilon * sigma^3)",
+          "units": "mu esu·cm (1 D = 1e-18), epsilon = (ε/k)·k_B erg, sigma cm"
+        }
+      },
+      "columns": {
+        "sigma": {
+          "unit": "Å"
+        },
+        "epsilonToK": {
+          "unit": "K"
+        },
+        "delta": {
+          "unit": "1",
+          "description": "Stockmayer polar parameter"
+        },
+        "deltaComputed": {
+          "unit": "1",
+          "description": "Recomputed here from μ, σ and ε/k as a check"
+        },
+        "dipoleMoment": {
+          "unit": "D",
+          "description": "Dipole moment, Debyes (ref. 12 of TN D-481)"
+        }
+      },
+      "notes": [
+        "The scan clips the last digit of most δ values. Where deltaLegible is false, the value is the best reading of the partially visible digits, confirmed by deltaComputed (agreement within ±0.003).",
+        "δ digits were checked on PDF page 26 of \"Collision Integrals for a Modified Stockmayer Potential (Svehla 1995).pdf\" rendered at 600 dpi."
+      ],
+      "rows": [
+        {
+          "molecule": "CO",
+          "formula": "CO",
+          "cas": "630-08-0",
+          "sigma": 3.668,
+          "epsilonToK": 93.8,
+          "delta": 0.01,
+          "deltaLegible": false,
+          "deltaComputed": 0.0098,
+          "dipoleMoment": 0.112
+        },
+        {
+          "molecule": "NO",
+          "formula": "NO",
+          "cas": "10102-43-9",
+          "sigma": 3.469,
+          "epsilonToK": 120.0,
+          "delta": 0.016,
+          "deltaLegible": false,
+          "deltaComputed": 0.0163,
+          "dipoleMoment": 0.15
+        },
+        {
+          "molecule": "HI",
+          "formula": "HI",
+          "cas": "10034-85-2",
+          "sigma": 4.264,
+          "epsilonToK": 252.5,
+          "delta": 0.033,
+          "deltaLegible": false,
+          "deltaComputed": 0.0326,
+          "dipoleMoment": 0.42
+        },
+        {
+          "molecule": "CHCl3",
+          "formula": "CHCl3",
+          "cas": "67-66-3",
+          "sigma": 5.513,
+          "epsilonToK": 256.7,
+          "delta": 0.086,
+          "deltaLegible": false,
+          "deltaComputed": 0.0864,
+          "dipoleMoment": 1.013
+        },
+        {
+          "molecule": "COS",
+          "formula": "COS",
+          "cas": "463-58-1",
+          "sigma": 4.396,
+          "epsilonToK": 209.3,
+          "delta": 0.1,
+          "deltaLegible": false,
+          "deltaComputed": 0.0998,
+          "dipoleMoment": 0.7
+        },
+        {
+          "molecule": "HBr",
+          "formula": "HBr",
+          "cas": "10035-10-6",
+          "sigma": 3.858,
+          "epsilonToK": 161.2,
+          "delta": 0.251,
+          "deltaLegible": false,
+          "deltaComputed": 0.2504,
+          "dipoleMoment": 0.8
+        },
+        {
+          "molecule": "CH3OCH3",
+          "formula": "C2H6O",
+          "cas": "115-10-6",
+          "sigma": 4.796,
+          "epsilonToK": 123.1,
+          "delta": 0.45,
+          "deltaLegible": false,
+          "deltaComputed": 0.4507,
+          "dipoleMoment": 1.3
+        },
+        {
+          "molecule": "CH2Cl2",
+          "formula": "CH2Cl2",
+          "cas": "75-09-2",
+          "sigma": 5.323,
+          "epsilonToK": 121.3,
+          "delta": 0.488,
+          "deltaLegible": true,
+          "deltaComputed": 0.4879,
+          "dipoleMoment": 1.57
+        },
+        {
+          "molecule": "H2S",
+          "formula": "H2S",
+          "cas": "7783-06-4",
+          "sigma": 4.034,
+          "epsilonToK": 88.4,
+          "delta": 0.529,
+          "deltaLegible": true,
+          "deltaComputed": 0.5282,
+          "dipoleMoment": 0.92
+        },
+        {
+          "molecule": "C2H5OH",
+          "formula": "C2H6O",
+          "cas": "64-17-5",
+          "sigma": 5.296,
+          "epsilonToK": 47.8,
+          "delta": 1.456,
+          "deltaLegible": false,
+          "deltaComputed": 1.4568,
+          "dipoleMoment": 1.69
+        },
+        {
+          "molecule": "HCl",
+          "formula": "HCl",
+          "cas": "7647-01-0",
+          "sigma": 4.164,
+          "epsilonToK": 23.6,
+          "delta": 2.477,
+          "deltaLegible": false,
+          "deltaComputed": 2.4745,
+          "dipoleMoment": 1.079
+        }
+      ]
+    },
+    {
+      "id": "mamedov2014-table-1",
+      "title": "Lennard-Jones potential parameter [3,7,40–43]",
+      "source": "Mamedov2014",
+      "refKey": null,
+      "page": 166,
+      "file": "Lennard-Jones potential.png",
+      "potential": "lennardJones",
+      "columns": {
+        "epsilonToK": {
+          "unit": "K",
+          "description": "ε/k_B"
+        },
+        "sigma": {
+          "unit": "Å",
+          "description": "Printed as σ (A°)"
+        }
+      },
+      "notes": [
+        "Parameters fitted to second virial coefficients (refs [3,7,40–43] of the paper), not to transport data.",
+        "Rows with two components are unlike-pair (cross) parameters for benzene mixtures. The isomers of C2H6O, C3H6O and C4H10O are not stated, so no CAS is given.",
+        "Several values differ strongly from the transport-fitted values of Svehla 1962; see the row notes."
+      ],
+      "rows": [
+        {
+          "species": "He",
+          "components": [
+            "He"
+          ],
+          "cas": "7440-59-7",
+          "epsilonToK": 10.22,
+          "sigma": 2.56
+        },
+        {
+          "species": "Ne",
+          "components": [
+            "Ne"
+          ],
+          "cas": "7440-01-9",
+          "epsilonToK": 35.6,
+          "sigma": 2.75
+        },
+        {
+          "species": "Ar",
+          "components": [
+            "Ar"
+          ],
+          "cas": "7440-37-1",
+          "epsilonToK": 120,
+          "sigma": 3.4
+        },
+        {
+          "species": "Kr",
+          "components": [
+            "Kr"
+          ],
+          "cas": "7439-90-9",
+          "epsilonToK": 171,
+          "sigma": 3.6
+        },
+        {
+          "species": "Xe",
+          "components": [
+            "Xe"
+          ],
+          "cas": "7440-63-3",
+          "epsilonToK": 220,
+          "sigma": 4.1
+        },
+        {
+          "species": "N2",
+          "components": [
+            "N2"
+          ],
+          "cas": "7727-37-9",
+          "epsilonToK": 95.5,
+          "sigma": 3.74
+        },
+        {
+          "species": "CH4",
+          "components": [
+            "CH4"
+          ],
+          "cas": "74-82-8",
+          "epsilonToK": 148.4,
+          "sigma": 3.81
+        },
+        {
+          "species": "CF4",
+          "components": [
+            "CF4"
+          ],
+          "cas": "75-73-0",
+          "epsilonToK": 151.4,
+          "sigma": 4.75
+        },
+        {
+          "species": "H2",
+          "components": [
+            "H2"
+          ],
+          "cas": "1333-74-0",
+          "epsilonToK": 39.4,
+          "sigma": 2.81
+        },
+        {
+          "species": "O2",
+          "components": [
+            "O2"
+          ],
+          "cas": "7782-44-7",
+          "epsilonToK": 118,
+          "sigma": 3.58
+        },
+        {
+          "species": "CO",
+          "components": [
+            "CO"
+          ],
+          "cas": "630-08-0",
+          "epsilonToK": 100,
+          "sigma": 3.76
+        },
+        {
+          "species": "CO2",
+          "components": [
+            "CO2"
+          ],
+          "cas": "124-38-9",
+          "epsilonToK": 309,
+          "sigma": 3.36,
+          "note": "Differs strongly from Svehla 1962 (σ = 3.941 Å, ε/k = 195.2 K, White Table A-7)."
+        },
+        {
+          "species": "C2H4",
+          "components": [
+            "C2H4"
+          ],
+          "cas": "74-85-1",
+          "epsilonToK": 470,
+          "sigma": 2.5,
+          "note": "Differs strongly from Svehla 1962 (σ = 4.163 Å, ε/k = 224.7 K); σ printed with 2 significant digits."
+        },
+        {
+          "species": "C2H6",
+          "components": [
+            "C2H6"
+          ],
+          "cas": "74-84-0",
+          "epsilonToK": 243,
+          "sigma": 3.95
+        },
+        {
+          "species": "C3H8",
+          "components": [
+            "C3H8"
+          ],
+          "cas": "74-98-6",
+          "epsilonToK": 242,
+          "sigma": 5.64,
+          "note": "σ differs from Svehla 1962 (5.118 Å, ε/k = 237.1 K)."
+        },
+        {
+          "species": "C(CH3)4",
+          "components": [
+            "C5H12"
+          ],
+          "cas": "463-82-1",
+          "epsilonToK": 232,
+          "sigma": 7.44,
+          "note": "σ = 7.44 Å is unusually large (Svehla 1962: 6.464 Å, ε/k = 193.4 K)."
+        },
+        {
+          "species": "C6H6",
+          "components": [
+            "C6H6"
+          ],
+          "cas": "71-43-2",
+          "epsilonToK": 830,
+          "sigma": 3.4,
+          "note": "Differs strongly from Svehla 1962 (σ = 5.349 Å, ε/k = 412.3 K); σ printed with 2 significant digits."
+        },
+        {
+          "species": "C6H6–CH4O",
+          "components": [
+            "C6H6",
+            "CH4O"
+          ],
+          "cas": null,
+          "epsilonToK": 1018.2,
+          "sigma": 2.896
+        },
+        {
+          "species": "C6H6–C2H6O",
+          "components": [
+            "C6H6",
+            "C2H6O"
+          ],
+          "cas": null,
+          "epsilonToK": 553.5,
+          "sigma": 4.651
+        },
+        {
+          "species": "C6H6–C3H6O",
+          "components": [
+            "C6H6",
+            "C3H6O"
+          ],
+          "cas": null,
+          "epsilonToK": 632.1,
+          "sigma": 4.62
+        },
+        {
+          "species": "C6H6–C4H10O",
+          "components": [
+            "C6H6",
+            "C4H10O"
+          ],
+          "cas": null,
+          "epsilonToK": 1122.3,
+          "sigma": 3.425
+        }
+      ]
+    },
+    {
+      "id": "svehla1995-table-1",
+      "title": "Data sources for transport properties",
+      "source": "Svehla1995",
+      "refKey": null,
+      "pages": "7–13",
+      "pdfPages": "9–15",
+      "file": "Transport Coefficients for the NASA Lewis Chemical Equilibrium Program (Svehla 1995) !!!.pdf",
+      "columns": {
+        "species": {
+          "description": "Interaction pair as printed (e = electron, + = cation)"
+        },
+        "cas": {
+          "description": "CAS of each species of the pair; null for the electron, ions and H6F6"
+        },
+        "property": {
+          "description": "viscosity, conductivity or diffusion"
+        },
+        "methods": {
+          "description": "Methods used for this interaction, in the order of the printed text. TminK/TmaxK bound a method where the text gives limits; absent = no limit."
+        },
+        "methods[].method": {
+          "description": "lennardJones, stockmayer, exp6, correspondingStates, modifiedEucken, experimental, theoretical, prandtlExtrapolation, exponentialRepulsive, scaledFrom, sameAs, literature"
+        },
+        "methods[].sigma": {
+          "unit": "Å",
+          "description": "Collision diameter"
+        },
+        "methods[].epsilonToK": {
+          "unit": "K",
+          "description": "Well depth ε/k (printed as ε/κ)"
+        },
+        "methods[].delta": {
+          "unit": "1",
+          "description": "Stockmayer polar parameter"
+        },
+        "methods[].alpha": {
+          "unit": "1",
+          "description": "Exp-6 steepness parameter"
+        },
+        "methods[].rhoStar": {
+          "unit": "1",
+          "description": "Corresponding-states ρ* (Boushehri et al. 1987)"
+        },
+        "methods[].V0Star": {
+          "unit": "1",
+          "description": "Corresponding-states V0* (Boushehri et al. 1987)"
+        },
+        "methods[].rhoV0From": {
+          "description": "Species whose ρ* and V0* were reused"
+        },
+        "methods[].AStar": {
+          "unit": "1",
+          "description": "Collision-integral ratio A*"
+        },
+        "methods[].Z": {
+          "unit": "1",
+          "description": "Rotational collision number in the modified Eucken correction; absent = no rotational correction"
+        },
+        "methods[].TminK": {
+          "unit": "K"
+        },
+        "methods[].TmaxK": {
+          "unit": "K"
+        },
+        "methods[].prandtlCalculatedToK": {
+          "unit": "K",
+          "description": "Prandtl number calculated up to this temperature, then extrapolated to 5000 K; conductivity from viscosity and heat capacity over TminK–TmaxK"
+        },
+        "methods[].scaledToMatch": {
+          "description": "High-temperature data scaled by the high/low ratio at matchTemperatureK"
+        },
+        "methods[].basis": {
+          "description": "What the parameters were obtained from: viscosityData, diffusionData, thermalConductivityData, combiningRules, estimated, molecularBeamScattering"
+        },
+        "methods[].source": {
+          "description": "Citation as printed (author list and year)"
+        },
+        "matchTemperatureK": {
+          "unit": "K",
+          "description": "High- and low-temperature data forced to agree here"
+        },
+        "dataSource": {
+          "description": "Printed text, verbatim (κ = Boltzmann constant as printed, ×10^n for powers)"
+        }
+      },
+      "notes": [
+        "Values were transcribed per row; every number in dataSource was checked against the stored values.",
+        "CF4 V0* is printed as 1.460×10^19 (CH4, C2H4, C2H6, CO2, O2 and N2O have 10^6, N2 and H2 10^4, NO 10^5, SF6 10^8); kept as printed.",
+        "H6F6 is the HF hexamer, as printed."
+      ],
+      "rows": [
+        {
+          "species": [
+            "Ar",
+            "Ar"
+          ],
+          "cas": [
+            "7440-37-1",
+            "7440-37-1"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "source": "Bich, Millat, and Vogel 1990"
+            }
+          ],
+          "dataSource": "Method of corresponding states (Bich, Millat, and Vogel 1990)."
+        },
+        {
+          "species": [
+            "Ar",
+            "Ar"
+          ],
+          "cas": [
+            "7440-37-1",
+            "7440-37-1"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "source": "Bich, Millat, and Vogel 1990"
+            }
+          ],
+          "dataSource": "Method of corresponding states (Bich, Millat, and Vogel 1990)."
+        },
+        {
+          "species": [
+            "BCl3",
+            "BCl3"
+          ],
+          "cas": [
+            "10294-34-5",
+            "10294-34-5"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 5.127,
+              "epsilonToK": 337.7,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 5.127 and ε/κ = 337.7) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "BCl3",
+            "BCl3"
+          ],
+          "cas": [
+            "10294-34-5",
+            "10294-34-5"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "BF3",
+            "BF3"
+          ],
+          "cas": [
+            "7637-07-2",
+            "7637-07-2"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.198,
+              "epsilonToK": 186.3,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.198 and ε/κ = 186.3) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "BF3",
+            "BF3"
+          ],
+          "cas": [
+            "7637-07-2",
+            "7637-07-2"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 2
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 2 for all temperatures."
+        },
+        {
+          "species": [
+            "Br2",
+            "Br2"
+          ],
+          "cas": [
+            "7726-95-6",
+            "7726-95-6"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.296,
+              "epsilonToK": 507.9,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.296 and ε/κ = 507.9) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "Br2",
+            "Br2"
+          ],
+          "cas": [
+            "7726-95-6",
+            "7726-95-6"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 2
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 2 for all temperatures."
+        },
+        {
+          "species": [
+            "C",
+            "C"
+          ],
+          "cas": [
+            "7440-44-0",
+            "7440-44-0"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Biolsi, Rainwater, and Holland 1982"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Biolsi, Rainwater, and Holland 1982)."
+        },
+        {
+          "species": [
+            "C",
+            "C"
+          ],
+          "cas": [
+            "7440-44-0",
+            "7440-44-0"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Biolsi, Rainwater, and Holland 1982"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Biolsi, Rainwater, and Holland 1982)."
+        },
+        {
+          "species": [
+            "CClF3",
+            "CClF3"
+          ],
+          "cas": [
+            "75-72-9",
+            "75-72-9"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.93,
+              "epsilonToK": 200,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.93 and ε/κ = 200). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "CClF3",
+            "CClF3"
+          ],
+          "cas": [
+            "75-72-9",
+            "75-72-9"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 for all temperatures."
+        },
+        {
+          "species": [
+            "CCl2F2",
+            "CCl2F2"
+          ],
+          "cas": [
+            "75-71-8",
+            "75-71-8"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 5.25,
+              "epsilonToK": 253,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 5.25 and ε/κ = 253). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "CCl2F2",
+            "CCl2F2"
+          ],
+          "cas": [
+            "75-71-8",
+            "75-71-8"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "TminK": 400
+            }
+          ],
+          "dataSource": "Modified Eucken approximation above 400 K."
+        },
+        {
+          "species": [
+            "CCl3F",
+            "CCl3F"
+          ],
+          "cas": [
+            "75-69-4",
+            "75-69-4"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 5.44,
+              "epsilonToK": 334,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 5.44 and ε/κ = 334). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "CCl3F",
+            "CCl3F"
+          ],
+          "cas": [
+            "75-69-4",
+            "75-69-4"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1,
+              "TminK": 300
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 above 300 K."
+        },
+        {
+          "species": [
+            "CCl4",
+            "CCl4"
+          ],
+          "cas": [
+            "56-23-5",
+            "56-23-5"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 5.82,
+              "epsilonToK": 350,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 5.820 and ε/κ = 350). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "CCl4",
+            "CCl4"
+          ],
+          "cas": [
+            "56-23-5",
+            "56-23-5"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 for all temperatures."
+        },
+        {
+          "species": [
+            "CF4",
+            "CF4"
+          ],
+          "cas": [
+            "75-73-0",
+            "75-73-0"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 1000,
+              "source": "Assael et al. 1990"
+            },
+            {
+              "method": "correspondingStates",
+              "sigma": 4.579,
+              "epsilonToK": 156.5,
+              "rhoStar": 0.02,
+              "V0Star": 1.46e+19,
+              "source": "Boushehri et al. 1987",
+              "TminK": 1000,
+              "scaledToMatch": true
+            }
+          ],
+          "matchTemperatureK": 1000,
+          "dataSource": "Experimental data were fitted at low temperatures (Assael et al. 1990). The corresponding states method was used at high temperatures (σ = 4.579, ε/κ = 156.5, ρ* = 0.0200, and V0* = 1.460×10^19) (Boushehri et al. 1987). High- and low-temperature data were forced to agree at 1000 K. Above 1000 K, the high-temperature data were adjusted in proportion to the ratio at 1000 K."
+        },
+        {
+          "species": [
+            "CF4",
+            "CF4"
+          ],
+          "cas": [
+            "75-73-0",
+            "75-73-0"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 700,
+              "source": "Assael et al. 1990"
+            },
+            {
+              "method": "prandtlExtrapolation",
+              "prandtlCalculatedToK": 700,
+              "TminK": 700,
+              "TmaxK": 5000
+            }
+          ],
+          "dataSource": "Experimental data were fitted at low temperatures (Assael et al. 1990). The Prandtl number was calculated up to 700 K and extrapolated to 5000 K. The conductivity was calculated from the viscosity and heat capacity from 700 to 5000 K."
+        },
+        {
+          "species": [
+            "CHClF2",
+            "CHClF2"
+          ],
+          "cas": [
+            "75-45-6",
+            "75-45-6"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 4.68,
+              "epsilonToK": 261,
+              "delta": 0.25,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 4.68, ε/κ = 261, and δ = 0.25). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "CHClF2",
+            "CHClF2"
+          ],
+          "cas": [
+            "75-45-6",
+            "75-45-6"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 5,
+              "TminK": 300
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 5 above 300 K."
+        },
+        {
+          "species": [
+            "CHCl2F",
+            "CHCl2F"
+          ],
+          "cas": [
+            "75-43-4",
+            "75-43-4"
+          ],
+          "property": "viscosity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 5.0,
+              "epsilonToK": 300,
+              "delta": 0.25,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 5.00, ε/κ = 300, and δ = 0.25). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "CHCl2F",
+            "CHCl2F"
+          ],
+          "cas": [
+            "75-43-4",
+            "75-43-4"
+          ],
+          "property": "conductivity",
+          "pdfPage": 9,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 14,
+              "TminK": 400
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 14 above 400 K."
+        },
+        {
+          "species": [
+            "CHCl3",
+            "CHCl3"
+          ],
+          "cas": [
+            "67-66-3",
+            "67-66-3"
+          ],
+          "property": "viscosity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 5.389,
+              "epsilonToK": 340.2,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 5.389 and ε/κ = 340.2) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "CHCl3",
+            "CHCl3"
+          ],
+          "cas": [
+            "67-66-3",
+            "67-66-3"
+          ],
+          "property": "conductivity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 20,
+              "TminK": 400
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 20 above 400 K."
+        },
+        {
+          "species": [
+            "CHF3",
+            "CHF3"
+          ],
+          "cas": [
+            "75-46-7",
+            "75-46-7"
+          ],
+          "property": "viscosity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 4.39,
+              "epsilonToK": 180,
+              "delta": 0.5,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 4.39, ε/κ = 180, and δ = 0.50). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "CHF3",
+            "CHF3"
+          ],
+          "cas": [
+            "75-46-7",
+            "75-46-7"
+          ],
+          "property": "conductivity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1,
+              "TminK": 300
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 above 300 K."
+        },
+        {
+          "species": [
+            "CH2Cl2",
+            "CH2Cl2"
+          ],
+          "cas": [
+            "75-09-2",
+            "75-09-2"
+          ],
+          "property": "viscosity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 4.52,
+              "epsilonToK": 483,
+              "delta": 0.2,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 4.52, ε/κ = 483, and δ = 0.20). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "CH2Cl2",
+            "CH2Cl2"
+          ],
+          "cas": [
+            "75-09-2",
+            "75-09-2"
+          ],
+          "property": "conductivity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 4,
+              "TminK": 300
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 4 above 300 K."
+        },
+        {
+          "species": [
+            "CH3Cl",
+            "CH3Cl"
+          ],
+          "cas": [
+            "74-87-3",
+            "74-87-3"
+          ],
+          "property": "viscosity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 3.94,
+              "epsilonToK": 414,
+              "delta": 0.5,
+              "source": "Monchick and Mason 1961"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 3.94, ε/κ = 414, and δ = 0.50) (Monchick and Mason 1961)."
+        },
+        {
+          "species": [
+            "CH3Cl",
+            "CH3Cl"
+          ],
+          "cas": [
+            "74-87-3",
+            "74-87-3"
+          ],
+          "property": "conductivity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 2,
+              "TminK": 400
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 2 above 400 K."
+        },
+        {
+          "species": [
+            "CH4",
+            "CH4"
+          ],
+          "cas": [
+            "74-82-8",
+            "74-82-8"
+          ],
+          "property": "viscosity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 1000,
+              "source": "Trengove and Wakeham 1987"
+            },
+            {
+              "method": "correspondingStates",
+              "sigma": 3.721,
+              "epsilonToK": 161.4,
+              "rhoStar": 0.0698,
+              "V0Star": 3066000.0,
+              "source": "Boushehri et al. 1987",
+              "TminK": 1000,
+              "scaledToMatch": true
+            }
+          ],
+          "matchTemperatureK": 1000,
+          "dataSource": "Experimental data were fitted at low temperatures (Trengove and Wakeham 1987). The corresponding states method was used at high temperatures (σ = 3.721, ε/κ = 161.4, ρ* = 0.0698, and V0* = 3.066×10^6) (Boushehri et al. 1987). High- and low-temperature data were forced to agree at 1000 K. Above 1000 K the high-temperature data were adjusted in proportion to the ratio at 1000 K."
+        },
+        {
+          "species": [
+            "CH4",
+            "CH4"
+          ],
+          "cas": [
+            "74-82-8",
+            "74-82-8"
+          ],
+          "property": "conductivity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 900,
+              "source": "Assael et al. 1990"
+            },
+            {
+              "method": "prandtlExtrapolation",
+              "prandtlCalculatedToK": 900,
+              "TminK": 900,
+              "TmaxK": 5000
+            }
+          ],
+          "dataSource": "Experimental data were fitted at low temperatures (Assael et al. 1990). The Prandtl number was calculated up to 900 K and extrapolated to 5000 K. The conductivity was calculated from the viscosity and heat capacity from 900 to 5000 K."
+        },
+        {
+          "species": [
+            "CH4",
+            "O2"
+          ],
+          "cas": [
+            "74-82-8",
+            "7782-44-7"
+          ],
+          "property": "diffusion",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "exp6",
+              "sigma": 4.229,
+              "epsilonToK": 100,
+              "alpha": 12,
+              "basis": "diffusionData"
+            }
+          ],
+          "dataSource": "Exp-6 potential (σ = 4.229, ε/κ = 100, and α = 12). Obtained from diffusion data."
+        },
+        {
+          "species": [
+            "CH3OH",
+            "CH3OH"
+          ],
+          "cas": [
+            "67-56-1",
+            "67-56-1"
+          ],
+          "property": "viscosity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 3.69,
+              "epsilonToK": 417,
+              "delta": 0.5,
+              "source": "Monchick and Mason 1961"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 3.69, ε/κ = 417, and δ = 0.50) (Monchick and Mason 1961)."
+        },
+        {
+          "species": [
+            "CH3OH",
+            "CH3OH"
+          ],
+          "cas": [
+            "67-56-1",
+            "67-56-1"
+          ],
+          "property": "conductivity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1,
+              "TminK": 500
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 above 500 K."
+        },
+        {
+          "species": [
+            "CO",
+            "CO"
+          ],
+          "cas": [
+            "630-08-0",
+            "630-08-0"
+          ],
+          "property": "viscosity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "sameAs",
+              "interaction": "N2–N2"
+            }
+          ],
+          "dataSource": "Same as N2–N2."
+        },
+        {
+          "species": [
+            "CO",
+            "CO"
+          ],
+          "cas": [
+            "630-08-0",
+            "630-08-0"
+          ],
+          "property": "conductivity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "sameAs",
+              "interaction": "N2–N2"
+            }
+          ],
+          "dataSource": "Same as N2–N2."
+        },
+        {
+          "species": [
+            "CO",
+            "N2"
+          ],
+          "cas": [
+            "630-08-0",
+            "7727-37-9"
+          ],
+          "property": "diffusion",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "sameAs",
+              "interaction": "N2–N2"
+            }
+          ],
+          "dataSource": "Same as N2–N2."
+        },
+        {
+          "species": [
+            "CO",
+            "O2"
+          ],
+          "cas": [
+            "630-08-0",
+            "7782-44-7"
+          ],
+          "property": "diffusion",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "exp6",
+              "sigma": 4.396,
+              "epsilonToK": 50,
+              "alpha": 12,
+              "basis": "diffusionData"
+            }
+          ],
+          "dataSource": "Exp-6 potential (σ = 4.396, ε/κ = 50, and α = 12). Obtained from diffusion data."
+        },
+        {
+          "species": [
+            "COS",
+            "COS"
+          ],
+          "cas": [
+            "463-58-1",
+            "463-58-1"
+          ],
+          "property": "viscosity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.13,
+              "epsilonToK": 336.0,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.130 and ε/κ = 336.0) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "COS",
+            "COS"
+          ],
+          "cas": [
+            "463-58-1",
+            "463-58-1"
+          ],
+          "property": "conductivity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "CO2",
+            "CO2"
+          ],
+          "cas": [
+            "124-38-9",
+            "124-38-9"
+          ],
+          "property": "viscosity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 1000,
+              "source": "Vesovic et al. 1990"
+            },
+            {
+              "method": "correspondingStates",
+              "sigma": 3.769,
+              "epsilonToK": 245.3,
+              "rhoStar": 0.072,
+              "V0Star": 2800000.0,
+              "source": "Boushehri et al. 1987",
+              "TminK": 1000,
+              "scaledToMatch": true
+            }
+          ],
+          "matchTemperatureK": 1000,
+          "dataSource": "Experimental data were fitted at low temperatures (Vesovic et al. 1990). The corresponding states method was used at high temperatures (σ = 3.769, ε/κ = 245.3, ρ* = 0.0720, and V0* = 2.800×10^6) (Boushehri et al. 1987). High- and low-temperature data were forced to agree at 1000 K. Above 1000 K, the high-temperature data were adjusted in proportion to the ratio at 1000 K."
+        },
+        {
+          "species": [
+            "CO2",
+            "CO2"
+          ],
+          "cas": [
+            "124-38-9",
+            "124-38-9"
+          ],
+          "property": "conductivity",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 1800
+            },
+            {
+              "method": "prandtlExtrapolation",
+              "prandtlCalculatedToK": 1800,
+              "TminK": 1800,
+              "TmaxK": 5000
+            }
+          ],
+          "dataSource": "Experimental data were fitted at low temperatures. The Prandtl number was calculated up to 1800 K and extrapolated to 5000 K. The conductivity was calculated from the viscosity and heat capacity from 1800 to 5000 K."
+        },
+        {
+          "species": [
+            "CO2",
+            "H2"
+          ],
+          "cas": [
+            "124-38-9",
+            "1333-74-0"
+          ],
+          "property": "diffusion",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "exp6",
+              "sigma": 3.646,
+              "epsilonToK": 150,
+              "alpha": 12,
+              "basis": "diffusionData"
+            }
+          ],
+          "dataSource": "Exp-6 potential (σ = 3.646, ε/κ = 150, and α = 12). Obtained from diffusion data."
+        },
+        {
+          "species": [
+            "CO2",
+            "H2O"
+          ],
+          "cas": [
+            "124-38-9",
+            "7732-18-5"
+          ],
+          "property": "diffusion",
+          "pdfPage": 10,
+          "methods": [
+            {
+              "method": "exp6",
+              "sigma": 3.166,
+              "epsilonToK": 400,
+              "alpha": 12,
+              "basis": "diffusionData"
+            }
+          ],
+          "dataSource": "Exp-6 potential (σ = 3.166, ε/κ = 400, and α = 12). Obtained from diffusion data."
+        },
+        {
+          "species": [
+            "CO2",
+            "N2"
+          ],
+          "cas": [
+            "124-38-9",
+            "7727-37-9"
+          ],
+          "property": "diffusion",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "exp6",
+              "sigma": 4.408,
+              "epsilonToK": 100,
+              "alpha": 12,
+              "basis": "diffusionData"
+            }
+          ],
+          "dataSource": "Exp-6 potential (σ = 4.408, ε/κ = 100, and α = 12). Obtained from diffusion data."
+        },
+        {
+          "species": [
+            "CO2",
+            "O2"
+          ],
+          "cas": [
+            "124-38-9",
+            "7782-44-7"
+          ],
+          "property": "diffusion",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "exp6",
+              "sigma": 3.772,
+              "epsilonToK": 250,
+              "alpha": 15,
+              "basis": "diffusionData"
+            }
+          ],
+          "dataSource": "Exp-6 potential (σ = 3.772, ε/κ = 250, and α = 15). Obtained from diffusion data."
+        },
+        {
+          "species": [
+            "CS2",
+            "CS2"
+          ],
+          "cas": [
+            "75-15-0",
+            "75-15-0"
+          ],
+          "property": "viscosity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.483,
+              "epsilonToK": 467,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.483 and ε/κ = 467) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "CS2",
+            "CS2"
+          ],
+          "cas": [
+            "75-15-0",
+            "75-15-0"
+          ],
+          "property": "conductivity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "C2H2",
+            "C2H2"
+          ],
+          "cas": [
+            "74-86-2",
+            "74-86-2"
+          ],
+          "property": "viscosity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.033,
+              "epsilonToK": 231.8,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.033 and ε/κ = 231.8) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "C2H2",
+            "C2H2"
+          ],
+          "cas": [
+            "74-86-2",
+            "74-86-2"
+          ],
+          "property": "conductivity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 600,
+              "source": "Touloukian, Liley, and Saxena 1970"
+            },
+            {
+              "method": "modifiedEucken",
+              "Z": 7,
+              "TminK": 600
+            }
+          ],
+          "dataSource": "Experimental data to 600 K (Touloukian, Liley, and Saxena 1970). Modified Eucken approximation with correction for rotational energy transfer above 600 K. Z = 7 above 600 K."
+        },
+        {
+          "species": [
+            "C2H4",
+            "C2H4"
+          ],
+          "cas": [
+            "74-85-1",
+            "74-85-1"
+          ],
+          "property": "viscosity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "sigma": 4.071,
+              "epsilonToK": 244.3,
+              "rhoStar": 0.0698,
+              "V0Star": 3066000.0,
+              "source": "Boushehri et al. 1987",
+              "rhoV0From": "CH4"
+            }
+          ],
+          "dataSource": "Corresponding states method (σ = 4.071, ε/κ = 244.3, ρ* = 0.0698, and V0* = 3.066×10^6) (Boushehri et al. 1987). Constants ρ* and V0* were set equal to those of CH4."
+        },
+        {
+          "species": [
+            "C2H4",
+            "C2H4"
+          ],
+          "cas": [
+            "74-85-1",
+            "74-85-1"
+          ],
+          "property": "conductivity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 500,
+              "source": "Holland, Eaton, and Hanley 1983"
+            },
+            {
+              "method": "modifiedEucken",
+              "TminK": 500
+            }
+          ],
+          "dataSource": "Experimental data to 500 K (Holland, Eaton, and Hanley 1983). Modified Eucken approximation above 500 K."
+        },
+        {
+          "species": [
+            "C2H6",
+            "C2H6"
+          ],
+          "cas": [
+            "74-84-0",
+            "74-84-0"
+          ],
+          "property": "viscosity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "sigma": 4.371,
+              "epsilonToK": 241.9,
+              "rhoStar": 0.0698,
+              "V0Star": 3066000.0,
+              "source": "Boushehri et al. 1987",
+              "rhoV0From": "CH4"
+            }
+          ],
+          "dataSource": "Corresponding states method (σ = 4.371, ε/κ = 241.9, ρ* = 0.0698, and V0* = 3.066×10^6) (Boushehri et al. 1987). Constants ρ* and V0* were set equal to those of CH4."
+        },
+        {
+          "species": [
+            "C2H6",
+            "C2H6"
+          ],
+          "cas": [
+            "74-84-0",
+            "74-84-0"
+          ],
+          "property": "conductivity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "C2H5OH",
+            "C2H5OH"
+          ],
+          "cas": [
+            "64-17-5",
+            "64-17-5"
+          ],
+          "property": "viscosity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 4.41,
+              "epsilonToK": 400,
+              "delta": 0.25,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 4.41, ε/κ = 400, and δ = 0.25). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "C2H5OH",
+            "C2H5OH"
+          ],
+          "cas": [
+            "64-17-5",
+            "64-17-5"
+          ],
+          "property": "conductivity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1,
+              "TminK": 400
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 above 400 K."
+        },
+        {
+          "species": [
+            "C2N2",
+            "C2N2"
+          ],
+          "cas": [
+            "460-19-5",
+            "460-19-5"
+          ],
+          "property": "viscosity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.361,
+              "epsilonToK": 348.6,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.361 and ε/κ = 348.6) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "C2N2",
+            "C2N2"
+          ],
+          "cas": [
+            "460-19-5",
+            "460-19-5"
+          ],
+          "property": "conductivity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "Cl2",
+            "Cl2"
+          ],
+          "cas": [
+            "7782-50-5",
+            "7782-50-5"
+          ],
+          "property": "viscosity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.235,
+              "epsilonToK": 300,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.235 and ε/κ = 300). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "Cl2",
+            "Cl2"
+          ],
+          "cas": [
+            "7782-50-5",
+            "7782-50-5"
+          ],
+          "property": "conductivity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "D2",
+            "D2"
+          ],
+          "cas": [
+            "7782-39-0",
+            "7782-39-0"
+          ],
+          "property": "viscosity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "scaledFrom",
+              "interaction": "H2–H2",
+              "ratio": "molecularWeight D2/H2"
+            }
+          ],
+          "dataSource": "The viscosity of H2 was adjusted by the D2/H2 ratio of molecular weights."
+        },
+        {
+          "species": [
+            "D2",
+            "D2"
+          ],
+          "cas": [
+            "7782-39-0",
+            "7782-39-0"
+          ],
+          "property": "conductivity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "D2O",
+            "D2O"
+          ],
+          "cas": [
+            "7789-20-0",
+            "7789-20-0"
+          ],
+          "property": "viscosity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "scaledFrom",
+              "interaction": "H2O–H2O",
+              "ratio": "viscosity D2O/H2O",
+              "ratioFixedAboveK": 1000,
+              "source": "Matsunaga and Nagashima 1983"
+            }
+          ],
+          "dataSource": "The viscosity data of H2O was adjusted by the D2O/H2O viscosity ratio of Matsunaga and Nagashima (1983). The ratio at 1000 K was used for all temperatures above 1000 K."
+        },
+        {
+          "species": [
+            "D2O",
+            "D2O"
+          ],
+          "cas": [
+            "7789-20-0",
+            "7789-20-0"
+          ],
+          "property": "conductivity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "scaledFrom",
+              "interaction": "H2O–H2O",
+              "ratio": "conductivity D2O/H2O",
+              "ratioFixedAboveK": 1000,
+              "source": "Matsunaga and Nagashima 1983"
+            }
+          ],
+          "dataSource": "Conductivity data of H2O was adjusted by the D2O/H2O conductivity ratio of Matsunaga and Nagashima (1983). The ratio at 1000 K was used for all temperatures above 1000 K."
+        },
+        {
+          "species": [
+            "e",
+            "e"
+          ],
+          "cas": [
+            null,
+            null
+          ],
+          "property": "viscosity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Mason, Munn, and Smith 1967",
+              "electronPressureAtm": 1
+            }
+          ],
+          "dataSource": "Calculated for an electron pressure of 1 atm (Mason, Munn, and Smith 1967)."
+        },
+        {
+          "species": [
+            "e",
+            "e"
+          ],
+          "cas": [
+            null,
+            null
+          ],
+          "property": "conductivity",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Mason, Munn, and Smith 1967",
+              "electronPressureAtm": 1
+            }
+          ],
+          "dataSource": "Calculated for an electron pressure of 1 atm (Mason, Munn, and Smith 1967)."
+        },
+        {
+          "species": [
+            "e",
+            "H"
+          ],
+          "cas": [
+            null,
+            "12385-13-6"
+          ],
+          "property": "diffusion",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Capitelli, Gorse, and Fauchais 1976",
+              "AStar": 1.1
+            }
+          ],
+          "dataSource": "Theoretical calculations (Capitelli, Gorse, and Fauchais 1976). A* assumed equal to 1.1."
+        },
+        {
+          "species": [
+            "e",
+            "H2"
+          ],
+          "cas": [
+            null,
+            "1333-74-0"
+          ],
+          "property": "diffusion",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Capitelli, Gorse, and Fauchais 1976",
+              "AStar": 1.1
+            }
+          ],
+          "dataSource": "Theoretical calculations (Capitelli, Gorse, and Fauchais 1976). A* assumed equal to 1.1."
+        },
+        {
+          "species": [
+            "e",
+            "NO"
+          ],
+          "cas": [
+            null,
+            "10102-43-9"
+          ],
+          "property": "diffusion",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "literature",
+              "source": "Gupta et al. 1990"
+            }
+          ],
+          "dataSource": "Gupta et al. (1990)."
+        },
+        {
+          "species": [
+            "e",
+            "N2"
+          ],
+          "cas": [
+            null,
+            "7727-37-9"
+          ],
+          "property": "diffusion",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "literature",
+              "source": "Gupta et al. 1990"
+            }
+          ],
+          "dataSource": "Gupta et al. (1990)."
+        },
+        {
+          "species": [
+            "e",
+            "O"
+          ],
+          "cas": [
+            null,
+            "17778-80-2"
+          ],
+          "property": "diffusion",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "literature",
+              "source": "Gupta et al. 1990"
+            }
+          ],
+          "dataSource": "Gupta et al. (1990)."
+        },
+        {
+          "species": [
+            "e",
+            "O2"
+          ],
+          "cas": [
+            null,
+            "7782-44-7"
+          ],
+          "property": "diffusion",
+          "pdfPage": 11,
+          "methods": [
+            {
+              "method": "literature",
+              "source": "Gupta et al. 1990"
+            }
+          ],
+          "dataSource": "Gupta et al. (1990)."
+        },
+        {
+          "species": [
+            "F2",
+            "F2"
+          ],
+          "cas": [
+            "7782-41-4",
+            "7782-41-4"
+          ],
+          "property": "viscosity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 3.357,
+              "epsilonToK": 112.6,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 3.357 and ε/κ = 112.6) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "F2",
+            "F2"
+          ],
+          "cas": [
+            "7782-41-4",
+            "7782-41-4"
+          ],
+          "property": "conductivity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 5
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 5 for all temperatures."
+        },
+        {
+          "species": [
+            "H",
+            "H"
+          ],
+          "cas": [
+            "12385-13-6",
+            "12385-13-6"
+          ],
+          "property": "viscosity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Vanderslice et al. 1962"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Vanderslice et al. 1962)."
+        },
+        {
+          "species": [
+            "H",
+            "H"
+          ],
+          "cas": [
+            "12385-13-6",
+            "12385-13-6"
+          ],
+          "property": "conductivity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Vanderslice et al. 1962"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Vanderslice et al. 1962)."
+        },
+        {
+          "species": [
+            "H",
+            "H+"
+          ],
+          "cas": [
+            "12385-13-6",
+            null
+          ],
+          "property": "diffusion",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Capitelli, Gorse, and Fauchais 1976",
+              "AStar": 1.1
+            }
+          ],
+          "dataSource": "Theoretical calculations (Capitelli, Gorse, and Fauchais 1976). A* assumed equal to 1.1."
+        },
+        {
+          "species": [
+            "H",
+            "H2"
+          ],
+          "cas": [
+            "12385-13-6",
+            "1333-74-0"
+          ],
+          "property": "diffusion",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Tang and Wei 1974",
+              "AStarSource": "Vanderslice et al. 1962"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Tang and Wei 1974). Diffusion coefficients converted to η(1,2) from A* of Vanderslice et al. (1962)."
+        },
+        {
+          "species": [
+            "H",
+            "Li"
+          ],
+          "cas": [
+            "12385-13-6",
+            "7439-93-2"
+          ],
+          "property": "diffusion",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Krupenie, Mason, and Vanderslice 1963"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Krupenie, Mason, and Vanderslice 1963)."
+        },
+        {
+          "species": [
+            "H",
+            "N"
+          ],
+          "cas": [
+            "12385-13-6",
+            "17778-88-0"
+          ],
+          "property": "diffusion",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Stallcop, Bauschlicher, Partridge, Langhoff, and Levin 1992"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Stallcop, Bauschlicher, Partridge, Langhoff, and Levin 1992)."
+        },
+        {
+          "species": [
+            "H",
+            "N2"
+          ],
+          "cas": [
+            "12385-13-6",
+            "7727-37-9"
+          ],
+          "property": "diffusion",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Stallcop, Partridge, Walch, and Levin 1992"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Stallcop, Partridge, Walch, and Levin 1992)."
+        },
+        {
+          "species": [
+            "H",
+            "O"
+          ],
+          "cas": [
+            "12385-13-6",
+            "17778-80-2"
+          ],
+          "property": "diffusion",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Krupenie, Mason, and Vanderslice 1963"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Krupenie, Mason, and Vanderslice 1963)."
+        },
+        {
+          "species": [
+            "HBr",
+            "HBr"
+          ],
+          "cas": [
+            "10035-10-6",
+            "10035-10-6"
+          ],
+          "property": "viscosity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 3.41,
+              "epsilonToK": 418,
+              "delta": 0.147,
+              "source": "Zeleznik and Svehla 1970"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 3.41, ε/κ = 418, and δ = 0.147) (Zeleznik and Svehla 1970)."
+        },
+        {
+          "species": [
+            "HBr",
+            "HBr"
+          ],
+          "cas": [
+            "10035-10-6",
+            "10035-10-6"
+          ],
+          "property": "conductivity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1,
+              "TminK": 400
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 above 400 K."
+        },
+        {
+          "species": [
+            "HCN",
+            "HCN"
+          ],
+          "cas": [
+            "74-90-8",
+            "74-90-8"
+          ],
+          "property": "viscosity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 3.06,
+              "epsilonToK": 400,
+              "delta": 2.5,
+              "source": "Zeleznik and Svehla 1970"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 3.06, ε/κ = 400, and δ = 2.5) (Zeleznik and Svehla 1970)."
+        },
+        {
+          "species": [
+            "HCN",
+            "HCN"
+          ],
+          "cas": [
+            "74-90-8",
+            "74-90-8"
+          ],
+          "property": "conductivity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 for all temperatures."
+        },
+        {
+          "species": [
+            "HCl",
+            "HCl"
+          ],
+          "cas": [
+            "7647-01-0",
+            "7647-01-0"
+          ],
+          "property": "viscosity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 3.32,
+              "epsilonToK": 340,
+              "delta": 0.35,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 3.32, ε/κ = 340, and δ = 0.35). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "HCl",
+            "HCl"
+          ],
+          "cas": [
+            "7647-01-0",
+            "7647-01-0"
+          ],
+          "property": "conductivity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1,
+              "TminK": 400
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 above 400 K."
+        },
+        {
+          "species": [
+            "HF",
+            "HF"
+          ],
+          "cas": [
+            "7664-39-3",
+            "7664-39-3"
+          ],
+          "property": "viscosity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 2.49,
+              "epsilonToK": 286,
+              "delta": 2.5,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 2.49, ε/κ = 286, and δ = 2.5). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "HF",
+            "HF"
+          ],
+          "cas": [
+            "7664-39-3",
+            "7664-39-3"
+          ],
+          "property": "conductivity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 6
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 6 for all temperatures."
+        },
+        {
+          "species": [
+            "HF",
+            "H6F6"
+          ],
+          "cas": [
+            "7664-39-3",
+            null
+          ],
+          "property": "diffusion",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.2,
+              "epsilonToK": 400,
+              "basis": "thermalConductivityData"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.2 and ε/κ = 400). Obtained from thermal conductivity data."
+        },
+        {
+          "species": [
+            "HI",
+            "HI"
+          ],
+          "cas": [
+            "10034-85-2",
+            "10034-85-2"
+          ],
+          "property": "viscosity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.211,
+              "epsilonToK": 288.7,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.211 and ε/κ = 288.7) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "HI",
+            "HI"
+          ],
+          "cas": [
+            "10034-85-2",
+            "10034-85-2"
+          ],
+          "property": "conductivity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "H2",
+            "H2"
+          ],
+          "cas": [
+            "1333-74-0",
+            "1333-74-0"
+          ],
+          "property": "viscosity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 2200,
+              "source": "Assael, Mixafendi, and Wakeham 1986"
+            },
+            {
+              "method": "correspondingStates",
+              "sigma": 2.968,
+              "epsilonToK": 33.3,
+              "rhoStar": 0.11785,
+              "V0Star": 40600.0,
+              "source": "Boushehri et al. 1987",
+              "sigmaEpsilonSource": "Assael, Mixafendi, and Wakeham 1986",
+              "rhoV0Source": "Vanderslice and Mason 1960",
+              "TminK": 2200,
+              "scaledToMatch": true
+            }
+          ],
+          "matchTemperatureK": 2200,
+          "dataSource": "Experimental data were fitted at low temperatures (Assael, Mixafendi, and Wakeham 1986). The corresponding states method was used at high temperatures (Boushehri et al. 1987), with σ = 2.968 and ε/κ = 33.3 obtained from Assael, Mixafendi, and Wakeham (1986), and ρ* = 0.11785 and V0* = 4.06×10^4 obtained from Vanderslice and Mason (1960). High- and low-temperature data were forced to agree at 2200 K. Above 2200 K, the high-temperature data were adjusted in proportion to the ratio at 2200 K."
+        },
+        {
+          "species": [
+            "H2",
+            "H2"
+          ],
+          "cas": [
+            "1333-74-0",
+            "1333-74-0"
+          ],
+          "property": "conductivity",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 500,
+              "source": "Assael, Mixafendi, and Wakeham 1986"
+            },
+            {
+              "method": "modifiedEucken",
+              "TminK": 500,
+              "TmaxK": 5000
+            }
+          ],
+          "dataSource": "Experimental data were fitted at low temperatures (Assael, Mixafendi, and Wakeham 1986). The modified Eucken equation was used to calculate conductivity from 500 to 5000 K."
+        },
+        {
+          "species": [
+            "H2",
+            "H2O"
+          ],
+          "cas": [
+            "1333-74-0",
+            "7732-18-5"
+          ],
+          "property": "diffusion",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 2.718,
+              "epsilonToK": 159,
+              "basis": "diffusionData",
+              "source": "Svehla 1964"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 2.718 and ε/κ = 159). Obtained from experimental diffusion data (Svehla 1964)."
+        },
+        {
+          "species": [
+            "H2",
+            "N2"
+          ],
+          "cas": [
+            "1333-74-0",
+            "7727-37-9"
+          ],
+          "property": "diffusion",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "exp6",
+              "sigma": 3.836,
+              "epsilonToK": 43,
+              "alpha": 15,
+              "basis": "diffusionData"
+            }
+          ],
+          "dataSource": "Exp-6 potential (σ = 3.836, ε/κ = 43, and α = 15). Obtained from diffusion data."
+        },
+        {
+          "species": [
+            "H2",
+            "O2"
+          ],
+          "cas": [
+            "1333-74-0",
+            "7782-44-7"
+          ],
+          "property": "diffusion",
+          "pdfPage": 12,
+          "methods": [
+            {
+              "method": "exp6",
+              "sigma": 3.485,
+              "epsilonToK": 100,
+              "alpha": 12,
+              "basis": "diffusionData"
+            }
+          ],
+          "dataSource": "Exp-6 potential (σ = 3.485, ε/κ = 100, and α = 12). Obtained from diffusion data."
+        },
+        {
+          "species": [
+            "H2O",
+            "H2O"
+          ],
+          "cas": [
+            "7732-18-5",
+            "7732-18-5"
+          ],
+          "property": "viscosity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 1073,
+              "source": "Sengers and Watson 1986"
+            },
+            {
+              "method": "experimental",
+              "TminK": 1077,
+              "TmaxK": 1344,
+              "source": "Latto 1965"
+            },
+            {
+              "method": "stockmayer",
+              "sigma": 2.595,
+              "epsilonToK": 470,
+              "delta": 1.5,
+              "TminK": 1344,
+              "source": "Matsunaga and Nagashima 1983"
+            }
+          ],
+          "dataSource": "Low-temperature data up to 1073 K were obtained from Sengers and Watson (1986). Data between 1077 and 1344 K were obtained from Latto (1965). Above 1344 K the Stockmayer potential parameters of Matsunaga and Nagashima (1983) were used (σ = 2.595, ε/κ = 470, and δ = 1.50)."
+        },
+        {
+          "species": [
+            "H2O",
+            "H2O"
+          ],
+          "cas": [
+            "7732-18-5",
+            "7732-18-5"
+          ],
+          "property": "conductivity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 1073,
+              "source": "Sengers and Watson 1986"
+            },
+            {
+              "method": "theoretical",
+              "source": "Matsunaga and Nagashima 1983",
+              "TminK": 1200,
+              "TmaxK": 2000
+            },
+            {
+              "method": "prandtlExtrapolation",
+              "prandtlCalculatedToK": 2000,
+              "TminK": 2000,
+              "TmaxK": 5000
+            }
+          ],
+          "dataSource": "Low-temperature data up to 1073 K were obtained from Sengers and Watson (1986). The calculations of Matsunaga and Nagashima (1983) were used from 1200 to 2000 K. The Prandtl number was then calculated up to 2000 K and extrapolated to 5000 K. The conductivity was calculated from the viscosity and heat capacity from 2000 to 5000 K."
+        },
+        {
+          "species": [
+            "H2O",
+            "N2"
+          ],
+          "cas": [
+            "7732-18-5",
+            "7727-37-9"
+          ],
+          "property": "diffusion",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 2.947,
+              "epsilonToK": 240,
+              "basis": "combiningRules"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 2.947 and ε/κ = 240). Parameters were obtained from combining rules."
+        },
+        {
+          "species": [
+            "H2O",
+            "O2"
+          ],
+          "cas": [
+            "7732-18-5",
+            "7782-44-7"
+          ],
+          "property": "diffusion",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "exp6",
+              "sigma": 3.7,
+              "epsilonToK": 100,
+              "alpha": 15,
+              "basis": "diffusionData"
+            }
+          ],
+          "dataSource": "Exp-6 potential (σ = 3.700, ε/κ = 100, and α = 15). Obtained from diffusion data."
+        },
+        {
+          "species": [
+            "H2S",
+            "H2S"
+          ],
+          "cas": [
+            "7783-06-4",
+            "7783-06-4"
+          ],
+          "property": "viscosity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 3.442,
+              "epsilonToK": 380,
+              "delta": 0.22,
+              "source": "Zeleznik and Svehla 1970"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 3.442, ε/κ = 380, and δ = 0.22) (Zeleznik and Svehla 1970)."
+        },
+        {
+          "species": [
+            "H2S",
+            "H2S"
+          ],
+          "cas": [
+            "7783-06-4",
+            "7783-06-4"
+          ],
+          "property": "conductivity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 0.5
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 0.5 for all temperatures."
+        },
+        {
+          "species": [
+            "H6F6",
+            "H6F6"
+          ],
+          "cas": [
+            null,
+            null
+          ],
+          "property": "viscosity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 5.91,
+              "epsilonToK": 559,
+              "basis": "estimated"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 5.91 and ε/κ = 559). Parameters were estimated."
+        },
+        {
+          "species": [
+            "H6F6",
+            "H6F6"
+          ],
+          "cas": [
+            null,
+            null
+          ],
+          "property": "conductivity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "He",
+            "He"
+          ],
+          "cas": [
+            "7440-59-7",
+            "7440-59-7"
+          ],
+          "property": "viscosity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "source": "Bich, Millat, and Vogel 1990"
+            }
+          ],
+          "dataSource": "Method of corresponding states (Bich, Millat, and Vogel 1990)."
+        },
+        {
+          "species": [
+            "He",
+            "He"
+          ],
+          "cas": [
+            "7440-59-7",
+            "7440-59-7"
+          ],
+          "property": "conductivity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "source": "Bich, Millat, and Vogel 1990"
+            }
+          ],
+          "dataSource": "Method of corresponding states (Bich, Millat, and Vogel 1990)."
+        },
+        {
+          "species": [
+            "He",
+            "N2"
+          ],
+          "cas": [
+            "7440-59-7",
+            "7727-37-9"
+          ],
+          "property": "diffusion",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "exp6",
+              "sigma": 3.262,
+              "epsilonToK": 50,
+              "alpha": 12,
+              "basis": "diffusionData"
+            }
+          ],
+          "dataSource": "Exp-6 potential (σ = 3.262, ε/κ = 50, and α = 12). Obtained from diffusion data."
+        },
+        {
+          "species": [
+            "I2",
+            "I2"
+          ],
+          "cas": [
+            "7553-56-2",
+            "7553-56-2"
+          ],
+          "property": "viscosity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 5.16,
+              "epsilonToK": 474.2,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 5.160 and ε/κ = 474.2) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "I2",
+            "I2"
+          ],
+          "cas": [
+            "7553-56-2",
+            "7553-56-2"
+          ],
+          "property": "conductivity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "Kr",
+            "Kr"
+          ],
+          "cas": [
+            "7439-90-9",
+            "7439-90-9"
+          ],
+          "property": "viscosity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "source": "Bich, Millat, and Vogel 1990"
+            }
+          ],
+          "dataSource": "Method of corresponding states (Bich, Millat, and Vogel 1990)."
+        },
+        {
+          "species": [
+            "Kr",
+            "Kr"
+          ],
+          "cas": [
+            "7439-90-9",
+            "7439-90-9"
+          ],
+          "property": "conductivity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "source": "Bich, Millat, and Vogel 1990"
+            }
+          ],
+          "dataSource": "Method of corresponding states (Bich, Millat, and Vogel 1990)."
+        },
+        {
+          "species": [
+            "Li",
+            "Li"
+          ],
+          "cas": [
+            "7439-93-2",
+            "7439-93-2"
+          ],
+          "property": "viscosity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Holland, Biolsi, and Rainwater 1986"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Holland, Biolsi, and Rainwater 1986)."
+        },
+        {
+          "species": [
+            "Li",
+            "Li"
+          ],
+          "cas": [
+            "7439-93-2",
+            "7439-93-2"
+          ],
+          "property": "conductivity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Holland, Biolsi, and Rainwater 1986"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Holland, Biolsi, and Rainwater 1986)."
+        },
+        {
+          "species": [
+            "N",
+            "N"
+          ],
+          "cas": [
+            "17778-88-0",
+            "17778-88-0"
+          ],
+          "property": "viscosity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Levin, Partridge, and Stallcop 1990"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Levin, Partridge, and Stallcop 1990)."
+        },
+        {
+          "species": [
+            "N",
+            "N"
+          ],
+          "cas": [
+            "17778-88-0",
+            "17778-88-0"
+          ],
+          "property": "conductivity",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Levin, Partridge, and Stallcop 1990"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Levin, Partridge, and Stallcop 1990)."
+        },
+        {
+          "species": [
+            "N",
+            "N+"
+          ],
+          "cas": [
+            "17778-88-0",
+            null
+          ],
+          "property": "diffusion",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Stallcop, Partridge, and Levin 1991"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Stallcop, Partridge, and Levin 1991)."
+        },
+        {
+          "species": [
+            "N",
+            "NO"
+          ],
+          "cas": [
+            "17778-88-0",
+            "10102-43-9"
+          ],
+          "property": "diffusion",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "exponentialRepulsive",
+              "basis": "molecularBeamScattering",
+              "source": "Cubley and Mason 1975"
+            }
+          ],
+          "dataSource": "Derived from molecular beam scattering data and fitted to exponential repulsive potential (Cubley and Mason 1975)."
+        },
+        {
+          "species": [
+            "N",
+            "N2"
+          ],
+          "cas": [
+            "17778-88-0",
+            "7727-37-9"
+          ],
+          "property": "diffusion",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "exponentialRepulsive",
+              "basis": "molecularBeamScattering",
+              "source": "Cubley and Mason 1975"
+            }
+          ],
+          "dataSource": "Derived from molecular beam scattering data and fitted to exponential repulsive potential (Cubley and Mason 1975)."
+        },
+        {
+          "species": [
+            "N",
+            "O"
+          ],
+          "cas": [
+            "17778-88-0",
+            "17778-80-2"
+          ],
+          "property": "diffusion",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Levin, Partridge, and Stallcop 1990"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Levin, Partridge, and Stallcop 1990)."
+        },
+        {
+          "species": [
+            "N",
+            "O+"
+          ],
+          "cas": [
+            "17778-88-0",
+            null
+          ],
+          "property": "diffusion",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Partridge, Stallcop, and Levin 1991"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Partridge, Stallcop, and Levin 1991)."
+        },
+        {
+          "species": [
+            "N",
+            "O2"
+          ],
+          "cas": [
+            "17778-88-0",
+            "7782-44-7"
+          ],
+          "property": "diffusion",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "exponentialRepulsive",
+              "basis": "molecularBeamScattering",
+              "source": "Cubley and Mason 1975"
+            }
+          ],
+          "dataSource": "Derived from molecular beam scattering data and fitted to exponential repulsive potential (Cubley and Mason 1975)."
+        },
+        {
+          "species": [
+            "N+",
+            "O"
+          ],
+          "cas": [
+            null,
+            "17778-80-2"
+          ],
+          "property": "diffusion",
+          "pdfPage": 13,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Partridge, Stallcop, and Levin 1991"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Partridge, Stallcop, and Levin 1991)."
+        },
+        {
+          "species": [
+            "NH3",
+            "NH3"
+          ],
+          "cas": [
+            "7664-41-7",
+            "7664-41-7"
+          ],
+          "property": "viscosity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 700
+            },
+            {
+              "method": "stockmayer",
+              "sigma": 2.969,
+              "epsilonToK": 460,
+              "delta": 0.65,
+              "TminK": 700,
+              "source": "Zeleznik and Svehla 1970"
+            }
+          ],
+          "dataSource": "Experimental data were fitted to 700 K. Above 700 K the Stockmayer potential was used (σ = 2.969, ε/κ = 460, and δ = 0.65) (Zeleznik and Svehla 1970)."
+        },
+        {
+          "species": [
+            "NH3",
+            "NH3"
+          ],
+          "cas": [
+            "7664-41-7",
+            "7664-41-7"
+          ],
+          "property": "conductivity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 700
+            },
+            {
+              "method": "prandtlExtrapolation",
+              "prandtlCalculatedToK": 700,
+              "TminK": 700,
+              "TmaxK": 5000
+            }
+          ],
+          "dataSource": "Experimental data were fitted to 700 K. The Prandtl number was calculated to 700 K and extrapolated to 5000 K. The conductivity was calculated from the viscosity and heat capacity from 700 to 5000 K."
+        },
+        {
+          "species": [
+            "NO",
+            "NO"
+          ],
+          "cas": [
+            "10102-43-9",
+            "10102-43-9"
+          ],
+          "property": "viscosity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "sigma": 3.474,
+              "epsilonToK": 125.0,
+              "rhoStar": 0.0883,
+              "V0Star": 214500.0,
+              "source": "Boushehri et al. 1987"
+            }
+          ],
+          "dataSource": "Method of corresponding states (σ = 3.474, ε/κ = 125.0, ρ* = 0.0883, and V0* = 2.145×10^5) (Boushehri et al. 1987)."
+        },
+        {
+          "species": [
+            "NO",
+            "NO"
+          ],
+          "cas": [
+            "10102-43-9",
+            "10102-43-9"
+          ],
+          "property": "conductivity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 900
+            },
+            {
+              "method": "prandtlExtrapolation",
+              "prandtlCalculatedToK": 900,
+              "TminK": 900,
+              "TmaxK": 5000
+            }
+          ],
+          "dataSource": "Experimental data were fitted to 900 K. The Prandtl number was calculated to 900 K and extrapolated to 5000 K. The conductivity was calculated from the viscosity and heat capacity from 900 to 5000 K."
+        },
+        {
+          "species": [
+            "NO",
+            "O"
+          ],
+          "cas": [
+            "10102-43-9",
+            "17778-80-2"
+          ],
+          "property": "diffusion",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "exponentialRepulsive",
+              "basis": "molecularBeamScattering",
+              "source": "Cubley and Mason 1975"
+            }
+          ],
+          "dataSource": "Derived from molecular beam scattering data and fitted to exponential repulsive potential (Cubley and Mason 1975)."
+        },
+        {
+          "species": [
+            "NO+",
+            "N2"
+          ],
+          "cas": [
+            null,
+            "7727-37-9"
+          ],
+          "property": "diffusion",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "literature",
+              "source": "Gupta et al. 1990"
+            }
+          ],
+          "dataSource": "Gupta et al. (1990)."
+        },
+        {
+          "species": [
+            "NO+",
+            "O"
+          ],
+          "cas": [
+            null,
+            "17778-80-2"
+          ],
+          "property": "diffusion",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "literature",
+              "source": "Gupta et al. 1990"
+            }
+          ],
+          "dataSource": "Gupta et al. (1990)."
+        },
+        {
+          "species": [
+            "NOCl",
+            "NOCl"
+          ],
+          "cas": [
+            "2696-92-6",
+            "2696-92-6"
+          ],
+          "property": "viscosity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 3.88,
+              "epsilonToK": 450,
+              "delta": 0.5,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 3.88, ε/κ = 450, and δ = 0.50). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "NOCl",
+            "NOCl"
+          ],
+          "cas": [
+            "2696-92-6",
+            "2696-92-6"
+          ],
+          "property": "conductivity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 for all temperatures."
+        },
+        {
+          "species": [
+            "NO2",
+            "NO2"
+          ],
+          "cas": [
+            "10102-44-0",
+            "10102-44-0"
+          ],
+          "property": "viscosity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 3.765,
+              "epsilonToK": 210,
+              "source": "Svehla and Brokaw 1966"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 3.765 and ε/κ = 210) (Svehla and Brokaw 1966)."
+        },
+        {
+          "species": [
+            "NO2",
+            "NO2"
+          ],
+          "cas": [
+            "10102-44-0",
+            "10102-44-0"
+          ],
+          "property": "conductivity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "N2",
+            "N2"
+          ],
+          "cas": [
+            "7727-37-9",
+            "7727-37-9"
+          ],
+          "property": "viscosity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 2200,
+              "source": "Stephan, Krauss, and Laesecke 1987"
+            },
+            {
+              "method": "correspondingStates",
+              "sigma": 3.652,
+              "epsilonToK": 98.4,
+              "rhoStar": 0.108,
+              "V0Star": 53080.0,
+              "source": "Boushehri et al. 1987",
+              "TminK": 2200,
+              "scaledToMatch": true
+            }
+          ],
+          "matchTemperatureK": 2200,
+          "dataSource": "Experimental data were fitted at low temperatures (Stephan, Krauss, and Laesecke 1987). The corresponding states method was used at high temperatures (σ = 3.652, ε/κ = 98.4, ρ* = 0.1080, and V0* = 5.308×10^4) (Boushehri et al. 1987). High- and low-temperature data were forced to agree at 2200 K. Above 2200 K, the high-temperature data were adjusted in proportion to the ratio at 2200 K."
+        },
+        {
+          "species": [
+            "N2",
+            "N2"
+          ],
+          "cas": [
+            "7727-37-9",
+            "7727-37-9"
+          ],
+          "property": "conductivity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 2200,
+              "source": "NASA Lewis"
+            },
+            {
+              "method": "prandtlExtrapolation",
+              "prandtlCalculatedToK": 2200,
+              "TminK": 2200,
+              "TmaxK": 5000
+            }
+          ],
+          "dataSource": "Experimental data were fitted at low temperatures at NASA Lewis. The Prandtl number was calculated up to 2200 K and extrapolated to 5000 K. The conductivity was calculated from the viscosity and heat capacity from 2200 to 5000 K."
+        },
+        {
+          "species": [
+            "N2",
+            "O"
+          ],
+          "cas": [
+            "7727-37-9",
+            "17778-80-2"
+          ],
+          "property": "diffusion",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "exponentialRepulsive",
+              "basis": "molecularBeamScattering",
+              "source": "Cubley and Mason 1975"
+            }
+          ],
+          "dataSource": "Derived from molecular beam scattering data and fitted to exponential repulsive potential (Cubley and Mason 1975)."
+        },
+        {
+          "species": [
+            "N2",
+            "O+"
+          ],
+          "cas": [
+            "7727-37-9",
+            null
+          ],
+          "property": "diffusion",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "literature",
+              "source": "Gupta et al. 1990"
+            }
+          ],
+          "dataSource": "Gupta et al. 1990."
+        },
+        {
+          "species": [
+            "N2",
+            "O2"
+          ],
+          "cas": [
+            "7727-37-9",
+            "7782-44-7"
+          ],
+          "property": "diffusion",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "sameAs",
+              "interaction": "CO–O2"
+            }
+          ],
+          "dataSource": "Same as CO–O2."
+        },
+        {
+          "species": [
+            "N2O",
+            "N2O"
+          ],
+          "cas": [
+            "10024-97-2",
+            "10024-97-2"
+          ],
+          "property": "viscosity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "sigma": 3.703,
+              "epsilonToK": 266.8,
+              "rhoStar": 0.073,
+              "V0Star": 2600000.0,
+              "source": "Boushehri et al. 1987"
+            }
+          ],
+          "dataSource": "Method of corresponding states (σ = 3.703, ε/κ = 266.8, ρ* = 0.0730, and V0* = 2.600×10^6) (Boushehri et al. 1987)."
+        },
+        {
+          "species": [
+            "N2O",
+            "N2O"
+          ],
+          "cas": [
+            "10024-97-2",
+            "10024-97-2"
+          ],
+          "property": "conductivity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "source": "Uribe, Mason, and Kestin 1990"
+            }
+          ],
+          "dataSource": "Method of corresponding states (Uribe, Mason, and Kestin 1990)."
+        },
+        {
+          "species": [
+            "N2O4",
+            "N2O4"
+          ],
+          "cas": [
+            "10544-72-6",
+            "10544-72-6"
+          ],
+          "property": "viscosity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.621,
+              "epsilonToK": 347,
+              "source": "Svehla and Brokaw 1966"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.621 and ε/κ = 347) (Svehla and Brokaw 1966)."
+        },
+        {
+          "species": [
+            "N2O4",
+            "N2O4"
+          ],
+          "cas": [
+            "10544-72-6",
+            "10544-72-6"
+          ],
+          "property": "conductivity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "Na",
+            "Na"
+          ],
+          "cas": [
+            "7440-23-5",
+            "7440-23-5"
+          ],
+          "property": "viscosity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Holland and Biolsi 1987"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Holland and Biolsi 1987)."
+        },
+        {
+          "species": [
+            "Na",
+            "Na"
+          ],
+          "cas": [
+            "7440-23-5",
+            "7440-23-5"
+          ],
+          "property": "conductivity",
+          "pdfPage": 14,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Holland and Biolsi 1987"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Holland and Biolsi 1987)."
+        },
+        {
+          "species": [
+            "Ne",
+            "Ne"
+          ],
+          "cas": [
+            "7440-01-9",
+            "7440-01-9"
+          ],
+          "property": "viscosity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "source": "Bich, Millat, and Vogel 1990"
+            }
+          ],
+          "dataSource": "Method of corresponding states (Bich, Millat, and Vogel 1990)."
+        },
+        {
+          "species": [
+            "Ne",
+            "Ne"
+          ],
+          "cas": [
+            "7440-01-9",
+            "7440-01-9"
+          ],
+          "property": "conductivity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "source": "Bich, Millat, and Vogel 1990"
+            }
+          ],
+          "dataSource": "Method of corresponding states (Bich, Millat, and Vogel 1990)."
+        },
+        {
+          "species": [
+            "O",
+            "O"
+          ],
+          "cas": [
+            "17778-80-2",
+            "17778-80-2"
+          ],
+          "property": "viscosity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Levin, Partridge, and Stallcop 1990"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Levin, Partridge, and Stallcop 1990)."
+        },
+        {
+          "species": [
+            "O",
+            "O"
+          ],
+          "cas": [
+            "17778-80-2",
+            "17778-80-2"
+          ],
+          "property": "conductivity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Levin, Partridge, and Stallcop 1990"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Levin, Partridge, and Stallcop 1990)."
+        },
+        {
+          "species": [
+            "O",
+            "O+"
+          ],
+          "cas": [
+            "17778-80-2",
+            null
+          ],
+          "property": "diffusion",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "theoretical",
+              "source": "Stallcop, Partridge, and Levin 1991"
+            }
+          ],
+          "dataSource": "Theoretical calculations (Stallcop, Partridge, and Levin 1991)."
+        },
+        {
+          "species": [
+            "O",
+            "O2"
+          ],
+          "cas": [
+            "17778-80-2",
+            "7782-44-7"
+          ],
+          "property": "diffusion",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "exponentialRepulsive",
+              "basis": "molecularBeamScattering",
+              "source": "Cubley and Mason 1975"
+            }
+          ],
+          "dataSource": "Derived from molecular beam scattering data and fitted to exponential repulsive potential (Cubley and Mason 1975)."
+        },
+        {
+          "species": [
+            "OH",
+            "OH"
+          ],
+          "cas": [
+            "3352-57-6",
+            "3352-57-6"
+          ],
+          "property": "viscosity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "stockmayer",
+              "sigma": 2.49,
+              "epsilonToK": 257,
+              "delta": 2.5,
+              "basis": "estimated",
+              "estimatedFrom": "HF–HF"
+            }
+          ],
+          "dataSource": "Stockmayer potential (σ = 2.490, ε/κ = 257, and δ = 2.50). Constants were estimated from HF–HF."
+        },
+        {
+          "species": [
+            "OH",
+            "OH"
+          ],
+          "cas": [
+            "3352-57-6",
+            "3352-57-6"
+          ],
+          "property": "conductivity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 for all temperatures."
+        },
+        {
+          "species": [
+            "O2",
+            "O2"
+          ],
+          "cas": [
+            "7782-44-7",
+            "7782-44-7"
+          ],
+          "property": "viscosity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 2000,
+              "source": "Laesecke et al. 1990"
+            },
+            {
+              "method": "correspondingStates",
+              "sigma": 3.407,
+              "epsilonToK": 121.1,
+              "rhoStar": 0.0745,
+              "V0Star": 1322000.0,
+              "source": "Boushehri et al. 1987",
+              "TminK": 2000,
+              "scaledToMatch": true
+            }
+          ],
+          "matchTemperatureK": 2000,
+          "dataSource": "Experimental data were fitted at low temperatures (Laesecke, et al. 1990). The corresponding states method was used at high temperatures (σ = 3.407, ε/κ = 121.1, ρ* = 0.0745, and V0* = 1.322×10^6) (Boushehri et al. 1987). High- and low-temperature data were forced to agree at 2000 K. Above 2000 K the high-temperature data were adjusted in proportion to the ratio at 2000 K."
+        },
+        {
+          "species": [
+            "O2",
+            "O2"
+          ],
+          "cas": [
+            "7782-44-7",
+            "7782-44-7"
+          ],
+          "property": "conductivity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 1600,
+              "source": "NASA Lewis"
+            },
+            {
+              "method": "prandtlExtrapolation",
+              "prandtlCalculatedToK": 1600,
+              "TminK": 1600,
+              "TmaxK": 5000
+            }
+          ],
+          "dataSource": "Experimental data were fitted at low temperatures at NASA Lewis. The Prandtl number was calculated up to 1600 K and extrapolated to 5000 K. Conductitvity was calculated from the viscosity and heat capacity from 1600 to 5000 K."
+        },
+        {
+          "species": [
+            "SF6",
+            "SF6"
+          ],
+          "cas": [
+            "2551-62-4",
+            "2551-62-4"
+          ],
+          "property": "viscosity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 900,
+              "source": "Trengove and Wakeham 1987"
+            },
+            {
+              "method": "correspondingStates",
+              "sigma": 5.252,
+              "epsilonToK": 207.7,
+              "rhoStar": 0.05,
+              "V0Star": 406700000.0,
+              "source": "Boushehri et al. 1987",
+              "TminK": 900,
+              "scaledToMatch": true
+            }
+          ],
+          "matchTemperatureK": 900,
+          "dataSource": "Experimental data were fitted at low temperatures (Trengove and Wakeham 1987). The corresponding states method was used at high temperatures (σ = 5.252, ε/κ = 207.7, ρ* = 0.0500, and V0* = 4.067×10^8) (Boushehri et al. 1987). High- and low-temperature data were forced to agree at 900 K. Above 900 K, the high-temperature data were adjusted in proportion to the ratio at 900 K."
+        },
+        {
+          "species": [
+            "SF6",
+            "SF6"
+          ],
+          "cas": [
+            "2551-62-4",
+            "2551-62-4"
+          ],
+          "property": "conductivity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 900,
+              "source": "NASA Lewis"
+            },
+            {
+              "method": "prandtlExtrapolation",
+              "prandtlCalculatedToK": 900,
+              "TminK": 900,
+              "TmaxK": 5000
+            }
+          ],
+          "dataSource": "Experimental data were fitted at low temperatures at NASA Lewis. The Prandtl number was calculated up to 900 K and extrapolated to 5000 K. The conductivity was calculated from the viscosity and heat capacity from 900 to 5000 K."
+        },
+        {
+          "species": [
+            "SO2",
+            "SO2"
+          ],
+          "cas": [
+            "7446-09-5",
+            "7446-09-5"
+          ],
+          "property": "viscosity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 1200
+            },
+            {
+              "method": "stockmayer",
+              "sigma": 3.919,
+              "epsilonToK": 390,
+              "delta": 0.41,
+              "TminK": 1200,
+              "source": "Zeleznik and Svehla 1970"
+            }
+          ],
+          "dataSource": "Experimental data were fitted to 1200 K. Above 1200 K the Stockmayer potential was used (σ = 3.919, ε/κ = 390, and δ = 0.41) (Zeleznik and Svehla 1970)."
+        },
+        {
+          "species": [
+            "SO2",
+            "SO2"
+          ],
+          "cas": [
+            "7446-09-5",
+            "7446-09-5"
+          ],
+          "property": "conductivity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "experimental",
+              "TmaxK": 800
+            },
+            {
+              "method": "prandtlExtrapolation",
+              "prandtlCalculatedToK": 800,
+              "TminK": 800,
+              "TmaxK": 5000
+            }
+          ],
+          "dataSource": "Experimental data were fitted to 800 K. The Prandtl number was calculated to 800 K and extrapolated to 5000 K. The conductivity was calculated from the viscosity and heat capacity from 800 to 5000 K."
+        },
+        {
+          "species": [
+            "SiCl4",
+            "SiCl4"
+          ],
+          "cas": [
+            "10026-04-7",
+            "10026-04-7"
+          ],
+          "property": "viscosity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 6.17,
+              "epsilonToK": 330,
+              "basis": "viscosityData"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 6.170 and ε/κ = 330). Obtained from viscosity data."
+        },
+        {
+          "species": [
+            "SiCl4",
+            "SiCl4"
+          ],
+          "cas": [
+            "10026-04-7",
+            "10026-04-7"
+          ],
+          "property": "conductivity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 for all temperatures."
+        },
+        {
+          "species": [
+            "SiF4",
+            "SiF4"
+          ],
+          "cas": [
+            "7783-61-1",
+            "7783-61-1"
+          ],
+          "property": "viscosity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.88,
+              "epsilonToK": 171.9,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.880 and ε/κ = 171.9) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "SiF4",
+            "SiF4"
+          ],
+          "cas": [
+            "7783-61-1",
+            "7783-61-1"
+          ],
+          "property": "conductivity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "modifiedEucken",
+              "Z": 1
+            }
+          ],
+          "dataSource": "Modified Eucken approximation with correction for rotational energy transfer. Z = 1 for all temperatures."
+        },
+        {
+          "species": [
+            "SiH4",
+            "SiH4"
+          ],
+          "cas": [
+            "7803-62-5",
+            "7803-62-5"
+          ],
+          "property": "viscosity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 4.084,
+              "epsilonToK": 207.6,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 4.084 and ε/κ = 207.6) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "SiH4",
+            "SiH4"
+          ],
+          "cas": [
+            "7803-62-5",
+            "7803-62-5"
+          ],
+          "property": "conductivity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "modifiedEucken"
+            }
+          ],
+          "dataSource": "Modified Eucken approximation."
+        },
+        {
+          "species": [
+            "UF6",
+            "UF6"
+          ],
+          "cas": [
+            "7783-81-5",
+            "7783-81-5"
+          ],
+          "property": "viscosity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "lennardJones",
+              "sigma": 5.967,
+              "epsilonToK": 236.8,
+              "source": "Svehla 1962"
+            }
+          ],
+          "dataSource": "Lennard-Jones potential (σ = 5.967 and ε/κ = 236.8) (Svehla 1962)."
+        },
+        {
+          "species": [
+            "Xe",
+            "Xe"
+          ],
+          "cas": [
+            "7440-63-3",
+            "7440-63-3"
+          ],
+          "property": "viscosity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "source": "Bich, Millat, and Vogel 1990"
+            }
+          ],
+          "dataSource": "Method of corresponding states (Bich, Millat, and Vogel 1990)."
+        },
+        {
+          "species": [
+            "Xe",
+            "Xe"
+          ],
+          "cas": [
+            "7440-63-3",
+            "7440-63-3"
+          ],
+          "property": "conductivity",
+          "pdfPage": 15,
+          "methods": [
+            {
+              "method": "correspondingStates",
+              "source": "Bich, Millat, and Vogel 1990"
+            }
+          ],
+          "dataSource": "Method of corresponding states (Bich, Millat, and Vogel 1990)."
+        }
+      ]
+    }
+  ]
+}

@@ -5,9 +5,10 @@
 # Source files: shared/sources/compound-data/chemicals/ (chemicals repo copy + PROVENANCE.txt),
 #               shared/sources/compound-data/nist-janaf/ (JANAF table ids),
 #               shared/sources/NASA/ (NASA-7 / NASA-9 species keys, checked by ΔfH°(298.15)),
-#               shared/sources/compound-data/pubchem/pubchem-cas.tsv (PubChem identifier cache, step 2)
+#               shared/sources/compound-data/pubchem/pubchem-cas.tsv (PubChem identifier cache, step 2),
+#               shared/sources/transport-parameters.json (White, TN D-481, Mamedov 2014, Svehla 1995)
 # Output files: shared/processed/compound-data/{inorganic/<Element>,organic/<family>}/<formula>-<name>.json,
-#               unresolved.json, index.json, units.json, sources.json (the folder is cleared first)
+#               unresolved.json, index.json, units.json, sources.json, interactions.json (the folder is cleared first)
 # Report: tmp/reports/python/compound-data/report.json, missing-cas.txt
 # Spec: docs/scripts/COMPOUND_DATA_SPEC.md
 # Implementation: python/src/chemical_formula/, chemicals_tables/, pubchem/, dataset_layout/, nasa_thermo/, compound_data/

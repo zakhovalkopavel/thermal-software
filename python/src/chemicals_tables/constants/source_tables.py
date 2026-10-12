@@ -30,8 +30,8 @@ def _crc_standard_columns() -> dict[str, P]:
 
 def _lennard_jones_columns() -> dict[str, P]:
     return {
-        "molecular_diameter": P("collisionDiameter", "m", scale=1e-10),
-        "Stockmayer": P("epsilonToKb", "K"),
+        "molecular_diameter": P("collisionDiameter", "m", scale=1e-10, extra=(("potential", "lennardJones"),)),
+        "Stockmayer": P("epsilonToKb", "K", extra=(("potential", "lennardJones"),)),
     }
 
 

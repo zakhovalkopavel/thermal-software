@@ -54,6 +54,18 @@ class TestExistingTypes:
 
 
 class TestPlannedTypes:
+    def test_sutherland_air(self):
+        # White Table 1-2 air: μ0 1.716e-5 Pa s at 273 K, S 111 K; tabulated μ(400 K) ≈ 2.29e-5
+        vars_ = {"y0": 1.716e-5, "T0": 273, "S": 111}
+        assert evaluate_equation("sutherland", 400, vars_, 170, 1900) == pytest.approx(2.2870392825210138e-05, rel=REL)
+        assert evaluate_equation("sutherland", 273, vars_, 170, 1900) == pytest.approx(1.716e-5, rel=REL)
+
+    def test_power_law_air(self):
+        vars_ = {"y0": 1.716e-5, "T0": 273, "n": 0.666}
+        assert evaluate_equation("powerLaw", 400, vars_, 210, 1900) == pytest.approx(2.2131197548169116e-05, rel=REL)
+        assert evaluate_equation("powerLaw", 100, vars_, 210, 1900) == \
+            evaluate_equation("powerLaw", 210, vars_, 210, 1900)
+
     def test_dippr_n114_hydrogen(self):
         vars_ = {"Tc": 33.19, "c1": 66.653, "c2": 6765.9, "c3": -123.63, "c4": 478.27}
         assert evaluate_equation("dipprN114", 20, vars_, 13.95, 32) == pytest.approx(19423.948911676463, rel=REL)

@@ -45,8 +45,8 @@ This directory contains documentation for Python processing scripts.
 - Packages: `python/src/chemical_formula/`, `chemicals_tables/` (table parsers), `pubchem/` (PubChem client and cache), `dataset_layout/` (file names, output clearing), `compound_data/` (merge and output)
 - CLI: `python/src/scripts/build_compound_data.py`, `python/src/scripts/fetch_pubchem_identifiers.py`
 - Make commands: `make compound-data-build` (step 1, offline, also writes `missing-cas.txt`), `make compound-data-pubchem` (step 2: PubChem identifiers of the missing CAS numbers, slow and resumable, then rebuild), `make compound-data-test`
-- Source files: `shared/sources/compound-data/chemicals/` (https://github.com/CalebBell/chemicals, pinned commit), `shared/sources/compound-data/nist-janaf/`, `shared/sources/NASA/` (NASA-7 / NASA-9 keys, checked by ΔfH°) and the PubChem cache `shared/sources/compound-data/pubchem/pubchem-cas.tsv`
-- Output: `shared/processed/compound-data/inorganic/<Element>/<IUPAC formula>-<name>.json`, `organic/<family>/<Hill>-<name>.json`, `unresolved.json`, `index.json`, `units.json` + `sources.json` (cleared before writing)
+- Source files: `shared/sources/compound-data/chemicals/` (https://github.com/CalebBell/chemicals, pinned commit), `shared/sources/compound-data/nist-janaf/`, `shared/sources/NASA/` (NASA-7 / NASA-9 keys, checked by ΔfH°), the PubChem cache `shared/sources/compound-data/pubchem/pubchem-cas.tsv` and `shared/sources/transport-parameters.json` (White, NASA TN D-481, Mamedov 2014, Svehla 1995)
+- Output: `shared/processed/compound-data/inorganic/<Element>/<IUPAC formula>-<name>.json`, `organic/<family>/<Hill>-<name>.json`, `unresolved.json`, `index.json`, `units.json`, `sources.json` + `interactions.json` (cleared before writing)
 - Report: `tmp/reports/python/compound-data/report.json`
 
 ---

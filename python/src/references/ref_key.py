@@ -55,3 +55,7 @@ class RefKey(str, Enum):
     TRC1994         = 'TRC1994'  # [40] Thermodynamics Research Center — Thermodynamics of Organic Compounds in the Gas State, Vol. II, TRC (1994)
     VDI2010         = 'VDI2010'  # [41] VDI e.V. (ed.) — VDI Heat Atlas, 2nd ed., Springer (2010)
     Magalhaes2013   = 'Magalhaes2013'  # [42] Magalhães, A.L.; Lito, P.F.; Da Silva, F.A.; Silva, C.M. — Simple and Accurate Correlations for Diffusion Coefficients of Solutes in Liquids and Supercritical Fluids, J. Supercrit. Fluids 76 (2013)
+    Svehla1962      = 'Svehla1962'  # [43] Svehla R.A. — Estimated Viscosities and Thermal Conductivities of Gases at High Temperatures, NASA TR R-132 (1962)
+    Itean1961       = 'Itean1961'  # [44] Itean E.C., Glueck A.R., Svehla R.A. — Collision Integrals for a Modified Stockmayer Potential, NASA TN D-481 (1961)
+    Svehla1995      = 'Svehla1995'  # [45] Svehla R.A. — Transport Coefficients for the NASA Lewis Chemical Equilibrium Program, NASA TM-4647 (1995)
+    Mamedov2014     = 'Mamedov2014'  # [46] Mamedov B.A., Somuncu E. — Analytical treatment of second virial coefficient over Lennard-Jones (2n–n) potential, J. Mol. Struct. 1068 (2014)

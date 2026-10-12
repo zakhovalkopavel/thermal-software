@@ -37,3 +37,5 @@ class EquationType(StrEnum):
     ppds12                      = "ppds12"
     dipprN106                   = "dipprN106"
     wagner25                    = "wagner25"
+    sutherland                  = "sutherland"
+    powerLaw                    = "powerLaw"
