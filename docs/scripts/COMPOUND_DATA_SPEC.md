@@ -1,11 +1,11 @@
 # Compound Data Specification (CalebBell/chemicals tables)
 
-**Status:** Implemented (`python/src/chemical_formula/`, `chemicals_tables/`, `pubchem/`, `dataset_layout/`, `compound_data/`, see [Packages](#packages)). The backend methods of the planned equation types are the next step.
+**Status:** Implemented (`python/src/chemical_formula/`, `chemicals_tables/`, `pubchem/`, `dataset_layout/`, `compound_data/`, see [Packages](#packages)). The backend implements every equation type the dataset writes (see [New equation types](#new-equation-types)).
 **Purpose:** Merge the CalebBell/chemicals data tables copied into `shared/sources/compound-data/chemicals/` into JSON datasets, one small file per compound. Inorganic compounds are placed by their main element and organic compounds by functional family, with an `index.json` linking them and a `units.json` listing the units. Every coefficient row is stored as a ready-to-use backend `EquationValue`.
 
 Sources: CRC 95th ed., Perry 8th ed., Poling 5th ed., Yaws 2014, TRC 1994, Zabransky 1996, NIST WebBook Shomate and VDI Heat Atlas PPDS, plus the hand-transcribed transport parameters of White (Viscous Fluid Flow 3e), NASA TN D-481, Mamedov & Somuncu 2014 and Svehla 1995 (see [Transport parameters](#transport-parameters)).
 
-The build also parses the NIST-JANAF copy with the `janaf` package and lists the matching table ids in each record (see [JANAF table ids](#janaf-table-ids)). Implementing the planned equation types in the backend is the next step (see [Planned equation types](#planned-equation-types)).
+The build also parses the NIST-JANAF copy with the `janaf` package and lists the matching table ids in each record (see [JANAF table ids](#janaf-table-ids)).
 
 The JSON format is described by the backend interfaces in [utils/compound-data/](../../backend/src/common/thermal/utils/compound-data/index.ts); the unit of every value is in `units.json`.
 
@@ -38,7 +38,7 @@ The JSON format is described by the backend interfaces in [utils/compound-data/]
   - `k` converts the result to the backend unit, as the existing entries do (e.g. CO2 Perry7 Aly-Lee uses `k: 1e-3`).
 - **Molten density:** stored as a backend `linear` equation, plus the verbatim row in `raw`.
 - **Perry rows without a range:** 29 rows, the 13 monatomic-gas rows with Cp = 4.97 cal/(mol K) and 16 salts and hydrates (CuSO4·5H2O, H2S2O7, ...). They are kept as `raw` only, with no equation.
-- **Tables with no backend type yet:** stored now under new type names (see [Planned equation types](#planned-equation-types)). The backend methods come in the next step.
+- **Tables with no earlier backend type:** stored under new type names, implemented in the backend with this dataset (see [New equation types](#new-equation-types)).
 - **Links to other datasets:** only ids are written: NIST-JANAF table ids (`janaf`, see [JANAF table ids](#janaf-table-ids)) and NASA-7 / NASA-9 species keys (`nasa7`, `nasa9`, matched by formula and checked by ΔfH°(298.15), see [NASA species keys](#nasa-species-keys)). The polynomials stay in their own datasets.
 - **Missing ranges:**
   - VDI liquid properties take Tm..Tc from the VDI rows of the same CAS.
@@ -75,13 +75,13 @@ Backend types come from [equation-type.dto.ts](../../backend/src/common/thermal/
 
 ---
 
-## Planned equation types
+## New equation types
 
-These tables have no backend type yet. They are stored now in the same `EquationValue` shape, under new `type` names.
+These tables had no backend type before this dataset. They are stored in the same `EquationValue` shape, under new `type` names.
 
-### Backend equations to add
+### Backend equations
 
-The next step adds, for each type:
+The backend has, for each type:
 - an `EquationTypeDto` value;
 - a `type/*.ts` vars type;
 - an `equation-methods/*` class with `calculate`, `integral` and `calculateAverage`;
@@ -233,7 +233,7 @@ Property names follow the backend where a name exists (`enthalpyFormation298`, `
 | `mamedov2014-table-1` | `mamedov2014T1` | `Mamedov2014` | σ, ε/k, `potential: lennardJones`, `basis: secondVirial` |
 | `svehla1995-table-1` | `svehla1995T1` | `Svehla1995` (NASA TM-4647 Table I) | `transport` block + potential parameters; pairs → `interactions.json` |
 
-- **Equations:** White's power law and Sutherland law become the planned types `powerLaw` and `sutherland` (see [Planned equation types](#planned-equation-types)) under `equations.viscosity.gas` / `equations.thermalConductivity.gas`. `error` is the printed ± % (2 for the Sutherland range). Tables 1-2 / 1-3 print SI; Table A-6 prints °R and slug/(ft h), so its precomputed `si` columns are used.
+- **Equations:** White's power law and Sutherland law become the types `powerLaw` and `sutherland` (see [New equation types](#new-equation-types)) under `equations.viscosity.gas` / `equations.thermalConductivity.gas`. `error` is the printed ± % (2 for the Sutherland range). Tables 1-2 / 1-3 print SI; Table A-6 prints °R and slug/(ft h), so its precomputed `si` columns are used.
 - **Potential parameters:** every σ (Å × 1e-10 → m) and ε/k goes to `collisionDiameter` / `epsilonToKb` with `potential` (`lennardJones`, `stockmayer`, `correspondingStates`) next to `ref`, so values fitted to different potentials are never mixed up. New scalar properties: `stockmayerDelta` δ = μ²/(2εσ³), `dipoleMoment` (D × 3.33564e-30 → C m), `rhoStar`, `V0Star` (corresponding states, Boushehri et al. 1987). Mamedov's values are fitted to second virial coefficients (`basis: secondVirial`); its 4 benzene mixture rows are skipped and reported (`transportMixtureSkipped`).
 - **Svehla 1995 Table I** (how the NASA Lewis transport fits were obtained):
   - A pure-species viscosity or conductivity row with a CAS becomes `transport.<viscosity | thermalConductivity>` on the record: `{methods, matchTemperatureK?, ref}`, the methods in printed order with σ in m and `epsilonToK` renamed `epsilonToKb` (units: `units.json` → `transport`).
@@ -451,9 +451,9 @@ The chemicals identifier files are a partial PubChem sample: 3,976 CAS numbers o
 ### Equations
 
 - `equations.<property>.<phase>` has the backend `{def, values}` shape, so a value can go straight to `Common.equation(type).calculate(T, vars, min, max, k)`.
-- `def` is the first entry, in source priority order, whose type the backend already implements. The priority order is Perry, then Poling, then VDI, then CRC. A planned type never becomes `def` until the backend supports it.
+- `def` is the first entry, in source priority order, whose type the backend implements. The priority order is Perry, then Poling, then VDI, then CRC. A type listed in `PLANNED_EQUATION_TYPES` never becomes `def`; the set is empty now, so `def` is the first entry.
 - `ref` is the source row tuple, not the backend `RefKey`; the backend loader takes `ref[0]`. The other extra keys (`variant`, `error`, `dataType`, `uncertainty`, `tcRef`, `rangeRef`, and `raw` for molten density) are provenance only.
-- `index.json` `equationTypes` lists every `type` used, and whether each one is `implemented` or `planned`.
+- `index.json` `equationTypes` lists every `type` used, and whether each one is `implemented` or `planned` (all `implemented` now).
 
 ### Records
 
@@ -492,7 +492,7 @@ It holds no property values.
 - `vdiLiquidNoRange`, VDI liquid rows whose CAS has no VDI Tm/Tc row (stored with `min/max = null`);
 - `zabranskyNoCas` (Pentaethoxyuranium, given an identity by `IDENTITY_OVERRIDES`) and `zabranskySplineSplit`;
 - `equationIssues`: non-positive or non-finite values at `min`, `max` or 298.15 K, `maxAtOrAboveTc` for `dipprN114` and `zabranskyQuasiPolynomial`, and formulas that cannot be evaluated. Zeros at T ≥ Tc are expected for `ppds12` and `dipprN106` and are not reported;
-- `checks`: one check point per equation (mid-range, else 298.15 K) with the `evaluate_equation` value, for the backend implementation of the planned types;
+- `checks`: one check point per equation (mid-range, else 298.15 K) with the `evaluate_equation` value, for checking the backend methods against the Python reference;
 - `transportMixtureSkipped` (Mamedov benzene mixture rows), `transportInteractionNoRecord` (a pair species whose CAS has no record), `transportUnknownTable`, and the counts `transportEntries`, `transportRecords` (records with a `transport` block) and `transportInteractions`;
 - the JANAF sections listed in [JANAF table ids](#janaf-table-ids) and the NASA sections listed in [NASA species keys](#nasa-species-keys).
 
@@ -526,10 +526,10 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
 - **`dataset_layout/`**, the folder and file layout shared with the JANAF dataset: `compound_file_name.py` `compound_file_name` / `name_slug`, `unique_file_paths.py` `unique_file_paths` (case-insensitive collisions), `clear_dataset_dir.py` `clear_dataset_dir`.
 - **`chemicals_tables/`**, the CalebBell/chemicals tables → source entries:
   - models: `source_link.py` `SourceLink`, `property_value.py` `PropertyValue`, `equation_value.py` `EquationValue` (type, ref, vars, min, max, k, source, raw), `raw_value.py` `RawValue`, `transport_value.py` `TransportValue` (Svehla methods, match temperature), `source_entry.py` `SourceEntry` (one parsed value before merging), `identifier.py` `Identifier`, `table_spec.py` `TableSpec`, `coefficient_spec.py` `CoefficientSpec` (columns mapped to vars, type, k, property, phase, Tmin/Tmax columns, ref), `property_column.py`, `chemicals_source.py` `ChemicalsSource` (whose `file_url(path, line)` percent-encodes the path);
-  - constants: `constants/equation_type.py` `EquationType` (a StrEnum with the existing `equation-type.dto.ts` values plus the planned ones), `constants/planned_equation_types.py` `PLANNED_EQUATION_TYPES` (dipprN114, trcCp, shomate, zabranskySpline, zabranskyQuasiPolynomial, dipprN101, ppds9, ppds10, ppds12, dipprN106, wagner25, sutherland, powerLaw), `constants/source_tables.py` `SOURCE_TABLES`, `constants/coefficient_tables.py` `COEFFICIENT_TABLES` (Poling, Perry 2-153 DIPPR 100/114, 2-312, 2-313, 2-314, TRC), `constants/gas_constant.py` `GAS_CONSTANT`, `constants/identity_overrides.py` `IDENTITY_OVERRIDES`;
+  - constants: `constants/equation_type.py` `EquationType` (a StrEnum with the existing `equation-type.dto.ts` values, including the [new types](#new-equation-types)), `constants/planned_equation_types.py` `PLANNED_EQUATION_TYPES` (types written before the backend implements them; empty now), `constants/source_tables.py` `SOURCE_TABLES`, `constants/coefficient_tables.py` `COEFFICIENT_TABLES` (Poling, Perry 2-153 DIPPR 100/114, 2-312, 2-313, 2-314, TRC), `constants/gas_constant.py` `GAS_CONSTANT`, `constants/identity_overrides.py` `IDENTITY_OVERRIDES`;
   - parsers: `parsers/property_table.py` `parse_property_table`, `parsers/coefficient_table.py` `parse_coefficient_table`, `parsers/perry_151.py` `parse_perry_151` (linearHyperbolic or quadratic per row), `parsers/crc_molten_density.py` `parse_crc_molten_density`, `parsers/shomate_json.py` `parse_shomate_json` (per-phase `ranges`, line of each CAS key), `parsers/zabransky.py` `parse_zabransky` (spline rows per CAS and data type → one piecewise equation; quasi-polynomial rows → single equations), `parsers/vdi_ppds.py` `parse_vdi_ppds` (8 files, liquid ranges from the VDI Tm/Tc rows), `parsers/identifiers.py` `load_identifiers`, `parsers/provenance.py` `read_chemicals_source`, `parsers/tsv_reader.py`, `parsers/number.py` (integers stay integers), `parsers/cas.py`;
   - logic: `source_entries.py` `parse_source_entries` (all parsers + identity overrides), `identity_override.py` `IdentityOverride`, `identity_resolver.py` `apply_identity_overrides`, `label_variant.py` `label_variant` (trailing `(...)` of a source label), `report_issue.py`;
-  - `equation_eval.py` `evaluate_equation`, a Python copy of the backend `calculate` formulas for existing and planned types. It clamps T to min/max when they are set, then applies `k`. It is used by the tests and the sanity report, and is the reference for the next step's TypeScript methods.
+  - `equation_eval.py` `evaluate_equation`, a Python copy of the backend `calculate` formulas for every type. It clamps T to min/max when they are set, then applies `k`. It is used by the tests and the sanity report, and gave the reference values of the backend unit tests.
 - **`pubchem/`**, polite PUG REST lookups (step 2), independent of the build:
   - `pubchem_client.py` `PubchemClient` (pacing, throttling, pauses), `pubchem_throttle.py` `throttle_level`, `pubchem_response.py` `PubchemResponse` (status, JSON, `X-Throttling-Control`, `Retry-After`), `pubchem_blocked_error.py` `PubchemBlockedError`, `pubchem_transient_error.py` `PubchemTransientError`;
   - `pubchem_result.py` `PubchemResult` (status classification, cache row, `name`);
@@ -588,7 +588,7 @@ One folder per package: `python/tests/chemical_formula/` (formulas, classes, mai
   - CRC_inorganic(300, 2370.0, 2.687, 239.08) gives 2206.30796 through linear.
   - The Poling docstring example matches quartic with k = R.
   - The Perry 2-312 and 2-314 C3H8 rows reproduce the vars in `c3h8.ts`.
-- **Planned types:** `evaluate_equation` must reproduce the chemicals functions. chemicals isn't a dependency, so the expected values are copied into the fixtures:
+- **New types:** `evaluate_equation` must reproduce the chemicals functions. chemicals isn't a dependency, so the expected values are copied into the fixtures:
   - `EQ114` for ammonia;
   - `TRCCp` for methanal;
   - `Shomate(500, ...) = 35.21836175` for water vapour;
@@ -604,7 +604,7 @@ One folder per package: `python/tests/chemical_formula/` (formulas, classes, mai
   - A Shomate entry with 2 ranges picks the right range.
   - A VDI liquid entry takes Tm/Tc from the cited row.
   - A VDI gas entry has `min/max = null`.
-- **Type sync:** every `EquationType` value is either in `equation-type.dto.ts` (the test reads the TS file) or in `PLANNED_EQUATION_TYPES`, never both. Once the backend adds a type, the test forces it out of the planned set. `compose.yml` mounts `backend/src/common/thermal/dto` read-only at `/app/backend-dto` for this test.
+- **Type sync:** every `EquationType` value is either in `equation-type.dto.ts` (the test reads the TS file) or in `PLANNED_EQUATION_TYPES`, never both. Once the backend adds a type, the test forces it out of the planned set (empty now). `compose.yml` mounts `backend/src/common/thermal/dto` read-only at `/app/backend-dto` for this test.
 - **Grouping and organic rule:**
   - Main element: Al2O3 → Al, TiO2 → Ti, NH3 / N2H4 → N, H2SO4 → S, MgAl2O4 → Mg, Mo2B → Mo, H2O / OF2 → O, H2 → H (27 cases).
   - Ca and Cl are not read as C.

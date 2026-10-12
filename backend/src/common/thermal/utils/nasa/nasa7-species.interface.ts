@@ -10,4 +10,6 @@ export interface Nasa7Species {
   Tmin: number;
   Tmax: number;
   nasa7: Nasa7Equation;
+  /** Element counts from the header's formula slots, e.g. { C: 1, H: 4 }; absent in files parsed before it was added */
+  elements?: Record<string, number>;
 }

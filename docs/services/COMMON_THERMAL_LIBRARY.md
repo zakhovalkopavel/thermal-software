@@ -172,8 +172,24 @@ export interface EquationValue {
 | `dipprN102` | c1·T^c2 / (1 + c3/T + c4/T²) | `{ c1, c2, c3, c4 }` |
 | `nasa7` | 7-coefficient polynomial (Cp, H, S, G) | — read from `nasa7.json` by `nasa7Key`, not here |
 | `nasa9` | 9-coefficient (variable ranges) | — read from `nasa9.json` by `nasa9Key`, not here |
+| `dipprN114` | DIPPR-114: c1²/τ + c2 − 2·c1·c3·τ − … − c4²·τ⁵/5, τ = 1 − T/Tc (RangeError at T ≥ Tc) | `{ Tc, c1, c2, c3, c4 }` |
+| `trcCp` | TRC: a0 + (a1/T²)·e^(−a2/T) + a3·y² + (a4 − a5/(T − a7)²)·y⁸ (Cp/R, k = R) | `{ a0, …, a7, I, J }` |
+| `shomate` | a + b·T + c·T² + d·T³ + e/T², piecewise | `{ ranges: [{ Tmin, Tmax, a, b, c, d, e }] }` |
+| `zabranskySpline` | a1 + a2·θ + a3·θ² + a4·θ³, θ = T/100, piecewise (Cp/R, k = R) | `{ ranges: [{ Tmin, Tmax, a1, …, a4 }] }` |
+| `zabranskyQuasiPolynomial` | a1·ln(1 − Tr) + a2/(1 − Tr) + a3 + a4·Tr + a5·Tr² + a6·Tr³ (Cp/R, k = R; RangeError at T ≥ Tc) | `{ Tc, a1, …, a6 }` |
+| `dipprN101` | DIPPR-101: exp(c1 + c2/T + c3·ln T + c4·T^c5) | `{ c1, c2, c3, c4, c5 }` |
+| `ppds9` | PPDS 9: e·exp(a·s^(1/3) + b·s^(4/3)), s = (c − T)/(T − d) | `{ a, b, c, d, e }` |
+| `ppds10` | PPDS 10: ρc + a·τ^0.35 + b·τ^(2/3) + c·τ + d·τ^(4/3) (ρc above Tc) | `{ Tc, rhoc, a, b, c, d }` |
+| `ppds12` | PPDS 12: R·Tc·(a·τ^(1/3) + b·τ^(2/3) + c·τ + d·τ² + e·τ⁶) (0 above Tc) | `{ Tc, a, b, c, d, e }` |
+| `dipprN106` | DIPPR-106: c1·τ^(c2 + c3·Tr + c4·Tr² + c5·Tr³) (0 above Tc) | `{ Tc, c1, …, c5 }` |
+| `wagner25` | Wagner 2.5/5: Pc·exp((a·τ + b·τ^1.5 + c·τ^2.5 + d·τ⁵)/Tr) (Pc above Tc) | `{ Tc, Pc, a, b, c, d }` |
+| `sutherland` | y0·(T/T0)^1.5·(T0 + S)/(T + S) | `{ y0, T0, S }` |
+| `powerLaw` | y0·(T/T0)^n | `{ y0, T0, n }` |
 
-> Planned types (`dipprN114`, `trcCp`, `shomate`, `zabranskySpline`, `zabranskyQuasiPolynomial`, `dipprN101`, `ppds9`, `ppds10`, `ppds12`, `dipprN106`, `wagner25`) are specified in [NEW_EQUATION_TYPES_SPEC.md](NEW_EQUATION_TYPES_SPEC.md).
+> The types from `dipprN114` down are specified in [NEW_EQUATION_TYPES_SPEC.md](NEW_EQUATION_TYPES_SPEC.md).
+> `dipprN101`, `ppds9`, `dipprN106` and `wagner25` have no closed-form antiderivative: `integral` uses
+> `gaussLegendre20` from `min` (298.15 K when `min` is unbounded). The piecewise types (`shomate`,
+> `zabranskySpline`) integrate cumulatively from `ranges[0].Tmin`, continuous across range boundaries.
 
 > NASA data is referenced by key on `CompoundValue`, never written into `heatCapacity.values[]`.
 > See [CONVENTIONS.md §6](../CONVENTIONS.md) for the rule.

@@ -1,9 +1,9 @@
 """
 chemicals_tables.constants.equation_type — Equation type names written into the dataset.
 
-The first block mirrors ``EquationTypeDto`` in backend/src/common/thermal/dto/equation-type.dto.ts.
-The second block are planned types (docs/services/NEW_EQUATION_TYPES_SPEC.md), also listed in
-``PLANNED_EQUATION_TYPES`` until the backend implements them.
+Mirrors ``EquationTypeDto`` in backend/src/common/thermal/dto/equation-type.dto.ts. The second block
+are the types specified in docs/services/NEW_EQUATION_TYPES_SPEC.md. A type the backend does not
+implement yet must also be listed in ``PLANNED_EQUATION_TYPES``.
 
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md
 """
@@ -13,7 +13,7 @@ from enum import StrEnum
 
 
 class EquationType(StrEnum):
-    """Backend equation types, existing and planned."""
+    """Backend equation types."""
 
     linear                      = "linear"
     quadratic                   = "quadratic"

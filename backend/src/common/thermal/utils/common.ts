@@ -9,6 +9,19 @@ import { AlyLeeEquationMethod } from './equation-methods/aly-lee-equation-method
 import { DipprEquation102Method } from './equation-methods/dippr-equation-102-method';
 import { Nasa7EquationMethod } from './equation-methods/nasa7-equation-method';
 import { Nasa9EquationMethod } from './equation-methods/nasa9-equation-method';
+import { DipprEquation114Method } from './equation-methods/dippr-equation-114-method';
+import { TrcCpEquationMethod } from './equation-methods/trc-cp-equation-method';
+import { ShomateEquationMethod } from './equation-methods/shomate-equation-method';
+import { ZabranskySplineEquationMethod } from './equation-methods/zabransky-spline-equation-method';
+import { ZabranskyQuasiPolynomialEquationMethod } from './equation-methods/zabransky-quasi-polynomial-equation-method';
+import { DipprEquation101Method } from './equation-methods/dippr-equation-101-method';
+import { Ppds9EquationMethod } from './equation-methods/ppds9-equation-method';
+import { Ppds10EquationMethod } from './equation-methods/ppds10-equation-method';
+import { Ppds12EquationMethod } from './equation-methods/ppds12-equation-method';
+import { DipprEquation106Method } from './equation-methods/dippr-equation-106-method';
+import { Wagner25EquationMethod } from './equation-methods/wagner25-equation-method';
+import { SutherlandEquationMethod } from './equation-methods/sutherland-equation-method';
+import { PowerLawEquationMethod } from './equation-methods/power-law-equation-method';
 
 export class Common {
   static logarithmicAverage(x1: number, x2: number): number {
@@ -42,6 +55,19 @@ export class Common {
       case EquationTypeDto.dipprN102:                   return new DipprEquation102Method();
       case EquationTypeDto.nasa7:                       return new Nasa7EquationMethod();
       case EquationTypeDto.nasa9:                       return new Nasa9EquationMethod();
+      case EquationTypeDto.dipprN114:                   return new DipprEquation114Method();
+      case EquationTypeDto.trcCp:                       return new TrcCpEquationMethod();
+      case EquationTypeDto.shomate:                     return new ShomateEquationMethod();
+      case EquationTypeDto.zabranskySpline:             return new ZabranskySplineEquationMethod();
+      case EquationTypeDto.zabranskyQuasiPolynomial:    return new ZabranskyQuasiPolynomialEquationMethod();
+      case EquationTypeDto.dipprN101:                   return new DipprEquation101Method();
+      case EquationTypeDto.ppds9:                       return new Ppds9EquationMethod();
+      case EquationTypeDto.ppds10:                      return new Ppds10EquationMethod();
+      case EquationTypeDto.ppds12:                      return new Ppds12EquationMethod();
+      case EquationTypeDto.dipprN106:                   return new DipprEquation106Method();
+      case EquationTypeDto.wagner25:                    return new Wagner25EquationMethod();
+      case EquationTypeDto.sutherland:                  return new SutherlandEquationMethod();
+      case EquationTypeDto.powerLaw:                    return new PowerLawEquationMethod();
       default: throw new Error(`Unknown equation type: ${type}`);
     }
   }

@@ -53,7 +53,7 @@ python/
 │   ├── chemicals_tables/ # CalebBell/chemicals tables → source entries (one export per file)
 │   │   ├── *.py                 # models (SourceLink, PropertyValue, EquationValue, TransportValue, SourceEntry, Identifier, ...)
 │   │   ├── source_entries.py    # parse_source_entries (all parsers + identity overrides)
-│   │   ├── equation_eval.py     # evaluate_equation (backend calculate, existing + planned types)
+│   │   ├── equation_eval.py     # evaluate_equation (backend calculate, all equation types)
 │   │   ├── constants/           # tables, coefficient layouts, equation types, identity overrides
 │   │   └── parsers/             # one parser per table family + provenance, identifiers
 │   ├── pubchem/          # polite PubChem PUG REST lookups of CAS numbers + resumable cache

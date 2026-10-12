@@ -1,8 +1,9 @@
 """
-chemicals_tables.equation_eval — Python copy of the backend ``calculate`` methods, existing and planned types.
+chemicals_tables.equation_eval — Python copy of the backend ``calculate`` methods for every equation type.
 
 Contract (backend ``Equation.calculate``): clamp T to [min, max] when they are set, evaluate,
-multiply by ``k``. It is the reference for the TypeScript methods of the planned types.
+multiply by ``k``. The backend unit tests of the NEW_EQUATION_TYPES_SPEC types use reference values
+computed with it.
 
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md, docs/services/NEW_EQUATION_TYPES_SPEC.md
 """

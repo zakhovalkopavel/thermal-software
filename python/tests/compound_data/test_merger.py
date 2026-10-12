@@ -115,7 +115,8 @@ class TestMerge:
         assert [p.value for p in record.properties["meltingPoint"]] == [83.8, 83.81]
         assert record.Mr == pytest.approx(0.039948)
 
-    def test_def_skips_planned_types(self, identifier_source, chem, classifier):
+    def test_def_skips_planned_types(self, identifier_source, chem, classifier, monkeypatch):
+        monkeypatch.setattr("compound_data.compound_record.PLANNED_EQUATION_TYPES", frozenset({"dipprN114"}))
         ids = load_identifiers(identifier_source, chem, {"64-17-5"})
         entries = [
             _eq("64-17-5", RefKey.Perry8, EquationType.dipprN114, chem, "Perry 2-153 DIPPR 114", phase="liquid"),
@@ -124,6 +125,15 @@ class TestMerge:
         record = merge_compounds(entries, ids, classifier).records["64-17-5"]
         assert record.to_dict()["equations"]["heatCapacity"]["liquid"]["def"] == 1
         assert (record.compound_class, record.group) == ("organic", "alcohols")
+
+    def test_def_is_first_value_when_nothing_is_planned(self, identifier_source, chem, classifier):
+        ids = load_identifiers(identifier_source, chem, {"64-17-5"})
+        entries = [
+            _eq("64-17-5", RefKey.Perry8, EquationType.dipprN114, chem, "Perry 2-153 DIPPR 114", phase="liquid"),
+            _eq("64-17-5", RefKey.Perry8, EquationType.quartic, chem, "Perry 2-153 DIPPR 100", phase="liquid"),
+        ]
+        record = merge_compounds(entries, ids, classifier).records["64-17-5"]
+        assert record.to_dict()["equations"]["heatCapacity"]["liquid"]["def"] == 0
 
     def test_wrong_cas_row_is_detached(self, identifier_source, chem, classifier):
         ids = load_identifiers(identifier_source, chem, {"79-24-3"})

@@ -12,7 +12,7 @@ Sub-modules
   chemicals_tables.source_entries        — parse_source_entries (all parsers + identity overrides)
   chemicals_tables.parsers.*             — one parser per table family, identifiers, PROVENANCE.txt
   chemicals_tables.identity_resolver     — apply_identity_overrides (rows without CAS or formula)
-  chemicals_tables.equation_eval         — evaluate_equation (backend calculate, existing + planned types)
+  chemicals_tables.equation_eval         — evaluate_equation (backend calculate, all equation types)
   chemicals_tables.chemicals_source      — ChemicalsSource (repository, commit, file links)
   chemicals_tables.source_entry          — SourceEntry; property_value, equation_value, raw_value, source_link
   chemicals_tables.identifier            — Identifier (CAS → formula, Mr, SMILES, InChIKey, source row)

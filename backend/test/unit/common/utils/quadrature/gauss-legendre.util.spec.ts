@@ -49,10 +49,6 @@ describe('gaussLegendre20 — polynomial integrals (exact for deg ≤ 39)', () =
     expect(gaussLegendre20(x => x, 0, 1)).toBeCloseTo(0.5, 12);
   });
 
-  // GL-20 is mathematically exact for deg ≤ 39, but floating-point rounding
-  // in intermediate sums limits effective accuracy to ~6 decimal digits on
-  // non-unit intervals. Tolerances below reflect actual float arithmetic.
-
   it('integrates f=x² over [0,1] → 1/3 (tol 5 dp)', () => {
     expect(gaussLegendre20(x => x * x, 0, 1)).toBeCloseTo(1 / 3, 5);
   });
@@ -86,5 +82,19 @@ describe('gaussLegendre20 — polynomial integrals (exact for deg ≤ 39)', () =
 
   it('integrates sin(x) over [0,π] → 2 (tol 4 dp)', () => {
     expect(gaussLegendre20(Math.sin, 0, Math.PI)).toBeCloseTo(2.0, 4);
+  });
+});
+
+describe('GAUSS_LEGENDRE_TABLES — exactness to machine precision', () => {
+  it.each([8, 16, 20, 32, 64] as const)('N = %i integrates every even monomial up to degree 2N−2 on [−1, 1]', N => {
+    const { nodes, weights } = GAUSS_LEGENDRE_TABLES[N];
+    for (let p = 0; p <= 2 * N - 2; p += 2) {
+      const sum = nodes.reduce((acc, x, i) => acc + weights[i] * Math.pow(x, p), 0);
+      expect(Math.abs(sum - 2 / (p + 1))).toBeLessThan(1e-14);
+    }
+  });
+
+  it('gaussLegendre20 integrates x³⁹ over [0, 1] to machine precision', () => {
+    expect(Math.abs(gaussLegendre20(x => Math.pow(x, 39), 0, 1) - 1 / 40)).toBeLessThan(1e-15);
   });
 });

@@ -9,5 +9,17 @@ export enum EquationTypeDto {
   dipprN102                   = 'dipprN102',
   nasa7                       = 'nasa7',
   nasa9                       = 'nasa9',
+  dipprN114                   = 'dipprN114',
+  trcCp                       = 'trcCp',
+  shomate                     = 'shomate',
+  zabranskySpline             = 'zabranskySpline',
+  zabranskyQuasiPolynomial    = 'zabranskyQuasiPolynomial',
+  dipprN101                   = 'dipprN101',
+  ppds9                       = 'ppds9',
+  ppds10                      = 'ppds10',
+  ppds12                      = 'ppds12',
+  dipprN106                   = 'dipprN106',
+  wagner25                    = 'wagner25',
+  sutherland                  = 'sutherland',
+  powerLaw                    = 'powerLaw',
 }
-

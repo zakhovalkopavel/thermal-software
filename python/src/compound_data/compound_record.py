@@ -22,7 +22,7 @@ class CompoundRecord:
     """All values of one compound, grouped by property (and phase for equations).
 
     Equation values are kept in source priority order; ``def`` is the first one whose type
-    the backend implements, or ``None`` when all are planned types. ``janaf`` lists the NIST-JANAF
+    the backend implements (not in ``PLANNED_EQUATION_TYPES``), or ``None`` when all are planned types. ``janaf`` lists the NIST-JANAF
     table ids with the same Hill formula; the tables themselves are in ``shared/processed/JANAF/``.
     ``nasa7`` / ``nasa9`` list the species keys of ``shared/processed/NASA/nasa7.json`` / ``nasa9.json``
     (all phases) whose formula and ΔfH°(298.15) match the record (see nasa_links).

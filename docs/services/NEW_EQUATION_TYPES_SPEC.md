@@ -1,8 +1,8 @@
 # New Equation Types Spec
 
-**Status:** Planned, not implemented yet.
+**Status:** Implemented (`backend/src/common/thermal/utils/equation-methods/`, tests in `backend/test/unit/thermal/utils/{heat-capacity,liquid-property,gas-transport}-equation-methods.spec.ts`).
 
-This spec covers the backend equation types that the compound-data dataset ([COMPOUND_DATA_SPEC.md](../scripts/COMPOUND_DATA_SPEC.md)) already writes, but the backend cannot evaluate yet. The dataset stores them as ready-to-use `EquationValue` objects. This step adds the methods.
+This spec covers the backend equation types that the compound-data dataset ([COMPOUND_DATA_SPEC.md](../scripts/COMPOUND_DATA_SPEC.md)) writes as ready-to-use `EquationValue` objects, beyond the types the backend had before.
 
 Formulas and test values come from [CalebBell/chemicals](https://github.com/CalebBell/chemicals) at commit `e79047588b30cfabc564c79fb26d760c746877d7`. Each type links to the function it was checked against.
 
@@ -35,9 +35,14 @@ Each type follows the existing pattern (see `dipprN102`):
 - `backend/src/common/thermal/utils/equation-methods/<name>-equation-method.ts`: a class implementing `Equation<T>` with `calculate`, `integral` and `calculateAverage`, exported from `equation-methods/index.ts`.
 - `backend/src/common/thermal/dto/equation-type.dto.ts`: a new `EquationTypeDto` value.
 - `backend/src/common/thermal/utils/common.ts`: a new case in `Common.equation`.
-- `backend/test/unit/thermal/utils/<name>-equation-method.spec.ts`: the unit test.
+- `backend/test/unit/thermal/utils/`: the unit tests, grouped by property in `heat-capacity-equation-methods.spec.ts` (`dipprN114`, `trcCp`, `shomate`, `zabranskySpline`, `zabranskyQuasiPolynomial`), `liquid-property-equation-methods.spec.ts` (`dipprN101`, `ppds9`, `ppds10`, `ppds12`, `dipprN106`, `wagner25`) and `gas-transport-equation-methods.spec.ts` (`sutherland`, `powerLaw`).
 - [COMMON_THERMAL_LIBRARY.md](COMMON_THERMAL_LIBRARY.md): a new row in the equation types table.
-- `python/src/chemicals_tables/constants/`: the type moves from `planned_equation_types.py` to `equation_type.py`.
+- `python/src/chemicals_tables/constants/planned_equation_types.py`: the type leaves `PLANNED_EQUATION_TYPES` (now empty).
+
+Shared helpers in `equation-methods/`:
+- `integration-origin.util.ts` `integrationOrigin(min)`: the start of the numerical integrals;
+- `temperature-range-index.util.ts` `temperatureRangeIndex(T, ranges)`: the piecewise range selection;
+- `piecewise-integral.util.ts` `piecewiseIntegral(T, ranges, F)`: the cumulative, continuous piecewise integral.
 
 The method doc comment states the formula and the refs, as in `dippr-equation-102-method.ts`.
 
@@ -73,7 +78,7 @@ Types without a closed-form antiderivative use `gaussLegendre20` from `backend/s
 `shomate` and `zabranskySpline` store `vars.ranges = [{Tmin, Tmax, ...coefficients}]`, sorted by `Tmin`, contiguous.
 - Range selection is the same as `nasa9`: the first range with T ≤ Tmax, else the last range.
 - `integral(x)` is cumulative and continuous: the sum of each full range below x, plus the partial range, starting at `ranges[0].Tmin`. This differs from `nasa9`, whose integral jumps at range boundaries.
-- `calculateAverage` splits [x1, x2] at the range boundaries, like `nasa9`.
+- `calculateAverage` is (integral(x2) − integral(x1))/(x2 − x1). Because `integral` is continuous and exact per range, this equals splitting [x1, x2] at the range boundaries.
 
 ### Reduced temperature
 
@@ -232,11 +237,11 @@ Types without a closed-form antiderivative use `gaussLegendre20` from `backend/s
 
 ## Test checklist per type
 
-Model each spec on `dippr-equation-102-method.spec.ts`:
+Each spec follows `dippr-equation-102-method.spec.ts` and checks:
 - `calculate` matches the chemicals value above, to 10 significant digits (`toBeCloseTo` with enough digits for the magnitude).
 - `k` scales `calculate`, `integral` and `calculateAverage`.
 - Clamping: below `min` equals `calculate(min)`, above `max` equals `calculate(max)`.
-- `integral` is consistent with `calculate`: the central finite difference of `integral` at a mid-range point is close to `calculate`.
+- `integral` is consistent with `calculate`: the difference of `integral` over an interval matches `gaussLegendre20` of `calculate` over it (relative 1e-9).
 - `calculateAverage(x1, x2)` equals (integral(x2) − integral(x1))/(x2 − x1). At x1 = x2 it equals `calculate`.
 - Infinite range: `min = -Infinity`, `max = Infinity` evaluate without clamping, and numerical integrals start at 298.15 K.
 - Piecewise types: range selection at a boundary, a continuous `integral` across the boundary, and an average across the boundary.
@@ -246,7 +251,7 @@ Model each spec on `dippr-equation-102-method.spec.ts`:
 
 ## Dataset integration
 
-- The compound-data builder already writes these types with the vars names above (see [COMPOUND_DATA_SPEC.md](../scripts/COMPOUND_DATA_SPEC.md#planned-equation-types)). Changing a name here means changing the builder too.
+- The compound-data builder writes these types with the vars names above (see [COMPOUND_DATA_SPEC.md](../scripts/COMPOUND_DATA_SPEC.md#new-equation-types)). Changing a name here means changing the builder too.
 - The refs `TRC1994`, `Zabransky1996` and `VDI2010` are added to `RefKey` by the compound-data step. `Perry8` and `NISTWebBook` already exist.
 - Once a type is implemented, a dataset entry is valid when `Common.equation(type).calculate(...)` reproduces the chemicals value at one temperature inside its range. The builder's report lists one check temperature per entry for this purpose.
 - Loading the compound-data JSON into `CompoundValue` objects is a separate, later step. Its input format is described by the interfaces in [utils/compound-data/](../../backend/src/common/thermal/utils/compound-data/index.ts). That step maps `null` ranges to ±Infinity and takes `EquationValue.ref` from `ref[0]` (the dataset writes `ref` as the source row tuple `[RefKey, line, fileKey]`).

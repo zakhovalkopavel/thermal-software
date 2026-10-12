@@ -36,7 +36,7 @@ This directory contains documentation for Python processing scripts.
 ### [COMPOUND_DATA_SPEC.md](COMPOUND_DATA_SPEC.md)
 **Specification for the merged compound dataset**
 - Merges the CRC, Perry, Poling, Yaws, TRC, Zabransky, WebBook Shomate and VDI PPDS tables from CalebBell/chemicals by CAS
-- Coefficients are stored as ready-to-use backend `EquationValue` entries (existing and planned equation types)
+- Coefficients are stored as ready-to-use backend `EquationValue` entries (all types are implemented in `EquationTypeDto`)
 - Inorganic compounds are grouped by main element (metal, else least electronegative; Al₂O₃ → Al, TiO₂ → Ti, NH₃ → N), one file per formula, named with the IUPAC formula (TiF4, ZnB4O9; `hill` stays the lookup key); organic compounds by RDKit family, one file per compound
 - A carbon compound is organic when it has a C–H or C–halogen bond (RDKit; without a metal also C–C, C–NH or a carbon ring), with a few CAS overrides (HCN inorganic) and a formula fallback; organic compounds without a SMILES get the family their formula fixes (halocarbons, alkanes)
 - Values cite their source row as `ref: [RefKey, line, fileKey]`; units are in `units.json`, the JSON format in the backend interfaces (`backend/src/common/thermal/utils/compound-data/`)

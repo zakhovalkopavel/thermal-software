@@ -53,7 +53,7 @@ class TestExistingTypes:
             evaluate_equation("nope", 300, {})
 
 
-class TestPlannedTypes:
+class TestNewEquationTypes:
     def test_sutherland_air(self):
         # White Table 1-2 air: μ0 1.716e-5 Pa s at 273 K, S 111 K; tabulated μ(400 K) ≈ 2.29e-5
         vars_ = {"y0": 1.716e-5, "T0": 273, "S": 111}
