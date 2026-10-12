@@ -54,7 +54,7 @@ def parse_janaf_table(path: Path, label: Optional[str] = None) -> JanafTable:
             continue
         table.rows.append(row)
         if row.note and _TRANSITION_MARK in row.note:
-            table.transitions.append(JanafTransition(T=row.T, label=row.note))
+            table.transitions.append(JanafTransition(T=row.T, label=row.note, line=line_no))
     return table
 
 

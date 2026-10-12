@@ -8,7 +8,7 @@ Refs: docs/REFERENCES.md  [8] NASA7
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from nasa_thermo.nasa7_equation import Nasa7Equation
@@ -28,6 +28,7 @@ class Nasa7Species:
     Tmin: Optional[float]
     Tmax: Optional[float]
     nasa7: Nasa7Equation
+    elements: dict[str, float] = field(default_factory=dict)  # element counts, e.g. {"C": 1, "H": 4}
 
     def to_dict(self) -> dict:
         return {
@@ -38,5 +39,6 @@ class Nasa7Species:
             "Tmin": self.Tmin,
             "Tmax": self.Tmax,
             "nasa7": self.nasa7.to_dict(),
+            "elements": self.elements,
         }
 

@@ -22,7 +22,7 @@ from typing import Optional
 from nasa_thermo.nasa7_coeffs   import Nasa7Coeffs
 from nasa_thermo.nasa7_equation import Nasa7Equation
 from nasa_thermo.nasa7_species  import Nasa7Species
-from nasa_thermo.utils import slice_e15
+from nasa_thermo.utils import parse_element_slots, slice_e15
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +111,7 @@ def parse_nasa7(
                     Tmin=entry.Tmin,
                     Tmax=entry.Tmax,
                     nasa7=entry.nasa7,
+                    elements=entry.elements,
                 )
                 name = new_name
 
@@ -176,6 +177,7 @@ def _parse_block(block: list[str], tmid: float) -> Optional[Nasa7Species]:
     comment = comment_raw.strip()
 
     phase = (L1[44:45].strip() or "G") if len(L1) > 44 else "G"
+    elements = parse_element_slots(L1[24:44], 4, 5)
 
     tmin: Optional[float] = _try_float(L1, 45, 55)
     tmax: Optional[float] = _try_float(L1, 55, 65)
@@ -203,6 +205,7 @@ def _parse_block(block: list[str], tmid: float) -> Optional[Nasa7Species]:
         Tmin=tmin,
         Tmax=tmax,
         nasa7=Nasa7Equation(Tswitch=tmid, low=low, high=high),
+        elements=elements,
     )
 
 

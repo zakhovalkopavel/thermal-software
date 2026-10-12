@@ -139,6 +139,10 @@ class TestParseNasa7BasicBlock:
         sp = parse_nasa7(p)["N2"]
         assert sp.nasa7.Tswitch == pytest.approx(1000.0)
 
+    def test_elements_from_formula_slots(self, tmp_path):
+        p = _write_tmp(tmp_path, _NASA7_FIXTURE)
+        assert parse_nasa7(p)["N2"].elements == {"N": 2.0}
+
 
 class TestParseNasa7Coefficients:
     def setup_method(self, _):
@@ -214,6 +218,7 @@ class TestParseNasa7Duplicates:
         result = parse_nasa7(p)
         assert "N2"    in result
         assert "N2#2"  in result
+        assert result["N2#2"].elements == {"N": 2.0}
 
     def test_comment_lines_before_thermo_are_ignored(self, tmp_path):
         fixture = "! This is a comment\n" + _NASA7_FIXTURE
@@ -230,4 +235,5 @@ class TestParseNasa7ToDict:
         d = sp.to_dict()
         text = json.dumps(d)  # must not raise
         assert "nasa7" in text
+        assert d["elements"] == {"N": 2.0}
 

@@ -4,7 +4,8 @@
 used in compound data files and equation implementations.
 
 **Usage:** Every `EquationValue` in a compound data file must carry a `ref` field set to the
-corresponding `RefKey` enum value (see `dto/ref-key.dto.ts`), plus a `page` field where applicable.
+corresponding `RefKey` enum value (see `enum/ref-key.enum.ts`), plus a `page` field where applicable.
+The keys and metadata come from one file, `shared/references/references.json` (see [Adding a New Reference](#adding-a-new-reference)).
 
 ```typescript
 // Example usage in a compound data file (TypeScript):
@@ -56,6 +57,9 @@ See [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) § 7 for the f
 
 ## Reference List
 
+<!-- references:start -->
+<!-- AUTO-GENERATED from shared/references/references.json by scripts/generate_references.py — do not edit; run `make references-generate`. -->
+
 | #  | Key (`RefKey`)   | Source |
 |----|------------------|--------|
 | 1  | `Szargut`        | Szargut, J. — *Termodynamika Techniczna* (Technical Thermodynamics). Wyd. Politechniki Śląskiej, multiple editions. Standard Cp polynomials (linearHyperbolic form: a + bT + d/T²). |
@@ -64,7 +68,7 @@ See [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) § 7 for the f
 | 4  | `Perry7`         | Perry, R.H.; Green, D.W. (eds.) — *Perry's Chemical Engineers' Handbook*, 7th ed. McGraw-Hill, 1997. Aly–Lee Cp coefficients (Table 2-150) and polynomial Cp data. |
 | 5  | `Borgnakke`      | Borgnakke, C.; Sonntag, R.E. — *Thermodynamic and Transport Properties*. Wiley, 1997. URL: https://engineering.wayne.edu/mechanical/pdfs/thermodynamic-_tables-updated.pdf |
 | 6  | `Yaws1999`       | Yaws, C.L. — *Chemical Properties Handbook: Physical, Thermodynamic, Environmental, Transport, Safety, and Health Related Properties for Organic and Inorganic Chemicals*. McGraw-Hill, 1999. |
-| 7  | `Poling5`        | Poling, B.E.; Prausnitz, J.M.; O'Connell, J.P. — *The Properties of Gases and Liquids*, **5th ed.** McGraw-Hill, 2000. Ideal-gas Cp databank. |
+| 7  | `Poling5`        | Poling, B.E.; Prausnitz, J.M.; O'Connell, J.P. — *The Properties of Gases and Liquids*, **5th ed.** McGraw-Hill, 2000. Ideal-gas Cp databank; Lennard-Jones σ and ε/k from viscosity data (Appendix B). |
 | 8  | `NASA7`          | McBride, B.J.; Zehe, M.J.; Gordon, S. — *NASA Glenn Coefficients for Calculating Thermodynamic Properties of Individual Species*. NASA TM-2002-211556, 2002. NASA-7 polynomial coefficients. |
 | 9  | `Burcat2005`     | Burcat, A.; Ruscic, B. — *Third Millennium Ideal Gas and Condensed Phase Thermochemical Database for Combustion with Updates from Active Thermochemical Tables*. ANL-05/20, 2005. |
 | 10 | `Lemmon2004`     | Lemmon, E.W.; Jacobsen, R.T. — *Viscosity and Thermal Conductivity Equations for Nitrogen, Oxygen, Argon, and Air*. International Journal of Thermophysics, 25(1), 2004. URL: https://trc.nist.gov/refprop/FAQ/NAO.PDF |
@@ -99,24 +103,29 @@ See [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) § 7 for the f
 | 39 | `Zabransky1996`  | Zabransky, M.; Ruzicka, V. Jr.; Majer, V.; Domalski, E.S. — *Heat Capacity of Liquids: Critical Review and Recommended Values*. J. Phys. Chem. Ref. Data Monograph 6, 1996. Liquid Cp correlations. |
 | 40 | `TRC1994`        | Thermodynamics Research Center — *Thermodynamics of Organic Compounds in the Gas State*, Vol. II. TRC, 1994. Ideal-gas Cp coefficients. |
 | 41 | `VDI2010`        | VDI e.V. (ed.) — *VDI Heat Atlas*, 2nd ed. Springer, 2010. PPDS correlations: liquid and gas viscosity and thermal conductivity, liquid density, vapour pressure, enthalpy of vaporization, surface tension. |
+| 42 | `Magalhaes2013`  | Magalhães, A.L.; Lito, P.F.; Da Silva, F.A.; Silva, C.M. — *Simple and Accurate Correlations for Diffusion Coefficients of Solutes in Liquids and Supercritical Fluids over Wide Ranges of Temperature and Density*. The Journal of Supercritical Fluids, 76, pp. 94–114, 2013. Lennard-Jones σ and ε/k of about 320 compounds (chemicals `MagalhaesLJ.tsv`). URL: https://doi.org/10.1016/j.supflu.2013.02.002 |
+
+<!-- references:end -->
 
 ---
 
 ## Adding a New Reference
 
-1. Append a new row with the next sequential integer.
-2. Choose a descriptive key in `PascalCase` (e.g. `Author` or `AuthorYYYY`), unique in the enum.
-3. Add the key in all four code places: the `RefKey` enum (`backend/src/common/thermal/enum/ref-key.enum.ts`), `REFERENCES_META` (`backend/src/common/thermal/dto/ref-key.dto.ts`), and their Python mirrors `python/src/references/ref_key.py` and `python/src/references/references_meta.py`.
-4. Include: author(s), title, edition/year, publisher, URL if freely available, and what data type it supplies.
-5. **Never renumber or rename existing entries** — all `ref:` fields in compound files depend on the stability of this list.
+References live in one file, [`shared/references/references.json`](../shared/references/references.json), shared by the backend, the Python service and this document. The `RefKey` enums, both `REFERENCES_META` and the table above are generated from it; never edit them by hand.
+
+1. Append an entry with the next sequential `index`.
+2. Choose a descriptive `key` in `PascalCase` (e.g. `Author` or `AuthorYYYY`), unique in the file.
+3. Fill `name` (short form for `REFERENCES_META`), `year`, `url` if freely available, and `citation` (the table row: author(s), title, edition/year, publisher, URL, and what data type it supplies).
+4. Run `make references-generate`. It rewrites `backend/src/common/thermal/enum/ref-key.enum.ts`, `backend/src/common/thermal/dto/ref-key.dto.ts`, `python/src/references/ref_key.py`, `python/src/references/references_meta.py` and the table above. `make references-check` fails when any of them differs from the JSON.
+5. **Never renumber, rename or remove existing entries** — all `ref:` fields in compound files depend on the stability of this list.
 
 ---
 
 ## TODO — free-text citations not yet registered
 
 These modules cite sources in comments / string fields (`Source:`, `Reference:`, `reference:`,
-"Author (year)") that have no `RefKey`. Register each source (enum, `REFERENCES_META`, Python mirror,
-this table) and replace the free text with the key (+ page).
+"Author (year)") that have no `RefKey`. Register each source (an entry in `shared/references/references.json`,
+then `make references-generate`) and replace the free text with the key (+ page).
 
 - [ ] **`Perry9` conductivity entries** (Ar, N2, NH3, NO, SO2, SO3, Air; `page` 324–330) carry the same
   DIPPR 102 coefficients as `Perry8` Table 2-314 — confirm the edition and page against the book.

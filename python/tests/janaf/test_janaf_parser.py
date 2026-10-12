@@ -128,6 +128,19 @@ class TestTransitions:
         transitions = parse_janaf_table(_write(tmp_path, "O-045", O_045)).transitions
         assert [(t.T, t.label) for t in transitions] == [(2130.0, "CRYSTAL <--> LIQUID")]
 
+    def test_source_line(self, tmp_path):
+        transitions = parse_janaf_table(_write(tmp_path, "O-045", O_045)).transitions
+        assert transitions[0].line == 5
+
+    def test_source_line_after_skipped_line(self, tmp_path):
+        text = AL_002.replace("900\t", "Note: extrapolated\n900\t", 1)
+        transitions = parse_janaf_table(_write(tmp_path, "Al-002", text)).transitions
+        assert transitions[0].line == 5
+
+    def test_line_is_file_line(self, tmp_path):
+        transitions = parse_janaf_table(_write(tmp_path, "Al-001", AL_001)).transitions
+        assert [t.line for t in transitions] == [6]
+
 
 class TestDirectory:
     def _setup(self, tmp_path: Path) -> dict[str, str]:

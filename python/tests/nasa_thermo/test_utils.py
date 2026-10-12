@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import pytest
-from nasa_thermo.utils import parse_d, parse_e, slice_e15
+from nasa_thermo.utils import parse_d, parse_e, parse_element_slots, slice_e15
 
 
 class TestParseE:
@@ -49,3 +49,14 @@ class TestSliceE15:
         result = slice_e15(line, 5)
         assert result == pytest.approx(coeffs)
 
+
+class TestParseElementSlots:
+    def test_nasa7_slots(self):
+        assert parse_element_slots("C   1H   4    0    0", 4, 5) == {"C": 1.0, "H": 4.0}
+
+    def test_nasa9_slots_title_case_and_fractions(self):
+        text = "N   1.56O   0.42AR  0.01C   0.00".ljust(40)
+        assert parse_element_slots(text, 5, 8) == {"N": 1.56, "O": 0.42, "Ar": 0.01}
+
+    def test_blank_text(self):
+        assert parse_element_slots("", 5, 8) == {}

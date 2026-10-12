@@ -33,7 +33,7 @@ Each type follows the existing pattern (see `dipprN102`):
 - `backend/src/common/thermal/utils/common.ts`: a new case in `Common.equation`.
 - `backend/test/unit/thermal/utils/<name>-equation-method.spec.ts`: the unit test.
 - [COMMON_THERMAL_LIBRARY.md](COMMON_THERMAL_LIBRARY.md): a new row in the equation types table.
-- `python/src/compound_data/constants/`: the type moves from `planned_equation_types.py` to `equation_type.py`.
+- `python/src/chemicals_tables/constants/`: the type moves from `planned_equation_types.py` to `equation_type.py`.
 
 The method doc comment states the formula and the refs, as in `dippr-equation-102-method.ts`.
 
@@ -222,7 +222,7 @@ Model each spec on `dippr-equation-102-method.spec.ts`:
 - The compound-data builder already writes these types with the vars names above (see [COMPOUND_DATA_SPEC.md](../scripts/COMPOUND_DATA_SPEC.md#planned-equation-types)). Changing a name here means changing the builder too.
 - The refs `TRC1994`, `Zabransky1996` and `VDI2010` are added to `RefKey` by the compound-data step. `Perry8` and `NISTWebBook` already exist.
 - Once a type is implemented, a dataset entry is valid when `Common.equation(type).calculate(...)` reproduces the chemicals value at one temperature inside its range. The builder's report lists one check temperature per entry for this purpose.
-- Loading the compound-data JSON into `CompoundValue` objects is a separate, later step. Mapping `null` ranges to ±Infinity is part of that step.
+- Loading the compound-data JSON into `CompoundValue` objects is a separate, later step. Its input format is described by the interfaces in [utils/compound-data/](../../backend/src/common/thermal/utils/compound-data/index.ts). That step maps `null` ranges to ±Infinity and takes `EquationValue.ref` from `ref[0]` (the dataset writes `ref` as the source row tuple `[RefKey, line, fileKey]`).
 
 ---
 

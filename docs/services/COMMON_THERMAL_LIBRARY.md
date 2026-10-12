@@ -302,7 +302,8 @@ Every coefficient set that originates from a literature source **must** referenc
 value. Never use raw integers as reference identifiers.
 
 See [REFERENCES.md](../REFERENCES.md) for the full bibliography (author, year, ISBN/URL)
-keyed by `RefKey`.
+keyed by `RefKey`. The enum is generated from `shared/references/references.json`
+(`make references-generate`), together with `REFERENCES_META` and the Python mirror.
 
 ---
 

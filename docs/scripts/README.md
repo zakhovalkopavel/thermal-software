@@ -9,6 +9,7 @@ This directory contains documentation for Python processing scripts.
 ### [NASA_THERMO_PARSER_SPEC.md](NASA_THERMO_PARSER_SPEC.md)
 **Specification for the NASA thermodynamic database parser**
 - Converts NASA-7 (SP-273/1971) and NASA-9 (RP-1311/1996, Burcat ANL-05/20) to JSON
+- Each species carries its element counts (`elements`) from the formula slots; NASA-9 `Hf298` from line 2
 - Package: `python/src/nasa_thermo/` — parsers, models, writers
 - CLI: `python/src/scripts/parse_nasa_thermo.py`
 - Make commands: `make nasa-parse`, `make nasa-test`
@@ -21,27 +22,32 @@ This directory contains documentation for Python processing scripts.
 
 ### [JANAF_PARSER_SPEC.md](JANAF_PARSER_SPEC.md)
 **Specification for the NIST-JANAF table parser**
-- Converts the NIST-JANAF tables (py-janaf copy) to JSON, one file per JANAF ID prefix
-- Package: `python/src/janaf/` — parsers, models, writers
+- Converts the NIST-JANAF tables (py-janaf copy) to JSON, one file per compound, in the compound-data layout (class and organic family from the compound-data record, inorganic by main element)
+- Package: `python/src/janaf/` — parsers, models, file layout, writers (shares `dataset_layout/` with compound data)
 - CLI: `python/src/scripts/parse_janaf.py`
-- Make commands: `make janaf-parse`, `make janaf-test`
+- Make commands: `make janaf-parse` (after `make compound-data-build`; clears the output folder first), `make janaf-test`
 - Source files: `shared/sources/compound-data/nist-janaf/`
-- Output: `shared/processed/JANAF/<prefix>.json` + `index.json`
+- Output: `shared/processed/JANAF/inorganic/<Element>/<IUPAC formula>-<name>.json`, `organic/<family>/<Hill>-<name>.json` + `index.json` + `units.json` + `sources.json` (refs `[RefKey, line, tableId]` resolve through `sources.json`)
 
 ---
 
 ## 🔬 Compound Data (CalebBell/chemicals)
 
 ### [COMPOUND_DATA_SPEC.md](COMPOUND_DATA_SPEC.md)
-**Specification for the merged compound dataset (planned)**
+**Specification for the merged compound dataset**
 - Merges the CRC, Perry, Poling, Yaws, TRC, Zabransky, WebBook Shomate and VDI PPDS tables from CalebBell/chemicals by CAS
 - Coefficients are stored as ready-to-use backend `EquationValue` entries (existing and planned equation types)
-- Inorganic compounds are grouped by element (the JANAF prefix rule), organic compounds by RDKit family
-- Package: `python/src/compound_data/`
-- CLI: `python/src/scripts/build_compound_data.py`
-- Make commands: `make compound-data-build`, `make compound-data-test`
-- Source files: `shared/sources/compound-data/chemicals/` (https://github.com/CalebBell/chemicals, pinned commit)
-- Output: `shared/processed/compound-data/inorganic/<Element>.json`, `organic/<family>.json` + `index.json`
+- Inorganic compounds are grouped by main element (metal, else least electronegative; Al₂O₃ → Al, TiO₂ → Ti, NH₃ → N), one file per formula, named with the IUPAC formula (TiF4, ZnB4O9; `hill` stays the lookup key); organic compounds by RDKit family, one file per compound
+- A carbon compound is organic when it has a C–H or C–halogen bond (RDKit; without a metal also C–C, C–NH or a carbon ring), with a few CAS overrides (HCN inorganic) and a formula fallback; organic compounds without a SMILES get the family their formula fixes (halocarbons, alkanes)
+- Values cite their source row as `ref: [RefKey, line, fileKey]`; units are in `units.json`, the JSON format in the backend interfaces (`backend/src/common/thermal/utils/compound-data/`)
+- NIST-JANAF table ids are attached per record (by CAS from the chemicals JANAF index, else by Hill formula)
+- NASA-7 / NASA-9 species keys are attached per record (Hill formula, name suffix, ΔfH°(298.15) check); Lennard-Jones σ and ε/k from the Poling and Magalhães tables
+- Packages: `python/src/chemical_formula/`, `chemicals_tables/` (table parsers), `pubchem/` (PubChem client and cache), `dataset_layout/` (file names, output clearing), `compound_data/` (merge and output)
+- CLI: `python/src/scripts/build_compound_data.py`, `python/src/scripts/fetch_pubchem_identifiers.py`
+- Make commands: `make compound-data-build` (step 1, offline, also writes `missing-cas.txt`), `make compound-data-pubchem` (step 2: PubChem identifiers of the missing CAS numbers, slow and resumable, then rebuild), `make compound-data-test`
+- Source files: `shared/sources/compound-data/chemicals/` (https://github.com/CalebBell/chemicals, pinned commit), `shared/sources/compound-data/nist-janaf/`, `shared/sources/NASA/` (NASA-7 / NASA-9 keys, checked by ΔfH°) and the PubChem cache `shared/sources/compound-data/pubchem/pubchem-cas.tsv`
+- Output: `shared/processed/compound-data/inorganic/<Element>/<IUPAC formula>-<name>.json`, `organic/<family>/<Hill>-<name>.json`, `unresolved.json`, `index.json`, `units.json` + `sources.json` (cleared before writing)
+- Report: `tmp/reports/python/compound-data/report.json`
 
 ---
 

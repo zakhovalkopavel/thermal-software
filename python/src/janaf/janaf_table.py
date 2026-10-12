@@ -10,6 +10,9 @@ from typing import Optional
 
 from janaf.janaf_row import JanafRow
 from janaf.janaf_transition import JanafTransition
+from references import RefKey
+
+TITLE_LINE = 1
 
 
 @dataclass
@@ -36,14 +39,21 @@ class JanafTable:
         """JANAF ID prefix (``Al`` for ``Al-096``, ``O`` for ``O-045``)."""
         return self.table_id.rsplit("-", 1)[0]
 
+    @property
+    def ref(self) -> list:
+        """``[RefKey, line, file]`` of the title line; the file key is the table ID (``sources.json`` → ``tableUrl``)."""
+        return [RefKey.NISTJANAF.value, TITLE_LINE, self.table_id]
+
     def to_dict(self) -> dict:
-        return {
-            "id": self.table_id,
+        """Table entry keyed by ``table_id`` in the compound file; null and empty fields are left out."""
+        out = {
             "name": self.name,
             "formula": self.formula,
             "janafFormula": self.janaf_formula,
             "phase": self.phase,
             "label": self.label,
+            "ref": self.ref,
             "rows": [row.to_dict() for row in self.rows],
             "transitions": [t.to_dict() for t in self.transitions],
         }
+        return {key: value for key, value in out.items() if value not in (None, [])}

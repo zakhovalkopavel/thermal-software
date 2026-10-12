@@ -11,10 +11,11 @@ from typing import Optional
 
 @dataclass
 class JanafRow:
-    """One row of a JANAF table; ``None`` marks an empty or infinite cell.
+    """One row of a JANAF table; ``None`` marks an empty or infinite cell and is left out of the JSON.
 
     gef = −[G − H(Tr)]/T, dH = H − H(Tr), Tr = 298.15 K.
     ``note`` holds text found in place of dfH/dfG/logKf (e.g. ``CRYSTAL <--> LIQUID``).
+    Units are fixed per column and documented in the backend ``JanafRow`` interface.
 
     Refs: docs/REFERENCES.md  [36] NISTJANAF
     """
@@ -30,7 +31,7 @@ class JanafRow:
     note: Optional[str] = None
 
     def to_dict(self) -> dict:
-        return {
+        out = {
             "T": self.T,
             "Cp": self.Cp,
             "S": self.S,
@@ -41,3 +42,4 @@ class JanafRow:
             "logKf": self.logKf,
             "note": self.note,
         }
+        return {key: value for key, value in out.items() if value is not None}

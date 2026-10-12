@@ -31,7 +31,7 @@ python/
       nasa9_range.py          ← Nasa9Range dataclass
       nasa9_equation.py       ← Nasa9Equation dataclass
       nasa9_species.py        ← Nasa9Species dataclass
-      utils.py                ← parse_e / parse_d / slice_e15
+      utils.py                ← parse_e / parse_d / parse_element_slots / slice_e15
       parsers/
         nasa7.py              ← parse_nasa7(path, …) → dict[str, Nasa7Species]
         nasa9.py              ← parse_nasa9(paths, …) → dict[str, Nasa9Species]
@@ -225,6 +225,7 @@ the gap detection fails → use column-slice fallback.
       "MW": 28.01340,
       "Tmin": 200.0,
       "Tmax": 6000.0,
+      "elements": {"N": 2.0},
       "nasa7": {
         "Tswitch": 1000.0,
         "low": {
@@ -275,6 +276,7 @@ the gap detection fails → use column-slice fallback.
 | `nasa7.Tswitch` | number | Temperature split between low/high ranges [K] |
 | `nasa7.low` | object | Low-range coefficients `a1…a7` — matches `Nasa7Coeffs` |
 | `nasa7.high` | object | High-range coefficients `a1…a7` — matches `Nasa7Coeffs` |
+| `elements` | object | Element counts from line 1 cols 25-44, e.g. `{"N": 2.0}`; see [Element slots](#element-slots) |
 
 ---
 
@@ -295,6 +297,7 @@ the gap detection fails → use column-slice fallback.
       "phase": "gas",
       "MW": 2.01588,
       "Hf298": 0.0,
+      "elements": {"H": 2.0},
       "nasa9": {
         "ranges": [
           {
@@ -353,6 +356,7 @@ the gap detection fails → use column-slice fallback.
 | `nasa9.ranges[].coeffs.a1…a7` | number | Polynomial coefficients |
 | `nasa9.ranges[].coeffs.a8` | number | Integration constant b1 — encodes Hf° |
 | `nasa9.ranges[].coeffs.a9` | number | Integration constant b2 — encodes S° |
+| `elements` | object | Element counts from line 2 cols 11-50, e.g. `{"C": 1.0, "H": 4.0}`, `Air` `{"N": 1.56, "O": 0.42, "Ar": 0.01}`; see [Element slots](#element-slots) |
 
 ---
 
@@ -419,6 +423,27 @@ is the comment field. Example:
 
 Parse as: `name = line1[:24].split()[0]`, `comment = line1[24:].strip()`
 
+### Element slots
+
+Both formats give the formula as fixed-width (symbol A2, count) slots, read by
+`nasa_thermo.utils.parse_element_slots`: NASA-7 line 1 cols 25-44 (4 × 5 characters,
+`N  2.   0.   0.   0.`), NASA-9 line 2 cols 11-50 (5 × 8 characters, `C   1.00H   4.00`).
+Upper-case symbols are title-cased (`AL` → `Al`), empty and zero slots are skipped, and
+`E` stays the electron (ions carry an `E` slot). Counts are floats: `Air` has fractional ones.
+The compound-data build uses them to match species to compounds by Hill formula
+([COMPOUND_DATA_SPEC.md](COMPOUND_DATA_SPEC.md#nasa-species-keys)).
+
+### NASA-9 Hf298
+
+`Hf298` is read from line 2 cols 66-80. Lines are exactly 80 characters, so the slice is
+taken without a length guard (an earlier `len(line2) > 80` guard left every `Hf298` at 0.0).
+
+### Duplicate keys across NASA-9 files
+
+`nasa9-new.dat` replaces 158 keys of `nasa9-origin.dat`, and some replacements are other
+species: `CO2` (+49.6 kJ/mol), `O2` (singlet), `C6H6` (fulvene). The backend gas compounds
+leave those keys out, and the compound-data build rejects them by ΔfH°(298.15).
+
 ### NASA-7 Hf298 extraction
 
 The optional `Hf°/R` value at the end of line 4 (cols 61-75) is **not** stored in the
@@ -462,7 +487,7 @@ Unit tests live in:
 ```
 python/tests/nasa_thermo/
   __init__.py
-  test_utils.py          ← parse_e, parse_d, slice_e15
+  test_utils.py          ← parse_e, parse_d, parse_element_slots, slice_e15
   test_models.py         ← dataclass to_dict serialisation
   test_nasa7_parser.py   ← parse_nasa7() with in-memory fixtures
   test_nasa9_parser.py   ← parse_nasa9() — both origin and Burcat-new formats

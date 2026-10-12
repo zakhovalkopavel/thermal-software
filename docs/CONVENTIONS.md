@@ -119,8 +119,9 @@ import { RefKey } from '../../dto/ref-key.dto';
 { type: EquationTypeDto.alyLee, vars: { ... }, min: 100, max: 2273 }
 ```
 
-`RefKey` is defined in `backend/src/common/thermal/dto/ref-key.dto.ts`.
-Machine-readable metadata (name, year, url) is in `REFERENCES_META` in the same file.
+`RefKey` is defined in `backend/src/common/thermal/enum/ref-key.enum.ts` and its machine-readable metadata
+(name, year, url) in `REFERENCES_META` (`backend/src/common/thermal/dto/ref-key.dto.ts`). Both, their Python mirrors and the
+`docs/REFERENCES.md` table are generated from `shared/references/references.json` (`make references-generate`).
 
 ### 4. Exact Integrals Over Numerical Integration
 When a closed-form antiderivative exists, **always use it**.  
@@ -254,7 +255,7 @@ Before committing any file, verify:
 - [ ] Every `EquationValue` has `ref: RefKey.Xxx` (not a raw number) pointing to `docs/REFERENCES.md`
 - [ ] **Python:** every module/class/function using literature data has a `Refs:` docstring citation using `[N] KeyName` format
 - [ ] **Python:** `from references import RefKey` used for any runtime reference lookup — never raw integers
-- [ ] New reference sources added to `docs/REFERENCES.md` **and** `dto/ref-key.dto.ts` (TypeScript) / `python/src/references/` (Python) before use
+- [ ] New reference sources added to `shared/references/references.json` and `make references-generate` run before use (`make references-check` passes)
 - [ ] NASA data is referenced by `CompoundValue.nasa7Key`/`nasa9Key` (exact keys in `backend/data/nasa/*.json`) — coefficients are **not** copied into the compound or into `heatCapacity.values`
 - [ ] Closed-form integral used where it exists — no unnecessary numerical integration
 - [ ] Property calculations go through `CompoundPropertyResolver`, not direct equation method calls
