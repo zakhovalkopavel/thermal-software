@@ -58,5 +58,6 @@ REFERENCES_META: dict[RefKey, ReferenceMeta] = {
     RefKey.Ergun1952:       {'index': 33, 'name': 'Ergun, S. — Fluid Flow through Packed Columns, Chem. Eng. Prog. 48(2)',                                      'year': '1952'},
     RefKey.Perry8:          {'index': 34, 'name': "Green, D.W.; Perry, R.H. (eds.) — Perry's Chemical Engineers' Handbook 8th ed., McGraw-Hill",               'year': '2008',    'url': 'https://github.com/CalebBell/chemicals'},
     RefKey.Eakin1963:       {'index': 35, 'name': 'Eakin, B.E.; Ellington, R.T. — Predicting the Viscosity of Pure Light Hydrocarbons, J. Pet. Technol. 15(2), 210–214', 'year': '1963', 'url': 'https://doi.org/10.2118/397-PA'},
+    RefKey.NISTJANAF:       {'index': 36, 'name': 'Chase, M.W. Jr. — NIST-JANAF Thermochemical Tables, 4th ed., J. Phys. Chem. Ref. Data Monograph 9', 'year': '1998',    'url': 'https://janaf.nist.gov'},
 }
 

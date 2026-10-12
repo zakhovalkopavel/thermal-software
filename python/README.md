@@ -32,6 +32,17 @@ python/
 │   │   └── parsers/
 │   │       ├── nasa7.py      # NASA-7 (SP-273/1971) parser
 │   │       └── nasa9.py      # NASA-9 (RP-1311/1996 + Burcat) parser
+│   ├── janaf/            # NIST-JANAF table parser package (py-janaf copy)
+│   │   ├── __init__.py          # Public API re-exports
+│   │   ├── janaf_row.py         # JanafRow dataclass
+│   │   ├── janaf_transition.py  # JanafTransition dataclass
+│   │   ├── janaf_table.py       # JanafTable dataclass
+│   │   ├── janaf_source.py      # JanafSource dataclass (py-janaf repo, commit, links)
+│   │   ├── janaf_index.py       # load_janaf_index (janaf.json)
+│   │   ├── writers.py           # write_janaf_json (one file per ID prefix)
+│   │   └── parsers/
+│   │       ├── janaf_table.py   # table file parser
+│   │       └── provenance.py    # PROVENANCE.txt reader
 │   ├── phase_diagrams/   # Slag Atlas / NSRDS-NBS 61 phase-diagram extraction (one export per file)
 │   │   ├── __init__.py       # Public API re-exports
 │   │   ├── constants/  models/  config/      # constants, dataclasses, configs + source registry
@@ -40,6 +51,7 @@ python/
 │   │   └── builders/  output/  validation/   # system build, JSON + review writers, dataset rules
 │   └── scripts/          # Production scripts
 │       ├── parse_nasa_thermo.py  # NASA thermo CLI (thin wrapper)
+│       ├── parse_janaf.py        # NIST-JANAF CLI (thin wrapper)
 │       ├── extract_phase_diagram.py  # Phase-diagram CLI (thin wrapper)
 │       ├── extract_tables.py
 │       └── README.md     # Scripts documentation
@@ -50,6 +62,7 @@ python/
     │   ├── test_nasa7_parser.py
     │   ├── test_nasa9_parser.py
     │   └── test_writers.py
+    ├── janaf/            # JANAF parser unit tests
     ├── phase_diagrams/   # Phase-diagram extraction tests (synthetic images, golden files)
     └── ocr/              # OCR module tests
         ├── test_coordinate_parsing.py
@@ -108,6 +121,23 @@ make nasa-parse          # parse both databases
 make nasa-parse-nasa7    # NASA-7 only
 make nasa-parse-nasa9    # NASA-9 only
 make nasa-test           # run unit tests
+```
+
+### JANAF Parser (`src/janaf/`)
+
+Converts the NIST-JANAF thermochemical tables (4th ed., py-janaf copy) into JSON, one file per JANAF ID prefix. TiO₂ (`O-045`) is in `O.json`, as NIST files it. Each table carries its rows, phase transitions, a link to the py-janaf file at the downloaded commit and a link to the NIST page.
+
+**Spec**: [docs/scripts/JANAF_PARSER_SPEC.md](../docs/scripts/JANAF_PARSER_SPEC.md)
+
+**Source files**: `shared/sources/compound-data/nist-janaf/` (`py-janaf/data/`, `py-janaf/janaf.json`, `PROVENANCE.txt`)
+
+**Output**: `shared/processed/JANAF/<prefix>.json`, plus `index.json` (every table with its file, lookups by formula and by element; full runs only)
+
+**Make commands**:
+```bash
+make janaf-parse                  # all tables + index.json
+make janaf-parse PREFIXES=Al,O    # selected prefixes only, index.json unchanged
+make janaf-test                   # run unit tests
 ```
 
 ### Phase-Diagram Extraction (`src/phase_diagrams/`)
@@ -224,6 +254,9 @@ python /app/src/scripts/extract_tables.py
 # NASA thermo parser tests
 make nasa-test
 docker compose run --rm python python -m pytest /app/tests/nasa_thermo/ -v
+
+# JANAF parser tests
+make janaf-test
 
 # Phase-diagram extraction tests
 make pd-test

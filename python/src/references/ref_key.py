@@ -55,4 +55,5 @@ class RefKey(str, Enum):
     Ergun1952       = 'Ergun1952'       # [33] Ergun — Fluid Flow through Packed Columns (1952)
     Perry8          = 'Perry8'          # [34] Perry's Chemical Engineers' Handbook 8th ed. (2008)
     Eakin1963       = 'Eakin1963'       # [35] Eakin & Ellington — Predicting the Viscosity of Pure Light Hydrocarbons (1963)
+    NISTJANAF       = 'NISTJANAF'       # [36] Chase — NIST-JANAF Thermochemical Tables 4th ed. (1998)
 

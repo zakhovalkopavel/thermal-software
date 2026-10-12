@@ -17,6 +17,19 @@ This directory contains documentation for Python processing scripts.
 
 ---
 
+## 🔬 JANAF Parser
+
+### [JANAF_PARSER_SPEC.md](JANAF_PARSER_SPEC.md)
+**Specification for the NIST-JANAF table parser**
+- Converts the NIST-JANAF tables (py-janaf copy) to JSON, one file per JANAF ID prefix
+- Package: `python/src/janaf/` — parsers, models, writers
+- CLI: `python/src/scripts/parse_janaf.py`
+- Make commands: `make janaf-parse`, `make janaf-test`
+- Source files: `shared/sources/compound-data/nist-janaf/`
+- Output: `shared/processed/JANAF/<prefix>.json` + `index.json`
+
+---
+
 ## 📈 Phase-Diagram Extraction
 
 ### [PHASE_DIAGRAM_EXTRACTION_SPEC.md](PHASE_DIAGRAM_EXTRACTION_SPEC.md)

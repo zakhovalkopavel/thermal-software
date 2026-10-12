@@ -93,6 +93,7 @@ See [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) § 7 for the f
 | 33 | `Ergun1952`      | Ergun, S. — *Fluid Flow through Packed Columns*. Chemical Engineering Progress, 48(2), pp. 89–94, 1952. Packed-bed pressure drop (`AerodynamicsService`). |
 | 34 | `Perry8`         | Green, D.W.; Perry, R.H. (eds.) — *Perry's Chemical Engineers' Handbook*, 8th ed. McGraw-Hill, 2008. DIPPR Eq. 102 coefficients: Table 2-312 (vapor viscosity) and Table 2-314 (vapor thermal conductivity) for the fuel gases C2H6 … C3H6. Machine-readable copies of both tables: CalebBell/chemicals, `chemicals/Viscosity/Table 2-312 …tsv` and `chemicals/Thermal Conductivity/Table 2-314 …tsv`. URL: https://github.com/CalebBell/chemicals |
 | 35 | `Eakin1963`      | Eakin, B.E.; Ellington, R.T. — *Predicting the Viscosity of Pure Light Hydrocarbons*. Journal of Petroleum Technology, 15(2), pp. 210–214, 1963 (Trans. AIME 228). Table 1: Sutherland constants μ = B·T^1.5/(T + S) [μP, °R] for methane, ethane, propane, n-butane. URL: https://doi.org/10.2118/397-PA |
+| 36 | `NISTJANAF`      | Chase, M.W. Jr. — *NIST-JANAF Thermochemical Tables*, 4th ed. Journal of Physical and Chemical Reference Data, Monograph 9, 1998 (NIST Standard Reference Database 13). Cp, S, H−H(298), ΔfH, ΔfG, log Kf and phase-transition temperatures of condensed and gaseous species; tables cited by ID (e.g. `O-045`). Machine-readable copy: py-janaf (n-takumasa), `src/janaf/data`, URL: https://github.com/n-takumasa/py-janaf. URL: https://janaf.nist.gov |
 
 ---
 
