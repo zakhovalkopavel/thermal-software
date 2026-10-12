@@ -64,7 +64,7 @@ See [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) § 7 for the f
 | 4  | `Perry7`         | Perry, R.H.; Green, D.W. (eds.) — *Perry's Chemical Engineers' Handbook*, 7th ed. McGraw-Hill, 1997. Aly–Lee Cp coefficients (Table 2-150) and polynomial Cp data. |
 | 5  | `Borgnakke`      | Borgnakke, C.; Sonntag, R.E. — *Thermodynamic and Transport Properties*. Wiley, 1997. URL: https://engineering.wayne.edu/mechanical/pdfs/thermodynamic-_tables-updated.pdf |
 | 6  | `Yaws1999`       | Yaws, C.L. — *Chemical Properties Handbook: Physical, Thermodynamic, Environmental, Transport, Safety, and Health Related Properties for Organic and Inorganic Chemicals*. McGraw-Hill, 1999. |
-| 7  | `Poling5`        | Poling, B.E.; Prausnitz, J.M.; O'Connell, J.P. — *The Properties of Gases and Liquids*, **5th ed.** McGraw-Hill, 2000. |
+| 7  | `Poling5`        | Poling, B.E.; Prausnitz, J.M.; O'Connell, J.P. — *The Properties of Gases and Liquids*, **5th ed.** McGraw-Hill, 2000. Ideal-gas Cp databank. |
 | 8  | `NASA7`          | McBride, B.J.; Zehe, M.J.; Gordon, S. — *NASA Glenn Coefficients for Calculating Thermodynamic Properties of Individual Species*. NASA TM-2002-211556, 2002. NASA-7 polynomial coefficients. |
 | 9  | `Burcat2005`     | Burcat, A.; Ruscic, B. — *Third Millennium Ideal Gas and Condensed Phase Thermochemical Database for Combustion with Updates from Active Thermochemical Tables*. ANL-05/20, 2005. |
 | 10 | `Lemmon2004`     | Lemmon, E.W.; Jacobsen, R.T. — *Viscosity and Thermal Conductivity Equations for Nitrogen, Oxygen, Argon, and Air*. International Journal of Thermophysics, 25(1), 2004. URL: https://trc.nist.gov/refprop/FAQ/NAO.PDF |
@@ -89,11 +89,16 @@ See [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) § 7 for the f
 | 29 | `Turns2012`      | Turns, S.R. — *An Introduction to Combustion: Concepts and Applications*, 3rd ed. McGraw-Hill, 2012, pp. 120–145. Gas-phase reaction kinetics (`BED_REACTIONS`). |
 | 30 | `Higman2008`     | Higman, C.; van der Burgt, M. — *Gasification*, 2nd ed. Gulf Professional Publishing (Elsevier), 2008, pp. 78–95. Boudouard and water-gas reactions (`BED_REACTIONS`). |
 | 31 | `IUPAC2021`      | Prohaska, T. et al. — *Standard Atomic Weights of the Elements 2021 (IUPAC Technical Report)*. Pure and Applied Chemistry, 94(5), pp. 573–600, 2022. Conventional atomic weights (gas `Mr` values in `COMPOUND_LIBRARY`). URL: https://doi.org/10.1515/pac-2019-0603 |
-| 32 | `NISTWebBook`    | Linstrom, P.J.; Mallard, W.G. (eds.) — *NIST Chemistry WebBook*, NIST Standard Reference Database Number 69. National Institute of Standards and Technology, maintained. Reference data for fits (NH3 Sutherland viscosity). URL: https://webbook.nist.gov/chemistry/ |
+| 32 | `NISTWebBook`    | Linstrom, P.J.; Mallard, W.G. (eds.) — *NIST Chemistry WebBook*, NIST Standard Reference Database Number 69. National Institute of Standards and Technology, maintained. Reference data for fits (NH3 Sutherland viscosity); Shomate Cp coefficients. URL: https://webbook.nist.gov/chemistry/ |
 | 33 | `Ergun1952`      | Ergun, S. — *Fluid Flow through Packed Columns*. Chemical Engineering Progress, 48(2), pp. 89–94, 1952. Packed-bed pressure drop (`AerodynamicsService`). |
-| 34 | `Perry8`         | Green, D.W.; Perry, R.H. (eds.) — *Perry's Chemical Engineers' Handbook*, 8th ed. McGraw-Hill, 2008. DIPPR Eq. 102 coefficients: Table 2-312 (vapor viscosity) and Table 2-314 (vapor thermal conductivity) for the fuel gases C2H6 … C3H6. Machine-readable copies of both tables: CalebBell/chemicals, `chemicals/Viscosity/Table 2-312 …tsv` and `chemicals/Thermal Conductivity/Table 2-314 …tsv`. URL: https://github.com/CalebBell/chemicals |
+| 34 | `Perry8`         | Green, D.W.; Perry, R.H. (eds.) — *Perry's Chemical Engineers' Handbook*, 8th ed. McGraw-Hill, 2008. DIPPR Eq. 102 coefficients: Table 2-312 (vapor viscosity) and Table 2-314 (vapor thermal conductivity) for the fuel gases C2H6 … C3H6. Machine-readable copies of both tables: CalebBell/chemicals, `chemicals/Viscosity/Table 2-312 …tsv` and `chemicals/Thermal Conductivity/Table 2-314 …tsv`. Also Cp (Tables 2-151, 2-153) and liquid viscosity (Table 2-313). URL: https://github.com/CalebBell/chemicals |
 | 35 | `Eakin1963`      | Eakin, B.E.; Ellington, R.T. — *Predicting the Viscosity of Pure Light Hydrocarbons*. Journal of Petroleum Technology, 15(2), pp. 210–214, 1963 (Trans. AIME 228). Table 1: Sutherland constants μ = B·T^1.5/(T + S) [μP, °R] for methane, ethane, propane, n-butane. URL: https://doi.org/10.2118/397-PA |
 | 36 | `NISTJANAF`      | Chase, M.W. Jr. — *NIST-JANAF Thermochemical Tables*, 4th ed. Journal of Physical and Chemical Reference Data, Monograph 9, 1998 (NIST Standard Reference Database 13). Cp, S, H−H(298), ΔfH, ΔfG, log Kf and phase-transition temperatures of condensed and gaseous species; tables cited by ID (e.g. `O-045`). Machine-readable copy: py-janaf (n-takumasa), `src/janaf/data`, URL: https://github.com/n-takumasa/py-janaf. URL: https://janaf.nist.gov |
+| 37 | `CRC95`          | Haynes, W.M.; Bruno, T.J.; Lide, D.R. (eds.) — *CRC Handbook of Chemistry and Physics*, 95th ed. CRC Press, 2014. Melting and boiling points, densities, heats of fusion, ΔfH°, ΔfG°, S° and Cp at 298.15 K. |
+| 38 | `Yaws2014`       | Yaws, C.L. — *Thermophysical Properties of Chemicals and Hydrocarbons*, 2nd ed. Gulf Professional Publishing, 2014. Critical constants, acentric factors, boiling points, gas ΔfH° and S°. |
+| 39 | `Zabransky1996`  | Zabransky, M.; Ruzicka, V. Jr.; Majer, V.; Domalski, E.S. — *Heat Capacity of Liquids: Critical Review and Recommended Values*. J. Phys. Chem. Ref. Data Monograph 6, 1996. Liquid Cp correlations. |
+| 40 | `TRC1994`        | Thermodynamics Research Center — *Thermodynamics of Organic Compounds in the Gas State*, Vol. II. TRC, 1994. Ideal-gas Cp coefficients. |
+| 41 | `VDI2010`        | VDI e.V. (ed.) — *VDI Heat Atlas*, 2nd ed. Springer, 2010. PPDS correlations: liquid and gas viscosity and thermal conductivity, liquid density, vapour pressure, enthalpy of vaporization, surface tension. |
 
 ---
 
@@ -101,7 +106,7 @@ See [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) § 7 for the f
 
 1. Append a new row with the next sequential integer.
 2. Choose a descriptive key in `PascalCase` (e.g. `Author` or `AuthorYYYY`), unique in the enum.
-3. Add the key to the `RefKey` enum **and** `REFERENCES_META` constant in `dto/ref-key.dto.ts`.
+3. Add the key in all four code places: the `RefKey` enum (`backend/src/common/thermal/enum/ref-key.enum.ts`), `REFERENCES_META` (`backend/src/common/thermal/dto/ref-key.dto.ts`), and their Python mirrors `python/src/references/ref_key.py` and `python/src/references/references_meta.py`.
 4. Include: author(s), title, edition/year, publisher, URL if freely available, and what data type it supplies.
 5. **Never renumber or rename existing entries** — all `ref:` fields in compound files depend on the stability of this list.
 

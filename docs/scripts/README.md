@@ -30,6 +30,21 @@ This directory contains documentation for Python processing scripts.
 
 ---
 
+## 🔬 Compound Data (CalebBell/chemicals)
+
+### [COMPOUND_DATA_SPEC.md](COMPOUND_DATA_SPEC.md)
+**Specification for the merged compound dataset (planned)**
+- Merges the CRC, Perry, Poling, Yaws, TRC, Zabransky, WebBook Shomate and VDI PPDS tables from CalebBell/chemicals by CAS
+- Coefficients are stored as ready-to-use backend `EquationValue` entries (existing and planned equation types)
+- Inorganic compounds are grouped by element (the JANAF prefix rule), organic compounds by RDKit family
+- Package: `python/src/compound_data/`
+- CLI: `python/src/scripts/build_compound_data.py`
+- Make commands: `make compound-data-build`, `make compound-data-test`
+- Source files: `shared/sources/compound-data/chemicals/` (https://github.com/CalebBell/chemicals, pinned commit)
+- Output: `shared/processed/compound-data/inorganic/<Element>.json`, `organic/<family>.json` + `index.json`
+
+---
+
 ## 📈 Phase-Diagram Extraction
 
 ### [PHASE_DIAGRAM_EXTRACTION_SPEC.md](PHASE_DIAGRAM_EXTRACTION_SPEC.md)

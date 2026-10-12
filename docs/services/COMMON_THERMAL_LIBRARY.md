@@ -167,11 +167,13 @@ export interface EquationValue {
 | `quadratic` | a + b·T + c·T² | `{ a, b, c }` |
 | `cubic` | + d·T³ | `{ a, b, c, d }` |
 | `quartic` | + e·T⁴ | `{ a, b, c, d, e }` |
-| `linearHyperbolic` | a + b·T + c/T² | `{ a, b, c }` |
+| `linearHyperbolic` | a + b·T + d/T² | `{ a, b, d }` |
 | `alyLee` | DIPPR-107: c1 + c2·[c3/T / sinh(c3/T)]² + c4·[c5/T / cosh(c5/T)]² | `{ c1, c2, c3, c4, c5 }` |
 | `dipprN102` | c1·T^c2 / (1 + c3/T + c4/T²) | `{ c1, c2, c3, c4 }` |
 | `nasa7` | 7-coefficient polynomial (Cp, H, S, G) | — read from `nasa7.json` by `nasa7Key`, not here |
 | `nasa9` | 9-coefficient (variable ranges) | — read from `nasa9.json` by `nasa9Key`, not here |
+
+> Planned types (`dipprN114`, `trcCp`, `shomate`, `zabranskySpline`, `zabranskyQuasiPolynomial`, `dipprN101`, `ppds9`, `ppds10`, `ppds12`, `dipprN106`, `wagner25`) are specified in [NEW_EQUATION_TYPES_SPEC.md](NEW_EQUATION_TYPES_SPEC.md).
 
 > NASA data is referenced by key on `CompoundValue`, never written into `heatCapacity.values[]`.
 > See [CONVENTIONS.md §6](../CONVENTIONS.md) for the rule.
