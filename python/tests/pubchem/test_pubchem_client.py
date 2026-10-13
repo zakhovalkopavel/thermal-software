@@ -76,6 +76,22 @@ class TestClient:
         assert len(set(urls)) == 1 and len(urls) == 3
         assert [s for s in sleeps if s >= 10] == [60, 120]
 
+    def test_on_pause_runs_before_every_pause(self):
+        events = []
+        answers = [PubchemResponse(429), PubchemResponse(503), FOUND]
+        client = PubchemClient(fetch=lambda url: answers.pop(0), delay=0, busy_pause=60,
+                               sleep=lambda s: events.append(s) if s >= 10 else None,
+                               on_pause=lambda: events.append("save"))
+        assert client.lookup("1299-86-1").status == "ok"
+        assert events == ["save", 60, "save", 120]
+
+    def test_block_does_not_pause(self):
+        events = []
+        client, _, _ = _client([PubchemResponse(403)], on_pause=lambda: events.append("save"))
+        with pytest.raises(PubchemBlockedError):
+            client.lookup("1299-86-1")
+        assert events == []
+
     def test_retry_after_is_honoured(self):
         client, _, sleeps = _client([PubchemResponse(429, retry_after=17.0), FOUND])
         client.lookup("1299-86-1")

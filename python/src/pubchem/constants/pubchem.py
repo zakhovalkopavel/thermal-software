@@ -23,8 +23,8 @@ PUBCHEM_CACHE_COLUMNS: tuple[str, ...] = (
 )
 PUBCHEM_OK, PUBCHEM_NOT_FOUND, PUBCHEM_AMBIGUOUS, PUBCHEM_CHARGED = "ok", "notFound", "ambiguous", "charged"
 
-PUBCHEM_DELAY = 0.25
+PUBCHEM_DELAY = 2
 PUBCHEM_THROTTLE_LEVELS: tuple[str, ...] = ("Green", "Yellow", "Red", "Black")
 PUBCHEM_THROTTLE_DELAYS: dict[str, float] = {"Yellow": 1.0, "Red": 5.0}
-PUBCHEM_BUSY_PAUSE = 60.0
+PUBCHEM_BUSY_PAUSE = 180.0
 PUBCHEM_MAX_PAUSES = 3

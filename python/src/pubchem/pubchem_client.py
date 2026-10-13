@@ -4,12 +4,13 @@ pubchem.pubchem_client — Look up CAS numbers in PubChem PUG REST without pushi
 ``GET {PUBCHEM_API}/compound/name/{CAS}/property/<PUBCHEM_PROPERTIES>/JSON``: PubChem resolves a CAS
 through its synonyms, so one CAS can give several compounds. One request per CAS, paced as follows:
 
-  * requests are spaced by ``delay`` (default 0.25 s: under 5/s and 400/min);
+  * requests are spaced by ``delay`` (default ``PUBCHEM_DELAY``; PubChem allows 5/s and 400/min);
   * ``X-Throttling-Control`` on every answer: Yellow → ≥ 1 s between requests, Red → ≥ 5 s,
     Green → back to ``delay``;
   * Black or HTTP 403 → ``PubchemBlockedError`` at once (the caller saves and stops);
-  * 503 / 429 / other 5xx / network failure → pause ``Retry-After`` or ``busy_pause`` × 1, 2, 4 …
-    then ask for the *same* CAS again; still refused after ``max_pauses`` pauses → ``PubchemBlockedError``.
+  * 503 / 429 / other 5xx / network failure → ``on_pause`` (the caller saves what it has), pause
+    ``Retry-After`` or ``busy_pause`` × 1, 2, 4 … then ask for the *same* CAS again; still refused after
+    ``max_pauses`` pauses → ``PubchemBlockedError``.
 
 A refused CAS is never skipped in favour of the next one. Adapted from
 legacy/python_scripts/data_enrichment/pubchem_api_client.py without ``requests`` (not in the image).
@@ -46,13 +47,13 @@ class PubchemClient:
     """CAS → ``PubchemResult``.
 
     ``fetch`` (URL → ``PubchemResponse``, ``PubchemTransientError`` without an answer) and ``sleep``
-    can be replaced in tests.
+    can be replaced in tests. ``on_pause`` is called before every busy pause.
     """
 
     def __init__(
         self, fetch: Optional[Callable[[str], PubchemResponse]] = None, delay: float = PUBCHEM_DELAY,
         timeout: float = 30.0, busy_pause: float = PUBCHEM_BUSY_PAUSE, max_pauses: int = PUBCHEM_MAX_PAUSES,
-        sleep: Callable[[float], None] = time.sleep,
+        sleep: Callable[[float], None] = time.sleep, on_pause: Optional[Callable[[], None]] = None,
     ) -> None:
         self._fetch = fetch or self._http
         self._base_delay = delay
@@ -61,6 +62,7 @@ class PubchemClient:
         self._busy_pause = busy_pause
         self._max_pauses = max_pauses
         self._sleep = sleep
+        self._on_pause = on_pause
         self._last = 0.0
         self.level: Optional[str] = None
 
@@ -99,6 +101,8 @@ class PubchemClient:
                 break
             pause = response.retry_after if response and response.retry_after else self._busy_pause * 2 ** pause_no
             logger.warning("[pubchem] %s: %s — PubChem busy, pausing %.0f s before asking again", cas, reason, pause)
+            if self._on_pause is not None:
+                self._on_pause()
             self._sleep(pause)
         raise PubchemBlockedError(f"{cas}: {reason} after {self._max_pauses} pauses")
 

@@ -20,12 +20,13 @@ Output
                                             IUPAC name, title, candidates (CID:formula), retrieved date
 
 Already cached CAS numbers are skipped, so an interrupted run continues where it stopped; the cache
-is saved every --save-every lookups. --retry re-queries cached rows with the given statuses.
+is saved every --save-every lookups, before every busy pause and when the run stops. --retry
+re-queries cached rows with the given statuses.
 
 Politeness: one request per CAS, spaced by --delay and slowed down when PubChem's
 X-Throttling-Control turns Yellow or Red. When PubChem is busy the same CAS is asked again after
-growing pauses (60, 120, 240 s); a block (403, Black) or a server still busy after those pauses
-stops the run with exit code 2 — the cache is saved, run again later.
+growing pauses (PUBCHEM_BUSY_PAUSE × 1, 2, 4); a block (403, Black) or a server still busy after
+those pauses stops the run with exit code 2 — the cache is saved, run again later.
 
 Implementation
 --------------
@@ -53,6 +54,8 @@ logger = logging.getLogger(__name__)
 
 
 def _build_parser() -> argparse.ArgumentParser:
+    from pubchem.constants.pubchem import PUBCHEM_DELAY
+
     p = argparse.ArgumentParser(
         description="Look up CAS numbers in PubChem and cache the identifiers.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -71,7 +74,8 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Re-query cached rows with these statuses, e.g. --retry notFound ambiguous",
     )
     p.add_argument("--limit", metavar="N", type=int, help="Query at most N CAS numbers")
-    p.add_argument("--delay", metavar="S", type=float, default=0.25, help="Seconds between requests (default: 0.25)")
+    p.add_argument("--delay", metavar="S", type=float, default=PUBCHEM_DELAY,
+                   help="Seconds between requests (default: %(default)s, PUBCHEM_DELAY)")
     p.add_argument("--save-every", metavar="N", type=int, default=50, help="Save the cache every N lookups")
     p.add_argument("-v", "--verbose", action="store_true", help="Show DEBUG-level messages")
     return p
@@ -99,7 +103,11 @@ def main(argv: list[str] | None = None) -> int:
     logger.info("[pubchem] %d CAS in %s, %d cached, %d to query (≥ %.0f min)",
                 len(wanted), args.cas_file, len(set(wanted) & cache.keys()), len(todo), len(todo) * args.delay / 60)
 
-    client = PubchemClient(delay=args.delay)
+    def save_before_pause() -> None:
+        write_pubchem_cache(args.cache, cache.values())
+        logger.info("[pubchem] Cache saved before the pause (%d CAS)", len(cache))
+
+    client = PubchemClient(delay=args.delay, on_pause=save_before_pause)
     code = 0
     try:
         for i, cas in enumerate(todo, start=1):
