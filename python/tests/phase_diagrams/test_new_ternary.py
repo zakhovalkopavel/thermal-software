@@ -124,6 +124,19 @@ def test_triangles_are_found_largest_first_with_corners_from_the_edge_fits():
     assert np.allclose(triangles[1][0], (300, 1050), atol=2)
 
 
+def test_side_by_side_triangles_with_collinear_bases_are_found_apart():
+    page = np.zeros((1200, 2400), np.uint8)
+    side, base_y = 1000.0, 1100.0
+    height = side * np.sqrt(3) / 2
+    for left_x in (100.0, 1250.0):
+        corners = [(left_x + side / 2, base_y - height), (left_x, base_y), (left_x + side, base_y)]
+        for p, q in ((0, 1), (1, 2), (2, 0)):
+            cv2.line(page, tuple(round(v) for v in corners[p]), tuple(round(v) for v in corners[q]), 1, 4)
+    triangles = detect_triangles(page.astype(bool))
+    assert len(triangles) == 2
+    assert sorted(round(t[1][0]) for t in triangles) == [100, 1250]
+
+
 def test_reading_order_reads_the_left_column_before_a_slightly_higher_right_one():
     left_top = ((799.0, 447.0), (205.0, 1482.0), (1389.0, 1486.0))
     left_bottom = ((800.0, 2036.0), (204.0, 3056.0), (1391.0, 3061.0))

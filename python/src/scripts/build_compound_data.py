@@ -29,9 +29,9 @@ Sources (shared/sources/transport-parameters.json)
 
 Sources (shared/sources/compound-data/pubchem/)
 -----------------------------------------------
-  pubchem-cas.tsv        — PubChem identifiers of the CAS numbers the chemicals identifier files miss,
-                           filled by the second step, fetch_pubchem_identifiers.py (make compound-data-pubchem);
-                           the build itself never goes online
+  pubchem-<class>.jsonl  — PubChem answers of the CAS numbers the chemicals identifier files miss (inorganic,
+                           organic, unclassified), filled by the second step, fetch_pubchem_identifiers.py
+                           (make compound-data-pubchem); the build itself never goes online
 
 Output (shared/processed/compound-data/)
 ----------------------------------------
@@ -103,10 +103,10 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--no-nasa", action="store_true", help="Do not attach NASA-7 / NASA-9 keys")
     p.add_argument(
-        "--pubchem-cache", metavar="FILE", type=Path, default=Path("shared/sources/compound-data/pubchem/pubchem-cas.tsv"),
-        help="PubChem identifier cache from fetch_pubchem_identifiers.py (default: %(default)s)",
+        "--pubchem-dir", metavar="DIR", type=Path, default=Path("shared/sources/compound-data/pubchem"),
+        help="PubChem files pubchem-<class>.jsonl from fetch_pubchem_identifiers.py (default: %(default)s)",
     )
-    p.add_argument("--no-pubchem", action="store_true", help="Do not use the PubChem identifier cache")
+    p.add_argument("--no-pubchem", action="store_true", help="Do not use the PubChem files")
     p.add_argument(
         "--transport-file", metavar="FILE", type=Path, default=Path("shared/sources/transport-parameters.json"),
         help="Transport parameters (White, TN D-481, Mamedov 2014, Svehla 1995) (default: %(default)s)",
@@ -143,7 +143,7 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         result = build_compound_data(
-            args.source_dir, None if args.no_janaf else args.janaf_dir, None if args.no_pubchem else args.pubchem_cache,
+            args.source_dir, None if args.no_janaf else args.janaf_dir, None if args.no_pubchem else args.pubchem_dir,
             None if args.no_nasa else args.nasa_dir, None if args.no_transport else args.transport_file,
         )
         generated_at = datetime.now(timezone.utc).isoformat()
@@ -153,7 +153,7 @@ def main(argv: list[str] | None = None) -> int:
         write_unresolved(args.out_dir, result.merge.unresolved, generated_at)
         write_compound_index(files, args.out_dir, generated_at)
         write_compound_units(args.out_dir)
-        write_compound_sources(args.out_dir, result.chem, generated_at, result.janaf, result.pubchem_cache, result.nasa,
+        write_compound_sources(args.out_dir, result.chem, generated_at, result.janaf, result.pubchem_tables, result.nasa,
                                result.transport_tables)
         write_interactions(args.out_dir, result.interactions, generated_at)
 

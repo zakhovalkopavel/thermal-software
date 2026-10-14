@@ -15,7 +15,9 @@ Sub-modules
   compound_data.compound_file        — CompoundFile (one output file and its records)
   compound_data.compound_files       — compound_files (records → files: per formula / per organic record)
   compound_data.compound_units       — compound_units (content of units.json)
-  compound_data.pubchem_identifiers  — load_pubchem_identifiers (cache rows → identifiers)
+  compound_data.pubchem_sources      — read_pubchem_sources (PubChem class files, read once)
+  compound_data.pubchem_identifiers  — load_pubchem_identifiers (PubChem records → identifiers)
+  compound_data.pubchem_formula_links — attach_pubchem_formulas (cas of records without CAS from formula searches)
   compound_data.janaf_links          — attach_janaf (JANAF table ids by CAS index and Hill formula)
   compound_data.equation_check       — check_equations (report sanity check)
   compound_data.writers              — compound files, unresolved.json, index.json, units.json, sources.json,

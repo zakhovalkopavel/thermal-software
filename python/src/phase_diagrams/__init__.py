@@ -16,6 +16,7 @@ Subpackages
   figures/     label OCR, caption parsing, figure index, figure search by system, caption display, corner labels
   nbs/         NSRDS-NBS 61 text, entries, matching, statuses, composition conversion
   builders/    calibration, binary system build, ternary start files, new-system checklist, ternary curve fill, node map, topology report
+  compounds/   compounds.json entries of single oxides from compound-data and the atlas, compact-layout editing
   output/      system JSON writer, review report
   validation/  dataset rules PD001–PD018
 
@@ -29,6 +30,7 @@ from phase_diagrams.constants.status_tolerance          import STATUS_TOLERANCE
 from phase_diagrams.constants.comparison_tolerance      import COMPARISON_TOLERANCE
 from phase_diagrams.constants.boundary_arrows           import BOUNDARY_ARROWS
 from phase_diagrams.constants.oxide_formulas            import OXIDE_FORMULAS
+from phase_diagrams.constants.oxide_notation            import OXIDE_NOTATION
 
 from phase_diagrams.models.frame                        import Frame
 from phase_diagrams.models.measured_line                import MeasuredLine
@@ -47,6 +49,7 @@ from phase_diagrams.models.validation_issue             import ValidationIssue
 from phase_diagrams.models.system_comparison            import SystemComparison
 from phase_diagrams.models.diagram_node                 import DiagramNode
 from phase_diagrams.models.line_scale                   import LineScale
+from phase_diagrams.models.melting_candidate            import MeltingCandidate
 
 from phase_diagrams.config.diagram_config               import DiagramConfig
 from phase_diagrams.config.curves_config                import CurvesConfig
@@ -117,6 +120,11 @@ from phase_diagrams.builders.boundary_arrow_segments    import boundary_arrow_se
 from phase_diagrams.builders.ternary_start_builder      import build_ternary_start
 from phase_diagrams.builders.new_system_checklist       import new_system_checklist
 
+from phase_diagrams.compounds.compound_data_lookup      import hill_formula, melting_candidates
+from phase_diagrams.compounds.oxide_compound_builder    import (atlas_disagrees, default_compound_id,
+                                                                merge_compound_data, new_oxide_compound)
+from phase_diagrams.compounds.compounds_file_editor     import add_compound, format_compound, replace_compound
+
 from phase_diagrams.output.system_json_writer           import write_system_json
 from phase_diagrams.output.review_report                import review_report
 from phase_diagrams.output.system_comparer              import compare_systems
@@ -132,6 +140,7 @@ __all__ = [
     "COMPARISON_TOLERANCE",
     "BOUNDARY_ARROWS",
     "OXIDE_FORMULAS",
+    "OXIDE_NOTATION",
     # models
     "Frame",
     "MeasuredLine",
@@ -150,6 +159,7 @@ __all__ = [
     "SystemComparison",
     "DiagramNode",
     "LineScale",
+    "MeltingCandidate",
     # config
     "DiagramConfig",
     "CurvesConfig",
@@ -219,6 +229,16 @@ __all__ = [
     "boundary_arrow_segments",
     "build_ternary_start",
     "new_system_checklist",
+    # compounds
+    "hill_formula",
+    "melting_candidates",
+    "atlas_disagrees",
+    "default_compound_id",
+    "merge_compound_data",
+    "new_oxide_compound",
+    "add_compound",
+    "format_compound",
+    "replace_compound",
     # output
     "write_system_json",
     "review_report",

@@ -27,9 +27,9 @@ pd-extract: ## Binary config → candidates/<system>.json, overlay, review, comp
 	@test -n "$(SYSTEM)" || (echo "usage: make pd-extract SYSTEM=mgo-sio2"; exit 2)
 	@$(PD_CLI) extract $(SYSTEM)
 
-pd-new: ## New ternary: figure from the index, triangle calibration → starting file + curves config: SYSTEM=cao-feox-sio2 [FIGURE=3.226] [TRIANGLE=1] [CORNERS="SiO2 CaO FeOx"]
-	@test -n "$(SYSTEM)" || (echo "usage: make pd-new SYSTEM=cao-feox-sio2 [FIGURE=3.226] [TRIANGLE=1] [CORNERS=\"top left right\"]"; exit 2)
-	@$(PD_CLI) new $(SYSTEM) $(if $(FIGURE),--figure $(FIGURE)) $(if $(TRIANGLE),--triangle $(TRIANGLE)) $(if $(CORNERS),--corners $(CORNERS))
+pd-new: ## New ternary: figure from the index, triangle calibration → starting file + curves config: SYSTEM=cao-feox-sio2 [FIGURE=3.226] [TRIANGLE=1] [CORNERS="SiO2 CaO FeOx"] [PUBCHEM=1]
+	@test -n "$(SYSTEM)" || (echo "usage: make pd-new SYSTEM=cao-feox-sio2 [FIGURE=3.226] [TRIANGLE=1] [CORNERS=\"top left right\"] [PUBCHEM=1]"; exit 2)
+	@$(PD_CLI) new $(SYSTEM) $(if $(FIGURE),--figure $(FIGURE)) $(if $(TRIANGLE),--triangle $(TRIANGLE)) $(if $(CORNERS),--corners $(CORNERS)) $(if $(PUBCHEM),--pubchem)
 
 pd-curves: ## Ternary curves config → candidate with polyline_wt filled: SYSTEM=cao-mgo-sio2
 	@test -n "$(SYSTEM)" || (echo "usage: make pd-curves SYSTEM=cao-mgo-sio2"; exit 2)

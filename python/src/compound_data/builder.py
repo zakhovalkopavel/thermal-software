@@ -4,8 +4,9 @@ compound_data.builder — Run all parsers, merge by CAS, check the equations and
 Besides the chemicals tables, the hand-transcribed transport parameters (``shared/sources/transport-parameters.json``)
 are parsed into the same entries; their pair rows are resolved to record ids for ``interactions.json``.
 
-The build is offline: PubChem answers come only from the cache that the second step
-(``make compound-data-pubchem``) fills from ``BuildResult.missing_cas``.
+The build is offline: PubChem answers come only from the files that the second step
+(``make compound-data-pubchem``) fills from ``BuildResult.missing_cas`` and the records without CAS
+(formula searches, which give those records a ``cas`` field).
 
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md
 """
@@ -33,7 +34,9 @@ from compound_data.merger import MergeResult, merge_compounds
 from compound_data.nasa_links import attach_nasa, nasa7_species, nasa9_species
 from compound_data.parsers.janaf_cas_index import read_janaf_cas_index
 from compound_data.parsers.transport_parameters import TransportParameters, parse_transport_parameters
+from compound_data.pubchem_formula_links import attach_pubchem_formulas
 from compound_data.pubchem_identifiers import load_pubchem_identifiers
+from compound_data.pubchem_sources import PubchemSources, read_pubchem_sources
 from janaf.janaf_index import load_janaf_index
 from janaf.janaf_source import JanafSource
 from janaf.parsers.janaf_table import parse_janaf_tables
@@ -50,7 +53,7 @@ class BuildResult:
     """Provenance, merged records and the report payload.
 
     ``janaf`` is None when JANAF was not read; ``nasa`` is the ``sources.json`` block of the NASA files
-    when they were read; ``pubchem_cache`` is the cache path when it was read;
+    when they were read; ``pubchem_tables`` are the PubChem class files that were read;
     ``missing_cas`` are the CAS numbers the chemicals identifier files do not have (input of the PubChem step).
     ``transport_tables`` are the tables of the transport-parameters file that were read (for ``sources.json``),
     ``interactions`` its pair rows with the record ids of their species (``interactions.json``).
@@ -61,22 +64,22 @@ class BuildResult:
     report: dict[str, Any]
     janaf: Optional[JanafSource] = None
     nasa: Optional[dict[str, Any]] = None
-    pubchem_cache: Optional[str] = None
+    pubchem_tables: list[TableSpec] = field(default_factory=list)
     missing_cas: list[str] = field(default_factory=list)
     transport_tables: list[TableSpec] = field(default_factory=list)
     interactions: list[dict[str, Any]] = field(default_factory=list)
 
 
 def build_compound_data(
-    source_dir: Path, janaf_dir: Optional[Path] = None, pubchem_cache: Optional[Path] = None,
+    source_dir: Path, janaf_dir: Optional[Path] = None, pubchem_dir: Optional[Path] = None,
     nasa_dir: Optional[Path] = None, transport_file: Optional[Path] = None,
 ) -> BuildResult:
     """Parse every table under ``source_dir`` (the chemicals copy with ``PROVENANCE.txt``).
 
     ``janaf_dir`` is the NIST-JANAF copy (``py-janaf/data``, ``py-janaf/janaf.json``,
     ``PROVENANCE.txt``); its table ids are attached to the records by Hill formula.
-    ``pubchem_cache`` is the PubChem identifier cache, used for CAS numbers the chemicals
-    identifier files do not have. ``nasa_dir`` holds the NASA-7 / NASA-9 sources (``shared/sources/NASA``);
+    ``pubchem_dir`` holds the PubChem files (``pubchem-<class>.jsonl``), used for CAS numbers the
+    chemicals identifier files do not have and for the CAS of records without one (formula searches). ``nasa_dir`` holds the NASA-7 / NASA-9 sources (``shared/sources/NASA``);
     their species keys are attached by Hill formula, checked by ΔfH°(298.15).
     ``transport_file`` is ``shared/sources/transport-parameters.json`` (White, TN D-481, Mamedov 2014, Svehla 1995).
     """
@@ -90,13 +93,12 @@ def build_compound_data(
     identifiers = load_identifiers(source_dir, chem, wanted)
     chemicals_resolved = len(identifiers)
     missing_cas = sorted(wanted - identifiers.keys())
+    pubchem = read_pubchem_sources(pubchem_dir) if pubchem_dir is not None else PubchemSources()
     pubchem_counts: dict[str, int] = {}
-    pubchem_used = None
-    if pubchem_cache is not None:
-        added, pubchem_counts, pubchem_issues = load_pubchem_identifiers(pubchem_cache, set(missing_cas))
+    if pubchem_dir is not None:
+        added, pubchem_counts, pubchem_issues = load_pubchem_identifiers(pubchem, set(missing_cas))
         identifiers.update(added)
         issues += pubchem_issues
-        pubchem_used = str(pubchem_cache) if pubchem_cache.is_file() else None
     logger.info("[identifiers] %d of %d CAS numbers resolved (%d from PubChem)",
                 len(identifiers), len(wanted), len(identifiers) - chemicals_resolved)
 
@@ -112,6 +114,11 @@ def build_compound_data(
     if nasa_dir is not None:
         nasa_block, nasa_issues, nasa_counts = _attach_nasa(nasa_dir, merge)
         issues += nasa_issues
+
+    if pubchem_dir is not None:
+        formula_issues, formula_counts = attach_pubchem_formulas(merge.records.values(), pubchem)
+        issues += formula_issues
+        pubchem_counts.update(formula_counts)
 
     interactions, interaction_issues = _resolve_interactions(transport.interactions, merge.records)
     issues += interaction_issues
@@ -167,7 +174,7 @@ def build_compound_data(
         "checks": checks,
     }
     return BuildResult(chem=chem, merge=merge, report=report, janaf=janaf_source, nasa=nasa_block,
-                       pubchem_cache=pubchem_used, missing_cas=missing_cas, transport_tables=transport.tables,
+                       pubchem_tables=list(pubchem.tables.values()), missing_cas=missing_cas, transport_tables=transport.tables,
                        interactions=interactions)
 
 

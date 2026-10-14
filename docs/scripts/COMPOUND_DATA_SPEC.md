@@ -163,9 +163,9 @@ flowchart LR
   identity["IDENTITY_OVERRIDES (rows without CAS and formula)"] --> merger
   ids["Inorganic db + pubchem small/large"] --> resolver["load_identifiers"]
   resolver --> missingCas["missing-cas.txt (step 1 output)"]
-  missingCas --> fetch["step 2: fetch_pubchem_identifiers.py (make compound-data-pubchem)"]
-  pubchemApi["PubChem PUG REST"] --> fetch
-  fetch --> pubchemCache["pubchem/pubchem-cas.tsv"]
+  missingCas --> fetch["step 2: fetch_pubchem_identifiers.py (make compound-data-pubchem; + formula: records by formula)"]
+  pubchemApi["PubChem PUG REST + PUG View"] --> fetch
+  fetch --> pubchemCache["pubchem/pubchem-{inorganic,organic,unclassified}.jsonl"]
   pubchemCache --> resolver
   janafTables["NIST-JANAF copy (py-janaf)"] --> janafParser["janaf.parse_janaf_tables"]
   janafCas["janaf_tables_index.csv"] --> janafCasReader["read_janaf_cas_index"]
@@ -212,7 +212,7 @@ Property names follow the backend where a name exists (`enthalpyFormation298`, `
   - Boiling Points: boilingPoint.
 - **Lennard-Jones parameters** (`Viscosity/PolingLJ.tsv`, ref `Poling5`, 75 rows; `Viscosity/MagalhaesLJ.tsv`, ref `Magalhaes2013`, 322 rows): collisionDiameter σ (source Å × 1e-10 → m, rounded to 12 significant digits) and epsilonToKb ε/k_B [K], tagged `potential: "lennardJones"` (`PropertyColumn.extra`). Poling's `Air` row has CAS 132259-10-0, which PubChem gives to Hoe 166, so it lands on that record (see the report's PubChem section).
 - **Identifiers:**
-  - CAS is resolved through `Inorganic db.tsv`, then `pubchem small`, then `pubchem large`, then the PubChem cache (see [PubChem identifiers](#pubchem-identifiers)), then the source's own formula column. Only CAS numbers that appear in the tables are loaded.
+  - CAS is resolved through `Inorganic db.tsv`, then `pubchem small`, then `pubchem large`, then the PubChem files of step 2 (see [PubChem identifiers](#pubchem-identifiers)), then the source's own formula column. Only CAS numbers that appear in the tables are loaded.
   - The PubChem compound id is kept as `pubchemCid` (the `Inorganic db` uses negative ids for compounds PubChem does not have; those give none).
   - The formula is cleaned of footnote prefixes (Perry `22 SO2` becomes `SO2`) and of trailing spaces.
   - `Mr` = MW / 1000.
@@ -261,7 +261,7 @@ Done, except the `PROVENANCE.txt` edition fix and `SHA256SUMS` update below.
   - `Viscosity/PolingLJ.tsv` and `Viscosity/MagalhaesLJ.tsv` (Lennard-Jones σ and ε/k)
 - The NIST-JANAF copy in `shared/sources/compound-data/nist-janaf/` (see [JANAF_PARSER_SPEC.md](JANAF_PARSER_SPEC.md)). Without it the build runs without JANAF ids and logs a warning.
 - The NASA sources in `shared/sources/NASA/` (`nasa7-origin.dat`, `nasa9-origin.dat`, `nasa9-new.dat`, see [NASA_THERMO_PARSER_SPEC.md](NASA_THERMO_PARSER_SPEC.md)). Without them the build runs without NASA keys and logs a warning.
-- `make compound-data-pubchem` (network, about 20–30 minutes the first time) fills `shared/sources/compound-data/pubchem/pubchem-cas.tsv`. Without it the build runs without PubChem identifiers and logs a warning.
+- `make compound-data-pubchem` (network, hours the first time) fills `shared/sources/compound-data/pubchem/pubchem-{inorganic,organic,unclassified}.jsonl`. Without them the build runs without PubChem identifiers and logs a warning.
 - Update `SHA256SUMS`.
 - Change "Perry ... 7th ed." in `PROVENANCE.txt` to the 8th edition (chemicals `heat_capacity.py` lines 822 and 850-854).
 - Add `rdkit` to [python/pyproject.toml](../../python/pyproject.toml), rebuild the image, and check that `import rdkit` works on Python 3.14. The `python_packages` volume hides new image packages, so also run `docker-compose run --rm python pip install rdkit==2026.9.1` (or recreate the volume).
@@ -333,7 +333,7 @@ The compound files carry no units, no source links and no `generatedAt` (a rebui
 }
 ```
 
-Entry fields: `name` (identifier name, else the first source label), `Mr` [kg/mol], `smiles` (structure line notation, e.g. `CCO`; used for the organic families), `inchikey` (hashed IUPAC InChI, a lookup key for PubChem and other databases), `pubchemCid` (PubChem compound id; page `sources.json` → `pubchem.compoundUrl`), `families`, `identifierRef`, `otherCas`, `properties`, `equations`, `raw`, `transport` (see [Transport parameters](#transport-parameters)), `janaf`, `nasa7`, `nasa9`. Compounds that no identifier source knows have no `Mr`, `smiles`, `inchikey`, `pubchemCid` or `identifierRef`.
+Entry fields: `cas` and `casRef` (only on records without CAS: the CAS a PubChem formula search found, and its search record, see [PubChem identifiers](#pubchem-identifiers)), `name` (identifier name, else the first source label), `Mr` [kg/mol], `smiles` (structure line notation, e.g. `CCO`; used for the organic families), `inchikey` (hashed IUPAC InChI, a lookup key for PubChem and other databases), `pubchemCid` (PubChem compound id; page `sources.json` → `pubchem.compoundUrl`), `families`, `identifierRef`, `otherCas`, `properties`, `equations`, `raw`, `transport` (see [Transport parameters](#transport-parameters)), `janaf`, `nasa7`, `nasa9`. Compounds that no identifier source knows have no `Mr`, `smiles`, `inchikey`, `pubchemCid` or `identifierRef`.
 
 ### units.json
 
@@ -379,13 +379,13 @@ Built by `compound_data.compound_units`: scalar property units come from the `Pr
   },
   "pubchem": {
     "api": "https://pubchem.ncbi.nlm.nih.gov/rest/pug",
-    "cache": "shared/sources/compound-data/pubchem/pubchem-cas.tsv",
+    "cache": "shared/sources/compound-data/pubchem",
     "compoundUrl": "https://pubchem.ncbi.nlm.nih.gov/compound/{cid}"
   }
 }
 ```
 
-With the PubChem cache, `files` also has `idPubchemRest` (`path` = the cache, `url: null`: the cache is local, so use `pubchemCid` for a link). With the transport parameters, `files` also has the 7 transport table keys (`path` = `shared/sources/transport-parameters.json`, `url: null`).
+With the PubChem files, `files` also has `idPubchemRestInorganic`, `idPubchemRestOrganic` and `idPubchemRestUnclassified`, one per class file that exists (`path` = the file, `url: null`: the files are local, so use `pubchemCid` for a link). With the transport parameters, `files` also has the 7 transport table keys (`path` = `shared/sources/transport-parameters.json`, `url: null`).
 
 Perry files Al2O3 under 39377-45-2 (a PubChem ionic entry) and CRC under 1344-28-1. Both CAS are in the identifier databases, so both entries stay in `inorganic/Al/Al2O3-electrocorundum.json` (named after 1344-28-1, the lower CAS). Both appear in `index.json` `byFormula.Al2O3`, and the report lists them in `sharedFormulas`. The JANAF CAS index gives 1344-28-1 for all six Al2O3 tables, so only that record has `janaf`.
 
@@ -430,23 +430,27 @@ The report has, per dataset (`nasa7…` / `nasa9…`), the counts `Species`, `Sk
 
 ### PubChem identifiers
 
-The chemicals identifier files are a partial PubChem sample: 3,976 CAS numbers of the tables are missing (methane, biphenyl, Al4C3), so their rows went to `unresolved.json` ("formula not found") or became records without `Mr`/`smiles`. PubChem is slow to query, so it is a separate second step with its own package (`pubchem`) and a local cache; the build never goes online.
+The chemicals identifier files are a partial PubChem sample: 3,976 CAS numbers of the tables are missing (methane, biphenyl, Al4C3), so their rows went to `unresolved.json` ("formula not found") or became records without `Mr`/`smiles`. PubChem is slow to query, so it is a separate second step with its own package (`pubchem`) and local files; the build never goes online. The fetch step, its requests, throttling and file format are in [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md).
 
-- **Step 1** (`make compound-data-build`): the build uses whatever the cache holds and writes `tmp/reports/python/compound-data/missing-cas.txt`, the CAS numbers no chemicals identifier file has (one per line, `#` header; independent of the cache, so `--retry` can re-query).
-- **Step 2** (`make compound-data-pubchem`, `scripts/fetch_pubchem_identifiers.py`, then step 1 again): reads the list (runs step 1 first when it is missing), skips cached CAS numbers and queries `{api}/compound/name/{CAS}/property/MolecularFormula,MolecularWeight,SMILES,InChIKey,IUPACName,Title/JSON`, one request per CAS. The cache is saved every 50 lookups, before every busy pause, on Ctrl+C and when the run stops, so the next run resumes. `--retry notFound ambiguous` re-queries cached statuses, `--limit N` caps a run. The client is adapted from `legacy/python_scripts/data_enrichment/pubchem_api_client.py`, with `urllib` instead of `requests` (not in the image).
-- **Politeness** ([PubChem dynamic request throttling](https://pubchem.ncbi.nlm.nih.gov/docs/dynamic-request-throttling): at most 5 requests per second, 400 per minute):
-  - requests are spaced by `--delay` (default `PUBCHEM_DELAY` in `pubchem/constants/pubchem.py`, 2 s);
-  - every answer's `X-Throttling-Control` header (request count, request time and service status, each Green / Yellow / Red / Black) sets the spacing by its worst status: Yellow ≥ 1 s, Red ≥ 5 s, Green back to `--delay`;
-  - Black or HTTP 403 stops the run at once (exit code 2);
-  - 503 (server busy), 429, other 5xx and network failures save the cache, then pause the whole run for `Retry-After`, else `PUBCHEM_BUSY_PAUSE` × 1, 2, 4, raise the spacing to ≥ 1 s and ask for the same CAS again; still refused after 3 pauses → the run stops (exit code 2). A refused CAS is never skipped in favour of the next one;
-  - other 4xx answers are logged and not cached.
-- **Cache** `shared/sources/compound-data/pubchem/pubchem-cas.tsv` (gitignored like the rest of `shared/sources/compound-data/`), sorted by CAS, header `CAS status CID formula MW SMILES InChIKey IUPACName title candidates retrieved`.
-- **Statuses:** PubChem resolves a CAS through its synonyms, so one CAS can give several compounds.
-  - `ok`: one compound, or several with one Hill formula (the first uncharged one is used; `candidates` lists all as `CID:formula`);
-  - `ambiguous`: compounds with different formulas; not used;
-  - `charged`: the CAS names only an ion (Perry's Mg 22537-22-0 → `Mg+2`); not used;
-  - `notFound` (calcium carbide 75-20-7).
-- **Build:** `ok` rows are the last identifier source (after the chemicals files), with `identifierRef: [line, "idPubchemRest"]` and `pubchemCid`. A PubChem identity can contradict a row's own formula, and the detach rule then handles it: Perry's Al 3303-34-2 is L-alanyl-L-leucine in PubChem, so the Perry row becomes `formula:Al` and the unidentified rule moves it onto 7429-90-5. CLI options `--pubchem-cache` and `--no-pubchem`; without the cache the build logs a warning.
+- **Step 1** (`make compound-data-build`): the build uses whatever the PubChem files hold and writes `tmp/reports/python/compound-data/missing-cas.txt`, the CAS numbers no chemicals identifier file has (one per line, `#` header; independent of the PubChem files, so `--retry` can re-query).
+- **Step 2** (`make compound-data-pubchem`, then step 1 again): looks those CAS numbers up in PubChem, and searches the records without a CAS (`formula:…`, 162) by their Hill formula. The results go to `shared/sources/compound-data/pubchem/pubchem-{inorganic,organic,unclassified}.jsonl`: one line per query, with the full property answer, the experimental properties of its CIDs and, for a formula search, the CAS section of the found compound. On-demand searches (`make pubchem-search Q="CaAl2O4"`, `pd-new PUBCHEM=1`, the query list) write to the same files.
+- **Statuses:** `ok` (one compound, or several with one Hill formula), `ambiguous` (different formulas), `charged` (only an ion, Perry's Mg 22537-22-0 → `Mg+2`) and `notFound`; only `ok` is used. See [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md#statuses).
+- **Build:** `ok` records are the last identifier source (after the chemicals files), with `identifierRef: [line, "idPubchemRestInorganic"]` (the line and key of the class file; `idPubchemRestOrganic`, `idPubchemRestUnclassified`) and `pubchemCid`. When a CAS has several lines, the newest wins. The experimental bodies are not loaded. A PubChem identity can contradict a row's own formula, and the detach rule then handles it: Perry's Al 3303-34-2 is L-alanyl-L-leucine in PubChem, so the Perry row becomes `formula:Al` and the unidentified rule moves it onto 7429-90-5. CLI options `--pubchem-dir` and `--no-pubchem`; without the files the build logs a warning.
+- **Records without CAS** (`pubchem_formula_links.py`): an `ok` formula search `formula:<Hill>` adds `cas` (the CAS most sources give on the compound's PubChem page), `casRef: [line, "idPubchemRest<Class>"]` and `pubchemCid` to the record, which keeps its `formula:` id and its `noCas` entry (no re-keying, no merging). Runs after the JANAF and NASA steps, so the records JANAF creates (`formula:AlF` …) are included. Not added, and reported:
+  - `pubchemCasExists`: the found CAS is already a record or a moved CAS (`record`, `recordFormula`). Either the compound is in the data twice, or that record has a wrong formula: 21548-73-2 is Ag2HS (protonated identifier formula) where PubChem has Ag2S, and 13595-82-9 is AlF3 in the sources where PubChem has AlF;
+  - `pubchemFormulaSearchAmbiguous` / `pubchemFormulaSearchNotFound` (with the candidates).
+
+  The counts `pubchemFormulaCas`, `pubchemFormulaCidOnly` (found compound without a CAS section), `pubchemCasExists`, `pubchemFormulaSearch<Status>` and `pubchemFormulaNotFetched` go to the report. The PubChem files are read once (`pubchem_sources.py` `read_pubchem_sources`) for the CAS identifiers and the formula links.
+
+### PubChem query list
+
+`shared/sources/pubchem-queries.txt` lists 551 formulas without a compound-data record (aluminates, silicates, borates, double salts, hydrates), one per line, with names and CAS numbers after `#`. They were taken once from the former library tables (`legacy/library`), which are not read any more. The formulas with fractional counts and one unreadable formula were left out. `make pubchem-search QUERY_FILE=shared/sources/pubchem-queries.txt` searches them by formula into the PubChem files (about an hour at PubChem's pace; stored searches are reused). A found CID and CAS are candidates for new records, not automatic ones; the CAS numbers in the comments were scraped from PubChem synonyms without a formula check, so compare them with what the search finds.
+
+The comparison that produced the list also checked the 234 CAS numbers of those tables against the compound data, using PubChem's answer for each CAS as the referee:
+
+- the compound data has protonated identifier formulas for Fe3O4 1317-61-9 (Fe3H8O4), Li2O 12057-24-8 (HLi2O), MnSO4 7785-87-7 (H2MnO4S) and ZrF4 13842-94-9 (F2Zr);
+- the old tables were wrong for TiN 7440-31-5 (tin), CaO2 1305-62-0 and BaO2 17194-00-2 (the hydroxides);
+- 30 of their CAS numbers are not in the compound data, and many of them belong to another compound in PubChem (CrN 262-76-0 is corrin, NiS 516-12-1 N-iodosuccinimide).
 
 ### Equations
 
@@ -472,7 +476,7 @@ The chemicals identifier files are a partial PubChem sample: 3,976 CAS numbers o
 
 `index.json` holds:
 - `generatedAt`, `count` and `equationTypes`;
-- `compounds`, keyed by record id (the CAS, or `formula:<F>`), one entry per compound with its location (`file`, `hill`, `entry`: the record is at `file` → `entries[entry]`), `displayFormula`, `formula` when it differs from `hill`, name, class, group, families, refs (with `NISTJANAF` when it has JANAF ids, `NASA7` / `NASA9` when it has NASA keys), which properties and equation phases it has, the properties of its `transport` block, `janaf`, `nasa7`, `nasa9` and `otherCas`; null and empty fields are left out;
+- `compounds`, keyed by record id (the CAS, or `formula:<F>`), one entry per compound with its location (`file`, `hill`, `entry`: the record is at `file` → `entries[entry]`), `cas` (records without CAS that a PubChem formula search identified), `displayFormula`, `formula` when it differs from `hill`, name, class, group, families, refs (with `NISTJANAF` when it has JANAF ids, `NASA7` / `NASA9` when it has NASA keys), which properties and equation phases it has, the properties of its `transport` block, `janaf`, `nasa7`, `nasa9` and `otherCas`; null and empty fields are left out;
 - the lookups `byFormula`, `byElement` (sorted keys), `byFamily` and `byOtherCas` (moved CAS → record id).
 
 It holds no property values.
@@ -530,16 +534,12 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
   - parsers: `parsers/property_table.py` `parse_property_table`, `parsers/coefficient_table.py` `parse_coefficient_table`, `parsers/perry_151.py` `parse_perry_151` (linearHyperbolic or quadratic per row), `parsers/crc_molten_density.py` `parse_crc_molten_density`, `parsers/shomate_json.py` `parse_shomate_json` (per-phase `ranges`, line of each CAS key), `parsers/zabransky.py` `parse_zabransky` (spline rows per CAS and data type → one piecewise equation; quasi-polynomial rows → single equations), `parsers/vdi_ppds.py` `parse_vdi_ppds` (8 files, liquid ranges from the VDI Tm/Tc rows), `parsers/identifiers.py` `load_identifiers`, `parsers/provenance.py` `read_chemicals_source`, `parsers/tsv_reader.py`, `parsers/number.py` (integers stay integers), `parsers/cas.py`;
   - logic: `source_entries.py` `parse_source_entries` (all parsers + identity overrides), `identity_override.py` `IdentityOverride`, `identity_resolver.py` `apply_identity_overrides`, `label_variant.py` `label_variant` (trailing `(...)` of a source label), `report_issue.py`;
   - `equation_eval.py` `evaluate_equation`, a Python copy of the backend `calculate` formulas for every type. It clamps T to min/max when they are set, then applies `k`. It is used by the tests and the sanity report, and gave the reference values of the backend unit tests.
-- **`pubchem/`**, polite PUG REST lookups (step 2), independent of the build:
-  - `pubchem_client.py` `PubchemClient` (pacing, throttling, pauses), `pubchem_throttle.py` `throttle_level`, `pubchem_response.py` `PubchemResponse` (status, JSON, `X-Throttling-Control`, `Retry-After`), `pubchem_blocked_error.py` `PubchemBlockedError`, `pubchem_transient_error.py` `PubchemTransientError`;
-  - `pubchem_result.py` `PubchemResult` (status classification, cache row, `name`);
-  - `parsers/cas_list.py` `read_cas_list`, `parsers/pubchem_cache.py` `read_pubchem_cache`, `pubchem_cache_writer.py` `write_pubchem_cache`;
-  - `constants/pubchem.py` (API, properties, cache path and columns, statuses, pacing).
+- **`pubchem/`**, polite PubChem lookups (step 2), independent of the build: client, records, class files and constants, see [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md#files).
 - **`compound_data/`**, merge and output (step 1):
   - `builder.py` `build_compound_data` (parse → identifiers → merge → checks → JANAF → NASA → interaction ids; `BuildResult.missing_cas`, `BuildResult.nasa`, `BuildResult.transport_tables`, `BuildResult.interactions`);
   - `parsers/transport_parameters.py` `parse_transport_parameters` with `constants/transport_source.py` (`TRANSPORT_TABLES`, `ORIGINAL_REFS`, `TRANSPORT_COLUMNS`, `POTENTIALS`), see [Transport parameters](#transport-parameters);
   - `merger.py` `merge_compounds` (with the detach and unidentified rules), `compound_record.py` `CompoundRecord`, `formula_override.py` with `constants/formula_overrides.py` `FORMULA_OVERRIDES`, `constants/source_priority.py` `SOURCE_PRIORITY`, `class_override.py` `ClassOverride` with `constants/class_overrides.py` `CLASS_OVERRIDES`;
-  - `pubchem_identifiers.py` `load_pubchem_identifiers` (cache rows → `Identifier`), `constants/pubchem_source.py` (`PUBCHEM_TABLE`, `MISSING_CAS_FILE`);
+  - `pubchem_sources.py` `PubchemSources`, `read_pubchem_sources` (class files read once, with their tables), `pubchem_identifiers.py` `load_pubchem_identifiers` (class file records → `Identifier`), `pubchem_formula_links.py` `attach_pubchem_formulas` (`cas` of records without CAS), `constants/pubchem_source.py` (`PUBCHEM_TABLES` per class, `MISSING_CAS_FILE`);
   - `janaf_links.py` `attach_janaf`, `parsers/janaf_cas_index.py` `read_janaf_cas_index`, `constants/janaf_cas_index.py` `JANAF_CAS_INDEX`;
   - `nasa_links.py` `attach_nasa`, `nasa7_species`, `nasa9_species` (`NasaSpecies`: key, elements, phase, H°(298.15) of the fit), `constants/nasa_source.py` (file names, datasets, `HF_TOLERANCE`, `HF_TOLERANCE_SINGLE`);
   - `equation_check.py` `check_equations`;
@@ -549,9 +549,9 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
 
 ### CLI and Make
 
-- CLI `python/src/scripts/build_compound_data.py`, with arguments `--source-dir`, `--janaf-dir`, `--no-janaf`, `--nasa-dir` (default `shared/sources/NASA`), `--no-nasa`, `--pubchem-cache`, `--no-pubchem`, `--transport-file` (default `shared/sources/transport-parameters.json`), `--no-transport`, `--out-dir` (cleared after a successful build, before writing), `--report-dir` and `-v`.
-- CLI `python/src/scripts/fetch_pubchem_identifiers.py`, with arguments `--cas-file` (default `reports/compound-data/missing-cas.txt`), `--cache`, `--retry STATUS...`, `--limit`, `--delay`, `--save-every` and `-v`; exit code 2 when PubChem blocks or stays busy, 130 on Ctrl+C.
-- Make file `scripts/make.d/11-compound-data.mk`, with targets `compound-data-build` (step 1), `compound-data-pubchem` (step 2, then step 1 again) and `compound-data-test` (all five test folders).
+- CLI `python/src/scripts/build_compound_data.py`, with arguments `--source-dir`, `--janaf-dir`, `--no-janaf`, `--nasa-dir` (default `shared/sources/NASA`), `--no-nasa`, `--pubchem-dir` (default `shared/sources/compound-data/pubchem`), `--no-pubchem`, `--transport-file` (default `shared/sources/transport-parameters.json`), `--no-transport`, `--out-dir` (cleared after a successful build, before writing), `--report-dir` and `-v`.
+- CLI `python/src/scripts/fetch_pubchem_identifiers.py` (step 2) and `pubchem_search.py` (on demand), see [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md#running).
+- Make file `scripts/make.d/11-compound-data.mk`, with targets `compound-data-build` (step 1), `compound-data-pubchem` (step 2, then step 1 again), `pubchem-search` and `compound-data-test` (all five test folders).
 
 ---
 
@@ -578,7 +578,7 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
 
 ## Tests (fixtures built from real rows)
 
-One folder per package: `python/tests/chemical_formula/` (formulas, classes, main element, families), `dataset_layout/` (file names, collisions, clearing), `chemicals_tables/` (parsers, provenance, equation types and eval, identity overrides; `chemicals_fixtures.py` is shared with `compound_data/` through its conftest), `pubchem/` (client, results, cache, CAS list) and `compound_data/` (merging, writers, JANAF links, PubChem identifiers).
+One folder per package: `python/tests/chemical_formula/` (formulas, classes, main element, families), `dataset_layout/` (file names, collisions, clearing), `chemicals_tables/` (parsers, provenance, equation types and eval, identity overrides; `chemicals_fixtures.py` is shared with `compound_data/` through its conftest), `pubchem/` (client, results, class files, CAS list) and `compound_data/` (merging, writers, JANAF links, PubChem identifiers).
 
 
 - **Equation mapping** (checked against the chemicals docstrings and the backend):
@@ -622,8 +622,8 @@ One folder per package: `python/tests/chemical_formula/` (formulas, classes, mai
 - **Identifiers:** CAS resolution precedence, the 12004-39-6 override and its conflict entry, and Perry formula cleaning (`22 SO2`).
 - **Merging:** all values are kept, and `def` follows source priority. Unidentified rule: an inorganic row with unknown CAS moves onto the single identified record (`otherCas`), a detached row (no CAS) too, without `otherCas`; an organic isomer (dimethyl ether vs ethanol), a `D2` row next to hydrogen and a formula without identified record are kept and reported. `pubchemCid` comes from the identifier, `smiles` from an identity override when there is no identifier.
 - **Identity overrides** (`chemicals_tables/test_identity_overrides.py`): normal H2 with `variant`, pentaethoxyuranium with SMILES, other rows untouched; CID parsing of the chemicals files (`-1` → none).
-- **PubChem** (`pubchem/test_pubchem_result.py`, `pubchem/test_pubchem_client.py`): `PubchemResult` statuses (single, same formula → first, different formulas → ambiguous, ion → charged, neutral preferred over the ion, empty → notFound) and `name`; cache round trip sorted by CAS; CAS list comments and duplicates; throttling level (worst status, missing header); client URL, 404, Yellow/Red slow down and Green restores, 503 and network failure pause 60/120 s then ask the same CAS again, `on_pause` runs before every pause, `Retry-After`, busy answers raise the spacing, still busy after 3 pauses stops, 403 / Black stop at once without pausing, other 4xx not cached.
-- **PubChem in the build** (`compound_data/test_pubchem_identifiers.py`): `ok` row → `Identifier` (`[line, "idPubchemRest"]`, compound URL), charged row → none; only `ok` rows of missing CAS, with status counts and issues; the `sources.json` `pubchem` block; `missing-cas.txt` read back by `read_cas_list`.
+- **PubChem** (`pubchem/test_pubchem_result.py`, `test_pubchem_search.py`, `test_pubchem_client.py`): see [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md#tests).
+- **PubChem in the build** (`compound_data/test_pubchem_identifiers.py`): table keys per class; `ok` record → `Identifier` (`[line, "idPubchemRestInorganic"]`, compound URL), charged record → none; only `ok` records of missing CAS, with status counts, issues per class table and the tables read; no files; formula links (an `ok` search adds `cas`/`casRef`/`pubchemCid` and keeps the key, a CAS of another record is reported, not-ok and not-fetched searches are counted, a found compound without CAS gives the CID only); the `sources.json` file keys and `pubchem` block; `missing-cas.txt` read back by `read_cas_list`.
 - **Writers and index:** compound file paths and the root files, file fields (`class`, `group`, `displayFormula`, `hill`, `elements`, `entries[cas | noCas]`) without meta or `generatedAt`, no `id`/`cas`/`hill`/`elements` or empty fields inside entries, every index entry resolves through `file`/`entry`, `byOtherCas`, sorted `byElement`, no NaN.
 - **Layout:** three Bi2O3 CAS in one file named after the lowest CAS, ethanol and dimethyl ether in their own family files, `Ti/TiO2-…` and `N/NH3-…`, and the carbon classes in files: `C/HCN-…`, `Na/NaHCO3-…`, `amides/CH4N2O-urea`, `halogenated/CCl4-…`.
 - **Units:** `units.json` content, and every property and equation property of the index has a unit.
@@ -640,7 +640,7 @@ One folder per package: `python/tests/chemical_formula/` (formulas, classes, mai
 
 ## Docs
 
-- This spec, plus an entry in [docs/scripts/README.md](README.md).
+- This spec, plus an entry in [docs/scripts/README.md](README.md); the PubChem step has its own [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md).
 - A "Compound data" section in [python/README.md](../../python/README.md), next to the JANAF one, covering source, output and make targets.
 
 ---
@@ -649,7 +649,7 @@ One folder per package: `python/tests/chemical_formula/` (formulas, classes, mai
 
 1. `make compound-data-test`.
 2. `make compound-data-build` (step 1, offline; writes `missing-cas.txt`).
-3. `make compound-data-pubchem` (step 2: first run about 45 minutes for 3,976 CAS numbers, later runs only query new ones; rebuilds at the end). If it stops with exit code 2, PubChem refused requests: wait and run it again.
+3. `make compound-data-pubchem` (step 2: the first run takes hours for 3,976 CAS numbers, later runs only query new ones; rebuilds at the end). If it stops with exit code 2, PubChem refused requests or stayed busy: wait and run it again. See [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md#verification).
 4. Spot-check with `rg --no-ignore`:
    - Al2O3 `1344-28-1` has CRC meltingPoint 2327.15. Al2O3 `39377-45-2` (Perry's CAS) has a Perry solid `linearHyperbolic` with `d: -522500` and `k: 4.184`.
    - MnO has `quadratic`.
@@ -660,7 +660,7 @@ One folder per package: `python/tests/chemical_formula/` (formulas, classes, mai
    - `inorganic/C/` has 30 files (CO, CO2, CS2, HCN, HNCO, elemental carbon and fullerenes, ...); boron carbide is `inorganic/B/B4C-boron-carbide.json`; CCl4 and C2F6 are in `organic/halogenated/`, methane and ethane in `organic/alkanes/`, acetylene in `organic/alkynes/`, NaHCO3 in `inorganic/Na/`, calcium oxalate in `inorganic/Ca/`; the report has 5 `classOverridden`, 64 `classFromFormula` and 42 `familyFromFormula`, and `organic/unclassified/` holds 30 records (radicals, diazomethane, guanidine).
    - The report lists the 29 Perry rows without a range.
    - Al2O3 `1344-28-1` has `janaf` Al-096..Al-101 (CAS match) and `39377-45-2` has none; TiO2 `13463-67-7` has O-042, O-044, O-045, O-046.
-   - `inorganic/Al/Al-aluminum.json` `entries` has only `7429-90-5`, with `otherCas: ["3303-34-2"]` and the Perry solid/liquid Cp; with the current PubChem cache (1,207 CAS) the report has 23 `unknownCasMoved` and 84 `unknownCasKept` (15,802 records in 15,707 files).
+   - `inorganic/Al/Al-aluminum.json` `entries` has only `7429-90-5`, with `otherCas: ["3303-34-2"]` and the Perry solid/liquid Cp; with the PubChem data of 1,207 CAS the report has 23 `unknownCasMoved` and 84 `unknownCasKept` (15,802 records in 15,707 files).
    - Methane `74-82-8` has `collisionDiameter` 3.758e-10 m (Poling) and 3.58484e-10 m (Magalhães); 327 records have Lennard-Jones values.
    - NASA keys: methane `["CH4"]` in both; water `["H2O", "H2O(L)", "H2O(s)"]`; n-butane / isobutane get `C4H10,n-butane` / `C4H10,isobutane`; carbon dioxide has NASA-7 `CO2` and no NASA-9 key, oxygen no NASA-9 key, benzene NASA-9 only `C6H6(L)` (the NASA-9 `CO2`, `O2`, `C6H6` are in `nasa9HfMismatch`). Counts: NASA-7 932 species → 660 records (712 unchecked), NASA-9 1,706 → 1,152 (861 unchecked); 4 / 121 ambiguous, 10 / 369 ΔfH° mismatches.
    - Transport: 423 entries, 64 records with a `transport` block, 45 interactions (19 with a `null` id: electron, ions, H6F6), 4 `transportMixtureSkipped`. Nitrogen `7727-37-9` has gas viscosity `powerLaw` (y0 1.663e-5, n 0.67, 220–1500 K, `error: 3`) and `sutherland` (S 107, 100–1500 K), `transport.viscosity` with `matchTemperatureK: 2200`, and a `correspondingStates` `rhoStar` 0.108; argon has White A-7 σ 3.542e-10 m (`originalRef: Svehla1962`) and Mamedov σ 3.4e-10 m (`basis: secondVirial`).

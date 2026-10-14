@@ -118,6 +118,7 @@ python/
       constants/
         atomic_mass.py               ← ATOMIC_MASS (standard atomic weights; molar masses via formula_molar_mass)
         oxide_formulas.py            ← OXIDE_FORMULAS (caption display)
+        oxide_notation.py            ← OXIDE_NOTATION (CaO → C, TiO2 → T: notation of new single-oxide entries)
         status_tolerance.py          ← STATUS_TOLERANCE (ΔT 10 °C, Δ 1.5 wt%)
         comparison_tolerance.py      ← COMPARISON_TOLERANCE (±3 °C, ±0.2 wt% box)
         boundary_arrows.py           ← BOUNDARY_ARROWS (> < <> ?)
@@ -139,6 +140,7 @@ python/
         system_comparison.py         ← SystemComparison: differences + notes (candidate vs dataset)
         diagram_node.py              ← DiagramNode: labelled node-map point (junction, edge, invariant, ring)
         line_scale.py                ← LineScale: page line width → factor for the pixel tolerances
+        melting_candidate.py         ← MeltingCandidate: one compound-data melting point (°C, variant, CAS, ref)
       config/
         diagram_config.py            ← DiagramConfig (binary config)
         curves_config.py             ← CurvesConfig (ternary curves config)
@@ -197,6 +199,10 @@ python/
         node_map_builder.py          ← build_node_map(system, mask): numbered points for topology hints
         topology_report_builder.py   ← build_topology_report(name, system, nodes, …): field circuits, points, routes in node labels
         boundary_arrow_segments.py   ← boundary_arrow_segments(system, origin): page-pixel boundary pieces with their arrows
+      compounds/
+        compound_data_lookup.py      ← melting_candidates(formula, compound-data dir): meltingPoint values, highest first
+        oxide_compound_builder.py    ← new_oxide_compound, merge_compound_data (atlas vs compound-data, a/c/x choice)
+        compounds_file_editor.py     ← format_compound, add_compound, replace_compound (compact layout of compounds.json)
       output/
         system_json_writer.py        ← compact layout writer (binary files)
         review_report.py             ← review markdown
@@ -346,7 +352,8 @@ sequenceDiagram
 8. **Stop for user validation** of the candidate (overlay, review list, values vs. the page).
 9. **Promote**: `make pd-promote SYSTEM=mgo-sio2` copies the candidate into `systems/` if
   the dataset still validates; the replaced file goes to `replaced/`.
-10. Update `compounds.json` and `sources.json` by hand where the new figure adds sources,
+10. Update `compounds.json` and `sources.json` by hand where the new figure adds sources
+  (`pd-new` adds missing single oxides of a new ternary, § New ternary system),
   run `make pd-validate`; the user commits.
 
 
@@ -387,7 +394,37 @@ sequenceDiagram
    and, only when absent, `configs/<system>.curves.config.json` (stroke widths from the
    measured line width). `pd-nodes` and `pd-curves` read the dataset file when it exists,
    otherwise the starting file. Nothing is written to `systems/`.
-6. It prints the checklist of the system (`new_system_checklist`): molar masses of the
+6. Single-oxide phases (`phase_diagrams/compounds/`), per component with a fixed formula
+   (FeOx is skipped). The melting points of the oxide in `shared/processed/compound-data`
+   (`index.json` `byFormula` by Hill formula, `meltingPoint` of each entry, K → °C, highest
+   first: the polymorph stable at melting, rutile before anatase) are looked up.
+   NSRDS-NBS 61 Part I has no single-component melting points, so it is no fallback.
+   - Component already in `compounds.json`: its temperature is compared with the first
+     compound-data value. Within `STATUS_TOLERANCE` (10 °C) it is reported as agreeing;
+     beyond it the user chooses: `a` keep the entry and note the compound-data value,
+     `c` take the compound-data value and source (the atlas value goes into `notes`),
+     `x` add the compound-data source with status `conflict`, `q` leave it. An entry
+     without a temperature takes the compound-data value after `y`.
+   - Component missing: the compound-data values are listed (the user picks a variant
+     when there are several), then the user may type a printed atlas value as
+     `"<°C> <figure>"` (the figure from the caption index gives the pages). Atlas and
+     compound-data within the tolerance: the atlas value with both sources; beyond it the
+     same `a`/`c`/`x` choice. Only compound-data: its value. Only the atlas: the atlas
+     value. Neither: melting `missing` with a note. With `PUBCHEM=1` (`--pubchem`, opt-in,
+     network) a component without compound-data values is first searched in PubChem by
+     formula (`PubchemSearcher`, [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md#on-demand-search)): the
+     CID, CAS, title and the PubChem melting / boiling point and density strings are printed,
+     and `PubChem CID … (CAS …), melting point: …` goes into the entry's `notes` (the strings
+     are not parsed into the melting point; the user reads the value and its source). The
+     answer is kept in the compound-data PubChem files. The entry is printed and added after
+     `y` (or another id typed instead): id = the mineral variant (rutile), else the
+     compound-data name; notation from `OXIDE_NOTATION` (T for TiO2), else the formula;
+     status `extracted`; the compound-data source is
+     `{ "ref": "CRC95", "table": "crcConstants", "line": 282, "read": "meltingPoint … K (rutile); compound-data <file>, entry <CAS>" }`.
+   Entries are written in the compact layout of the file (`compounds_file_editor`; other
+   entries are left byte for byte). Without a terminal the proposals are printed and
+   nothing is written.
+7. It prints the checklist of the system (`new_system_checklist`): molar masses of the
    components (none for FeOx), the phases compounds.json already has for the system
    (compounds whose oxides all have component letters, so Fe2O3 phases count for FeOx),
    and each component without a single-oxide phase (to add before the system file names
@@ -1213,7 +1250,7 @@ The CLI runs in the `python` container only (principle 6).
 | `make pd-tile PAGE=108 BOX="x0 y0 x1 y1" [SCALE=2] [OVERLAY=mgo-sio2]` | `tile` (`--overlay`: zoom on the review overlay) |
 | `make pd-calibrate SYSTEM=mgo-sio2`                 | `calibrate`                                             |
 | `make pd-extract SYSTEM=mgo-sio2`                   | `extract`                                               |
-| `make pd-new SYSTEM=cao-feox-sio2 [FIGURE=3.226] [TRIANGLE=1] [CORNERS="SiO2 CaO FeOx"]` | `new` |
+| `make pd-new SYSTEM=cao-feox-sio2 [FIGURE=3.226] [TRIANGLE=1] [CORNERS="SiO2 CaO FeOx"] [PUBCHEM=1]` | `new` (`--pubchem`: PubChem search of components compound-data lacks) |
 | `make pd-curves SYSTEM=cao-mgo-sio2`                | `trace-curves`                                          |
 | `make pd-nodes SYSTEM=cao-mgo-sio2 [ORIGIN="x y"]`  | `nodes [--origin x y]`                                  |
 | `make pd-compare SYSTEM=mgo-sio2`                   | `compare`                                               |

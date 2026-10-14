@@ -4,10 +4,13 @@ from __future__ import annotations
 import pytest
 from pubchem_fixtures import AL4C3
 
+from pubchem.constants.pubchem import PUBCHEM_OVERLOADED_PAUSE_MULTIPLIER, PUBCHEM_PROPERTIES
 from pubchem.pubchem_blocked_error import PubchemBlockedError
 from pubchem.pubchem_client import PubchemClient
+from pubchem.pubchem_query import PubchemQuery
 from pubchem.pubchem_response import PubchemResponse
-from pubchem.pubchem_throttle import throttle_level
+from pubchem.pubchem_result import PubchemResult
+from pubchem.pubchem_throttle import throttle_level, throttle_statuses
 from pubchem.pubchem_transient_error import PubchemTransientError
 
 
@@ -16,6 +19,7 @@ def _throttling(count="Green", time_="Green", service="Green"):
 
 
 FOUND = PubchemResponse(200, {"PropertyTable": {"Properties": [AL4C3]}}, _throttling())
+OVERLOADED_PAUSE = 60 * PUBCHEM_OVERLOADED_PAUSE_MULTIPLIER
 
 
 def _client(answers, **kwargs):
@@ -32,6 +36,13 @@ def _client(answers, **kwargs):
     return PubchemClient(fetch=fetch, delay=0, sleep=sleeps.append, **kwargs), urls, sleeps
 
 
+def _lookup(client: PubchemClient, cas: str):
+    """Result of a CAS query, None when the client gave no answer."""
+    query = PubchemQuery.cas(cas)
+    answer = client.answer(query)
+    return PubchemResult.from_answer(query, answer) if answer is not None else None
+
+
 class TestThrottleLevel:
     def test_worst_status_wins(self):
         assert throttle_level(_throttling()) == "Green"
@@ -42,19 +53,60 @@ class TestThrottleLevel:
     def test_missing_header(self):
         assert throttle_level(None) is None
         assert throttle_level("garbage") is None
+        assert throttle_statuses(None) == {}
+
+    def test_statuses_per_counter(self):
+        assert throttle_statuses(_throttling(time_="Yellow", service="Black")) == {
+            "Request Count": "Green", "Request Time": "Yellow", "Service": "Black"}
 
 
 class TestClient:
     def test_found_and_url(self):
         client, urls, sleeps = _client([FOUND])
-        assert client.lookup("1299-86-1").status == "ok"
+        assert _lookup(client, "1299-86-1").status == "ok"
         assert urls == ["https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/1299-86-1/property/"
-                        "MolecularFormula,MolecularWeight,SMILES,InChIKey,IUPACName,Title/JSON"]
+                        f"{','.join(PUBCHEM_PROPERTIES)}/JSON"]
+        assert urls[0] == PubchemQuery.cas("1299-86-1").url
+        assert len(PUBCHEM_PROPERTIES) == 47 and {"InChI", "ConnectivitySMILES", "XLogP"} <= set(PUBCHEM_PROPERTIES)
         assert sleeps == [] and client.level == "Green"
 
+    def test_full_answer_is_attached(self):
+        client, urls, _ = _client([FOUND])
+        answer = client.answer(PubchemQuery.cas("1299-86-1"))
+        assert (answer.http_status, answer.url, answer.body) == (200, urls[0], FOUND.data)
+        assert answer.retrieved.endswith("+00:00")
+
+    def test_experimental_properties_of_a_cid(self):
+        section = {"Record": {"RecordNumber": 16685054, "Section": [], "Reference": []}}
+        client, urls, _ = _client([PubchemResponse(200, section, _throttling())])
+        answer = client.experimental(16685054)
+        assert urls == ["https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/16685054/JSON"
+                        "?heading=Experimental+Properties"]
+        assert (answer.cid, answer.http_status, answer.url, answer.body) == (16685054, 200, urls[0], section)
+
+    def test_cas_section_of_a_cid(self):
+        client, urls, _ = _client([PubchemResponse(200, {"Record": {}}, _throttling())])
+        assert client.cas_numbers(166738).cid == 166738
+        assert urls == ["https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/166738/JSON?heading=CAS"]
+
+    def test_formula_query_url(self):
+        client, urls, _ = _client([FOUND])
+        client.answer(PubchemQuery.formula("Ag2S"))
+        assert urls[0].startswith("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastformula/Ag2S/property/")
+
+    def test_experimental_404_is_kept_and_busy_pauses(self):
+        fault = {"Fault": {"Code": "PUGVIEW.NotFound"}}
+        client, urls, sleeps = _client([PubchemResponse(503), PubchemResponse(404, fault)], busy_pause=60)
+        answer = client.experimental(1)
+        assert (answer.http_status, answer.body) == (404, fault)
+        assert len(urls) == 2 and [s for s in sleeps if s >= 10] == [60]
+
     def test_404_is_not_found(self):
-        client, _, _ = _client([PubchemResponse(404, None, _throttling())])
-        assert client.lookup("75-20-7").status == "notFound"
+        fault = {"Fault": {"Code": "PUGREST.NotFound", "Message": "No CID found"}}
+        client, _, _ = _client([PubchemResponse(404, fault, _throttling())])
+        result = _lookup(client, "75-20-7")
+        assert result.status == "notFound"
+        assert (result.answer.http_status, result.answer.body) == (404, fault)
 
     def test_yellow_and_red_slow_down_green_restores(self):
         client, _, _ = _client([
@@ -62,17 +114,17 @@ class TestClient:
             PubchemResponse(200, None, _throttling(count="Red")),
             FOUND,
         ])
-        client.lookup("1-1-1")
+        _lookup(client, "1-1-1")
         assert (client.level, client.delay) == ("Yellow", 1.0)
-        client.lookup("2-2-2")
+        _lookup(client, "2-2-2")
         assert (client.level, client.delay) == ("Red", 5.0)
-        client.lookup("1299-86-1")
+        _lookup(client, "1299-86-1")
         assert (client.level, client.delay) == ("Green", 0)
 
     def test_busy_pauses_then_asks_same_cas_again(self):
         client, urls, sleeps = _client([PubchemResponse(503), PubchemTransientError("timed out"), FOUND],
                                        busy_pause=60)
-        assert client.lookup("1299-86-1").status == "ok"
+        assert _lookup(client, "1299-86-1").status == "ok"
         assert len(set(urls)) == 1 and len(urls) == 3
         assert [s for s in sleeps if s >= 10] == [60, 120]
 
@@ -82,32 +134,71 @@ class TestClient:
         client = PubchemClient(fetch=lambda url: answers.pop(0), delay=0, busy_pause=60,
                                sleep=lambda s: events.append(s) if s >= 10 else None,
                                on_pause=lambda: events.append("save"))
-        assert client.lookup("1299-86-1").status == "ok"
+        assert _lookup(client, "1299-86-1").status == "ok"
         assert events == ["save", 60, "save", 120]
 
     def test_block_does_not_pause(self):
         events = []
         client, _, _ = _client([PubchemResponse(403)], on_pause=lambda: events.append("save"))
         with pytest.raises(PubchemBlockedError):
-            client.lookup("1299-86-1")
+            _lookup(client, "1299-86-1")
         assert events == []
 
     def test_retry_after_is_honoured(self):
         client, _, sleeps = _client([PubchemResponse(429, retry_after=17.0), FOUND])
-        client.lookup("1299-86-1")
+        _lookup(client, "1299-86-1")
         assert 17.0 in sleeps
 
     def test_busy_slows_following_requests(self):
         client, _, _ = _client([PubchemResponse(503), PubchemResponse(200)])
-        client.lookup("75-20-7")
+        _lookup(client, "75-20-7")
         assert client.delay == 1.0
 
-    def test_still_busy_stops_the_run(self):
-        client, urls, sleeps = _client([PubchemResponse(503)] * 4, busy_pause=60, max_pauses=3)
-        with pytest.raises(PubchemBlockedError, match="after 3 pauses"):
-            client.lookup("1299-86-1")
+    def test_still_busy_after_max_wait_stops_the_run(self):
+        client, urls, sleeps = _client([PubchemResponse(503)] * 4, busy_pause=60, max_wait=420)
+        with pytest.raises(PubchemBlockedError, match="after 7 min of pauses"):
+            _lookup(client, "1299-86-1")
         assert len(urls) == 4
         assert [s for s in sleeps if s >= 10] == [60, 120, 240]
+
+    def test_answer_from_a_server_not_busy_resets_the_wait(self):
+        client, _, sleeps = _client([PubchemResponse(503), FOUND, PubchemResponse(503), FOUND],
+                                    busy_pause=60, max_wait=100)
+        _lookup(client, "1299-86-1")
+        _lookup(client, "1299-86-1")
+        assert [s for s in sleeps if s >= 10] == [60, 60]
+
+    def test_busy_pause_growth_is_capped(self):
+        client, _, sleeps = _client([PubchemResponse(503)] * 5 + [FOUND], busy_pause=60,
+                                    busy_pause_max_multiplier=4)
+        assert _lookup(client, "1299-86-1").status == "ok"
+        assert [s for s in sleeps if s >= 10] == [60, 120, 240, 240, 240]
+
+    def test_service_overloaded_answer_is_kept_and_next_request_waits(self):
+        events = []
+        answers = [PubchemResponse(404, None, _throttling(service="Black")), FOUND]
+        client = PubchemClient(fetch=lambda url: answers.pop(0), delay=0, busy_pause=60,
+                               sleep=lambda s: events.append(s) if s >= 10 else None,
+                               on_pause=lambda: events.append("save"))
+        assert _lookup(client, "54251-09-1").status == "notFound"
+        assert events == []
+        assert _lookup(client, "1299-86-1").status == "ok"
+        assert events == ["save", OVERLOADED_PAUSE]
+
+    def test_service_overloaded_error_is_asked_again_after_the_overloaded_pause(self):
+        client, urls, sleeps = _client([PubchemResponse(503, None, _throttling(service="Black")), FOUND],
+                                       busy_pause=60)
+        assert _lookup(client, "1299-86-1").status == "ok"
+        assert len(urls) == 2 and [s for s in sleeps if s >= 10] == [OVERLOADED_PAUSE]
+
+    def test_service_overloaded_counts_towards_max_wait(self):
+        overloaded = PubchemResponse(200, None, _throttling(service="Black"))
+        client, urls, _ = _client([overloaded] * 3, busy_pause=60, max_wait=OVERLOADED_PAUSE * 1.5)
+        _lookup(client, "1-1-1")
+        _lookup(client, "2-2-2")
+        with pytest.raises(PubchemBlockedError, match="max wait"):
+            _lookup(client, "3-3-3")
+        assert len(urls) == 2
 
     @pytest.mark.parametrize("answer", [
         PubchemResponse(403),
@@ -117,9 +208,9 @@ class TestClient:
     def test_block_stops_at_once(self, answer):
         client, urls, sleeps = _client([answer, FOUND])
         with pytest.raises(PubchemBlockedError):
-            client.lookup("1299-86-1")
+            _lookup(client, "1299-86-1")
         assert len(urls) == 1 and sleeps == []
 
     def test_other_client_error_is_not_cached(self):
         client, _, sleeps = _client([PubchemResponse(400)])
-        assert client.lookup("bad") is None and sleeps == []
+        assert _lookup(client, "bad") is None and sleeps == []

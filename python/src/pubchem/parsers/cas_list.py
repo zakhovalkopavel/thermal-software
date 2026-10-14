@@ -1,7 +1,7 @@
 """
 pubchem.parsers.cas_list — CAS numbers to look up: one per line, ``#`` starts a comment.
 
-Spec: docs/scripts/COMPOUND_DATA_SPEC.md
+Spec: docs/scripts/PUBCHEM_SPEC.md
 """
 from __future__ import annotations
 

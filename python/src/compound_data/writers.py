@@ -27,7 +27,6 @@ from chemicals_tables.constants.source_tables import SOURCE_TABLES
 from chemicals_tables.table_spec import TableSpec
 from compound_data.compound_file import CompoundFile
 from compound_data.compound_units import compound_units
-from compound_data.constants.pubchem_source import PUBCHEM_TABLE
 from janaf.janaf_source import JanafSource
 from pubchem.constants.pubchem import PUBCHEM_API, PUBCHEM_COMPOUND_URL
 from references import RefKey
@@ -39,14 +38,15 @@ JANAF_DATASET = "shared/processed/JANAF/index.json"
 
 def write_compound_sources(
     out_dir: Path, chem: ChemicalsSource, generated_at: str, janaf: Optional[JanafSource] = None,
-    pubchem_cache: Optional[str] = None, nasa: Optional[dict[str, Any]] = None,
+    pubchem_tables: Iterable[TableSpec] = (), nasa: Optional[dict[str, Any]] = None,
     transport_tables: Iterable[TableSpec] = (),
 ) -> Path:
     """Write ``sources.json``: repository, commit, license, the file-key → file map, the JANAF and NASA links.
 
-    With ``pubchem_cache`` (the cache was read), the map gets ``idPubchemRest`` (a local file, ``url: null``)
-    and a ``pubchem`` block with the compound URL template for ``pubchemCid``. ``transport_tables`` add
-    their file keys (the local transport-parameters file, ``url: null``).
+    With ``pubchem_tables`` (the PubChem class files that were read), the map gets their keys
+    (``idPubchemRestInorganic`` …, local files, ``url: null``) and a ``pubchem`` block with the folder and the
+    compound URL template for ``pubchemCid``. ``transport_tables`` add their file keys (the local
+    transport-parameters file, ``url: null``).
     """
     payload: dict[str, Any] = {
         "generatedAt": generated_at,
@@ -73,11 +73,12 @@ def write_compound_sources(
         }
     if nasa is not None:
         payload["nasa"] = nasa
-    if pubchem_cache is not None:
-        payload["files"][PUBCHEM_TABLE.key] = {
-            "name": PUBCHEM_TABLE.name, "path": pubchem_cache, "ref": None, "url": None,
-        }
-        payload["pubchem"] = {"api": PUBCHEM_API, "cache": pubchem_cache, "compoundUrl": PUBCHEM_COMPOUND_URL}
+    pubchem_tables = list(pubchem_tables)
+    for table in pubchem_tables:
+        payload["files"][table.key] = {"name": table.name, "path": table.path, "ref": None, "url": None}
+    if pubchem_tables:
+        payload["pubchem"] = {"api": PUBCHEM_API, "cache": str(Path(pubchem_tables[0].path).parent),
+                              "compoundUrl": PUBCHEM_COMPOUND_URL}
     for table in transport_tables:
         payload["files"][table.key] = {"name": table.name, "path": table.path, "ref": table.ref.value, "url": None}
     path = _write(out_dir / "sources.json", payload)
@@ -142,6 +143,7 @@ def write_compound_index(files: Iterable[CompoundFile], out_dir: Path, generated
             "hill": record.hill,
             "displayFormula": record.display_formula,
             "entry": key,
+            "cas": record.pubchem_cas,
             "formula": record.formula if record.formula != record.hill else None,
             "name": record.name,
             "class": record.compound_class,

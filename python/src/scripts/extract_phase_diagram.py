@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -45,7 +46,10 @@ from phase_diagrams import (
     LineScale,
     NbsEntry,
     NbsMatcher,
+    STATUS_TOLERANCE,
     SourceRegistry,
+    add_compound,
+    atlas_disagrees,
     boundary_arrow_segments,
     build_binary_system,
     build_node_map,
@@ -55,18 +59,25 @@ from phase_diagrams import (
     calibrate_binary,
     compare_systems,
     corner_components,
+    default_compound_id,
     detect_triangles,
     display_caption,
     display_formula,
     edit_ternary_structure,
     fill_ternary_curves,
     find_system_figures,
+    format_compound,
+    formula_molar_mass,
     index_figures,
     ink_mask,
     load_config,
     measure_line_scale,
+    melting_candidates,
+    merge_compound_data,
     merge_figure_index,
+    new_oxide_compound,
     new_system_checklist,
+    replace_compound,
     render_node_map,
     render_overlay,
     render_page,
@@ -90,6 +101,8 @@ def _build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Extract phase-diagram data from the Slag Atlas and NSRDS-NBS 61.")
     p.add_argument("--dataset", default="shared/processed/phase-diagrams", help="Dataset folder")
     p.add_argument("--work-dir", default="reports/phase-diagrams", help="Working folder")
+    p.add_argument("--compound-data", default="shared/processed/compound-data",
+                   help="compound-data folder (melting points of single oxides for new)")
     p.add_argument("-v", "--verbose", action="store_true", help="Per-step log")
     sub = p.add_subparsers(dest="command", required=True, metavar="COMMAND")
 
@@ -115,6 +128,8 @@ def _build_parser() -> argparse.ArgumentParser:
     s.add_argument("--figure", help="figure number when the index has several, e.g. 3.226")
     s.add_argument("--triangle", type=int, help="triangle number when the page has several")
     s.add_argument("--corners", nargs=3, metavar=("TOP", "LEFT", "RIGHT"), help="corner components when the labels are not read")
+    s.add_argument("--pubchem", action="store_true",
+                   help="search PubChem by formula for components compound-data lacks (CID, CAS, melting point strings)")
 
     s = sub.add_parser("trace-curves", help="Ternary curves config → candidate with polyline_wt filled, overlay, review")
     s.add_argument("system")
@@ -507,6 +522,7 @@ def _cmd_new(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
                  "printedPage": figure["printedPage"], "pdfPage": page}
         _say("new", f"sources.json → sources.{_ATLAS}.figures needs (before pd-promote, PD008): "
                     f"{json.dumps(entry, ensure_ascii=False)}")
+    _update_compounds(dataset, Path(args.compound_data), components, index, args.pubchem)
     compounds = json.loads((dataset / "compounds.json").read_text(encoding="utf-8")).get("compounds", [])
     for line in new_system_checklist(components, compounds):
         _say("new", line)
@@ -514,6 +530,169 @@ def _cmd_new(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
     _say("new", "next: " + "; ".join(f'make pd-nbs-suggest COMPONENTS="{p}"' for p in pairs)
          + f"; make pd-curves SYSTEM={args.system}; make pd-nodes SYSTEM={args.system}")
     return 0
+
+
+_KEEP_REPLIES = {"a": "atlas", "c": "compound-data", "x": "conflict"}
+
+
+def _update_compounds(dataset: Path, compound_data: Path, components: list[str], index: list[dict],
+                      pubchem: bool = False) -> None:
+    """Single-oxide phases of ``components`` in compounds.json, checked against compound-data; asks before each write.
+
+    With ``pubchem``, a component compound-data lacks is searched in PubChem by formula (the answer is kept in
+    the compound-data PubChem files, see PUBCHEM_SPEC.md) and noted on the new entry.
+    """
+    path = dataset / "compounds.json"
+    interactive = sys.stdin.isatty()
+    searcher = None
+    if pubchem:
+        from pubchem.pubchem_searcher import PubchemSearcher
+        searcher = PubchemSearcher()
+    for component in components:
+        if formula_molar_mass(component) is None:
+            _say("new", f"{component}: no fixed formula, no compound-data lookup; its phases go into compounds.json by hand")
+            continue
+        text = path.read_text(encoding="utf-8")
+        compounds = json.loads(text).get("compounds", [])
+        candidates = melting_candidates(component, compound_data)
+        existing = [c for c in compounds if c.get("oxideMoles") == {component: 1}]
+        if existing:
+            for compound in existing:
+                updated = _checked_compound(compound, candidates, interactive)
+                if updated is not None:
+                    path.write_text(replace_compound(path.read_text(encoding="utf-8"), updated), encoding="utf-8")
+                    _say("new", f"compounds.json: {updated['id']} updated")
+            continue
+        note = _pubchem_note(searcher, component) if searcher is not None and not candidates else None
+        compound = _proposed_compound(component, candidates, index, interactive, note)
+        if compound is None:
+            continue
+        print("    " + format_compound(compound))
+        if not interactive:
+            _say("new", f"{component}: not added (no terminal); run make pd-new in a terminal to add it")
+            continue
+        taken = {c["id"] for c in compounds}
+        reply = _ask(f"Add to compounds.json? [y = as {compound['id']}, n = no, or another id]",
+                     lambda r: compound["id"] if r.lower() == "y" else "" if r.lower() == "n"
+                     else r if re.fullmatch(r"[a-z][a-z0-9-]*", r) and r not in taken else None)
+        if not reply:
+            _say("new", f"{component}: not added")
+            continue
+        compound["id"] = reply
+        path.write_text(add_compound(path.read_text(encoding="utf-8"), compound), encoding="utf-8")
+        temperature = compound["melting"]["temperature_C"]
+        _say("new", f"compounds.json: {reply} ({component}, " + (f"{temperature:g} °C" if temperature is not None
+                                                                  else "melting point missing") + ") added")
+
+
+def _checked_compound(compound: dict, candidates: list, interactive: bool) -> dict | None:
+    """The entry with the compound-data value merged in when the user chooses to; None to leave it."""
+    if not candidates:
+        return None
+    candidate = candidates[0]
+    temperature = compound["melting"].get("temperature_C")
+    if temperature is not None and not atlas_disagrees(compound, candidate):
+        _say("new", f"{compound['id']}: {temperature:g} °C agrees with compound-data {candidate.label()}")
+        return None
+    if temperature is None:
+        _say("new", f"{compound['id']}: no melting point; compound-data has {candidate.label()}")
+        if _ask("Take it into compounds.json? [y/n]", lambda r: r.lower() if r.lower() in ("y", "n") else None) != "y":
+            return None
+        return merge_compound_data(compound, candidate)
+    _say("new", f"{compound['id']}: compounds.json has {temperature:g} °C, compound-data {candidate.label()} "
+                f"(differ by more than {STATUS_TOLERANCE['temperature_C']:g} °C)")
+    if not interactive:
+        _say("new", f"{compound['id']}: left unchanged (no terminal)")
+        return None
+    keep = _ask("Keep [a = compounds.json value, compound-data value noted; c = compound-data value; "
+                "x = both sources, status conflict; q = leave unchanged]", lambda r: _KEEP_REPLIES.get(r.lower()))
+    return merge_compound_data(compound, candidate, keep) if keep else None
+
+
+def _pubchem_note(searcher, component: str) -> str | None:
+    """Print the PubChem formula search of ``component``; the note for its new entry, None when nothing was found."""
+    from pubchem.pubchem_blocked_error import PubchemBlockedError
+    from pubchem.pubchem_record_summary import experimental_values, record_summary
+
+    try:
+        record = searcher.search(component, "formula")
+    except (PubchemBlockedError, OSError) as exc:
+        _say("new", f"{component}: PubChem search failed ({exc})")
+        return None
+    finally:
+        if searcher.requested:
+            searcher.compact()
+    if record is None:
+        _say("new", f"{component}: PubChem refused the search")
+        return None
+    _say("new", f"{component}: PubChem:")
+    for line in record_summary(record):
+        print(f"  {line}")
+    result = record.result
+    if result.cid is None:
+        return None
+    melting = experimental_values(record, "Melting Point")
+    return (f"PubChem CID {result.cid}" + (f" (CAS {result.cas})" if result.cas else "")
+            + (f", melting point: {'; '.join(melting[:3])}" if melting else ", no melting point") + ".")
+
+
+def _proposed_compound(component: str, candidates: list, index: list[dict], interactive: bool,
+                       pubchem_note: str | None = None) -> dict | None:
+    """New entry for ``component``: compound-data value and/or a printed atlas value the user types; None to skip.
+
+    ``pubchem_note`` (the PubChem search of a component compound-data lacks) goes into the entry's notes.
+    """
+    candidate = candidates[0] if candidates else None
+    if candidates:
+        _say("new", f"{component}: not in compounds.json; compound-data has:")
+        for number, option in enumerate(candidates, start=1):
+            print(f"  {number}) {option.label()}")
+        if interactive and len(candidates) > 1:
+            number = _ask(f"Variant [1-{len(candidates)}, Enter = 1; q = skip {component}]",
+                          lambda r: 1 if not r else _number(r, len(candidates)))
+            if number is None:
+                return None
+            candidate = candidates[number - 1]
+    else:
+        _say("new", f"{component}: not in compounds.json nor in compound-data (NSRDS-NBS 61 Part I has eutectics only)")
+    atlas = None
+    if interactive:
+        figures = {e["figure"]: e for e in index}
+        reply = _ask(f'Slag Atlas melting point of {component} if printed: "<°C> <figure>", e.g. "1870 3.169" '
+                     f"[Enter = none; q = skip {component}]", lambda r: _atlas_reading(r, figures))
+        if reply is None:
+            return None
+        atlas = reply or None
+    compound = new_oxide_compound(default_compound_id(candidate, component), component, atlas)
+    if candidate is None:
+        notes = ["Not in compound-data; melting point to read from a Slag Atlas figure."] if atlas is None else []
+        notes += [pubchem_note] if pubchem_note else []
+        if notes:
+            compound["notes"] = " ".join(notes)
+        return compound
+    keep = None
+    if atlas is not None and atlas_disagrees(compound, candidate):
+        _say("new", f"{component}: the atlas prints {atlas[0]:g} °C, compound-data {candidate.label()}")
+        keep = _ask("Keep [a = atlas value, compound-data value noted; c = compound-data value; "
+                    f"x = both sources, status conflict; q = skip {component}]", lambda r: _KEEP_REPLIES.get(r.lower()))
+        if keep is None:
+            return None
+    return merge_compound_data(compound, candidate, keep)
+
+
+def _atlas_reading(reply: str, figures: dict[str, dict]) -> tuple | None:
+    """(°C, figure-index entry) of '1870 3.169'; () for an empty reply; None when not an answer."""
+    if not reply:
+        return ()
+    match = re.fullmatch(r"(\d+(?:[.,]\d+)?)\s+(?:Fig\.?\s*)?(\d+\.\d+)", reply.strip())
+    if match is None:
+        return None
+    figure = figures.get(f"Fig. {match.group(2)}")
+    if figure is None:
+        print(f"  Fig. {match.group(2)} is not in the figure index")
+        return None
+    temperature = float(match.group(1).replace(",", "."))
+    return (int(temperature) if temperature.is_integer() else temperature), figure
 
 
 def _cmd_trace_curves(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:

@@ -56,12 +56,13 @@ python/
 │   │   ├── equation_eval.py     # evaluate_equation (backend calculate, all equation types)
 │   │   ├── constants/           # tables, coefficient layouts, equation types, identity overrides
 │   │   └── parsers/             # one parser per table family + provenance, identifiers
-│   ├── pubchem/          # polite PubChem PUG REST lookups of CAS numbers + resumable cache
+│   ├── pubchem/          # polite PubChem lookups (CAS, formula, name searches) + resumable per-class files
 │   ├── compound_data/    # source entries → compound JSON (one export per file)
 │   │   ├── __init__.py          # Public API re-exports
 │   │   ├── merger.py            # merge_compounds (by CAS, formula resolution, detach)
 │   │   ├── builder.py           # build_compound_data (parsers → merge → checks → JANAF ids → interaction ids)
-│   │   ├── pubchem_identifiers.py  # PubChem cache rows → identifiers
+│   │   ├── pubchem_identifiers.py  # PubChem records → identifiers
+│   │   ├── pubchem_formula_links.py  # PubChem formula searches → cas of records without CAS
 │   │   ├── janaf_links.py       # attach_janaf (JANAF table ids by CAS, then Hill formula)
 │   │   ├── compound_files.py    # compound_files (records → one file per inorganic formula / organic compound)
 │   │   ├── compound_units.py    # compound_units (units.json content)
@@ -78,7 +79,8 @@ python/
 │       ├── parse_nasa_thermo.py  # NASA thermo CLI (thin wrapper)
 │       ├── parse_janaf.py        # NIST-JANAF CLI (thin wrapper)
 │       ├── build_compound_data.py  # Compound data CLI (thin wrapper)
-│       ├── fetch_pubchem_identifiers.py  # Compound data step 2: missing CAS → PubChem cache (network)
+│       ├── fetch_pubchem_identifiers.py  # Compound data step 2: missing CAS + records without CAS → PubChem files (network)
+│       ├── pubchem_search.py     # On-demand PubChem search by formula, name or CAS (network)
 │       ├── extract_phase_diagram.py  # Phase-diagram CLI (thin wrapper)
 │       ├── extract_tables.py
 │       └── README.md     # Scripts documentation
@@ -93,8 +95,8 @@ python/
     ├── chemical_formula/ # Formula, main element, class and family tests
     ├── dataset_layout/   # File name, collision and clearing tests
     ├── chemicals_tables/ # Chemicals table parser tests (fixtures from real chemicals rows, shared)
-    ├── pubchem/          # PubChem client (throttling, pauses), results, cache tests
-    ├── compound_data/    # Merge, writers, JANAF links, PubChem identifiers, transport parameters tests
+    ├── pubchem/          # PubChem client (throttling, pauses), results, searches, class file tests
+    ├── compound_data/    # Merge, writers, JANAF links, PubChem identifiers and formula links, transport parameters tests
     ├── phase_diagrams/   # Phase-diagram extraction tests (synthetic images, golden files)
     └── ocr/              # OCR module tests
         ├── test_coordinate_parsing.py
@@ -178,14 +180,16 @@ Merges the CRC, Perry, Poling, Yaws, TRC, Zabransky, NIST WebBook Shomate and VD
 
 **Spec**: [docs/scripts/COMPOUND_DATA_SPEC.md](../docs/scripts/COMPOUND_DATA_SPEC.md)
 
-**Source files**: `shared/sources/compound-data/chemicals/` (`chemicals/<repo path>`, `dev/data/janaf/janaf_tables_index.csv`, `PROVENANCE.txt`), `shared/sources/compound-data/nist-janaf/` (optional; `--no-janaf` skips it), `shared/sources/compound-data/pubchem/pubchem-cas.tsv` (optional; `--no-pubchem` skips it) and `shared/sources/transport-parameters.json` (optional; `--no-transport` skips it)
+**Source files**: `shared/sources/compound-data/chemicals/` (`chemicals/<repo path>`, `dev/data/janaf/janaf_tables_index.csv`, `PROVENANCE.txt`), `shared/sources/compound-data/nist-janaf/` (optional; `--no-janaf` skips it), `shared/sources/compound-data/pubchem/pubchem-{inorganic,organic,unclassified}.jsonl` (optional; `--no-pubchem` skips them) and `shared/sources/transport-parameters.json` (optional; `--no-transport` skips it)
 
 **Output**: `shared/processed/compound-data/` (`inorganic/`, `organic/`, `unresolved.json`, `index.json`, `units.json`, `sources.json`, `interactions.json`; cleared before writing); report `tmp/reports/python/compound-data/report.json`
 
 **Make commands**:
 ```bash
 make compound-data-build   # step 1: build all files + report + missing-cas.txt (offline)
-make compound-data-pubchem # step 2: missing CAS → PubChem → cache (slow, resumable), then step 1 again
+make compound-data-pubchem # step 2: missing CAS + records without CAS → PubChem → one file per class (slow, resumable), then step 1 again
+make pubchem-search Q="CaAl2O4"  # on demand: formula, name or CAS → PubChem (printed, kept in the class files)
+make pubchem-search QUERY_FILE=shared/sources/pubchem-queries.txt  # the 551 formulas without a compound-data record
 make compound-data-test    # run unit tests of the five packages (needs rdkit in the python_packages volume)
 ```
 

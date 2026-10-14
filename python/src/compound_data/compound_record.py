@@ -29,6 +29,8 @@ class CompoundRecord:
     ``transport`` holds, per property (viscosity, thermalConductivity), how a source obtained it
     (Svehla 1995 methods, see transport_parameters).
     ``other_cas`` are source CAS numbers whose rows were moved onto this record (unknown CAS, see merger).
+    ``pubchem_cas`` is the CAS a PubChem formula search found for a record without CAS (it keeps its
+    ``formula:`` key), with ``pubchem_cas_source`` (see pubchem_formula_links).
     ``display_formula`` is the IUPAC element order for inorganic compounds (``iupac_formula``), else ``hill``.
     """
 
@@ -55,6 +57,8 @@ class CompoundRecord:
     nasa7: list[str] = field(default_factory=list)
     nasa9: list[str] = field(default_factory=list)
     other_cas: list[str] = field(default_factory=list)
+    pubchem_cas: Optional[str] = None
+    pubchem_cas_source: Optional[SourceLink] = None
 
     def refs(self) -> list[str]:
         """Sorted ref keys used by any value of the record."""
@@ -77,11 +81,14 @@ class CompoundRecord:
     def to_dict(self) -> dict:
         """Entry of the compound file: the CAS is its key, Hill formula and elements are file fields, so they are not repeated.
 
-        ``formula`` is written only when it differs from the Hill formula (isotopes, charges);
-        null and empty fields are left out.
+        ``formula`` is written only when it differs from the Hill formula (isotopes, charges); ``cas`` /
+        ``casRef`` only on records without CAS that a PubChem formula search identified; null and empty
+        fields are left out.
         """
         out: dict[str, Any] = {
             "formula": self.formula if self.formula != self.hill else None,
+            "cas": self.pubchem_cas,
+            "casRef": self.pubchem_cas_source.to_ref() if self.pubchem_cas_source else None,
             "name": self.name,
             "Mr": self.Mr,
             "smiles": self.smiles,

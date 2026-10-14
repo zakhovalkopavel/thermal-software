@@ -1,7 +1,7 @@
 """
 pubchem.pubchem_transient_error — PubChem unreachable; the client pauses and asks again.
 
-Spec: docs/scripts/COMPOUND_DATA_SPEC.md
+Spec: docs/scripts/PUBCHEM_SPEC.md
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """
 pubchem.pubchem_blocked_error — PubChem blocks or keeps refusing requests; the run must stop.
 
-Spec: docs/scripts/COMPOUND_DATA_SPEC.md
+Spec: docs/scripts/PUBCHEM_SPEC.md
 """
 from __future__ import annotations
 
