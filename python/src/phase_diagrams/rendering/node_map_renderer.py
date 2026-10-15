@@ -12,10 +12,12 @@ from phase_diagrams.models.diagram_node import DiagramNode
 from phase_diagrams.rendering.arrowheads import arrowheads
 from phase_diagrams.rendering.tile_renderer import render_tile
 
-_COLOURS = {"junction": (220, 0, 0), "edge": (230, 120, 0), "dash-end": (160, 0, 200), "invariant": (0, 70, 230),
+_COLOURS = {"junction": (220, 0, 0), "edge": (230, 120, 0), "dash-end": (160, 0, 200), "free-end": (120, 80, 0),
+            "invariant": (0, 70, 230),
             "ring": (0, 150, 0), "corner": (0, 160, 170), "user": (0x43, 0x25, 0x5B), "arrow": (235, 0, 140)}
 _LEGEND = {"user": "Points added by hand (name left of the dot)", "corner": "V  Triangle corners", "invariant": "I  Invariants from the system file", "junction": "X  Line crossings",
-           "edge": "E  Crossings on the triangle edge", "dash-end": "D  Dashed-line ends", "ring": "C  Compound rings",
+           "edge": "E  Crossings on the triangle edge", "dash-end": "D  Dashed-line ends",
+           "free-end": "F  Free line ends", "ring": "C  Compound rings",
            "arrow": "Stored arrows (towards falling temperature)"}
 _FADE = 0.55
 _ARROW_LENGTH_PX = 20

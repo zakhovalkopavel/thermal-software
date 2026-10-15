@@ -10,15 +10,15 @@ Subpackages
   constants/   module-level constants
   models/      data classes (results, measurements, NBS entries, review items)
   config/      config data classes, config loader, source registry
-  rendering/   PDF pages, zoom tiles, overlays
-  detection/   ink mask, line width (pixel scale), frame, ticks, invariant lines, junctions, skeleton, rings, dash ends, label boxes, ternary triangles
-  tracing/     curve tracing, sampling, simplification
-  figures/     label OCR, caption parsing, figure index, figure search by system, caption display, corner labels
+  rendering/   PDF pages, zoom tiles, overlays, isotherm draft image
+  detection/   ink mask, line width (pixel scale), frame, ticks, invariant lines, junctions, skeleton, skeleton branches, rings, dash ends, label boxes, ternary triangles
+  tracing/     curve tracing, sampling, simplification, skeleton branch chaining
+  figures/     label OCR, rotated number OCR, page words OCR, caption parsing, figure index, figure search by system, caption display, corner labels
   nbs/         NSRDS-NBS 61 text, entries, matching, statuses, composition conversion
-  builders/    calibration, binary system build, ternary start files, new-system checklist, ternary curve fill, node map, topology report
+  builders/    calibration, binary system build, ternary start files, new-system checklist, ternary curve fill, field regions, field temperature approximation, node map, topology report, compound points, isotherm detection and temperature solver, automatic system and overlay curves, boundary graph from the page, field names, node temperatures, fully automatic ternary
   compounds/   compounds.json entries of single oxides from compound-data and the atlas, compact-layout editing
-  output/      system JSON writer, review report
-  validation/  dataset rules PD001–PD018
+  output/      system JSON writer, review report, isotherm draft report and comparison, automatic extraction report
+  validation/  dataset rules PD001–PD020
 
 Spec
 ----
@@ -50,6 +50,14 @@ from phase_diagrams.models.system_comparison            import SystemComparison
 from phase_diagrams.models.diagram_node                 import DiagramNode
 from phase_diagrams.models.line_scale                   import LineScale
 from phase_diagrams.models.melting_candidate            import MeltingCandidate
+from phase_diagrams.models.temperature_point            import TemperaturePoint
+from phase_diagrams.models.field_approximation          import FieldApproximation
+from phase_diagrams.models.compound_point               import CompoundPoint
+from phase_diagrams.models.branch_chain                 import BranchChain
+from phase_diagrams.models.detected_isotherm            import DetectedIsotherm
+from phase_diagrams.models.isotherm_detection           import IsothermDetection
+from phase_diagrams.models.boundary_graph               import BoundaryEdge, BoundaryGraph, BoundaryNode
+from phase_diagrams.models.page_word                    import PageWord
 
 from phase_diagrams.config.diagram_config               import DiagramConfig
 from phase_diagrams.config.curves_config                import CurvesConfig
@@ -65,6 +73,7 @@ from phase_diagrams.rendering.overlay_renderer          import render_overlay
 from phase_diagrams.rendering.ternary_overlay_renderer  import render_ternary_overlay
 from phase_diagrams.rendering.node_map_renderer         import render_node_map
 from phase_diagrams.rendering.arrowheads                import arrowheads
+from phase_diagrams.rendering.isotherm_draft_renderer   import render_isotherm_draft
 
 from phase_diagrams.detection.ink_mask                  import ink_mask
 from phase_diagrams.detection.line_width_meter          import measure_line_scale
@@ -76,9 +85,10 @@ from phase_diagrams.detection.horizontal_line_detector  import detect_horizontal
 from phase_diagrams.detection.vertical_line_detector    import detect_vertical_lines
 from phase_diagrams.detection.junction_locator          import locate_junction
 from phase_diagrams.detection.skeletonizer              import skeletonize
+from phase_diagrams.detection.skeleton_branches         import skeleton_branches
 from phase_diagrams.detection.junction_detector         import detect_junctions
 from phase_diagrams.detection.ring_detector             import detect_rings
-from phase_diagrams.detection.dash_end_detector         import detect_dash_ends
+from phase_diagrams.detection.dash_end_detector         import detect_dash_ends, detect_line_ends
 from phase_diagrams.detection.dash_mask                 import dash_mask
 from phase_diagrams.detection.text_detector             import detect_text_boxes
 from phase_diagrams.detection.triangle_detector         import detect_triangles
@@ -90,6 +100,7 @@ from phase_diagrams.tracing.polyline_simplifier         import simplify_polyline
 from phase_diagrams.tracing.quadratic_segment_fitter    import fit_quadratic_segment
 from phase_diagrams.tracing.convex_curve_fitter         import fit_convex_curve
 from phase_diagrams.tracing.divider_follower            import follow_divider
+from phase_diagrams.tracing.branch_chainer              import chain_branches
 
 from phase_diagrams.figures.label_reader                import read_label
 from phase_diagrams.figures.caption_parser              import parse_figure_captions
@@ -103,6 +114,8 @@ from phase_diagrams.figures.figure_finder               import find_system_figur
 from phase_diagrams.figures.caption_display             import display_caption
 from phase_diagrams.figures.corner_label_reader         import read_corner_labels
 from phase_diagrams.figures.corner_components           import corner_components
+from phase_diagrams.figures.rotated_label_reader        import read_rotated_number
+from phase_diagrams.figures.page_word_reader            import read_page_words
 
 from phase_diagrams.nbs.nbs_text_normalizer             import NbsTextNormalizer
 from phase_diagrams.nbs.nbs_entry_index                 import build_nbs_index
@@ -113,9 +126,26 @@ from phase_diagrams.nbs.composition_converter           import convert_compositi
 from phase_diagrams.builders.binary_calibrator          import calibrate_binary
 from phase_diagrams.builders.binary_system_builder      import build_binary_system
 from phase_diagrams.builders.ternary_curve_filler       import fill_ternary_curves
+from phase_diagrams.builders.field_temperature_builder  import build_field_approximation
+from phase_diagrams.builders.field_regions_builder      import build_field_regions
+from phase_diagrams.builders.isotherm_temperature_solver import solve_isotherm_temperatures
+from phase_diagrams.builders.isotherm_detector          import detect_isotherms
+from phase_diagrams.builders.auto_system_builder        import build_auto_system
+from phase_diagrams.builders.auto_overlay_curves        import auto_overlay_curves
+from phase_diagrams.builders.boundary_graph_builder     import detect_boundary_graph
+from phase_diagrams.builders.field_namer                import FieldNaming, match_phase_name, name_fields, system_phases
+from phase_diagrams.builders.node_temperature_reader    import (
+    CurveTemperature,
+    printed_temperature,
+    read_curve_temperatures,
+    read_node_temperatures,
+)
+from phase_diagrams.builders.auto_ternary_builder       import build_auto_ternary
 from phase_diagrams.builders.ternary_structure_editor   import edit_ternary_structure
 from phase_diagrams.builders.node_map_builder           import build_node_map
 from phase_diagrams.builders.topology_report_builder    import build_topology_report
+from phase_diagrams.builders.nearest_compound           import nearest_compound
+from phase_diagrams.builders.compound_points_builder    import build_compound_points
 from phase_diagrams.builders.boundary_arrow_segments    import boundary_arrow_segments
 from phase_diagrams.builders.ternary_start_builder      import build_ternary_start
 from phase_diagrams.builders.new_system_checklist       import new_system_checklist
@@ -128,6 +158,9 @@ from phase_diagrams.compounds.compounds_file_editor     import add_compound, for
 from phase_diagrams.output.system_json_writer           import write_system_json
 from phase_diagrams.output.review_report                import review_report
 from phase_diagrams.output.system_comparer              import compare_systems
+from phase_diagrams.output.isotherm_draft_comparison    import compare_isotherm_draft
+from phase_diagrams.output.isotherm_draft_report        import isotherm_draft_report
+from phase_diagrams.output.auto_extraction_report       import auto_extraction_report, compare_auto_system
 
 from phase_diagrams.validation.dataset_validator        import validate_dataset
 from phase_diagrams.validation.candidate_validator      import validate_with_candidate
@@ -149,6 +182,16 @@ __all__ = [
     "AxisCalibration",
     "BinaryCalibration",
     "TernaryCalibration",
+    "TemperaturePoint",
+    "FieldApproximation",
+    "CompoundPoint",
+    "BranchChain",
+    "DetectedIsotherm",
+    "IsothermDetection",
+    "BoundaryEdge",
+    "BoundaryGraph",
+    "BoundaryNode",
+    "PageWord",
     "CalibrationResult",
     "BinaryExtraction",
     "TernaryFill",
@@ -175,6 +218,7 @@ __all__ = [
     "render_ternary_overlay",
     "render_node_map",
     "arrowheads",
+    "render_isotherm_draft",
     # detection
     "ink_mask",
     "measure_line_scale",
@@ -186,9 +230,11 @@ __all__ = [
     "detect_vertical_lines",
     "locate_junction",
     "skeletonize",
+    "skeleton_branches",
     "detect_junctions",
     "detect_rings",
     "detect_dash_ends",
+    "detect_line_ends",
     "dash_mask",
     "detect_text_boxes",
     "detect_triangles",
@@ -200,6 +246,7 @@ __all__ = [
     "fit_quadratic_segment",
     "fit_convex_curve",
     "follow_divider",
+    "chain_branches",
     # figures
     "read_label",
     "parse_figure_captions",
@@ -213,6 +260,8 @@ __all__ = [
     "display_caption",
     "read_corner_labels",
     "corner_components",
+    "read_rotated_number",
+    "read_page_words",
     # nbs
     "NbsTextNormalizer",
     "build_nbs_index",
@@ -223,9 +272,27 @@ __all__ = [
     "calibrate_binary",
     "build_binary_system",
     "fill_ternary_curves",
+    "build_field_approximation",
+    "build_field_regions",
+    "solve_isotherm_temperatures",
+    "detect_isotherms",
+    "build_auto_system",
+    "auto_overlay_curves",
+    "detect_boundary_graph",
+    "FieldNaming",
+    "match_phase_name",
+    "name_fields",
+    "system_phases",
+    "CurveTemperature",
+    "printed_temperature",
+    "read_curve_temperatures",
+    "read_node_temperatures",
+    "build_auto_ternary",
     "edit_ternary_structure",
     "build_node_map",
     "build_topology_report",
+    "nearest_compound",
+    "build_compound_points",
     "boundary_arrow_segments",
     "build_ternary_start",
     "new_system_checklist",
@@ -243,6 +310,10 @@ __all__ = [
     "write_system_json",
     "review_report",
     "compare_systems",
+    "compare_isotherm_draft",
+    "isotherm_draft_report",
+    "auto_extraction_report",
+    "compare_auto_system",
     # validation
     "validate_dataset",
     "validate_with_candidate",

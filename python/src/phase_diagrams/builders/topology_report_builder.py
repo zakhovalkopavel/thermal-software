@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import math
 
-from phase_diagrams.figures.formula_molar_mass import formula_molar_mass
+from phase_diagrams.builders.nearest_compound import COMPOUND_WT, nearest_compound
 from phase_diagrams.models.diagram_node import DiagramNode
 from phase_diagrams.models.line_scale import LineScale
 from phase_diagrams.models.ternary_calibration import TernaryCalibration
@@ -15,7 +15,6 @@ from phase_diagrams.models.ternary_calibration import TernaryCalibration
 _LABEL_PX = 10.0
 _ON_LINE_PX = 5.0
 _EDGE_WT = 0.5
-_COMPOUND_WT = 1.5
 _ATLAS = "slag-atlas-1995"
 _OFF_LINE_KINDS = ("ring", "corner")
 _NO_PHASE = "(no phase)"
@@ -43,8 +42,8 @@ def build_topology_report(
     boundary ``arrows`` show as → ← ←→ between labels, ``-`` where none is recorded),
     the config field rings, points with a temperature (invariants, inversion
     points, ``otherAtlasData`` points with a numeric label), compound rings
-    (nearest compound of ``compounds.json`` within 1.5 wt%, invariant on the
-    ring), and the routes of isotherms, inversions and two-liquid branches
+    (nearest compound of ``compounds.json`` within 1.5 wt%, modifications
+    skipped; invariant on the ring), and the routes of isotherms, inversions and two-liquid branches
     (every labelled point within 5 px of the polyline, in order along it).
     A pixel takes the label of the nearest node or user point (``user_nodes``,
     stored pixels) within 10 px, otherwise it is written ``[x, y]`` (stored
@@ -167,7 +166,7 @@ def build_topology_report(
             where = f"{invariant_label(on_ring[1])} {on_ring[1]} {_temperature(point.get('temperature_C'))}"
         else:
             where = "no point in the system file"
-        rings.append(f"{node.label}  {compound or 'no compound within ' + format(_COMPOUND_WT, 'g') + ' wt%'}  "
+        rings.append(f"{node.label}  {compound or 'no compound within ' + format(COMPOUND_WT, 'g') + ' wt%'}  "
                      f"({' / '.join(f'{v:.1f}' for v in node.wt)}): {where}")
     sections.append(_block("Compound rings", rings or ["none detected"]))
 
@@ -176,9 +175,13 @@ def build_topology_report(
         title = f"{isotherm.get('field')} {_temperature(isotherm.get('temperature_C'))}"
         if (isotherm.get("part") or 1) > 1:
             title += f" (part {isotherm['part']})"
-        if isinstance(isotherm.get("inferred"), dict):
-            anchors = "/".join(f"{a:g}" for a in isotherm["inferred"].get("from") or [])
-            title += f" (inferred from {anchors}, step {isotherm['inferred'].get('step')})"
+        inferred = isotherm.get("inferred")
+        if isinstance(inferred, dict) and inferred.get("between"):
+            low, high = inferred["between"]
+            title += f" (inferred between {low:g} and {high:g}, step {inferred.get('step')})"
+        elif isinstance(inferred, dict):
+            anchors = "/".join(f"{a:g}" for a in inferred.get("from") or [])
+            title += f" (inferred from {anchors}, step {inferred.get('step')})"
         polyline = isotherm.get("polyline_wt")
         isotherms.append(f"{title}: {' → '.join(route(polyline)) if polyline else 'not traced'}")
     sections.append(_block("Isotherms", isotherms or ["none"]))
@@ -328,17 +331,7 @@ def _circuit(chains: list[_Segment]) -> str:
 
 
 def _compound(wt: list[float], components: list[str], compounds: list[dict]) -> str | None:
-    best = None
-    for compound in compounds:
-        moles = compound.get("oxideMoles") or {}
-        if not moles or not set(moles) <= set(components) or any(formula_molar_mass(c) is None for c in moles):
-            continue
-        mass = {c: moles[c] * formula_molar_mass(c) if c in moles else 0.0 for c in components}
-        total = sum(mass.values())
-        difference = max(abs(mass[c] / total * 100.0 - w) for c, w in zip(components, wt))
-        if difference <= _COMPOUND_WT and (best is None or difference < best[0]):
-            best = (difference, compound)
-    if best is None:
+    compound = nearest_compound(wt, components, compounds)
+    if compound is None:
         return None
-    compound = best[1]
     return f"{compound['id']} ({compound['formula']})" if compound.get("formula") else compound["id"]

@@ -115,9 +115,24 @@ def _inferred_from_unprinted(data):
     _isotherms(data, {"temperature_C": 1600}, {"temperature_C": 1700, "inferred": {"from": [1600, 1800], "step": 100}})
 
 
+def _modification(**extra):
+    def modify(data):
+        data["compounds.json"]["compounds"].append({"id": "cristobalite", "oxideMoles": {"SiO2": 1}, "modificationOf": "silica", **extra})
+    return modify
+
+
+def _modification_and_compound(data):
+    _modification()(data)
+    _isotherms(data, {"temperature_C": 1600, "field": "cristobalite"})
+
+
 @pytest.mark.parametrize(
     "modify, code, level",
     [
+        (_modification(oxideMoles={"SiO2": 2}), "PD019", "error"),
+        (_modification(modificationOf="stishovite"), "PD019", "error"),
+        (_modification(melting={"temperature_C": 1725}), "PD019", "error"),
+        (_modification_and_compound, "PD020", "error"),
         (_broken_json, "PD001", "error"),
         (_bad_sum, "PD002", "error"),
         (_duplicate_id, "PD003", "error"),
@@ -142,6 +157,18 @@ def _inferred_from_unprinted(data):
 )
 def test_rule(dataset_factory, modify, code, level):
     assert (code, level) in _codes(dataset_factory(modify))
+
+
+def test_modifications_in_place_of_their_compound_are_valid(dataset_factory):
+    def modify(data):
+        _modification()(data)
+        _isotherms(data, {"temperature_C": 1600, "field": "cristobalite"})
+        data[TERNARY]["phases"] = [p for p in data[TERNARY].get("phases", []) if p != "silica"]
+        for curve in data[TERNARY]["boundaryCurves"]:
+            curve["fields"] = ["cristobalite" if f == "silica" else f for f in curve["fields"]]
+        for point in data[TERNARY]["invariantPoints"]:
+            point["phases"] = ["cristobalite" if p == "silica" else p for p in point["phases"]]
+    assert validate_dataset(dataset_factory(modify)) == []
 
 
 def test_isotherm_inferred_between_printed_neighbours_is_valid(dataset_factory):

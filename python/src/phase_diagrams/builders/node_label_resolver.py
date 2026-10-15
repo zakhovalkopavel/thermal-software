@@ -8,7 +8,7 @@ from __future__ import annotations
 import math
 import re
 
-_LABEL = re.compile(r"(?<![0-9A-Za-z])[VIXEDC][0-9]+•?(?![0-9A-Za-z•])")
+_LABEL = re.compile(r"(?<![0-9A-Za-z])[VIXEDFC][0-9]+•?(?![0-9A-Za-z•])")
 _SAME_PIXEL_PX = 2.0
 
 

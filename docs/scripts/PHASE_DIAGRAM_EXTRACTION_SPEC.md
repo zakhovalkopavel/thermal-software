@@ -88,6 +88,9 @@ tmp/reports/python/phase-diagrams/
   tiles/          p108-2280-2650-2930-3060-x1.png        ← zoom tiles with pixel rulers
   nodes/          cao-mgo-sio2.{md,json}, -r1c1.png …     ← node map: numbered points for topology hints
                   cao-mgo-sio2-topology.md                ← topology report in node labels
+  isotherms/      na2o-al2o3-sio2.{json,md,png}          ← detect-isotherms: draft config entries, report vs the config, image
+  auto/           na2o-al2o3-sio2.{png,json}             ← auto-overlay: overlay and system from the detected isotherms only
+  auto-full/      na2o-al2o3-sio2.{png,json,md}          ← auto: system read from the page alone, overlay, report vs the semi-manual file
   overlays/       mgo-sio2.png                           ← traced curves, invariants, ticks on the scan
   review/         mgo-sio2.md                            ← items to check + comparison with the dataset file
   candidates/     mgo-sio2.json                          ← extract / trace-curves output, waiting for validation
@@ -141,6 +144,14 @@ python/
         diagram_node.py              ← DiagramNode: labelled node-map point (junction, edge, invariant, ring)
         line_scale.py                ← LineScale: page line width → factor for the pixel tolerances
         melting_candidate.py         ← MeltingCandidate: one compound-data melting point (°C, variant, CAS, ref)
+        temperature_point.py         ← TemperaturePoint: printed point (°C) + its value on each field surface
+        field_approximation.py       ← FieldApproximation: field regions, surface fits, approximated isotherms, points
+        compound_point.py            ← CompoundPoint: ring of the figure, its compound and temperature; legend text
+        branch_chain.py              ← BranchChain: skeleton branches joined into one drawn line, with its gaps (ink, dash, text)
+        detected_isotherm.py         ← DetectedIsotherm: isotherm piece found on the page, temperature source, evidence, config entry
+        isotherm_detection.py        ← IsothermDetection: detected pieces, dropped lines, log, review items
+        boundary_graph.py            ← BoundaryNode, BoundaryEdge, BoundaryGraph: boundary curves found on the page and their nodes
+        page_word.py                 ← PageWord: a word read on the page (text, confidence, box)
       config/
         diagram_config.py            ← DiagramConfig (binary config)
         curves_config.py             ← CurvesConfig (ternary curves config)
@@ -156,6 +167,7 @@ python/
         ternary_overlay_renderer.py  ← ternary review PNG: field fills, one colour per curve kind
         node_map_renderer.py         ← tile with the numbered node-map points (+ stored arrows)
         arrowheads.py                ← arrowheads(points, arrow, …): triangles of a stored boundary arrow
+        isotherm_draft_renderer.py   ← render_isotherm_draft(image, detection, box): detected pieces coloured by temperature source
       detection/
         ink_mask.py                  ← ink_mask(image, threshold)
         line_width_meter.py          ← measure_line_scale(mask): mean stroke width of the page
@@ -167,9 +179,10 @@ python/
         vertical_line_detector.py    ← compound lines (vertical strokes) for the calibration check
         junction_locator.py          ← snap a seed pixel to a curve × line junction
         skeletonizer.py              ← skeletonize(mask): Zhang–Suen centre lines
+        skeleton_branches.py         ← skeleton_branches(skeleton): branches between junctions, spurs pruned
         junction_detector.py         ← detect_junctions(mask): line junctions and crossings (node map)
         ring_detector.py             ← detect_rings(mask): small drawn circles (compound compositions)
-        dash_end_detector.py         ← detect_dash_ends(mask): where dashed-line ends meet a line
+        dash_end_detector.py         ← detect_line_ends(mask): where line ends meet a line, and free line ends
         dash_mask.py                 ← dash_mask(mask): dashes only (tracing of dashed lines)
         text_detector.py             ← detect_text_boxes(mask): printed labels (glyph groups, loop blobs)
       tracing/
@@ -179,8 +192,12 @@ python/
         quadratic_segment_fitter.py  ← fit_quadratic_segment: one quadratic arc between two track points
         convex_curve_fitter.py       ← fit_convex_curve: inflection-free Bézier (degree ≤ 4) of an isotherm piece
         divider_follower.py          ← follow_divider: the divider stretch a curve runs along between two track points
+        contour_segments.py          ← contour_segments(grid, level, origin, step): marching-squares segments of one level
+        branch_chainer.py            ← chain_branches(branches, junctions, text, barrier): lines through crossings, breaks, dashes, labels
       figures/
         label_reader.py              ← Tesseract on a crop → guess + confidence
+        rotated_label_reader.py      ← read_rotated_number(glyphs, angle): digits read upright or along a line
+        page_word_reader.py          ← read_page_words(image, mask, box): every word of a page area (two readings merged)
         caption_parser.py            ← figure captions and labels in the OCR text of one page
         figure_indexer.py            ← caption OCR over a page range → figure index
         figure_index_merger.py       ← merge a re-indexed page range into the existing index
@@ -198,7 +215,19 @@ python/
         ternary_structure_editor.py  ← config edits: move/rename points, set keys, append entries
         node_map_builder.py          ← build_node_map(system, mask): numbered points for topology hints
         topology_report_builder.py   ← build_topology_report(name, system, nodes, …): field circuits, points, routes in node labels
+        nearest_compound.py          ← nearest_compound(wt, components, compounds): compound within 1.5 wt%
+        compound_points_builder.py   ← build_compound_points(system, nodes, compounds, …): rings → compound points (overlay)
         boundary_arrow_segments.py   ← boundary_arrow_segments(system, origin): page-pixel boundary pieces with their arrows
+        field_regions_builder.py     ← build_field_regions(system, calibration): the triangle split by the boundaries, field per region
+        field_temperature_builder.py ← build_field_approximation(system, calibration, invariants): temperature surface per field
+        isotherm_detector.py         ← detect_isotherms(system, mask, calibration, invariants, …): isotherm pieces, fields, temperatures
+        isotherm_temperature_solver.py ← solve_isotherm_temperatures(groups, labels, ladders, step): temperatures from the crossing order
+        auto_system_builder.py       ← build_auto_system(system, detection, calibration): system with only the detected isotherms
+        auto_overlay_curves.py       ← auto_overlay_curves(system, detection, calibration): boundaries + detected pieces for the overlay
+        boundary_graph_builder.py    ← detect_boundary_graph(mask, corners): heavy strokes → curves, junctions, edge points
+        field_namer.py               ← name_fields(graph, …, words, mask): field names from labels, leaders, compositions
+        node_temperature_reader.py   ← read_node_temperatures, read_curve_temperatures: printed °C of nodes and saddles
+        auto_ternary_builder.py      ← build_auto_ternary(start, graph, naming, temperatures, …): system file from the page alone
       compounds/
         compound_data_lookup.py      ← melting_candidates(formula, compound-data dir): meltingPoint values, highest first
         oxide_compound_builder.py    ← new_oxide_compound, merge_compound_data (atlas vs compound-data, a/c/x choice)
@@ -207,6 +236,9 @@ python/
         system_json_writer.py        ← compact layout writer (binary files)
         review_report.py             ← review markdown
         system_comparer.py           ← compare_systems(old, new) → SystemComparison
+        isotherm_draft_comparison.py ← compare_isotherm_draft(detected, config isotherms): found, coverage, same temperature
+        isotherm_draft_report.py     ← isotherm_draft_report(name, detection, rows, unmatched): markdown of the draft
+        auto_extraction_report.py    ← compare_auto_system, auto_extraction_report: automatic system vs the semi-manual file
       validation/
         dataset_validator.py         ← validate the whole dataset → ValidationIssue[]
         candidate_validator.py       ← validate the dataset with a candidate in place (temporary copy)
@@ -233,7 +265,11 @@ python/
       test_convex_curve_fitter.py
       test_divider_follower.py
       test_ternary_overlay_renderer.py
-      test_node_map.py               ← skeleton, junctions, rings, node labels in the curves config
+      test_node_map.py               ← skeleton, junctions, rings, edge points, node labels in the curves config
+      test_field_approximation.py    ← contour segments, field regions, surfaces, hull clipping
+      test_compound_points.py        ← compound of the system, temperature from the invariant on the ring or the melting point
+      test_isotherm_detection.py     ← skeleton branches, chaining, solver, inferred bounds, draft entries, synthetic page
+      test_auto_extraction.py        ← boundary graph of a synthetic page, page words, field names, node and saddle °C, system, comparison
       test_dataset_validator.py
       test_candidates.py             ← comparison, promotion check on a temporary dataset copy
       test_regression_atlas.py       ← needs the atlas PDF; skipped when absent
@@ -426,8 +462,9 @@ sequenceDiagram
    nothing is written.
 7. It prints the checklist of the system (`new_system_checklist`): molar masses of the
    components (none for FeOx), the phases compounds.json already has for the system
-   (compounds whose oxides all have component letters, so Fe2O3 phases count for FeOx),
-   and each component without a single-oxide phase (to add before the system file names
+   (compounds whose oxides all have component letters, so Fe2O3 phases count for FeOx;
+   modifications marked "modification of X", § Polymorph modifications),
+   and each component without a single-oxide phase (a modification does not count; to add before the system file names
    it, PD004); then the `sources.json` figure entry the promotion needs (PD008), the NBS
    pair commands (`pd-nbs-suggest` for each component pair) and the next steps.
 
@@ -629,7 +666,7 @@ References: `end:<phase>` = end-member melting point, `<id>` = invariant liquid,
     { "field": "silica", "temperature_C": 1400, "startPixel": [1010, 900], "endPixel": [1120, 1010], "waypoints": [] }
   ],
   "inversions": [
-    { "phase": "nepheline", "change": "carnegieite → nepheline (NaAlSiO4)", "startPixel": [2052, 1200], "endPixel": [1770, 1353] }
+    { "phase": "silica", "change": "cristobalite → tridymite", "startPixel": [1012, 640], "endPixel": [1180, 655] }
   ],
   "liquidImmiscibility": [
     { "startPixel": [1334, 1097], "endPixel": [1672, 502], "strokeWidth_px": [3, 16],
@@ -643,9 +680,10 @@ References: `end:<phase>` = end-member melting point, `<id>` = invariant liquid,
 entries are errors. An isotherm drawn as several pieces in one field (e.g. a closed loop that
 re-enters it) sets `"part": 2, 3, …` on every piece after the first (default 1); the system
 file entry carries the same `part` (absent = 1).
-- `inversions` (optional): a polymorph boundary drawn as a line between two fields that the
-model merges into one phase (carnegieite / nepheline), so it is not a boundary curve. Traced
-like an isotherm from `startPixel` to `endPixel` with the curve stroke width.
+- `inversions` (optional): a polymorph boundary inside the field of one phase, for systems not
+yet split into modification fields (§ Polymorph modifications; listed in `OPEN_ITEMS.md`).
+Traced like an isotherm from `startPixel` to `endPixel` with the curve stroke width. A drawn
+boundary between modification fields is a boundary curve instead.
 - `nodes` (optional): node-map labels → pixels (`{ "X12": [x, y] }`). Any pixel of the config
 (`endpointPixels`, `startPixel`, `endPixel`, waypoints, also `{ "pixel": "X12", "straight": true }`)
 may be a label; an unknown label is a config error.
@@ -666,7 +704,8 @@ dashed isotherm ending on an edge is not traced along the solid frame.
 - `lineWidth_px` (optional, > 0): the page's line width, replacing the measured one (§ Pixel
 scale). Only for a page where the measurement is misled (e.g. mostly solid fills).
 - `edits` (optional): structure edits applied before tracing, see § Ternary structure edits:
-`{ "path": "invariantPoints.cms-1373", "pixel": "I2•", "set": { "id": "cms-1379", "temperature_C": 1379 } }`.
+`{ "path": "invariantPoints.cms-1373", "pixel": "I2•", "set": { "id": "cms-1379", "temperature_C": 1379 } }`,
+`{ "path": "isotherms", "remove": { "field": "silica" } }` (every element with these keys).
 - `new: true` on a curve, isotherm or inversion (with optional `notes`; an inversion also
 `temperature_C` and `source`) appends it to the system file before it is traced.
 - `invariants` (optional): new invariant points, each with `new: true`, `id`, `type`, `reaction`,
@@ -685,6 +724,10 @@ config error otherwise). One anchor (a line outside the printed ones) needs the 
 for that field. A `new` entry carries `inferred` into the system file; the overlay writes the
 temperature in parentheses, the topology report adds "(inferred from …, step …)". Example:
 `{ "field": "nepheline", "temperature_C": 1500, "new": true, "inferred": { "from": [1400, 1600], "step": 100 }, … }`.
+With no printed isotherm in the field, `{ "between": [low °C, high °C], "step": °C }` (written by
+`detect-isotherms` from the order of the lines along a boundary, bounds usually invariant
+temperatures): the temperature is a whole number of steps strictly between `low` and `high`;
+the topology report adds "(inferred between …, step …)".
 - An isotherm with an inflection (S-shaped) needs a `split` waypoint at the inflection: the
 pieces between splits are fitted as one inflection-free curve each.
 - End pixels come from the invariant sources (`pixel`) of the system file. Points defined in
@@ -714,6 +757,25 @@ in an inset) are joined directly by their compositions, without tracing.
 (default: `strokeWidth_px`) for isotherms; any entry may set its own `strokeWidth_px`. The
 command passes the plain ink mask and each entry is traced on the mask filtered to its width
 (figures draw isotherms thinner than boundary curves).
+
+### Polymorph modifications
+
+A compound with several solid modifications (silica: cristobalite, tridymite, quartz;
+NaAlSiO4: carnegieite, nepheline) has one `compounds.json` entry for the compound (id not the
+name of a modification, e.g. `silica`, `sodium-aluminosilicate`; it carries the melting point)
+and one entry per modification with `"modificationOf": "<compound id>"`, the same
+`oxideMoles` and no `melting` (PD019). The rule is the same for every system:
+
+- Where the figure draws an inversion line (isotherm-like boundary with its temperature,
+e.g. 1470 °C cristobalite/tridymite), each side is a primary field of its own: the
+modifications are the phases (system `phases`, invariant phases, `boundaryCurves` fields,
+`isotherms` fields), the inversion line is a boundary curve, its ends are invariant points
+(a binary point on the edge, a ternary point where it meets a boundary; `reaction` null when
+the figure gives none), and the third phase's boundary is split there.
+- A system names either the compound or its modifications, never both (PD020).
+- Sub-solidus `compatibilityTriangles` name the compound.
+- Compound rings (topology report) and the new-system checklist's single-oxide count use the
+compound, not the modifications.
 
 ---
 
@@ -810,31 +872,51 @@ Numbered points of a ternary for topology hints (`pd-nodes`), inside the triangl
    junction is a spur (arrowhead, letter touching a line) and is removed (3 rounds).
 3. Junction = skeleton pixel with ≥ 3 transitions in its 8-neighbourhood; clusters merged
    within 10 px. Junctions within 10 px of a triangle edge are `edge` points, moved onto the
-   edge line; one at a 10 % tick with no solid line 28–42 px inside (±15 px along the edge)
-   is the bare tick and dropped.
+   edge line, kept only where a line leads inside (ruler ticks, alone or crossing the edge,
+   give only the scale and are dropped). The ink inside the triangle, more than 6 px from
+   the frame, is split into 8-connected strokes; a stroke starting within 14 px of the point
+   leads inside when it is
+   - a straight line of ≥ 100 px (ticks are ≤ 65 px), or a curve or line network of ≥ 60 px
+     (sd across its principal axis > 2.5 px);
+   - a straight stroke whose far end (≥ 60 px away) is back within 10 px of the frame;
+   - continued at its far end: the end is in a label box, a label box lies 3–25 px ahead
+     (±4 px sideways), or a dash lies there (12–59 px long, length ≥ 2 × √12 × its sd
+     across, axis within cos 0.94 of the stroke, its own axis passing within 4 px of the
+     end, so a first dash merged with a tick arm still finds its next dash).
 4. Invariants of the system file (atlas `pixel`) are always nodes (`invariant`, with id);
    detected junctions within 12 px of one are dropped, as are junctions on a ring.
 5. Rings: round holes (circularity ≥ 0.75, 6–30 px, aspect 0.8–1.25) with ink all round and
    mostly white 8 px further out; holes in letters (a similar small component close by in any
-   direction) are skipped. Ring compositions check the calibration against compound
-   stoichiometry.
+   direction) are skipped. Rings are searched before the ink is cut to the triangle, so a
+   ring drawn on an edge (3Al2O3·2SiO2 of Na2O-Al2O3-SiO2) stays closed; a ring is kept when
+   its centre lies within the triangle + 8 px. Ring compositions check the calibration
+   against compound stoichiometry.
 6. Label boxes (`detect_text_boxes`): groups of ≥ 3 glyphs (components 14–50 px, eigenvalue
    ratio < 9, sizes within 1.6×, box gap ≤ 0.8× size, each round or lying across the line to
    its neighbour, so dashes of one line do not group), and glued blobs (largest side ≤ 90 px)
-   containing a small hole (12–400 px, side ≤ 25: 0, 4, 6, 8, 9, O) that is not a ring.
+   containing a small hole (12–400 px, side ≤ 25: 0, 4, 6, 8, 9, O) that is not a ring. A
+   ring is not a glyph either (component centred within 4 px of it), so a compound ring
+   printed next to its formula (Na2O·Al2O3·2SiO2) is not boxed with the label.
    Junctions and dash ends inside a box padded 6 px are dropped, rings inside a box too.
 7. Dash ends (`dash-end`): a dash is a component of 12–59 px with eigenvalue ratio ≥ 4 and
    mean width ≤ 8 px, not touching a label box; each end, and each free skeleton end of a
-   solid line not on the frame (direction over the last 12 px), is extended up to 45 px.
+   solid line (direction over the last 12 px; on ink joined to the frame only ends more than
+   25 px from it, so tick marks are skipped but lines joined to the frame through other lines
+   keep their ends), is extended up to 45 px.
    A frame pixel (triangle edges drawn 3 px) is the node; within 25 px of the frame other
    solid ink (tick strokes) is passed over. A solid line hit is the node. For a dash, a
    heavier stroke (ratio ≥ 9, ≥ 3× its area) or a non-dash shape ≥ 2.5× its area (dashes of
    two lines touching) gives the crossing of the ray with that shape's axis (sine ≥ 0.4).
    Other ink or a label box ends the ray. Dropped within 10 px of another node.
-8. Corners: the three calibration corners are always nodes (`corner`, the component in the
+8. Free ends (`free-end`): a solid-line end whose 45 px ray meets no ink at all (an isotherm
+   stopping in open paper, e.g. the carnegieite isotherms of Na2O-Al2O3-SiO2); the node is
+   the end itself. Not free ends: ends in a label box, within 25 px of the frame, or whose
+   stroke runs straight back (ink within 2 px of the reversed ray) to the frame within 90 px
+   (label leaders and ticks crossing the edge). Dropped within 10 px of another node.
+9. Corners: the three calibration corners are always nodes (`corner`, the component in the
    `invariant` column); other points within 12 px of a corner, except invariants, are dropped.
-9. Labels, one letter per kind, in reading order (bands of 50 px, then x): `V` corner,
-   `I` invariant, `X` crossing, `E` edge point, `D` dash end, `C` ring. Crossings hidden under labels are
+10. Labels, one letter per kind, in reading order (bands of 50 px, then x): `V` corner,
+   `I` invariant, `X` crossing, `E` edge point, `D` dash end, `F` free end, `C` ring. Crossings hidden under labels are
    not found; text glued to a line without a closed loop can still give extra points.
 
 The overview and tiles also show the stored boundary arrows (magenta, 20 × 16 page px; `?` as a
@@ -936,6 +1018,34 @@ Douglas–Peucker at 0.1 wt%, first and last points equal to the endpoint invari
 
 
 
+### Field temperature approximation
+
+`trace-curves` builds, from the filled candidate, one liquidus temperature surface per
+primary field (`build_field_approximation`, SciPy), shown on the overlay to check the
+isotherms and printed temperatures against each other:
+
+1. **Regions**: the triangle divided by the boundary curves (`polyline_wt`, drawn 3 px wide);
+   inversions and two-liquid branches do not divide a field (modification fields are divided by
+   their boundary curves, § Polymorph modifications). A region takes the field of an isotherm whose middle lies in it, otherwise the
+   phase that the boundaries along ≥ 80 % of its outline share (contact pixels in a 9 px band,
+   so curves meeting at a corner barely count). Regions under 400 px² or without such a phase
+   stay unassigned (logged).
+2. **Control points** of a phase: its isotherms every 0.5 wt%; its invariants and inversion
+   points with a temperature; along its boundary and inversion curves every 1 wt%, the
+   temperature interpolated by arc length between the known temperatures on the curve (path
+   invariants, inversion points, isotherm ends within 0.7 wt%). Fewer than 4 points: no surface.
+3. **Fit**: `scipy.interpolate.RBFInterpolator`, thin-plate spline with a linear term, in page
+   pixels / 1000, smoothing 1e-4 on printed values and 1e-2 on interpolated boundary points.
+   The log gives the residual RMS and maximum on the printed values per phase.
+4. **Sampling**: every 3 px inside the (dilated) region and inside the convex hull of the
+   control points (`scipy.spatial.Delaunay.find_simplex`), so undrawn corners are not
+   extrapolated. The approximated isotherms are the levels of the field's isotherm
+   temperatures (`contour_segments`, marching squares; a saddle cell is resolved by its centre
+   value). Each printed point gets the value of every surface of its phases (`approx`).
+
+A field without isotherms (only boundary temperatures) has a surface but no approximated
+isotherms; its points still get bracket values.
+
 ### Labels and figures (OCR)
 
 - `label_reader`: crop around the label, ×4 upscale, Tesseract `--psm 7` with a digit
@@ -952,6 +1062,125 @@ page with an empty `captionStart` unless a caption on the page names the same fi
 Cross-references wrapped to a line start (`Fig. 3.251) are not included ...`) do not match.
 - `figure_index_merger`: re-indexing a page range replaces only the entries of those pages;
 the index stays sorted by PDF page and figure number.
+
+### Isotherm detection
+
+`detect-isotherms SYSTEM` (`make pd-isotherms`) finds the isotherms on the page without a
+config, as a draft of the config `isotherms` entries (`detect_isotherms`). It needs the traced
+boundary curves (candidate after `pd-curves`, else the dataset file).
+
+1. **Thin lines.** The ink inside the triangle, without the frame (14 px band), the boundary
+   curves (17 px band along their polylines), strokes wider than `isothermStrokeWidth_px` (+ 1.5 px;
+   ink within 6 px of their cores), label boxes (`detect_text_boxes`, + 3 px) and rings (+ 6 px).
+2. **Branches.** Zhang–Suen skeleton split at junctions (three or more 0 → 1 changes around a
+   pixel; the junction pixel and its skeleton neighbours form a cluster), spurs ≤ 8 px pruned
+   (`skeleton_branches`).
+3. **Lines** (`chain_branches`). At a junction the two branch ends pointing most nearly in
+   opposite directions (within 40°) continue each other. Free ends join across a gap when each
+   lies ahead of the other and the gap does not touch the frame or a boundary: ≤ 14 px (break),
+   ≤ 30 px next to a dash (≤ 70 px), ≤ 130 px when ≥ 30 % of the gap lies on label boxes (a
+   label printed in the line; the gap is drawn straight, a `straight` waypoint in the draft).
+4. **Not isotherms.** Lines with < 30 px of ink or < 45 px across (digits the label detector
+   missed); lines running on outside the triangle (leaders of outside labels); straight lines up
+   to 150 px from a label to a free end or a printed point (leaders); straight lines ≥ 100 px
+   ending at a ring (compatibility joins); lines outside every field region
+   (`build_field_regions`: the triangle split by the boundaries, a region takes the phase of
+   the boundaries along ≥ 80 % of its outline).
+5. **Ends.** Each end moves onto the boundary or edge it points at (≤ 25 px ahead, else
+   ≤ 16 px away); otherwise it is a label end (label box within 10 px) or a free end.
+6. **Temperatures**, by source:
+   - `label`: a label in a line gap or ahead of a label end (≤ 80 px) is read by
+     `read_rotated_number` (its glyph boxes plus the ink components lying wholly within them
+     grown by 0.8 glyph size, since a thin `1` is no glyph box; Tesseract `--psm 7`, digits,
+     upright and along the line both ways, best confidence). Accepted when it is a multiple of
+     the step between 100 and 3000 °C with confidence ≥ 25.
+   - `continuation`: pieces ending on one boundary within 35 px are one line (the liquidus has
+     one temperature there; closest ends first, never two pieces of one field); a label on one
+     piece gives the others their temperature.
+   - `boundary order`: along each boundary stretch between path points of known, different
+     temperatures (not a stretch with a maximum, arrows `<>`) the crossing lines rise strictly
+     from the lower to the higher temperature by whole steps (`solve_isotherm_temperatures`:
+     stretches longest first, propagated; a stretch that empties a domain is not used and goes
+     to the review list). A label outside the temperatures of a stretch its piece ends on is not
+     used; a crossing of another piece of a labelled line outside them is not used.
+   A piece with one possible value gets it; the draft entry carries `inferred`: `from` the
+   labelled lines of the field when the arithmetic holds, else `between` the stretch bounds.
+   Others keep their candidates (review kind `isotherm-temperature`).
+7. **Outputs** (`isotherms/`): `<system>.json` (draft config entries: `startPixel`, `endPixel`,
+   waypoints every ~60 px and at both sides of label gaps, `new`, `inferred`, `dashed`, `notes`
+   with the evidence), `<system>.md` (`isotherm_draft_report`: the config isotherms with the
+   detected pieces on them — ≥ 60 % of a piece within 8 px of the entry — their coverage and
+   whether the temperature agrees; pieces on no config isotherm; per piece its evidence; review
+   items; log) and `<system>.png` (`render_isotherm_draft`: pieces coloured by temperature
+   source, label gaps magenta, dropped lines grey, `D<n> <°C>` labels).
+
+The draft is not merged into the config: entries are copied by hand after checking the image.
+
+`auto-overlay SYSTEM` (`make pd-auto-overlay`) shows the diagram as the automatic data alone give
+it: the same detection, then `build_auto_system` (the traced system file with its isotherms
+replaced by the detected pieces that have a temperature, `polyline_wt` every ~10 px) and the
+usual `render_ternary_overlay` with `auto_overlay_curves`: the traced boundaries without arrows,
+the detected isotherms (inferred temperatures in parentheses, pieces without a temperature grey,
+kind `isotherm-open`), field regions and the field approximation built from them (no config
+`fields` or isotherms) and the compound points of the rings. Output `auto/<system>.png` and
+`auto/<system>.json` (the system it was drawn from; not a candidate, never promoted). Boundaries
+and invariants are still those of the config-guided trace.
+Limits: labels whose glyphs touch the line are not bridged (the glyph joins the skeleton);
+close parallel lines meeting a boundary (a narrow field) may be grouped or snapped wrongly;
+lines without a boundary crossing between known temperatures and without a readable label
+(e.g. parallel lines between two labelled ones) stay undetermined.
+
+### Fully automatic extraction
+
+`auto SYSTEM` (`make pd-auto`) builds a ternary from the page alone: no curves config, no
+start file, no candidate. The semi-manual commands (`new`, `trace-curves`, `detect-isotherms`,
+`auto-overlay`) are unchanged; the semi-manual candidate (else the dataset file) is only read
+to compare with.
+
+1. **Figure and triangle**: the first figure of the caption index for the components
+   (`--figure`), rendered at 400 dpi; `detect_triangles`, triangles with a base of at least
+   0.4 × the largest in reading order; the first whose corner labels
+   (`read_corner_labels`, `corner_components`) name the three components (`--triangle`,
+   `--corners` override). `build_ternary_start` gives the calibration (barycentric, no warp).
+2. **Boundaries** (`detect_boundary_graph`): heavy strokes (ridge 1.3–10 line widths; boundaries
+   are drawn about twice as wide as isotherms), their skeleton branches (median width ≥ 1.5 line
+   widths, short pieces on labels dropped), joined into a graph across breaks, dashes, labels
+   and labels printed over the curve; free ends meet other curves (junctions drawn with a gap) or
+   the triangle edges (edge points). Nodes: `junction` (≥ 3 curves: invariant points), `edge`,
+   `end` (open). Curves with ≥ 25 % dash gaps are `dashed`.
+3. **Words** (`read_page_words`): Tesseract `--psm 11` on the triangle area with margins (300,
+   150, 300, 100 px left, top, right, bottom), once as printed and once with glyph-sized ink only
+   (labels crossed by lines); overlapping words merged, the more confident kept.
+4. **Fields** (`name_fields`): regions of the triangle split by the curves; a phase name
+   (`match_phase_name`: letters compared with the phase ids and their distinctive parts, ratio
+   ≥ 0.8) inside a region, else a name outside the triangle whose leader line ends in it, else the
+   composition of a congruent (then incongruent) compound of the system; unnamed regions
+   `field-<n>`. Legend columns are ignored. A curve with one phase on both sides is dropped.
+5. **Temperatures**: `read_node_temperatures` pairs printed temperatures (`printed_temperature`:
+   3–4 digits, `~`, a stray `.` read as part of the number) with junctions and edge points within
+   100 px, one to one with the least total distance (a node without a label costs 100 px), round
+   multiples of the step costing 80 px more (isotherm labels) and a word going only to nodes at
+   most 20 px farther than its nearest node. Labels left over, not round, within 45 px of a curve
+   away from its ends become `saddle` points on it (`read_curve_temperatures`: maxima of a
+   boundary).
+6. **System** (`build_auto_ternary`): every kept curve (two curves through a node where only they
+   end, with the same fields, are one), its nodes and saddles as points `auto-<°C>` (else
+   `auto-j|e|o|s<n>`), types `ternary`, `binary`, `open end`, `saddle`; `polyline_wt` smoothed
+   over 7 px and simplified to 0.1 wt%.
+7. **Isotherms and overlay**: `detect_isotherms` on this system (line width 0.5–1.55 line
+   widths), `build_auto_system`, `build_field_approximation`, `build_compound_points` (node map
+   of the system) and `render_ternary_overlay` with `auto_overlay_curves`, as `auto-overlay`.
+8. **Outputs** (`auto-full/`): `<system>.png` (overlay), `<system>.json` (the system; not a
+   candidate, never promoted) and `<system>.md` (`auto_extraction_report`: fields and how they
+   were named, points with the word read, curves, isotherm counts, `compare_auto_system` — each
+   semi-manual point and the nearest automatic one within 1.5 wt% with both temperatures, the
+   share of each semi-manual curve within 8 px of an automatic one, automatic curves mostly off
+   them, phases of both — and the log).
+
+Limits: a heavy line that is no field boundary (e.g. a join drawn as heavy as the boundaries)
+makes an extra region `field-<n>`; temperature labels misread by Tesseract (837 read `937`) or
+printed for a point that is no node (a saddle next to a junction) can land on the wrong point;
+fields whose name is printed nowhere near them (a sliver along an edge) stay `field-<n>`.
 
 ---
 
@@ -1071,6 +1300,9 @@ list element (`invariantPoints.cms-1373`); `""` is the root.
 is replaced in place; a missing last key is appended to its object (on a new line when the
 object's members are one per line).
 - Setting `id` of an invariant renames it in every `boundaryCurves[].path` (logged).
+- `remove` (no `pixel` or `set`) maps keys to values: every element of the list at `path` that
+has all of them is removed with its separator, after the other edits and before the `new`
+entries. Nothing left to remove is logged ("already removed"), so a promoted file is unchanged.
 - `pixel` (stored coordinates, or a node label) moves a point: an entry with `liquid_wt` gets the
 calibrated composition at that pixel and its `slag-atlas-1995` source the pixel; an entry with
 `wt` (an `otherAtlasData` point) gets `wt` and `pixel`. Pixels are stored as whole pixels and the
@@ -1078,14 +1310,17 @@ composition is computed from the stored pixel (0.1 wt%, third component = 100 �
 - `new: true` appends the entry, one per line like the previous element: a curve as
 `{ fields, path, polyline_wt: null, notes? }`, an isotherm as
 `{ field, temperature_C, polyline_wt: null, notes? }`, an inversion as
-`{ phase, change, temperature_C, source, notes? }`. A `new` entry that already exists is an error.
+`{ phase, change, temperature_C, source, notes? }`. A `new` entry that already exists (the
+system was promoted with it) is not appended again: its keys that differ from the config are
+updated in place (`polyline_wt` is refilled by the tracing).
 - A config `invariants` entry is appended to `invariantPoints` (before the new curves) as
 `{ id, type, reaction, phases, temperature_C, liquid_wt, status: "extracted", sources: [atlas], notes? }`:
 `liquid_wt` is the calibrated composition at its pixel (as for a moved point), the atlas source
 takes `figure`, `printedPage` and `pdfPage` from the file's `source`, plus the reading texts and
-the whole-pixel `pixel`. An id that already exists is an error. Its pixel counts for node-label
-resolution like the other invariants.
-- Node labels (`X23`, `I2•`, `D101•`: kind letter V, I, X, E, D or C, number, optional •) are
+the whole-pixel `pixel`. An id that already exists (promoted) is updated in place: keys that
+differ from the config, and the atlas source's keys; `status` and other sources stay. Its pixel
+counts for node-label resolution like the other invariants.
+- Node labels (`X23`, `I2•`, `D101•`: kind letter V, I, X, E, D, F or C, number, optional •) are
 working names of the node map and the config `nodes`; the node map renumbers them on every run.
 In the written `set` values and `new` entries (notes, sources) each label is replaced by the
 nearest invariant id within 2 px of its pixel (invariant pixels after all edits), else by its
@@ -1118,6 +1353,21 @@ reference line width, white outline) at its middle in the stored direction (`<>`
 a quarter and three quarters of its length, pointing away from the middle), or an orange `?`
 when the arrow is not readable, to compare with the printed arrow underneath; isotherm labels
 keep clear of them, and the legend gets a row "Stored arrows (towards falling temperature)".
+Without config `fields`, the regions of the [field temperature approximation](#field-temperature-approximation)
+are filled, one colour per phase, named at the farthest interior point of its largest part.
+The approximated isotherms are drawn in teal (2 px) under the boundaries; every printed point
+with a temperature (invariants, inversion points) gets a dark dot and its label `T [a]` (the
+printed °C, then in teal the value of each field surface it belongs to, `/`-separated), placed
+at the free spot (of 8 around the dot) covering the fewest drawn pixels. Legend rows:
+"Isotherms of the field approximation; [approximated °C]" and "Printed temperature points (°C)".
+Compound points (`build_compound_points`): every ring of the node map (§ Node map) gets a green
+circle and a tag on the figure, and a row in a white legend strip added below the crop (the
+`pageOrigin` is unchanged): `tag  formula, compound (temperature)`. The compound is the nearest
+within 1.5 wt% among the compounds of the system (its `phases` and the compounds their
+modifications belong to; `nearest_compound`), the tag its `notation`, else the node label. The
+temperature is that of a system invariant whose atlas pixel is within 10 px of the ring (its id
+added), else the compound's melting point ("incongruent" added), else "no temperature". A ring
+without a compound shows its composition, or the invariant on it.
 - **Review list** (`review/<system>.md`): one line per item, grouped by kind:
 
   | Kind              | Raised when                                                                                  |
@@ -1131,6 +1381,8 @@ keep clear of them, and the legend gets a row "Stored arrows (towards falling te
   | `ocr-differs`     | OCR label guess differs from the config label                                                |
   | `dropped-points`  | grid points dropped near a junction                                                          |
   | `track-point-off-curve` | an isotherm track point is > 3 px off its inflection-free curve                        |
+  | `isotherm-temperature`  | `detect-isotherms`: a detected piece without a unique temperature (candidates listed)   |
+  | `isotherm-conflict`     | `detect-isotherms`: two labels on one line, a label outside its boundary stretch, or a stretch whose crossing order contradicts the others |
 
 
 The review list is copied into `OPEN_ITEMS.md` by hand after reading it.
@@ -1163,8 +1415,10 @@ warnings do not.
 | PD014 | error   | Boundary-curve `arrows`: one of `>` `<` `<>` `?` per path segment (plus one for an open end)                                                 |
 | PD015 | warning | A `>` / `<` arrow between two points with temperatures points from the higher to the lower temperature                                     |
 | PD016 | warning | Arrow pattern at a point (arrows of all its boundary segments in the system, `?` and missing arrows skipped): ternary eutectic none away; binary eutectic none into it; saddle none into it; ternary peritectic, when every segment has an arrow, at least one in and one away |
-| PD017 | error   | Isotherm `inferred`: `from` one or two numbers, `step` > 0, temperature a whole non-zero number of steps from each anchor and between two anchors |
+| PD017 | error   | Isotherm `inferred`: `from` one or two numbers, `step` > 0, temperature a whole non-zero number of steps from each anchor and between two anchors; or `between` [low, high], temperature a whole number of steps strictly between |
 | PD018 | warning | Isotherm `inferred` anchor that is not a printed (non-inferred) isotherm of the same field |
+| PD019 | error   | `compounds.json` `modificationOf`: the parent exists and is not itself a modification; equal `oxideMoles`; no `melting` entry |
+| PD020 | error   | A system names a modification and also its compound (§ Polymorph modifications) |
 
 
 ---
@@ -1200,6 +1454,16 @@ commands:
                    Node map of a ternary → nodes/<system>.{md,json}, tiles nodes/<system>-r*c*.png,
                    nodes/<system>-overview.png (whole diagram, legend), nodes/<system>-topology.md
                    (origin default: pixelOrigin of the curves config, else 0 0)
+  auto-overlay SYSTEM [--step 100]
+                   Overlay from automatic data only (detected isotherms, field approximation,
+                   compound rings; boundaries from the trace) → auto/<system>.{png,json}
+  detect-isotherms SYSTEM [--step 100]
+                   Isotherms found on the page (after trace-curves) → isotherms/<system>.json
+                   (draft config entries), .md (report vs the config isotherms), .png
+  auto SYSTEM [--figure 3.196] [--triangle N] [--corners TOP LEFT RIGHT] [--step 100]
+                   Fully automatic ternary from the page alone (triangle, boundaries, fields,
+                   temperatures, isotherms, approximation) → auto-full/<system>.{png,json,md}
+                   (report compared with the semi-manual candidate or dataset file)
   compare SYSTEM   Candidate vs dataset file (exit 1 on differences)
   promote SYSTEM   Candidate → dataset if the dataset still validates (exit 1 if not)
   nbs-index        Dump and parse NSRDS-NBS 61 → nbs/
@@ -1253,6 +1517,9 @@ The CLI runs in the `python` container only (principle 6).
 | `make pd-new SYSTEM=cao-feox-sio2 [FIGURE=3.226] [TRIANGLE=1] [CORNERS="SiO2 CaO FeOx"] [PUBCHEM=1]` | `new` (`--pubchem`: PubChem search of components compound-data lacks) |
 | `make pd-curves SYSTEM=cao-mgo-sio2`                | `trace-curves`                                          |
 | `make pd-nodes SYSTEM=cao-mgo-sio2 [ORIGIN="x y"]`  | `nodes [--origin x y]`                                  |
+| `make pd-isotherms SYSTEM=na2o-al2o3-sio2 [STEP=100]` | `detect-isotherms [--step 100]`                       |
+| `make pd-auto-overlay SYSTEM=na2o-al2o3-sio2 [STEP=100]` | `auto-overlay [--step 100]`                        |
+| `make pd-auto SYSTEM=na2o-al2o3-sio2 [FIGURE=3.196] [TRIANGLE=1] [CORNERS="SiO2 Na2O Al2O3"] [STEP=100]` | `auto` (page alone; no config, start or candidate used) |
 | `make pd-compare SYSTEM=mgo-sio2`                   | `compare`                                               |
 | `make pd-promote SYSTEM=mgo-sio2`                   | `promote` (after user validation)                       |
 | `make pd-nbs-index`                                 | `nbs-index`                                             |

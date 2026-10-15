@@ -8,6 +8,7 @@ import json
 import pytest
 
 from phase_diagrams.builders.ternary_structure_editor import edit_ternary_structure
+from phase_diagrams.config.config_loader import load_config
 from phase_diagrams.config.curves_config import CurvesConfig
 
 SYSTEM_TEXT = """\
@@ -86,10 +87,24 @@ def test_new_entries_are_appended_one_per_line_and_the_rest_is_kept():
     assert text.startswith(SYSTEM_TEXT[:SYSTEM_TEXT.index('  "inversions"')])
 
 
-def test_new_entry_that_already_exists_is_an_error():
-    config = _config(isotherms=[{"field": "silica", "temperature_C": 1400, "startPixel": [0, 0], "endPixel": [1, 1], "new": True}])
-    with pytest.raises(ValueError, match="already exists"):
-        edit_ternary_structure(SYSTEM_TEXT, config)
+def test_new_entry_already_promoted_into_the_file_is_updated_in_place():
+    config = _config(isotherms=[{"field": "silica", "temperature_C": 1400, "startPixel": [0, 0], "endPixel": [1, 1], "new": True,
+                                 "notes": "re-traced"}])
+    text, log = edit_ternary_structure(SYSTEM_TEXT, config)
+    assert json.loads(text)["isotherms"] == [{"field": "silica", "temperature_C": 1400, "polyline_wt": None, "notes": "re-traced"}]
+    assert any("already in the file, updated notes" in line for line in log)
+
+
+def test_new_invariant_already_promoted_into_the_file_keeps_its_status_and_gets_the_config_values():
+    entry = {"id": "tt-2", "type": "ternary", "reaction": "eutectic", "phases": ["silica", "lime", "wollastonite"],
+             "temperature_C": None, "pixel": [300, 600], "composition": "line fits crossed", "new": True}
+    text, log = edit_ternary_structure(SYSTEM_TEXT, _config(invariants=[entry]))
+    point = json.loads(text)["invariantPoints"][1]
+    assert len(json.loads(text)["invariantPoints"]) == 2
+    assert point["liquid_wt"] == {"CaO": 60.7, "MgO": 10.7, "SiO2": 28.6} and "status" not in point
+    assert point["reaction"] == "eutectic" and point["phases"] == ["silica", "lime", "wollastonite"]
+    assert point["sources"][0]["composition"] == "line fits crossed" and point["sources"][0]["pixel"] == [300, 600]
+    assert any(line.startswith("new invariant tt-2: already in the file, updated") for line in log)
 
 
 def test_second_piece_of_an_isotherm_in_the_same_field_is_appended_as_part_2():
@@ -123,13 +138,9 @@ def test_new_invariant_gets_the_composition_at_its_pixel_and_an_atlas_source():
     assert any("new invariant: tt-x" in line for line in log)
 
 
-@pytest.mark.parametrize("entry, message", [
-    ({"id": "tt-2", "type": "ternary", "phases": [], "pixel": [0, 0], "new": True}, "already exists"),
-    ({"id": "tt-y", "type": "ternary", "phases": [], "pixel": [0, 0]}, "only appended"),
-])
-def test_invariant_entry_errors(entry, message):
-    with pytest.raises(ValueError, match=message):
-        edit_ternary_structure(SYSTEM_TEXT, _config(invariants=[entry]))
+def test_invariant_entry_without_new_is_an_error():
+    with pytest.raises(ValueError, match="only appended"):
+        edit_ternary_structure(SYSTEM_TEXT, _config(invariants=[{"id": "tt-y", "type": "ternary", "phases": [], "pixel": [0, 0]}]))
 
 
 @pytest.mark.parametrize("temperature, inferred", [
@@ -170,6 +181,53 @@ def test_node_label_missing_from_the_nodes_is_an_error():
 def test_unknown_path_is_an_error():
     with pytest.raises(ValueError, match="no element 'tt-9'"):
         edit_ternary_structure(SYSTEM_TEXT, _config(edits=[{"path": "invariantPoints.tt-9", "set": {"notes": "x"}}]))
+
+
+def test_remove_edit_deletes_matching_elements_and_a_second_run_only_logs():
+    config = _config(
+        edits=[{"path": "inversions", "remove": {"phase": "silica", "change": "cristobalite → tridymite"}},
+               {"path": "isotherms", "remove": {"field": "silica", "temperature_C": 1400}}],
+        isotherms=[{"field": "cristobalite", "temperature_C": 1400, "startPixel": [0, 0], "endPixel": [1, 1], "new": True}],
+    )
+    text, log = edit_ternary_structure(SYSTEM_TEXT, config)
+    data = json.loads(text)
+    assert data["inversions"] == [] and data["isotherms"] == [{"field": "cristobalite", "temperature_C": 1400, "polyline_wt": None}]
+    assert '"inversions": [],\n  "boundaryCurves"' in text
+    assert any("remove inversions" in line and "1 removed" in line for line in log)
+    again, log = edit_ternary_structure(text, config)
+    assert again == text and any("already removed" in line for line in log)
+
+
+def test_remove_edit_keeps_the_separators_of_the_other_elements():
+    config = _config(edits=[{"path": "invariantPoints", "remove": {"id": "tt-1300"}}])
+    text, _ = edit_ternary_structure(SYSTEM_TEXT, config)
+    assert [p["id"] for p in json.loads(text)["invariantPoints"]] == ["tt-2"]
+    assert '"invariantPoints": [\n    { "id": "tt-2"' in text
+    config = _config(edits=[{"path": "invariantPoints", "remove": {"id": "tt-2"}}])
+    text, _ = edit_ternary_structure(SYSTEM_TEXT, config)
+    assert [p["id"] for p in json.loads(text)["invariantPoints"]] == ["tt-1300"]
+    assert '"pixel": [500, 400] } ] }\n  ],' in text
+
+
+def test_remove_edit_with_set_is_a_config_error():
+    with pytest.raises(ValueError, match="'remove' takes the keys"):
+        _config(edits=[{"path": "isotherms", "remove": {"field": "silica"}, "set": {"notes": "x"}}])
+
+
+@pytest.mark.parametrize("edit, problem", [
+    ({"path": "isotherms", "remove": {"field": "silica"}}, None),
+    ({"path": "isotherms", "remove": {}}, "remove maps the keys to match"),
+    ({"path": "isotherms", "remove": {"field": "silica"}, "pixel": [1, 2]}, "remove maps the keys to match"),
+    ({"path": "isotherms"}, "needs pixel, set or remove"),
+])
+def test_config_loader_checks_remove_edits(tmp_path, edit, problem):
+    path = tmp_path / "test.curves.config.json"
+    path.write_text(json.dumps({"systemFile": "systems/test.json", "pdfPage": 1, "edits": [edit]}), encoding="utf-8")
+    if problem is None:
+        assert load_config(path).edits[0]["remove"] == {"field": "silica"}
+    else:
+        with pytest.raises(ValueError, match=problem):
+            load_config(path)
 
 
 def test_no_edits_leaves_the_text_unchanged():

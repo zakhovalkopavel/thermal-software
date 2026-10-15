@@ -93,6 +93,16 @@ def test_temperature_points_and_compound_rings():
     assert _section(report, "Compound rings") == ["C1  wollastonite (CaO·SiO2)  (48.3 / 0.0 / 51.7): no point in the system file"]
 
 
+def test_compound_ring_names_the_compound_not_its_modification():
+    ring = CALIBRATION.page_to_stored(*CALIBRATION.to_page({"CaO": 48.3, "MgO": 0.0, "SiO2": 51.7}))
+    nodes = _nodes(DiagramNode("C1", "ring", ring, [48.3, 0.0, 51.7]))
+    compounds = [{"id": "pseudowollastonite", "formula": "CaO·SiO2", "oxideMoles": {"CaO": 1, "SiO2": 1},
+                  "modificationOf": "wollastonite"},
+                 {"id": "wollastonite", "formula": "CaO·SiO2", "oxideMoles": {"CaO": 1, "SiO2": 1}}]
+    report = build_topology_report("t", _system(), nodes, compounds=compounds)
+    assert _section(report, "Compound rings") == ["C1  wollastonite (CaO·SiO2)  (48.3 / 0.0 / 51.7): no point in the system file"]
+
+
 def test_isotherm_route_lists_points_on_the_line_and_writes_unlabelled_ends_as_pixels():
     junction = DiagramNode("X1", "junction", (400.0, 375.0), list(_wt((400.0, 375.0)).values()))
     away = DiagramNode("X2", "junction", (450.0, 600.0), list(_wt((450.0, 600.0)).values()))

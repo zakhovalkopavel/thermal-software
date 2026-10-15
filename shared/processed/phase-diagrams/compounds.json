@@ -7,6 +7,7 @@
   "fields": {
     "melting.behaviour": "congruent | incongruent (melts to another solid + liquid) | null",
     "melting.products": "solid phase formed on incongruent melting",
+    "modificationOf": "the compound this entry is a polymorphic modification of (same oxideMoles, no melting of its own); a system names the modifications as phases where its figure draws their fields, otherwise the compound",
     "status": "see sources.json statusLegend"
   },
   "compounds": [
@@ -22,6 +23,21 @@
           { "ref": "slag-atlas-1995", "figure": "Fig. 3.117", "printedPage": 85, "pdfPage": 105, "read": "printed label '1725' at the SiO2 axis; cristobalite → tridymite 1470 °C, tridymite → high quartz 870 °C, high → low quartz 573 °C" },
           { "ref": "slag-atlas-1995", "figure": "Fig. 3.137", "printedPage": 94, "pdfPage": 114, "read": "printed label '1725' at the SiO2 axis; cristobalite → tridymite 1470 °C, tridymite → high quartz 870 °C, high → low quartz 573 °C" }
         ] }
+    },
+    {
+      "id": "cristobalite", "notation": "S", "formula": "SiO2", "oxideMoles": { "SiO2": 1 },
+      "modificationOf": "silica",
+      "notes": "SiO2 above 1470 °C; melts at the silica melting point."
+    },
+    {
+      "id": "tridymite", "notation": "S", "formula": "SiO2", "oxideMoles": { "SiO2": 1 },
+      "modificationOf": "silica",
+      "notes": "SiO2 between 867 °C (870 °C in the binary figures) and 1470 °C."
+    },
+    {
+      "id": "quartz", "notation": "S", "formula": "SiO2", "oxideMoles": { "SiO2": 1 },
+      "modificationOf": "silica",
+      "notes": "SiO2 below 867 °C (870 °C in the binary figures); high quartz at the liquidus, high → low quartz at 573 °C."
     },
     {
       "id": "corundum", "notation": "A", "formula": "Al2O3", "oxideMoles": { "Al2O3": 1 },
@@ -220,10 +236,20 @@
         "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "read": "printed label at Na2O·Al2O3·6SiO2 (legend)" } ] }
     },
     {
-      "id": "nepheline", "notation": "NAS2", "formula": "Na2O·Al2O3·2SiO2", "oxideMoles": { "Na2O": 1, "Al2O3": 1, "SiO2": 2 },
-      "notes": "Carnegieite at high temperature (inversion boundary 915–1280 °C in Fig. 3.195); same stoichiometry, one phase in the model. Solid solution towards Na2O·Al2O3·(0.7)SiO2, modelled as NAS2.",
+      "id": "sodium-aluminosilicate", "notation": "NAS2", "formula": "Na2O·Al2O3·2SiO2", "oxideMoles": { "Na2O": 1, "Al2O3": 1, "SiO2": 2 },
+      "notes": "NaAlSiO4: nepheline at low and carnegieite at high temperature (boundary 915–1280 °C in Fig. 3.195; the melting point is carnegieite's). Solid solution towards Na2O·Al2O3·(0.7)SiO2, modelled as NAS2.",
       "melting": { "behaviour": "congruent", "temperature_C": 1526, "products": null, "status": "extracted",
         "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "read": "printed label at the compound point" } ] }
+    },
+    {
+      "id": "nepheline", "notation": "NAS2", "formula": "Na2O·Al2O3·2SiO2", "oxideMoles": { "Na2O": 1, "Al2O3": 1, "SiO2": 2 },
+      "modificationOf": "sodium-aluminosilicate",
+      "notes": "Low-temperature modification of NaAlSiO4, below the carnegieite/nepheline boundary (915–1280 °C, Fig. 3.195)."
+    },
+    {
+      "id": "carnegieite", "notation": "NAS2", "formula": "Na2O·Al2O3·2SiO2", "oxideMoles": { "Na2O": 1, "Al2O3": 1, "SiO2": 2 },
+      "modificationOf": "sodium-aluminosilicate",
+      "notes": "High-temperature modification of NaAlSiO4, above the carnegieite/nepheline boundary (915–1280 °C, Fig. 3.195); melts at 1526 °C."
     },
     {
       "id": "sodium-disilicate", "notation": "NS2", "formula": "Na2O·2SiO2", "oxideMoles": { "Na2O": 1, "SiO2": 2 },
@@ -265,6 +291,12 @@
       "notes": "Na6Si8O19 (no common name). Fig. 3.137 caption: found by Williamson, Glasser, confirmed by Mogensen, Christensen; equilibria after Glasser, Marr and Lee et al. Stable between 700 °C (line from Na2O·2SiO2 to SiO2 under the 3Na2O·8SiO2 line) and 808 °C.",
       "melting": { "behaviour": "incongruent", "temperature_C": 808, "products": "sodium-disilicate", "status": "extracted",
         "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.137", "printedPage": 94, "pdfPage": 114, "read": "printed label '808' on the line from the Na2O·2SiO2 line to the liquidus junction '(73.4)', above the top of the 3Na2O·8SiO2 line" } ] }
+    },
+    {
+      "id": "beta-alumina", "notation": "NA11", "formula": "Na2O·11Al2O3", "oxideMoles": { "Na2O": 1, "Al2O3": 11 },
+      "notes": "Fig. 3.195 (PDF p. 137): legend 'β-Alumina  Na2O·11Al2O3'; compound circle on the Na2O-Al2O3 edge at pixel (2736, 2042), labelled 'Na2O·11Al2O3'; field labelled 'β-Alumina' at (2270–2445, 1830), bounded by dashed lines. No melting temperature printed.",
+      "melting": { "behaviour": null, "temperature_C": null, "products": null, "status": "missing",
+        "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.195", "printedPage": 117, "pdfPage": 137, "read": "not printed; the β-alumina field is bounded by dashed lines without temperatures" } ] }
     }
   ]
 }

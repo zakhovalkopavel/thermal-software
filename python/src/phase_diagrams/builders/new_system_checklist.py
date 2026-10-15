@@ -27,8 +27,10 @@ def new_system_checklist(components: list[str], compounds: list[dict]) -> list[s
         oxides = compound.get("oxideMoles") or {}
         if not oxides or any(formula_letters(o) not in letters for o in oxides):
             continue
-        phases.append(f"{compound['id']} ({compound.get('formula') or '+'.join(oxides)})")
-        if len(oxides) == 1:
+        parent = compound.get("modificationOf")
+        phases.append(f"{compound['id']} ({compound.get('formula') or '+'.join(oxides)}"
+                      + (f", modification of {parent})" if parent else ")"))
+        if len(oxides) == 1 and not parent:
             single[letters[formula_letters(next(iter(oxides)))]].append(compound["id"])
     lines.append("phases in compounds.json: " + (", ".join(phases) if phases else "none"))
     for component, ids in single.items():

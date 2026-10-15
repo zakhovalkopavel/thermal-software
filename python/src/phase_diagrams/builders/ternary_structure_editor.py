@@ -27,12 +27,17 @@ def edit_ternary_structure(text: str, config: CurvesConfig) -> tuple[str, list[s
     ``pixel`` (stored coordinates) moves a point: an entry with ``liquid_wt``
     gets the composition at that pixel and its atlas source the pixel; an entry
     with ``wt`` gets ``wt`` and ``pixel``. Pixels are rounded to whole pixels.
+    A ``remove`` edit deletes every element of the list at ``path`` that has all
+    the given keys and values (after the ``set`` edits, before anything is
+    appended); none left (already removed in a promoted file) is only logged.
     ``new`` curves, isotherms and inversions are appended with ``polyline_wt``
-    null (the filler fills them); an existing match is an error. A new isotherm
+    null (the filler fills them). A new isotherm
     keeps its config ``inferred`` (temperature not printed). Config ``invariants``
     are appended to ``invariantPoints`` with the composition at their pixel,
     status ``extracted`` and one atlas source (figure and pages from the file's
-    ``source``, the reading texts and the pixel); an existing id is an error.
+    ``source``, the reading texts and the pixel). An entry or id already in the
+    file (the config was promoted) is not appended again: its keys that differ
+    from the config are updated (``_update_promoted``).
     Node labels in the written ``set`` values and entries (notes) are replaced by
     the invariant id at that pixel after all edits, else the stored pixel
     (``resolve_node_labels``), so the system file never refers to the node map.
@@ -55,6 +60,8 @@ def edit_ternary_structure(text: str, config: CurvesConfig) -> tuple[str, list[s
         return {components[0]: a + 0.0, components[1]: b + 0.0, components[2]: round(100.0 - a - b, 1) + 0.0}
 
     for edit in config.edits:
+        if edit.get("remove") is not None:
+            continue
         path = _index_path(expected, edit["path"], config.name)
         entry = _resolve(expected, path, config.name)
         changes = resolved(dict(edit["set"]), f"edit {edit['path'] or '(root)'}")
@@ -81,11 +88,22 @@ def edit_ternary_structure(text: str, config: CurvesConfig) -> tuple[str, list[s
                     text = _set_key(text, expected, f"boundaryCurves.{index}", "path", path, config.name)
                     log.append(f"boundary curve {curve['fields']}: path id {old_id} → {new_id}")
 
+    for edit in config.edits:
+        if edit.get("remove") is None:
+            continue
+        path = _index_path(expected, edit["path"], config.name)
+        elements = _resolve(expected, path, config.name)
+        if not isinstance(elements, list):
+            raise ValueError(f"{config.name}: remove from '{edit['path']}': not a list")
+        match = json.dumps(edit["remove"], ensure_ascii=False)
+        found = [i for i, e in enumerate(elements) if isinstance(e, dict) and all(e.get(k) == v for k, v in edit["remove"].items())]
+        for index in reversed(found):
+            text = _remove(text, expected, path, index)
+        log.append(f"remove {edit['path']} {match}: " + (f"{len(found)} removed" if found else "already removed"))
+
     source = system.get("source") or {}
     figure = {k: source[k] for k in ("figure", "printedPage", "pdfPage") if k in source} if source.get("ref") == _ATLAS_REF else {}
     for entry in config.invariants:
-        if any(p.get("id") == entry["id"] for p in expected.get("invariantPoints", [])):
-            raise ValueError(f"{config.name}: new invariant {entry['id']} already exists")
         pixel = [round(entry["pixel"][0]), round(entry["pixel"][1])]
         value = {"id": entry["id"], "type": entry["type"], "reaction": entry["reaction"], "phases": entry["phases"],
                  "temperature_C": entry["temperature_C"], "liquid_wt": composition(pixel), "status": "extracted",
@@ -94,6 +112,11 @@ def edit_ternary_structure(text: str, config: CurvesConfig) -> tuple[str, list[s
         if entry["notes"]:
             value["notes"] = entry["notes"]
         value = resolved(value, f"new invariant {entry['id']}")
+        existing = next((p for p in expected.get("invariantPoints", []) if p.get("id") == entry["id"]), None)
+        if existing is not None:
+            text = _update_promoted(text, expected, f"invariantPoints.{entry['id']}", existing, value, config.name, log,
+                                    f"new invariant {entry['id']}")
+            continue
         text = _append(text, "invariantPoints", value)
         expected.setdefault("invariantPoints", []).append(value)
         log.append(f"new invariant: {entry['id']} at {pixel} → {json.dumps(value['liquid_wt'], ensure_ascii=False)}")
@@ -112,14 +135,17 @@ def edit_ternary_structure(text: str, config: CurvesConfig) -> tuple[str, list[s
         for entry in entries:
             if not entry["new"]:
                 continue
-            if any(same(c, entry) for c in expected.get(key, [])):
-                raise ValueError(f"{config.name}: new {key} entry {make(entry)} already exists")
             value = make(entry)
-            if key != "inversions":
+            index = next((i for i, c in enumerate(expected.get(key, [])) if same(c, entry)), None)
+            if index is None and key != "inversions":
                 value["polyline_wt"] = None
             if entry["notes"]:
                 value["notes"] = entry["notes"]
             value = resolved(value, f"new {key} entry {make(entry)}")
+            if index is not None:
+                text = _update_promoted(text, expected, f"{key}.{index}", expected[key][index], value, config.name, log,
+                                        f"new {key} entry {make(entry)}")
+                continue
             text = _append(text, key, value)
             expected.setdefault(key, []).append(value)
             log.append(f"new {key} entry: " + json.dumps({k: v for k, v in value.items() if k != "polyline_wt"}, ensure_ascii=False))
@@ -127,6 +153,34 @@ def edit_ternary_structure(text: str, config: CurvesConfig) -> tuple[str, list[s
     if json.loads(text) != expected:
         raise ValueError(f"{config.name}: structure edit changed more than the requested keys; file left unchanged")
     return text, log
+
+
+def _update_promoted(text: str, data: dict, path: str, existing: dict, value: dict, name: str, log: list[str],
+                     what: str) -> str:
+    """Bring an entry already in the file (a promoted ``new`` entry) up to the config ``value``.
+
+    Only keys of ``value`` that differ are written; ``status`` and keys the config does not
+    write (``polyline_wt``, added sources) stay. Sources are matched by ``ref``.
+    """
+    changed = []
+    path = _index_path(data, path, name)
+    for key, wanted in value.items():
+        if key == "status" or existing.get(key) == wanted:
+            continue
+        if key == "sources":
+            for source in wanted:
+                index = next((i for i, s in enumerate(existing.get("sources", [])) if s.get("ref") == source.get("ref")), None)
+                if index is None:
+                    continue
+                for sub, sub_value in source.items():
+                    if existing["sources"][index].get(sub) != sub_value:
+                        text = _set_key(text, data, path, f"sources.{index}.{sub}", sub_value, name)
+                        changed.append(f"sources.{index}.{sub}")
+            continue
+        text = _set_key(text, data, path, key, wanted, name)
+        changed.append(key)
+    log.append(f"{what}: already in the file" + (f", updated {', '.join(changed)}" if changed else ""))
+    return text
 
 
 def _final_invariant_pixels(system: dict, config: CurvesConfig) -> dict[str, tuple[float, float]]:
@@ -215,6 +269,18 @@ def _set_key(text: str, data: dict, path: str, key: str, value, name: str) -> st
     indent = text[line_start:key_start]
     separator = f",\n{indent}" if indent.strip() == "" and line_start > span_open else ", "
     return text[:value_end] + f"{separator}{json.dumps(last)}: {_inline(value)}" + text[value_end:]
+
+
+def _remove(text: str, data: dict, path: str, index: int) -> str:
+    """Remove element ``index`` of the list at the index ``path`` from ``data`` and ``text`` with its separator."""
+    _resolve(data, path, "").pop(index)
+    open_index, close_end = _span(text, path)
+    elements = list(_members(text, open_index))
+    if len(elements) == 1:
+        return text[:open_index + 1] + text[close_end - 1:]
+    if index > 0:
+        return text[:elements[index - 1][3]] + text[elements[index][3]:]
+    return text[:elements[0][2]] + text[elements[1][2]:]
 
 
 def _append(text: str, key: str, value: dict) -> str:

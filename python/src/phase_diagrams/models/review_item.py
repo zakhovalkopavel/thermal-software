@@ -21,6 +21,8 @@ class ReviewItem:
         "ocr-differs",
         "dropped-points",
         "track-point-off-curve",
+        "isotherm-temperature",
+        "isotherm-conflict",
     )
 
     kind: str

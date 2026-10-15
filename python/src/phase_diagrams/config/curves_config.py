@@ -47,7 +47,8 @@ def _inferred(entry: dict) -> dict | None:
     problem = inferred_temperature_problem(entry["temperature_C"], value)
     if problem:
         raise ValueError(f"isotherm {entry['field']} {entry['temperature_C']}: {problem}")
-    return {"from": list(value["from"]), "step": value["step"]}
+    key = "from" if "from" in value else "between"
+    return {key: list(value[key]), "step": value["step"]}
 
 
 def _invariant(entry: dict, nodes: dict[str, tuple[float, float]]) -> dict:
@@ -84,7 +85,8 @@ class CurvesConfig:
     Any pixel may be given as a label of the ``nodes`` map (node-map labels).
     Entries with ``new`` (and ``notes``; inversions also ``temperature_C`` and
     ``source``) are appended to the system file; ``edits`` are
-    ``{"path", "pixel" or None, "set"}`` structure edits applied before tracing.
+    ``{"path", "pixel" or None, "set", "remove" or None}`` structure edits applied before tracing
+    (``remove``: the keys an element of the list at ``path`` must have to be removed).
     ``frame_mask_px`` > 0 erases a band of that width along the triangle edges
     from the tracing mask. ``line_width_px`` (``lineWidth_px``) replaces the measured
     line width of the page (pixel scale); None = measure it. Any entry may set ``dashed``: traced on the dashes only.
@@ -98,8 +100,9 @@ class CurvesConfig:
     it is written to the boundary curve of the system file.
     An isotherm without a printed temperature sets ``inferred``
     ``{"from": [labelled °C, …], "step": °C}`` (one or two labelled isotherms of the field
-    and the interval between lines; checked by ``inferred_temperature_problem``); a ``new``
-    entry carries it into the system file.
+    and the interval between lines; checked by ``inferred_temperature_problem``), or
+    ``{"between": [low °C, high °C], "step": °C}`` when only the order of the lines along
+    boundaries bounds it (``detect-isotherms``); a ``new`` entry carries it into the system file.
     ``invariants`` are new invariant points (``new`` required): ``id``, ``type``,
     ``reaction``, ``phases``, ``temperature_C`` (None when not printed), ``pixel``
     and the atlas reading texts ``temperature`` and ``composition``; the
@@ -187,9 +190,13 @@ class CurvesConfig:
             for f in data.get("fields", [])
         ]
         edits = [
-            {"path": e["path"], "pixel": pixel(e["pixel"]) if e.get("pixel") is not None else None, "set": dict(e.get("set", {}))}
+            {"path": e["path"], "pixel": pixel(e["pixel"]) if e.get("pixel") is not None else None, "set": dict(e.get("set", {})),
+             "remove": dict(e["remove"]) if e.get("remove") is not None else None}
             for e in data.get("edits", [])
         ]
+        for edit in edits:
+            if edit["remove"] is not None and (edit["set"] or edit["pixel"] is not None or not edit["remove"]):
+                raise ValueError(f"{name}: edit {edit['path']}: 'remove' takes the keys to match and no 'set' or 'pixel'")
         liquid_immiscibility = [
             {
                 "startPixel": pixel(b["startPixel"]),

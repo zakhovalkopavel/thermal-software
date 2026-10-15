@@ -173,6 +173,14 @@ def test_checklist_counts_iron_oxide_phases_for_feox_which_has_no_molar_mass():
     assert len(lines) == 2
 
 
+def test_checklist_marks_modifications_and_does_not_count_them_as_the_single_oxide_phase():
+    compounds = [{"id": "quartz", "formula": "SiO2", "oxideMoles": {"SiO2": 1}, "modificationOf": "silica"}] + COMPOUNDS[1:]
+    lines = new_system_checklist(["Al2O3", "MgO", "SiO2"], compounds)
+    assert lines[1] == ("phases in compounds.json: quartz (SiO2, modification of silica), corundum (Al2O3), "
+                        "mullite (3Al2O3·2SiO2)")
+    assert [line.split(": ")[1].split(" phase")[0] for line in lines[2:]] == ["a MgO", "a SiO2"]
+
+
 def _start(line_px: float = 4.0) -> tuple[str, str]:
     figure = {"figure": "Fig. 3.226", "pdfPage": 147, "printedPage": 127}
     corners = {"top": (500.0, 100.0), "left": (100.0, 800.0), "right": (900.0, 800.0)}

@@ -11,6 +11,8 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from scipy import ndimage
 
+from phase_diagrams.models.compound_point import CompoundPoint
+from phase_diagrams.models.field_approximation import FieldApproximation
 from phase_diagrams.models.line_scale import LineScale
 from phase_diagrams.models.traced_curve import TracedCurve
 from phase_diagrams.rendering.arrowheads import arrowheads
@@ -18,11 +20,18 @@ from phase_diagrams.rendering.arrowheads import arrowheads
 _LINES = {
     "boundary": ((0, 60, 220), 3, "Field boundaries"),
     "isotherm": ((225, 30, 0), 2, "Isotherms (°C)"),
+    "isotherm-open": ((120, 120, 120), 2, "Isotherms, temperature not determined"),
     "inversion": ((0, 140, 60), 2, "Polymorph (inversion) lines"),
     "immiscibility": ((200, 0, 200), 3, "Two-liquid boundary"),
 }
 _DIVIDERS = ("boundary", "inversion", "immiscibility")
 _ARROW = ((255, 120, 0), "Stored arrows (towards falling temperature)")
+_APPROX = ((0, 150, 150), 2, "Isotherms of the field approximation; [approximated °C]")
+_POINT = ((20, 20, 20), "Printed temperature points (°C)")
+_POINT_DOT_PX = 4
+_COMPOUND = ((0, 120, 40), "Compound points (rings of the figure): notation  formula, phase (temperature)")
+_COMPOUND_RING_PX = 9
+_COMPOUND_RING_WIDTH_PX = 3
 _ARROW_LENGTH_PX = 22
 _ARROW_HALF_WIDTH_PX = 9
 _BARRIER_PX = 3
@@ -61,6 +70,8 @@ def render_ternary_overlay(
     margin: int | None = None,
     font_px: int | None = None,
     scale: LineScale | None = None,
+    approximation: FieldApproximation | None = None,
+    compound_points: list[CompoundPoint] | None = None,
 ) -> tuple[Image.Image, list[str]]:
     """Crop ``box`` (page pixels, plus ``margin``) and draw the fields and curves; returns the image and a log.
 
@@ -74,10 +85,17 @@ def render_ternary_overlay(
     to top along a steep piece), at its middle or the nearest place clear of field names
     and earlier labels; a field name still covering a label moves to the nearest free
     point of its region (up to 60 px from the seed).
-    An inferred isotherm temperature (not printed) is written in parentheses.
+    An inferred isotherm temperature (not printed) is written in parentheses; curves of kind
+    ``isotherm-open`` (detected isotherms without a temperature) are drawn grey, unlabelled.
     A boundary segment with a stored ``arrow`` gets an orange arrowhead at its middle
     (``<>``: two, at a quarter and three quarters, pointing away from the middle),
     or an orange ``?`` when the arrow is not readable; labels keep clear of them.
+    With an ``approximation`` (``build_field_approximation``) and no ``fields``, its phase
+    regions are coloured and named instead; its isotherms are drawn in teal under the
+    boundaries, and each printed temperature point gets a dot and ``T [a/b/c]``: the
+    printed value and, in teal, the approximated value of each adjacent field with a surface.
+    Each of ``compound_points`` gets a green ring and its tag on the figure, and a row
+    ``tag  formula, phase (temperature)`` in a legend strip added below the crop.
     ``info["pageOrigin"]`` ("x0,y0") is the page pixel of the top-left corner.
     ``margin`` defaults to 60 px and ``font_px`` to 22 px; these, the line widths,
     the legend layout and the search distances are for the reference line width,
@@ -127,12 +145,30 @@ def render_ternary_overlay(
         owners[region] = field["name"]
         layer_pixels[regions == region] = (*colour, _FILL_ALPHA)
         placed.append((field["name"], field.get("legend") or field["name"], colour, seed, region))
+    if not fields and approximation is not None:
+        phase_labels = _crop(approximation.labels, approximation.origin, (x0, y0), size)
+        for number, phase in enumerate(approximation.phases):
+            mask = (phase_labels == number + 1) & free
+            if not mask.any():
+                continue
+            colour = _colour(number)
+            layer_pixels[mask] = (*colour, _FILL_ALPHA)
+            parts, _ = ndimage.label(mask)
+            largest = np.bincount(parts.ravel())[1:].argmax() + 1
+            distance = ndimage.distance_transform_edt(parts == largest)
+            y, x = np.unravel_index(int(distance.argmax()), distance.shape)
+            placed.append((phase, phase, colour, (float(x), float(y)), int(regions[y, x])))
     layer = Image.fromarray(layer_pixels, "RGBA")
     out = Image.alpha_composite(out, layer)
     draw = ImageDraw.Draw(out)
     font = _font(font_px)
     small = _font(max(s.count(_MIN_FONT_PX), font_px * 2 // 3))
-    for kind in ("isotherm", "inversion", "immiscibility", "boundary"):
+    for kind in ("isotherm-open", "isotherm", "approx", "inversion", "immiscibility", "boundary"):
+        if kind == "approx":
+            for _, _, segments in approximation.isotherms if approximation is not None else []:
+                for sx0, sy0, sx1, sy1 in segments:
+                    draw.line([local((sx0, sy0)), local((sx1, sy1))], fill=_APPROX[0], width=s.count(_APPROX[1]))
+            continue
         colour, width, _ = _LINES[kind]
         for curve in curves:
             if curve.kind == kind and len(curve.pixels) > 1:
@@ -164,6 +200,29 @@ def render_ternary_overlay(
             if ink is not None:
                 occupied[ink[0]] |= ink[1]
                 labels[ink[0]] |= ink[1]
+    for point in approximation.points if approximation is not None else []:
+        centre = local(point.pixel)
+        if not (0 <= centre[0] < size[0] and 0 <= centre[1] < size[1]):
+            continue
+        dot = s.length(_POINT_DOT_PX)
+        draw.ellipse([centre[0] - dot, centre[1] - dot, centre[0] + dot, centre[1] + dot], fill=_POINT[0],
+                     outline=(255, 255, 255))
+        values = "/".join(f"{point.approx[p]:.0f}" for p in point.approx)
+        box = _point_label(draw, occupied, centre, f"{point.temperature_C:g}", f" [{values}]" if values else "",
+                           small, stroke, dot + s.length(_LABEL_GAP_PX))
+        occupied[box] = True
+        labels[box] = True
+    ring_radius = s.length(_COMPOUND_RING_PX)
+    for point in compound_points or []:
+        centre = local(point.pixel)
+        if not (0 <= centre[0] < size[0] and 0 <= centre[1] < size[1]):
+            continue
+        draw.ellipse([centre[0] - ring_radius, centre[1] - ring_radius, centre[0] + ring_radius, centre[1] + ring_radius],
+                     outline=_COMPOUND[0], width=s.count(_COMPOUND_RING_WIDTH_PX))
+        box = _point_label(draw, occupied, centre, point.tag, "", small, stroke, ring_radius + s.length(_LABEL_GAP_PX),
+                           colour=_COMPOUND[0])
+        occupied[box] = True
+        labels[box] = True
     for name, _, _, seed, region in placed:
         position = _name_position(draw, seed, name, small, stroke, labels, regions, region,
                                   s.count(_NAME_STEP_PX), s.count(_NAME_SEARCH_PX))
@@ -179,6 +238,17 @@ def render_ternary_overlay(
             draw.line([(pad, y), (swatch, y)], fill=colour, width=s.count(width) + 1)
             draw.text((text_x, pad + row * line_height), text, fill=colour, font=font)
             row += 1
+    if approximation is not None and approximation.isotherms:
+        y = pad + row * line_height + font_px // 2
+        draw.line([(pad, y), (swatch, y)], fill=_APPROX[0], width=s.count(_APPROX[1]) + 1)
+        draw.text((text_x, pad + row * line_height), _APPROX[2], fill=_APPROX[0], font=font)
+        row += 1
+    if approximation is not None and approximation.points:
+        y = pad + row * line_height + font_px // 2
+        r = s.length(_POINT_DOT_PX)
+        draw.ellipse([(pad + swatch) / 2 - r, y - r, (pad + swatch) / 2 + r, y + r], fill=_POINT[0])
+        draw.text((text_x, pad + row * line_height), _POINT[1], fill=_POINT[0], font=font)
+        row += 1
     if any(c.kind == "boundary" and c.arrow is not None for c in curves):
         y = pad + row * line_height + font_px // 2
         for head in arrowheads([(pad, y), (swatch, y)], ">", arrow_length, arrow_half, 1.0):
@@ -191,8 +261,28 @@ def render_ternary_overlay(
         draw.text((text_x, top), legend, fill=_TEXT, font=font)
         row += 1
     out = out.convert("RGB")
+    if compound_points:
+        out = _with_compound_legend(out, compound_points, font, font_px, pad, swatch, text_x, line_height, s)
     out.info["pageOrigin"] = f"{x0},{y0}"
     return out, log
+
+
+def _with_compound_legend(image: Image.Image, points: list[CompoundPoint], font, font_px: int, pad: int, swatch: int,
+                          text_x: int, line_height: int, scale: LineScale) -> Image.Image:
+    """``image`` with a white strip below it: a title row and one ``CompoundPoint.legend`` row per point."""
+    rows = [_COMPOUND[1]] + [p.legend() for p in points]
+    out = Image.new("RGB", (image.width, image.height + 2 * pad + len(rows) * line_height), (255, 255, 255))
+    out.paste(image, (0, 0))
+    draw = ImageDraw.Draw(out)
+    radius = scale.length(_COMPOUND_RING_PX)
+    for row, text in enumerate(rows):
+        top = image.height + pad + row * line_height
+        if row:
+            y = top + font_px / 2
+            draw.ellipse([(pad + swatch) / 2 - radius, y - radius, (pad + swatch) / 2 + radius, y + radius],
+                         outline=_COMPOUND[0], width=scale.count(_COMPOUND_RING_WIDTH_PX))
+        draw.text((text_x, top), text, fill=_COMPOUND[0] if row == 0 else _TEXT, font=font)
+    return out
 
 
 def _colour(number: int) -> tuple[int, int, int]:
@@ -310,6 +400,40 @@ def _region_at(regions: np.ndarray, seed: tuple[float, float], reach: int) -> in
         if labels.size:
             return int(np.bincount(labels).argmax())
     return 0
+
+
+def _crop(labels: np.ndarray, origin: tuple[int, int], corner: tuple[int, int], size: tuple[int, int]) -> np.ndarray:
+    """``labels`` (top-left page pixel ``origin``) cut to the window of ``size`` at page pixel ``corner``; 0 elsewhere."""
+    out = np.zeros((size[1], size[0]), labels.dtype)
+    dx, dy = origin[0] - corner[0], origin[1] - corner[1]
+    x0, y0 = max(0, dx), max(0, dy)
+    x1, y1 = min(size[0], dx + labels.shape[1]), min(size[1], dy + labels.shape[0])
+    if x1 > x0 and y1 > y0:
+        out[y0:y1, x0:x1] = labels[y0 - dy:y1 - dy, x0 - dx:x1 - dx]
+    return out
+
+
+def _point_label(draw: ImageDraw.ImageDraw, occupied: np.ndarray, centre, primary: str, bracket: str, font,
+                 stroke: int, gap: float, colour: tuple[int, int, int] = _POINT[0]) -> tuple[slice, slice]:
+    """Write ``primary`` (``colour``, default dark) then ``bracket`` (teal) next to ``centre`` at the first of eight places covering the fewest ``occupied`` pixels."""
+    left, top, right, bottom = draw.textbbox((0, 0), primary + bracket, font=font, stroke_width=stroke)
+    width, height = right - left, bottom - top
+    x, y = centre
+    places = [(x + gap, y - gap - height), (x + gap, y + gap), (x - gap - width, y - gap - height), (x - gap - width, y + gap),
+              (x - width / 2, y - gap - height), (x - width / 2, y + gap), (x + gap, y - height / 2), (x - gap - width, y - height / 2)]
+    shape = occupied.shape
+
+    def box(place) -> tuple[slice, slice]:
+        return (slice(max(0, int(place[1])), max(0, min(shape[0], int(place[1] + height) + 1))),
+                slice(max(0, int(place[0])), max(0, min(shape[1], int(place[0] + width) + 1))))
+
+    place = min(places, key=lambda p: int(occupied[box(p)].sum()))
+    corner = (place[0] - left, place[1] - top)
+    draw.text(corner, primary, fill=colour, font=font, stroke_width=stroke, stroke_fill=(255, 255, 255))
+    if bracket:
+        draw.text((corner[0] + draw.textlength(primary, font=font), corner[1]), bracket, fill=_APPROX[0], font=font,
+                  stroke_width=stroke, stroke_fill=(255, 255, 255))
+    return box(place)
 
 
 def _px(point: tuple[float, float], x0: int, y0: int) -> str:

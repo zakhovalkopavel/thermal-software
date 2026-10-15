@@ -1,5 +1,5 @@
 """
-phase_diagrams.models.diagram_node — A numbered point of a node map (corner, invariant, junction, edge point, dash end, ring).
+phase_diagrams.models.diagram_node — A numbered point of a node map (corner, invariant, junction, edge point, dash end, free end, ring).
 
 Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Node map
 """
@@ -14,7 +14,7 @@ class DiagramNode:
 
     ``kind``: ``junction`` (lines meet or cross), ``edge`` (junction on a triangle
     edge), ``dash-end`` (where a dash stopping short of a solid line would meet it),
-    ``invariant`` (pixel of an invariant of the system file, ``invariant`` = id),
+    ``free-end`` (a solid line stopping in open paper), ``invariant`` (pixel of an invariant of the system file, ``invariant`` = id),
     ``ring`` (small drawn circle, e.g. a compound composition), ``corner``
     (triangle corner, ``invariant`` = the component) or ``user`` (point added
     by hand on a node-map image, label ending in •).

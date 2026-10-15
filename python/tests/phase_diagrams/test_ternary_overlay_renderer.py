@@ -109,3 +109,18 @@ def test_legend_shows_the_legend_text_and_the_field_its_name():
     full = np.asarray(_render([], fields)[0])
     assert (short[:40, 100:] != full[:40, 100:]).any()
     assert (short[40:] == full[40:]).all()
+
+
+def test_compound_points_get_a_green_ring_and_a_legend_strip_below_the_crop():
+    from phase_diagrams.models.compound_point import CompoundPoint
+    points = [CompoundPoint("NS", (300.0, 300.0), [50.7, 0.0, 49.3], "sodium-metasilicate", "Na2O·SiO2", 1088, "congruent"),
+              CompoundPoint("C2", (250.0, 400.0), [37.2, 62.8, 0.0])]
+    image = np.full((600, 600), 255, np.uint8)
+    plain, _ = render_ternary_overlay(image, (100, 100, 500, 450), [], [], _CORNERS, margin=20)
+    rendered, _ = render_ternary_overlay(image, (100, 100, 500, 450), [], [], _CORNERS, margin=20, compound_points=points)
+    assert rendered.width == plain.width and rendered.height > plain.height
+    assert rendered.info["pageOrigin"] == plain.info["pageOrigin"]
+    ring = _pixel(rendered, (300 + 9, 300))
+    assert ring[1] > 90 > ring[0] and ring[2] < 90
+    strip = np.asarray(rendered)[plain.height:]
+    assert (strip < 128).any()

@@ -79,8 +79,11 @@ def _curves_problems(data: dict) -> list[str]:
     for number, edit in enumerate(data.get("edits", []), start=1):
         if not isinstance(edit.get("path"), str):
             problems.append(f"edit {number}: path must be a string ('' = root)")
-        if edit.get("pixel") is None and not edit.get("set"):
-            problems.append(f"edit {number} ({edit.get('path')}): needs pixel or set")
+        if "remove" in edit:
+            if not isinstance(edit["remove"], dict) or not edit["remove"] or edit.get("set") or edit.get("pixel") is not None:
+                problems.append(f"edit {number} ({edit.get('path')}): remove maps the keys to match, without pixel or set")
+        elif edit.get("pixel") is None and not edit.get("set"):
+            problems.append(f"edit {number} ({edit.get('path')}): needs pixel, set or remove")
         if not isinstance(edit.get("set", {}), dict):
             problems.append(f"edit {number} ({edit.get('path')}): set must map keys to values")
     for section in ("curves", "isotherms", "inversions", "liquidImmiscibility"):

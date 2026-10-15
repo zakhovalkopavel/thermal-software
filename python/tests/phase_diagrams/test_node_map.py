@@ -132,6 +132,66 @@ def test_dash_end_snaps_to_the_edge_and_bare_tick_is_dropped():
     assert end.label.startswith("D") and abs(end.wt[2]) < 0.5
 
 
+def test_free_end_of_a_line_joined_to_the_frame_leaders_and_ticks_are_not():
+    system = {
+        "components": ["A", "B", "C"],
+        "digitization": {"calibration": {"C": [300, 40], "A": [40, 490], "B": [560, 490]}},
+        "invariantPoints": [],
+    }
+
+    def draw(d):
+        d.polygon([(300, 40), (40, 490), (560, 490)], outline=0, width=3)
+        d.line([(300, 490), (300, 330)], fill=0, width=6)
+        d.line([(300, 400), (380, 360), (400, 300)], fill=0, width=3)
+        d.line([(100, 330), (215, 360)], fill=0, width=2)
+        d.line([(430, 490), (430, 470)], fill=0, width=3)
+    nodes = build_node_map(system, _mask(draw, (600, 520)))
+    free = [n for n in nodes if n.kind == "free-end"]
+    assert any(math.dist(n.pixel, (300, 330)) < 6 for n in free)
+    assert any(math.dist(n.pixel, (400, 300)) < 6 for n in free)
+    assert all(n.label.startswith("F") for n in free)
+    assert not any(math.dist(n.pixel, (215, 360)) < 15 or math.dist(n.pixel, (430, 470)) < 15 for n in nodes
+                   if n.kind in ("free-end", "dash-end"))
+
+
+def test_edge_points_are_kept_where_a_line_leads_inside_ruler_ticks_are_dropped():
+    system = {
+        "components": ["A", "B", "C"],
+        "digitization": {"calibration": {"C": [300, 40], "A": [40, 490], "B": [560, 490]}},
+        "invariantPoints": [],
+    }
+
+    def draw(d):
+        d.polygon([(300, 40), (40, 490), (560, 490)], outline=0, width=3)
+        d.line([(150, 474), (150, 506)], fill=0, width=3)
+        d.line([(250, 490), (250, 300)], fill=0, width=6)
+        for y in range(476, 330, -24):
+            d.line([(450, y + 14), (450, y)], fill=0, width=6)
+    nodes = build_node_map(system, _mask(draw, (600, 520)))
+    edges = [n for n in nodes if n.kind in ("edge", "dash-end")]
+    assert not any(math.dist(n.pixel, (150, 490)) < 15 for n in edges)
+    assert any(math.dist(n.pixel, (250, 490)) < 6 for n in edges)
+    assert any(math.dist(n.pixel, (450, 490)) < 6 for n in edges)
+
+
+def test_compound_rings_next_to_a_label_and_on_the_triangle_edge_are_nodes():
+    system = {
+        "components": ["A", "B", "C"],
+        "digitization": {"calibration": {"C": [300, 40], "A": [40, 490], "B": [560, 490]}},
+        "invariantPoints": [],
+    }
+
+    def draw(d):
+        d.polygon([(300, 40), (40, 490), (560, 490)], outline=0, width=3)
+        d.ellipse([242, 342, 258, 358], fill=255, outline=0, width=3)
+        d.text((268, 336), "NAS2", fill=0, font=ImageFont.load_default(size=26))
+        d.ellipse([422, 257, 438, 273], fill=255, outline=0, width=3)
+    nodes = build_node_map(system, _mask(draw, (600, 520)))
+    rings = [n for n in nodes if n.kind == "ring"]
+    assert any(math.dist(n.pixel, (250, 350)) < 3 for n in rings)
+    assert any(math.dist(n.pixel, (430, 265)) < 3 for n in rings)
+
+
 def test_config_pixels_may_be_node_labels(tmp_path):
     data = {"systemFile": "systems/test.json", "pdfPage": 1, "nodes": {"A1": [10, 20], "A2": [30, 40]},
             "isotherms": [{"field": "silica", "temperature_C": 1400, "startPixel": "A1", "endPixel": [50, 60],

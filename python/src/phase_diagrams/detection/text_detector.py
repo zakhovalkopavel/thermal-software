@@ -43,7 +43,8 @@ def detect_text_boxes(
     Loop blobs: digits glued together (and to a dash) form one component; a
     small enclosed hole (12–400 px, box side ≤ 25; 0, 4, 6, 8, 9, O) inside a
     component with largest box side ≤ ``max_blob_px`` (default 90 px) marks that component
-    as a label. Holes within 4 px of an ``exclude`` point (rings) are skipped.
+    as a label. Holes and glyphs centred within 4 px of an ``exclude`` point (rings, e.g. a
+    compound ring printed next to its formula) are skipped.
     Pixel sizes are for the reference line width, scaled by ``scale``.
     """
     s = scale or LineScale()
@@ -51,6 +52,7 @@ def detect_text_boxes(
     max_blob_px = s.count(_MAX_BLOB_PX) if max_blob_px is None else max_blob_px
     labels, _ = ndimage.label(mask, structure=np.ones((3, 3), bool))
     out = _loop_blobs(mask, labels, max_blob_px, exclude or [], s)
+    exclude_px = s.length(_EXCLUDE_PX)
     glyphs = []
     for index, box in enumerate(ndimage.find_objects(labels), start=1):
         if box is None:
@@ -61,6 +63,8 @@ def detect_text_boxes(
         ys, xs = np.nonzero(labels[box] == index)
         points = np.column_stack([xs + box[1].start, ys + box[0].start]).astype(float)
         centre = points.mean(axis=0)
+        if any(np.hypot(*(centre - point)) <= exclude_px for point in exclude or []):
+            continue
         values, vectors = np.linalg.eigh(np.cov((points - centre).T))
         elongation = float(np.sqrt(values[1] / max(values[0], 1e-9)))
         if elongation >= _MAX_ELONGATION:

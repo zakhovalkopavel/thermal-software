@@ -1,5 +1,5 @@
 """
-phase_diagrams.validation.dataset_validator — Consistency checks over the whole dataset folder (PD001–PD018).
+phase_diagrams.validation.dataset_validator — Consistency checks over the whole dataset folder (PD001–PD020).
 
 Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Validation
 """
@@ -42,6 +42,7 @@ def validate_dataset(dataset_dir: Path | str) -> list[ValidationIssue]:
 
     registry = SourceRegistry(dataset)
     compounds = {c["id"]: c for c in parsed["compounds.json"].get("compounds", [])}
+    _check_modifications(add, compounds)
     status_keys = set(registry.status_keys)
     systems = {name: data for name, data in parsed.items() if name.startswith("systems/")}
 
@@ -121,7 +122,26 @@ def _check_pages(add, registry: SourceRegistry, file: str, ref: str, node: dict,
         add("PD013", "error", file, f"{where}: pdfPage {node['pdfPage']} − printedPage {node['printedPage']} ≠ {offset} ({ref})")
 
 
+def _check_modifications(add, compounds: dict) -> None:
+    """PD019 a ``modificationOf`` entry names an existing compound (not itself a modification) with the same oxideMoles, and has no melting."""
+    for compound_id, compound in compounds.items():
+        parent_id = compound.get("modificationOf")
+        if parent_id is None:
+            continue
+        parent = compounds.get(parent_id)
+        if parent is None or parent.get("modificationOf") is not None:
+            problem = f"modificationOf '{parent_id}' is not a compound of the catalog"
+        elif parent.get("oxideMoles") != compound.get("oxideMoles"):
+            problem = f"oxideMoles differ from those of '{parent_id}'"
+        elif compound.get("melting") is not None:
+            problem = f"has a melting entry (the melting point is the one of '{parent_id}')"
+        else:
+            continue
+        add("PD019", "error", "compounds.json", f"{compound_id}: {problem}")
+
+
 def _check_phases(add, name: str, system: dict, compounds: dict) -> None:
+    """PD004 every phase is in compounds.json; PD020 a system names a compound or its modifications, not both."""
     used = set(system.get("phases", []))
     for point in system.get("invariantPoints", []):
         used |= set(point.get("phases", []))
@@ -132,6 +152,10 @@ def _check_phases(add, name: str, system: dict, compounds: dict) -> None:
     used.discard(None)
     for phase in sorted(used - set(compounds)):
         add("PD004", "error", name, f"phase '{phase}' not in compounds.json")
+    for phase in sorted(used & set(compounds)):
+        parent = compounds[phase].get("modificationOf")
+        if parent in used:
+            add("PD020", "error", name, f"phase '{phase}' is a modification of '{parent}', which the file also names")
 
 
 def _check_arrows(add, name: str, system: dict, all_points: dict) -> None:
@@ -194,7 +218,7 @@ def _check_inferred(add, name: str, system: dict) -> None:
         if problem:
             add("PD017", "error", name, f"{label}: {problem}")
             continue
-        missing = [a for a in isotherm["inferred"]["from"] if (isotherm.get("field"), a) not in printed]
+        missing = [a for a in isotherm["inferred"].get("from") or [] if (isotherm.get("field"), a) not in printed]
         if missing:
             add("PD018", "warning", name, f"{label}: inferred from {', '.join(f'{a:g}' for a in missing)} °C, "
                                           "which is not a printed isotherm of the field")

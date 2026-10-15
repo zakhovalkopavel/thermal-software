@@ -10,7 +10,7 @@ PD_CLI   := docker-compose run --rm python python src/scripts/extract_phase_diag
 PD_PAGES ?= 40-200
 SCALE    ?= 1
 
-.PHONY: pd-index pd-tile pd-calibrate pd-extract pd-new pd-curves pd-nodes pd-compare pd-promote pd-nbs-index pd-nbs-suggest pd-validate pd-test
+.PHONY: pd-index pd-tile pd-calibrate pd-extract pd-new pd-curves pd-nodes pd-isotherms pd-auto-overlay pd-auto pd-compare pd-promote pd-nbs-index pd-nbs-suggest pd-validate pd-test
 
 pd-index: ## Caption OCR over the atlas → figure-index/slag-atlas-1995.json [PD_PAGES=40-200]
 	@$(PD_CLI) index-figures --source slag-atlas-1995 --pages $(PD_PAGES)
@@ -38,6 +38,18 @@ pd-curves: ## Ternary curves config → candidate with polyline_wt filled: SYSTE
 pd-nodes: ## Numbered node map of a ternary (junctions, edge points, invariants, rings) + topology report → nodes/: SYSTEM=cao-mgo-sio2 [ORIGIN="x y"]
 	@test -n "$(SYSTEM)" || (echo "usage: make pd-nodes SYSTEM=cao-mgo-sio2 [ORIGIN=\"x y\"]"; exit 2)
 	@$(PD_CLI) nodes $(SYSTEM) $(if $(ORIGIN),--origin $(ORIGIN))
+
+pd-isotherms: ## Isotherms detected on the page (after pd-curves) → isotherms/: draft config entries, report vs the config, image: SYSTEM=na2o-al2o3-sio2 [STEP=100]
+	@test -n "$(SYSTEM)" || (echo "usage: make pd-isotherms SYSTEM=na2o-al2o3-sio2 [STEP=100]"; exit 2)
+	@$(PD_CLI) detect-isotherms $(SYSTEM) $(if $(STEP),--step $(STEP))
+
+pd-auto-overlay: ## Overlay from automatic data only (detected isotherms, field approximation, compound rings; after pd-curves) → auto/: SYSTEM=na2o-al2o3-sio2 [STEP=100]
+	@test -n "$(SYSTEM)" || (echo "usage: make pd-auto-overlay SYSTEM=na2o-al2o3-sio2 [STEP=100]"; exit 2)
+	@$(PD_CLI) auto-overlay $(SYSTEM) $(if $(STEP),--step $(STEP))
+
+pd-auto: ## Fully automatic ternary from the page alone (no config, no semi-manual data) → auto-full/: system, overlay, report vs the semi-manual file: SYSTEM=na2o-al2o3-sio2 [FIGURE=3.196] [TRIANGLE=1] [CORNERS="SiO2 Na2O Al2O3"] [STEP=100]
+	@test -n "$(SYSTEM)" || (echo "usage: make pd-auto SYSTEM=na2o-al2o3-sio2 [FIGURE=3.196] [TRIANGLE=1] [CORNERS=\"top left right\"] [STEP=100]"; exit 2)
+	@$(PD_CLI) auto $(SYSTEM) $(if $(FIGURE),--figure $(FIGURE)) $(if $(TRIANGLE),--triangle $(TRIANGLE)) $(if $(CORNERS),--corners $(CORNERS)) $(if $(STEP),--step $(STEP))
 
 pd-compare: ## Compare the candidate with the dataset file: SYSTEM=mgo-sio2
 	@test -n "$(SYSTEM)" || (echo "usage: make pd-compare SYSTEM=mgo-sio2"; exit 2)
