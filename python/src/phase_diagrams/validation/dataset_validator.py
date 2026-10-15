@@ -1,7 +1,7 @@
 """
 phase_diagrams.validation.dataset_validator — Consistency checks over the whole dataset folder (PD001–PD020).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Validation
+Spec: docs/scripts/phase-diagrams/OUTPUT.md § Validation
 """
 from __future__ import annotations
 

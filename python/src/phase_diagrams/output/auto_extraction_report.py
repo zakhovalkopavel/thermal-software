@@ -1,7 +1,7 @@
 """
 phase_diagrams.output.auto_extraction_report — Report of a fully automatic extraction, compared with a semi-manual system file.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Fully automatic extraction
+Spec: docs/scripts/phase-diagrams/AUTOMATIC.md § Fully automatic extraction
 """
 from __future__ import annotations
 
@@ -17,6 +17,8 @@ from phase_diagrams.models.ternary_calibration import TernaryCalibration
 SAME_POINT_WT = 1.5
 ON_CURVE_PX = 8.0
 _SAMPLE_PX = 5.0
+_ISOTHERM_ON_SHARE = 0.6
+_STATES = ("same °C", "other °C", "no °C", "not found")
 
 
 def compare_auto_system(
@@ -24,13 +26,17 @@ def compare_auto_system(
     reference: dict,
     calibration: TernaryCalibration,
     scale: LineScale | None = None,
+    detection: IsothermDetection | None = None,
 ) -> list[str]:
     """Markdown lines comparing ``auto`` with the semi-manual ``reference`` system file.
 
     Invariant points: each reference point with a composition and the nearest automatic point (largest
     component difference ≤ 1.5 wt%), with both temperatures. Boundary curves: the share of each reference
     curve (every 5 px) within 8 px of an automatic curve, and of the automatic curves within 8 px of a
-    reference one. Fields: the phases of both. Pixel sizes are for the reference line width, scaled by ``scale``.
+    reference one. Fields: the phases of both. Isotherms (with ``detection``): each reference isotherm with
+    the detected pieces lying on it (≥ 60 % of a piece within 8 px), its covered share and whether their
+    temperature is the same, another, none or no piece was found; then the pieces on no reference isotherm.
+    Pixel sizes are for the reference line width, scaled by ``scale``.
     """
     s = scale or LineScale()
     components = list(auto["components"])
@@ -95,7 +101,58 @@ def compare_auto_system(
     lines += [f"Fields: {len(set(ref_phases) & set(auto_phases))} of {len(set(ref_phases))} semi-manual phases named "
               f"automatically; missing: {', '.join(sorted(set(ref_phases) - set(auto_phases))) or 'none'}; "
               f"only automatic: {', '.join(sorted(set(auto_phases) - set(ref_phases))) or 'none'}.", ""]
+    if detection is not None:
+        lines += _isotherm_lines(detection, reference, calibration, values, near)
     return lines
+
+
+def _isotherm_lines(detection: IsothermDetection, reference: dict, calibration: TernaryCalibration, values,
+                    near: float) -> list[str]:
+    """Each reference isotherm with the detected pieces on it (≥ 60 % of a piece within ``near`` px of it):
+    covered share, their temperatures and the state; then the pieces on no reference isotherm."""
+    def dense(points: np.ndarray) -> np.ndarray:
+        out = [points[0]]
+        for a, b in zip(points[:-1], points[1:]):
+            n = max(1, int(np.linalg.norm(b - a) / _SAMPLE_PX))
+            out.extend(a + (b - a) * t for t in np.linspace(0, 1, n + 1)[1:])
+        return np.array(out)
+
+    pieces = [dense(np.array(p.pixels, float)) for p in detection.isotherms]
+    rows = ["| Semi-manual isotherm | °C | Covered | Automatic pieces (°C, source) | State |", "| --- | --- | --- | --- | --- |"]
+    states: dict[str, int] = {}
+    used: set[int] = set()
+    for entry in reference.get("isotherms", []):
+        if not entry.get("polyline_wt"):
+            continue
+        samples = dense(np.array([calibration.to_page(list(values(w))) for w in entry["polyline_wt"]], float))
+        tree = cKDTree(samples)
+        on = [k for k, own in enumerate(pieces) if float((tree.query(own)[0] <= near).mean()) >= _ISOTHERM_ON_SHARE]
+        used.update(on)
+        covered = np.zeros(len(samples), bool)
+        for k in on:
+            covered |= cKDTree(pieces[k]).query(samples)[0] <= near
+        found = {detection.isotherms[k].temperature_C for k in on} - {None}
+        state = ("not found" if not on else "same °C" if found == {entry.get("temperature_C")}
+                 else "no °C" if not found else "other °C")
+        states[state] = states.get(state, 0) + 1
+        listed = ", ".join(f"D{k + 1} {_piece_t(detection.isotherms[k])}" for k in on)
+        rows.append(f"| {entry.get('field')} | {entry.get('temperature_C')} | {covered.mean() * 100:.0f} % | {listed} | {state} |")
+    extra = [k for k in range(len(pieces)) if k not in used]
+    total = sum(states.values())
+    lines = [f"Isotherms: {total} semi-manual; " + ", ".join(f"{states.get(s, 0)} {s}" for s in _STATES)
+             + f"; {len(extra)} automatic pieces on no semi-manual isotherm.", ""] + rows + [""]
+    if extra:
+        lines += ["Automatic isotherm pieces on no semi-manual isotherm (D-numbers count the detected pieces from 1):", ""]
+        for k in extra:
+            p = detection.isotherms[k]
+            lines.append(f"- D{k + 1} {p.field} {_piece_t(p)}: ({p.start[0]:.0f}, {p.start[1]:.0f}) → "
+                         f"({p.end[0]:.0f}, {p.end[1]:.0f}); ends {p.ends[0]}, {p.ends[1]}")
+        lines.append("")
+    return lines
+
+
+def _piece_t(piece) -> str:
+    return "?" if piece.temperature_C is None else f"{piece.temperature_C:g} {piece.source}"
 
 
 def auto_extraction_report(

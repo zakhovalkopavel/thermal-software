@@ -1,7 +1,7 @@
 """
 phase_diagrams.tracing.convex_curve_fitter — One Bézier curve of degree ≤ 4 without inflection through the track points of an isotherm inside one field.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Curve tracing
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Curve tracing
 """
 from __future__ import annotations
 

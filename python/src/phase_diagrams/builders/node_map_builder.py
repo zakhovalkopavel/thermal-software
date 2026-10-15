@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.node_map_builder — Numbered points of a ternary diagram for topology hints.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Node map
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Node map
 """
 from __future__ import annotations
 

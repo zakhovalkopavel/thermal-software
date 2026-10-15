@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.binary_calibrator — Frame + ticks → BinaryCalibration for a binary config.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Binary calibration, § Frame and ticks
+Spec: docs/scripts/phase-diagrams/CONFIG.md § Binary calibration, docs/scripts/phase-diagrams/ALGORITHMS.md § Frame and ticks
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """
 phase_diagrams.figures.system_components — Component formulas from a system id (cao-feox-sio2 → CaO, FeOx, SiO2).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § New ternary system
+Spec: docs/scripts/phase-diagrams/WORKFLOW.md § New ternary system
 """
 from __future__ import annotations
 

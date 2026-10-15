@@ -1,7 +1,7 @@
 """
 phase_diagrams.figures.formula_letters — Letters of an oxide formula as text recognition reads it (Fe,0, → feo).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § New ternary system
+Spec: docs/scripts/phase-diagrams/WORKFLOW.md § New ternary system
 """
 from __future__ import annotations
 

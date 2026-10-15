@@ -1,7 +1,7 @@
 """
 phase_diagrams.figures.formula_molar_mass — Molar mass of an oxide formula from the atomic weights (TiO2 → 79.866).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Conversion and comparison
+Spec: docs/scripts/phase-diagrams/NBS.md § Conversion and comparison
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """
 phase_diagrams.models.field_approximation — Liquidus temperature surfaces of the primary fields of a ternary.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Field temperature approximation
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Field temperature approximation
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """
 phase_diagrams.models.ternary_calibration — Pixel → wt% triple for a ternary diagram.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Ternary calibration
+Spec: docs/scripts/phase-diagrams/CONFIG.md § Ternary calibration
 """
 from __future__ import annotations
 

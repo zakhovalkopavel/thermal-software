@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.compound_points_builder — Compound rings of the node map named by the compounds of the system, with a temperature.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Review outputs
+Spec: docs/scripts/phase-diagrams/OUTPUT.md § Review outputs
 """
 from __future__ import annotations
 

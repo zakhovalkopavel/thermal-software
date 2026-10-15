@@ -2,7 +2,7 @@
 phase_diagrams.builders.field_temperature_builder — Liquidus temperature surface of each primary field of a ternary,
 fitted to its isotherms and the temperatures on its boundaries.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Field temperature approximation
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Field temperature approximation
 """
 from __future__ import annotations
 

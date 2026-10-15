@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.boundary_arrow_segments — Page-pixel pieces of the stored boundary polylines with their arrows.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Node map
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Node map
 """
 from __future__ import annotations
 

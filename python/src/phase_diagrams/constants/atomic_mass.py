@@ -1,7 +1,7 @@
 """
 phase_diagrams.constants.atomic_mass — Standard atomic weights (g/mol) of the elements of oxide systems.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Conversion and comparison
+Spec: docs/scripts/phase-diagrams/NBS.md § Conversion and comparison
 """
 from __future__ import annotations
 

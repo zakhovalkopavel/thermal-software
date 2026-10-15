@@ -67,18 +67,26 @@ def test_a_label_gap_is_bridged_only_over_text():
 
 
 def test_solver_fixes_a_ladder_with_as_many_steps_as_crossings():
-    options, rejected = solve_isotherm_temperatures(3, {}, [([0, 1, 2], 1000.0, 1400.0)], 100.0)
+    options, rejected, _ = solve_isotherm_temperatures(3, {}, [([0, 1, 2], 1000.0, 1400.0)], 100.0)
     assert options == [[1100.0], [1200.0], [1300.0]] and rejected == []
-    options, _ = solve_isotherm_temperatures(2, {}, [([0, 1], 1000.0, 1400.0)], 100.0)
+    options, _, _ = solve_isotherm_temperatures(2, {}, [([0, 1], 1000.0, 1400.0)], 100.0)
     assert options == [[1100.0, 1200.0], [1200.0, 1300.0]]
 
 
 def test_solver_uses_labels_and_rejects_a_contradicting_ladder():
-    options, rejected = solve_isotherm_temperatures(2, {1: 1200.0}, [([0, 1], 1000.0, 1400.0)], 100.0)
+    options, rejected, _ = solve_isotherm_temperatures(2, {1: 1200.0}, [([0, 1], 1000.0, 1400.0)], 100.0)
     assert options == [[1100.0], [1200.0]] and rejected == []
     ladders = [([0, 1], 1000.0, 1300.0), ([1, 0], 1000.0, 1300.0)]
-    options, rejected = solve_isotherm_temperatures(2, {}, ladders, 100.0)
+    options, rejected, _ = solve_isotherm_temperatures(2, {}, ladders, 100.0)
     assert rejected == [1] and options == [[1100.0], [1200.0]]
+
+
+def test_field_order_steps_from_two_labels_and_rejects_a_contradicting_chain():
+    chains = [[0, 1, 2, 3], [4, 3]]
+    options, _, dropped = solve_isotherm_temperatures(5, {1: 1400.0, 3: 1600.0, 4: 1600.0}, [], 100.0, chains)
+    assert options[:4] == [[1300.0], [1400.0], [1500.0], [1600.0]] and dropped == [1]
+    options, _, _ = solve_isotherm_temperatures(2, {0: 1400.0}, [], 100.0, [[0, 1]])
+    assert options == [[1400.0], [1300.0, 1500.0]]
 
 
 def test_inferred_between_bounds():

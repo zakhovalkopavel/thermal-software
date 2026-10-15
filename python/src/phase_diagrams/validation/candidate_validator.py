@@ -1,7 +1,7 @@
 """
 phase_diagrams.validation.candidate_validator — Validate the dataset as it would be after promoting a candidate.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Candidates, comparison and promotion
+Spec: docs/scripts/phase-diagrams/WORKFLOW.md § Candidates, comparison and promotion
 """
 from __future__ import annotations
 

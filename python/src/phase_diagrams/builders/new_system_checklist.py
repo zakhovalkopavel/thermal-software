@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.new_system_checklist — What the dataset already has and still lacks for a new system.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § New ternary system
+Spec: docs/scripts/phase-diagrams/WORKFLOW.md § New ternary system
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """
 phase_diagrams.tracing.divider_follower — The stretch of a field divider an isotherm runs along between two track points.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Curve tracing
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Curve tracing
 """
 from __future__ import annotations
 

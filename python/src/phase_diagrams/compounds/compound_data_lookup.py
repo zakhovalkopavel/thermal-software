@@ -1,7 +1,7 @@
 """
 phase_diagrams.compounds.compound_data_lookup — Melting points of an oxide in shared/processed/compound-data.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § New ternary system
+Spec: docs/scripts/phase-diagrams/WORKFLOW.md § New ternary system
 """
 from __future__ import annotations
 

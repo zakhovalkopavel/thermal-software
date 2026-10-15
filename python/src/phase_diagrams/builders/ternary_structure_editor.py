@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.ternary_structure_editor — Apply the structure edits of a curves config to a ternary file: move, rename or re-date points, set keys, append invariant points, boundary curves, isotherms and inversions.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Ternary structure edits
+Spec: docs/scripts/phase-diagrams/OUTPUT.md § Ternary structure edits
 """
 from __future__ import annotations
 

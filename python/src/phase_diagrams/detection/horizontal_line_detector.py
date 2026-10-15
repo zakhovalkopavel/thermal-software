@@ -1,7 +1,7 @@
 """
 phase_diagrams.detection.horizontal_line_detector — Horizontal invariant lines inside the frame.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Horizontal invariant lines
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Horizontal invariant lines
 """
 from __future__ import annotations
 

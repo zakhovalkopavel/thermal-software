@@ -1,7 +1,7 @@
 """
 phase_diagrams.figures.figure_index_merger — Merge a new page range into an existing figure index.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Labels and figures (OCR)
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Labels and figures (OCR)
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """
 phase_diagrams.models.binary_calibration — Pixel ↔ (wt%, °C) for a binary diagram.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Binary calibration
+Spec: docs/scripts/phase-diagrams/CONFIG.md § Binary calibration
 """
 from __future__ import annotations
 

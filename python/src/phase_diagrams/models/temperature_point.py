@@ -1,7 +1,7 @@
 """
 phase_diagrams.models.temperature_point — A point of a ternary with a printed temperature and its field approximations.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Field temperature approximation
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Field temperature approximation
 """
 from __future__ import annotations
 

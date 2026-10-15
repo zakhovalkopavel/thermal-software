@@ -1,7 +1,7 @@
 """
 phase_diagrams.detection.ring_detector — Small drawn circles (compound compositions, ring symbols).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Node map
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Node map
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """
 phase_diagrams.rendering.node_map_renderer — Tile of the scan with the numbered node-map points.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Node map
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Node map
 """
 from __future__ import annotations
 

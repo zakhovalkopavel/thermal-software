@@ -1,7 +1,7 @@
 """
 phase_diagrams.rendering.ternary_overlay_renderer — Review PNG of a ternary: fields filled in semi-transparent colours, boundaries and isotherms in their own colours.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Review outputs
+Spec: docs/scripts/phase-diagrams/OUTPUT.md § Review outputs
 """
 from __future__ import annotations
 

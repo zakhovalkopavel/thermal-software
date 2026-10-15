@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.auto_ternary_builder — Ternary system read from the page alone: invariant points, edge points and boundary curves of the detected graph, named fields.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Fully automatic extraction
+Spec: docs/scripts/phase-diagrams/AUTOMATIC.md § Fully automatic extraction
 """
 from __future__ import annotations
 

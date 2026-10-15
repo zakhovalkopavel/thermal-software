@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.node_label_resolver — Replace node-map labels in config text by invariant ids or stored pixels.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Ternary structure edits
+Spec: docs/scripts/phase-diagrams/OUTPUT.md § Ternary structure edits
 """
 from __future__ import annotations
 

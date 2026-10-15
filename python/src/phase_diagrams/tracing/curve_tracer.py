@@ -1,7 +1,7 @@
 """
 phase_diagrams.tracing.curve_tracer — Follow a drawn curve between two pixels (heapq Dijkstra).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Curve tracing
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Curve tracing
 """
 from __future__ import annotations
 

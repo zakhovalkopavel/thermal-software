@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.topology_report_builder — Field circuits, temperature points and curve routes of a ternary in node-map labels.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Topology report
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Topology report
 """
 from __future__ import annotations
 

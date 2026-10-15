@@ -1,7 +1,7 @@
 """
 phase_diagrams.models.review_item — One item of the review list.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Review outputs
+Spec: docs/scripts/phase-diagrams/OUTPUT.md § Review outputs
 """
 from __future__ import annotations
 

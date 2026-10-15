@@ -22,7 +22,7 @@ Subpackages
 
 Spec
 ----
-  docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md
+  docs/scripts/phase-diagrams/README.md
 """
 
 from phase_diagrams.constants.atomic_mass               import ATOMIC_MASS

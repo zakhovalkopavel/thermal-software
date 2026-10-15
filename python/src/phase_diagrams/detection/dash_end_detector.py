@@ -1,7 +1,7 @@
 """
 phase_diagrams.detection.dash_end_detector — Where a line stopping short of another line would meet it.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Node map
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Node map
 """
 from __future__ import annotations
 

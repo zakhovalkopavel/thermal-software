@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.node_temperature_reader — Printed temperatures of the curve nodes (invariant points, edge points) and of points along the curves (saddles), from the words read on the page.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Fully automatic extraction
+Spec: docs/scripts/phase-diagrams/AUTOMATIC.md § Fully automatic extraction
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """
 phase_diagrams.config.curves_config — Ternary curves config (configs/<system>.curves.config.json).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Ternary curves config
+Spec: docs/scripts/phase-diagrams/CONFIG.md § Ternary curves config
 """
 from __future__ import annotations
 

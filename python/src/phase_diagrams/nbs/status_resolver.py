@@ -1,7 +1,7 @@
 """
 phase_diagrams.nbs.status_resolver — Status of an atlas invariant from its NBS comparisons.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Status
+Spec: docs/scripts/phase-diagrams/NBS.md § Status
 """
 from __future__ import annotations
 

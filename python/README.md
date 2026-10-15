@@ -199,7 +199,7 @@ Turns Slag Atlas figures into the phase-diagram dataset: calibrates the axes, tr
 liquidus curves, checks invariants against NSRDS-NBS 61 and validates the dataset. Printed
 labels stay authoritative; digitized values are only checks.
 
-**Spec**: [docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md](../docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md)
+**Spec**: [docs/scripts/phase-diagrams/](../docs/scripts/phase-diagrams/README.md)
 
 **Source files**: `shared/sources/compound-data/` (atlas, NSRDS-NBS 61 and JANAF PDFs, listed in `sources.json`)
 

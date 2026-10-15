@@ -1,7 +1,7 @@
 """
 phase_diagrams.output.system_comparer — Compare a candidate system file with the dataset file.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Candidates, comparison and promotion
+Spec: docs/scripts/phase-diagrams/WORKFLOW.md § Candidates, comparison and promotion
 """
 from __future__ import annotations
 

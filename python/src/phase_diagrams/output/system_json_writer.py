@@ -1,7 +1,7 @@
 """
 phase_diagrams.output.system_json_writer — Compact layout of a binary system file.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Output: binary system JSON
+Spec: docs/scripts/phase-diagrams/OUTPUT.md § Output: binary system JSON
 Layout reference: shared/processed/phase-diagrams/systems/mgo-sio2.json
 """
 from __future__ import annotations

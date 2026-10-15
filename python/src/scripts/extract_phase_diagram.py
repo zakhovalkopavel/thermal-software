@@ -17,7 +17,7 @@ Implementation
 
 Spec
 ----
-  docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md
+  docs/scripts/phase-diagrams/README.md
 
 Usage
 -----
@@ -1039,7 +1039,10 @@ def _cmd_auto(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
 
     invariants = {p["id"]: p for p in points}
     width = tuple(round(f * scale.line_px * 2) / 2 for f in (0.5, 1.55))
-    detection = detect_isotherms(system, mask, calibration, invariants, width, args.step, read_rotated_number, scale)
+    point_words = [w for _, w in temperatures.values()] + [t.word for t in saddles]
+    detection = detect_isotherms(system, mask, calibration, invariants, width, args.step, read_rotated_number, scale,
+                                 side_labels=[w for w in words if not any(w is p for p in point_words)],
+                                 skip_boxes=[w.box for w in point_words])
     auto = build_auto_system(system, detection, calibration)
     known = sum(1 for p in detection.isotherms if p.temperature_C is not None)
     _say("auto", f"isotherms: {len(detection.isotherms)} pieces, {known} with a temperature")
@@ -1057,10 +1060,10 @@ def _cmd_auto(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
     if reference_path is not None:
         reference = json.loads(reference_path.read_text(encoding="utf-8"))
         reference_calibration = TernaryCalibration.from_system(reference)
-        comparison = compare_auto_system(auto, reference, reference_calibration, scale)
+        comparison = compare_auto_system(auto, reference, reference_calibration, scale, detection)
         comparison[2:2] = [f"Semi-manual system: {_host(reference_path)}.", ""]
         for line in comparison:
-            if line.startswith(("Invariant points:", "Boundary curves:", "Fields:")):
+            if line.startswith(("Invariant points:", "Boundary curves:", "Fields:", "Isotherms:")):
                 _say("auto", f"vs semi-manual: {line}")
     else:
         comparison = ["## Comparison with the semi-manual system", "", "No semi-manual system file yet.", ""]

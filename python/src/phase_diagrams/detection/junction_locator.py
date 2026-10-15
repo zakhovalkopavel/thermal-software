@@ -1,7 +1,7 @@
 """
 phase_diagrams.detection.junction_locator — Snap a seed pixel to where a curve meets an invariant line.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Junctions
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Junctions
 """
 from __future__ import annotations
 

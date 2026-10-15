@@ -1,7 +1,7 @@
 """
 phase_diagrams.models.boundary_graph — Boundary curves found on a page: nodes (invariant points, edge points, open ends) and the curves between them.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Fully automatic extraction
+Spec: docs/scripts/phase-diagrams/AUTOMATIC.md § Fully automatic extraction
 """
 from __future__ import annotations
 

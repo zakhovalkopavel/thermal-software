@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.binary_system_builder — Binary config + measurements on the scan → system dict.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Per-diagram workflow, § Output: binary system JSON
+Spec: docs/scripts/phase-diagrams/WORKFLOW.md § Per-diagram workflow, docs/scripts/phase-diagrams/OUTPUT.md § Output: binary system JSON
 """
 from __future__ import annotations
 

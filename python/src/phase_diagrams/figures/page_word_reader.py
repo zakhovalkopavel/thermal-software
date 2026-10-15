@@ -1,7 +1,7 @@
 """
 phase_diagrams.figures.page_word_reader — Every word printed in a part of a page (field names, temperatures), by Tesseract.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Fully automatic extraction
+Spec: docs/scripts/phase-diagrams/AUTOMATIC.md § Fully automatic extraction
 """
 from __future__ import annotations
 

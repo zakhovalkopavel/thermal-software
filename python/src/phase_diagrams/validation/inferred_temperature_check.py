@@ -1,7 +1,7 @@
 """
 phase_diagrams.validation.inferred_temperature_check — Arithmetic check of an isotherm temperature inferred from labelled neighbours or from bounds.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Ternary curves config
+Spec: docs/scripts/phase-diagrams/CONFIG.md § Ternary curves config
 """
 from __future__ import annotations
 

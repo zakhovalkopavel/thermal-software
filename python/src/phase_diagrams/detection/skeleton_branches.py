@@ -1,7 +1,7 @@
 """
 phase_diagrams.detection.skeleton_branches — Simple paths of a one-pixel skeleton between its ends and junctions.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Isotherm detection
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Isotherm detection
 """
 from __future__ import annotations
 

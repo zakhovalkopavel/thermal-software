@@ -1,7 +1,7 @@
 """
 phase_diagrams.nbs.nbs_matcher — Compare atlas invariants with NSRDS-NBS 61 entries.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Conversion and comparison
+Spec: docs/scripts/phase-diagrams/NBS.md § Conversion and comparison
 """
 from __future__ import annotations
 

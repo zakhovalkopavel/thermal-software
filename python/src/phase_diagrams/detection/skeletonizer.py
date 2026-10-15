@@ -1,7 +1,7 @@
 """
 phase_diagrams.detection.skeletonizer — One-pixel centre lines of an ink mask (Zhang–Suen thinning).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Node map
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Node map
 """
 from __future__ import annotations
 

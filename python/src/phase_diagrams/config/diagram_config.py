@@ -1,7 +1,7 @@
 """
 phase_diagrams.config.diagram_config — Binary diagram config (configs/<system>.config.json).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Binary config
+Spec: docs/scripts/phase-diagrams/CONFIG.md § Binary config
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """
 phase_diagrams.tracing.quadratic_segment_fitter — One quadratic Bézier arc between two track points, fitted to the traced stroke.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Curve tracing
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Curve tracing
 """
 from __future__ import annotations
 

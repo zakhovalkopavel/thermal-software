@@ -1,7 +1,7 @@
 """
 phase_diagrams.tracing.curve_sampler — Sample a traced binary curve on a wt% grid.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Curve sampling
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Curve sampling
 """
 from __future__ import annotations
 

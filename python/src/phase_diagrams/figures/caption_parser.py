@@ -1,7 +1,7 @@
 """
 phase_diagrams.figures.caption_parser — Figure captions and labels in the OCR text of one atlas page.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Labels and figures (OCR)
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Labels and figures (OCR)
 """
 from __future__ import annotations
 

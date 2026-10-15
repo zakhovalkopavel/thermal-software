@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.nearest_compound — The compounds.json entry whose stoichiometric wt% is nearest a composition.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Topology report
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Topology report
 """
 from __future__ import annotations
 

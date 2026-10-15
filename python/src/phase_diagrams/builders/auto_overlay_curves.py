@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.auto_overlay_curves — Curves of the automatic overlay: traced boundaries and the detected isotherm pieces.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Isotherm detection
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Isotherm detection
 """
 from __future__ import annotations
 

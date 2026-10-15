@@ -1,7 +1,7 @@
 """
 phase_diagrams.tracing.contour_segments — Line segments of one level of a sampled surface (marching squares).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Field temperature approximation
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Field temperature approximation
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """
 phase_diagrams.rendering.overlay_renderer — Review PNG: measurements drawn in colour over the scan.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Review outputs
+Spec: docs/scripts/phase-diagrams/OUTPUT.md § Review outputs
 """
 from __future__ import annotations
 

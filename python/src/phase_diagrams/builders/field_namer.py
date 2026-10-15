@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.field_namer — Names of the primary fields of a ternary read from the page: field labels, their leaders, compound compositions.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Fully automatic extraction
+Spec: docs/scripts/phase-diagrams/AUTOMATIC.md § Fully automatic extraction
 """
 from __future__ import annotations
 

@@ -1,7 +1,7 @@
 """
 phase_diagrams.models.diagram_node — A numbered point of a node map (corner, invariant, junction, edge point, dash end, free end, ring).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Node map
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Node map
 """
 from __future__ import annotations
 

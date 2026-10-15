@@ -1,7 +1,7 @@
 """
 phase_diagrams.rendering.isotherm_draft_renderer — Review image of the isotherm detector: pieces coloured by how their temperature was found.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Isotherm detection
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Isotherm detection
 """
 from __future__ import annotations
 
@@ -11,11 +11,14 @@ from PIL import Image, ImageDraw, ImageFont
 from phase_diagrams.models.isotherm_detection import IsothermDetection
 
 _FADE = 0.45
-_COLOURS = {"label": (0, 90, 230), "continuation": (0, 160, 170), "boundary order": (0, 150, 0), None: (230, 110, 0)}
+_COLOURS = {"label": (0, 90, 230), "continuation": (0, 160, 170), "boundary order": (0, 150, 0),
+            "field order": (140, 60, 200), None: (230, 110, 0)}
 _DROPPED = (190, 190, 190)
 _GAP = (235, 0, 140)
 _LEGEND = (("label", "Temperature read on the line"), ("continuation", "Read on the same line in another field"),
-           ("boundary order", "From the order of the lines along boundaries"), (None, "Not determined (candidates in the report)"))
+           ("boundary order", "From the order of the lines along boundaries"),
+           ("field order", "One step from the neighbouring lines across the field"),
+           (None, "Not determined (candidates in the report)"))
 _WIDTH_PX = 4
 _FONT_PX = 22
 _ROW_PX = 30

@@ -1,7 +1,7 @@
 """
 phase_diagrams.detection.dash_mask — Keep only the dashes of an ink mask (short, thin, elongated components).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Curve tracing
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Curve tracing
 """
 from __future__ import annotations
 

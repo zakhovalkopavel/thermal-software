@@ -1,7 +1,7 @@
 """
 phase_diagrams.tracing.branch_chainer — Join skeleton branches into drawn lines (through crossings, breaks, dash gaps and labels).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Isotherm detection
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Isotherm detection
 """
 from __future__ import annotations
 

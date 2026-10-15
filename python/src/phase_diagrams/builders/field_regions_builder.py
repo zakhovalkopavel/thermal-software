@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.field_regions_builder — Primary-field regions of a ternary: the triangle divided by its boundary curves.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Field temperature approximation
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Field temperature approximation
 """
 from __future__ import annotations
 

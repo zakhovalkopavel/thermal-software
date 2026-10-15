@@ -118,7 +118,7 @@ From Python, `PubchemSearcher(out_dir=PUBCHEM_DIR, client=None, experimental=Tru
 
 The stored records are read once, on the first search. `record_summary(record)`, `record_headline(record)` and `experimental_values(record, heading)` (`pubchem_record_summary.py`) give the text shown above.
 
-**New phase diagrams:** `make pd-new SYSTEM=… PUBCHEM=1` (CLI `extract_phase_diagram.py new … --pubchem`) searches by formula each component that compound-data lacks. It prints the summary and puts `PubChem CID … (CAS …), melting point: …` into the notes of the proposed `compounds.json` entry ([PHASE_DIAGRAM_EXTRACTION_SPEC.md](PHASE_DIAGRAM_EXTRACTION_SPEC.md)).
+**New phase diagrams:** `make pd-new SYSTEM=… PUBCHEM=1` (CLI `extract_phase_diagram.py new … --pubchem`) searches by formula each component that compound-data lacks. It prints the summary and puts `PubChem CID … (CAS …), melting point: …` into the notes of the proposed `compounds.json` entry ([phase-diagrams/WORKFLOW.md](phase-diagrams/WORKFLOW.md#new-ternary-system)).
 
 ### What is asked
 
@@ -334,7 +334,7 @@ The `pubchem/` package under `python/src/` depends only on `chemical_formula`; `
 
 ## Docs
 
-- This spec, plus the entries in [docs/scripts/README.md](README.md), [COMPOUND_DATA_SPEC.md](COMPOUND_DATA_SPEC.md#pubchem-identifiers) and [PHASE_DIAGRAM_EXTRACTION_SPEC.md](PHASE_DIAGRAM_EXTRACTION_SPEC.md).
+- This spec, plus the entries in [docs/scripts/README.md](README.md), [COMPOUND_DATA_SPEC.md](COMPOUND_DATA_SPEC.md#pubchem-identifiers) and [phase-diagrams/README.md](phase-diagrams/README.md).
 - The compound data section of [python/README.md](../../python/README.md).
 
 ## Verification

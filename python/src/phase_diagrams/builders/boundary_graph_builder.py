@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.boundary_graph_builder — Boundary curves of a ternary read from the page: heavy strokes, their junctions (invariant points), edge points and open ends.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Fully automatic extraction
+Spec: docs/scripts/phase-diagrams/AUTOMATIC.md § Fully automatic extraction
 """
 from __future__ import annotations
 

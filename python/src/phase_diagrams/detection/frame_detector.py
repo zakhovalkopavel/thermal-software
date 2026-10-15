@@ -1,7 +1,7 @@
 """
 phase_diagrams.detection.frame_detector — Find the plot frame of a binary diagram.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Frame and ticks
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Frame and ticks
 """
 from __future__ import annotations
 

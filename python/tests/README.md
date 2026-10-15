@@ -71,7 +71,7 @@ make pd-test
 docker compose run --rm python python -m pytest /app/tests/phase_diagrams/ -v
 ```
 
-See also: [docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md](../../docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md)
+See also: [docs/scripts/phase-diagrams/](../../docs/scripts/phase-diagrams/README.md)
 
 ---
 

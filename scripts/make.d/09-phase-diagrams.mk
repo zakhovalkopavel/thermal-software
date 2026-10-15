@@ -3,7 +3,7 @@
 # Working files: tmp/reports/python/phase-diagrams/ (/app/reports/phase-diagrams in the container),
 #                including candidates/<system>.json written by pd-extract / pd-curves
 # Dataset (proof layer): shared/processed/phase-diagrams/systems/*.json, written only by pd-promote
-# Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md
+# Spec: docs/scripts/phase-diagrams/README.md
 # Implementation: python/src/phase_diagrams/
 
 PD_CLI   := docker-compose run --rm python python src/scripts/extract_phase_diagram.py

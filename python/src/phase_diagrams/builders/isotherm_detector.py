@@ -2,7 +2,7 @@
 phase_diagrams.builders.isotherm_detector — Isotherms of a ternary found on the page: the thin lines inside the fields,
 their temperatures from the labels printed in them and from the order of the lines along the boundaries.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Isotherm detection
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Isotherm detection
 """
 from __future__ import annotations
 
@@ -15,6 +15,8 @@ from PIL import Image, ImageDraw
 from scipy import ndimage
 
 from phase_diagrams.builders.field_regions_builder import build_field_regions
+from phase_diagrams.builders.isotherm_field_order import field_order_chains
+from phase_diagrams.builders.isotherm_side_labels import side_label_pieces
 from phase_diagrams.builders.isotherm_temperature_solver import solve_isotherm_temperatures
 from phase_diagrams.detection.ring_detector import detect_rings
 from phase_diagrams.detection.skeleton_branches import skeleton_branches
@@ -23,6 +25,7 @@ from phase_diagrams.detection.text_detector import detect_text_boxes
 from phase_diagrams.models.detected_isotherm import DetectedIsotherm
 from phase_diagrams.models.isotherm_detection import IsothermDetection
 from phase_diagrams.models.line_scale import LineScale
+from phase_diagrams.models.page_word import PageWord
 from phase_diagrams.models.review_item import ReviewItem
 from phase_diagrams.models.ternary_calibration import TernaryCalibration
 from phase_diagrams.tracing.branch_chainer import chain_branches
@@ -54,6 +57,11 @@ _LEADER_MAX_PX = 150.0
 _LEADER_POINT_PX = 30.0
 _JOIN_MIN_PX = 100.0
 _JOIN_RING_PX = 14.0
+_CORNER_ARM_PX = 40.0
+_CORNER_DEG = 25.0
+_LOST_ONE_C = 1000.0
+_LABELLED_CROSSING = 1.5
+_RESNAP_EDGE_PX = 25.0
 _CROSSING_PX = 35.0
 _LABEL_AHEAD_PX = 80.0
 _LABEL_SIDE_PX = 15.0
@@ -74,6 +82,8 @@ def detect_isotherms(
     step_C: float = 100.0,
     read_number: NumberReader | None = None,
     scale: LineScale | None = None,
+    side_labels: list[PageWord] | None = None,
+    skip_boxes: list[tuple[int, int, int, int]] | None = None,
 ) -> IsothermDetection:
     """Isotherm pieces of ``system`` (boundary curves with ``polyline_wt``) on the page ``mask``.
 
@@ -86,19 +96,32 @@ def detect_isotherms(
     lines running on outside the triangle (ink within ±3 px on ≥ 70 % of 6–60 px beyond the edge:
     leaders of outside labels); straight lines (≤ 2.5 px off their chord) up to 150 px from a label
     to a free end or to within 30 px of a printed point (an atlas invariant pixel or a ring: leaders),
-    or ≥ 100 px long ending at a ring (compatibility joins); lines outside every field region
+    or ≥ 100 px long ending at a ring (compatibility joins); two straight parts (each ≥ 40 px) meeting at a
+    corner of at least 25° (joins, leaders: isotherms are smooth); lines outside every field region
     (``build_field_regions``). Ends are moved onto the
     boundary or edge they point at (≤ 25 px ahead, else ≤ 16 px away).
     Temperatures: a label in a line gap, or touching a line end ahead of it (≤ 80 px), is read by
     ``read_number`` (its glyph boxes plus every ink component lying wholly within them grown by
     0.8 glyph size: a long thin ``1`` is not a glyph box) (a multiple of ``step_C`` between 100 and 3000 °C with Tesseract confidence ≥ 25); pieces
     ending at one point of a boundary (ends ≤ 35 px apart: the liquidus has one temperature there)
-    are one line (``group``; closest ends first, never two pieces of one field); along each boundary stretch between path points of known, different
+    are one line (``group``; ends of pieces with one label first, up to 52 px apart as a shallow
+    crossing shifts the ends, then closest ends first; never two pieces of one field or with
+    different labels); along each boundary stretch between path points of known, different
     temperatures (``invariants``; not a stretch with a maximum, arrows ``<>``) the crossings rise
     strictly from the lower to the higher temperature (a label outside the temperatures of a stretch
     its piece ends on is not used; a crossing of another piece of a labelled line outside the
     stretch's temperatures is not used; ``solve_isotherm_temperatures``; a stretch
     contradicting the others is not used and goes to the review list).
+    Optional words read on the page: ``side_labels`` (temperatures printed beside a line, joined by a
+    leader or touching it: ``side_label_pieces``; a multiple of ``step_C``) label the piece they belong
+    to, after the labels in its gaps; a 3-digit side label below the lowest invariant temperature is
+    taken with a leading 1 (lost in its leader tick); glyphs inside ``skip_boxes`` (page boxes of words
+    that are point temperatures) are not read as isotherm labels. Labels below the lowest invariant
+    temperature are not isotherm temperatures. An end of a labelled piece on a boundary stretch whose
+    temperatures exclude the label is moved to the triangle edge when that is within 25 px (a narrow
+    field between a boundary and an edge).
+    Then the order across each field (``field_order_chains``: neighbouring lines one ``step_C`` apart)
+    fixes the lines still open (source ``field order``); a section contradicting the rest is not used.
     Pixel sizes are for the reference line width, scaled by ``scale``.
     """
     s = scale or LineScale()
@@ -207,6 +230,9 @@ def detect_isotherms(
     def at_printed_point(point: np.ndarray) -> bool:
         return any(float(np.linalg.norm(point - q)) <= s.length(_LEADER_POINT_PX) for q in printed_points)
 
+    skipped = [(bx0 - origin[0], by0 - origin[1], bx1 - origin[0], by1 - origin[1]) for bx0, by0, bx1, by1 in skip_boxes or []]
+    lowest = min((p["temperature_C"] for p in invariants.values() if p.get("temperature_C") is not None), default=None)
+
     def read_label(a: np.ndarray, b: np.ndarray) -> tuple[float | None, str]:
         """Number printed in the corridor a → b (label glyph boxes whose centre lies within 15 px of it)."""
         if read_number is None:
@@ -216,6 +242,11 @@ def detect_isotherms(
                          if _corridor_distance(np.array([(box[0] + box[2]) / 2, (box[1] + box[3]) / 2]), a, b) <= side})
         if not chosen:
             return None, "no label box"
+        kept = [box for box in chosen if not any(sx0 <= (box[0] + box[2]) / 2 <= sx1 and sy0 <= (box[1] + box[3]) / 2 <= sy1
+                                                 for sx0, sy0, sx1, sy1 in skipped)]
+        if not kept:
+            return None, "label of a point temperature"
+        chosen = kept
         grow = int(round(_LABEL_GROW * float(np.median([max(c[2] - c[0], c[3] - c[1]) for c in chosen]))))
         bx0, by0 = max(min(box[0] for box in chosen) - grow, 0), max(min(box[1] for box in chosen) - grow, 0)
         bx1, by1 = min(max(box[2] for box in chosen) + grow, width), min(max(box[3] for box in chosen) + grow, height)
@@ -235,6 +266,8 @@ def detect_isotherms(
         value = float(int(digits))
         if not _LABEL_RANGE_C[0] <= value <= _LABEL_RANGE_C[1] or abs(value / step_C - round(value / step_C)) > 1e-9:
             return None, f"label {where}: not an isotherm temperature (multiple of {step_C:g} °C)"
+        if lowest is not None and value < lowest:
+            return None, f"label {where}: below the lowest invariant point ({lowest:g} °C)"
         return value, f"label {where}"
 
     pieces: list[DetectedIsotherm] = []
@@ -256,7 +289,8 @@ def detect_isotherms(
         as_page = [tuple(map(float, p + origin)) for p in points]
         straight = "text" not in chain.gap_kinds() and _deviation(points) <= s.length(_STRAIGHT_PX)
         reason = None
-        if any(kind == "edge" and outside_ink(point, u) for point, u, kind, _ in ends):
+        if ((straight or chain.length_px <= s.length(_LEADER_MAX_PX))
+                and any(kind == "edge" and outside_ink(point, u) for point, u, kind, _ in ends)):
             reason = "leader of a label outside the triangle"
         elif (straight and chain.length_px <= s.length(_LEADER_MAX_PX) and any(kind == "label" for _, _, kind, _ in ends)
               and any(kind != "label" and (kind == "free" or at_printed_point(point)) for point, _, kind, _ in ends)):
@@ -265,6 +299,8 @@ def detect_isotherms(
                 math.dist(tuple(point), (rx, ry)) <= d / 2.0 + s.length(_RING_PAD_PX + _JOIN_RING_PX)
                 for point, _, _, _ in ends for rx, ry, d in rings):
             reason = "compatibility join (straight, ends at a ring)"
+        elif "text" not in chain.gap_kinds() and _cornered(points, s):
+            reason = "two straight segments with a corner (joins or a leader)"
         field = None if reason else field_of(points[:: max(1, len(points) // 50)])
         if reason is None and field is None:
             reason = "outside every field region"
@@ -296,6 +332,63 @@ def detect_isotherms(
                f"or {s.length(_MIN_EXTENT_PX):g} px across; "
                + ", ".join(f"{n} {reason}" for reason, n in Counter(r for _, r in dropped).items()))
 
+    printed = []
+    for word in side_labels or []:
+        value = _isotherm_value(word.text, step_C)
+        if value is None or lowest is None or value >= lowest:
+            if value is not None:
+                printed.append((value, word))
+            continue
+        if value < _LOST_ONE_C and value + _LOST_ONE_C >= lowest:
+            log.append(f"label '{word.text}' at {_px(word.centre)}: below the lowest invariant point ({lowest:g} °C), "
+                       f"taken as {value + _LOST_ONE_C:g} (a leading 1 lost in its leader)")
+            printed.append((value + _LOST_ONE_C, word))
+    side_count = 0
+    for i, value, word in side_label_pieces(printed, [np.array(p.pixels, float) for p in pieces], mask, s):
+        note = f"label '{word.text}' ({word.confidence:.0f}) beside the line at {_px(word.centre)}"
+        if any(v == value for v, _ in piece_labels[i]):
+            continue
+        if piece_labels[i]:
+            review.append(ReviewItem("isotherm-conflict", f"isotherm {pieces[i].field}",
+                                     f"{note}: {value:g} °C, the line reads {piece_labels[i][0][0]:g} °C; not used"))
+            continue
+        piece_labels[i].append((value, note))
+        log.append(f"{pieces[i].field} line: {note}")
+        side_count += 1
+    if side_labels is not None:
+        log.append(f"{side_count} labels beside a line of {len(printed)} isotherm temperatures read on the page")
+
+    known_on: dict[int, list[tuple[str, float | None, float | None]]] = {}
+    lines_of: dict[int, np.ndarray] = {}
+    for index, curve, line in boundaries:
+        lines_of[index] = line
+        known_on[index] = []
+        for point_id in curve.get("path", []):
+            entry = invariants.get(point_id) or {}
+            liquid = entry.get("liquid_wt")
+            known_on[index].append((point_id, _arc(page(liquid) - origin, line) if liquid else None, entry.get("temperature_C")))
+    edge_reach = s.length(_RESNAP_EDGE_PX)
+    for i, labels in enumerate(piece_labels):
+        if not labels:
+            continue
+        value = labels[0][0]
+        for e, (point, u, kind, curve) in enumerate(piece_ends[i]):
+            if kind != "boundary" or curve is None:
+                continue
+            bounds = _stretch_bounds(known_on[curve], _arc(point, lines_of[curve]))
+            if bounds is None or bounds[0] < value < bounds[1]:
+                continue
+            distance, foot = min((_nearest(point, np.array([a, b])) for a, b in edges), key=lambda item: item[0])
+            if distance > edge_reach:
+                continue
+            piece_ends[i][e] = (foot, u, "edge", None)
+            ends = list(pieces[i].ends)
+            ends[e] = _describe("edge", None, system)
+            pieces[i].ends = (ends[0], ends[1])
+            pieces[i].pixels[0 if e == 0 else -1] = tuple(map(float, foot + origin))
+            log.append(f"{pieces[i].field} line end {_px(point + origin)}: {value:g} °C is outside the boundary stretch "
+                       f"{bounds[0]:g}–{bounds[1]:g} °C; moved to the triangle edge {distance:.0f} px away")
+
     parent = list(range(len(pieces)))
 
     def root(i: int) -> int:
@@ -304,17 +397,22 @@ def detect_isotherms(
             i = parent[i]
         return i
 
-    pairs: list[tuple[float, int, int, np.ndarray]] = []
+    pairs: list[tuple[int, float, int, int, np.ndarray]] = []
     for i in range(len(pieces)):
         for j in range(i + 1, len(pieces)):
+            known = {v for v, _ in piece_labels[i][:1] + piece_labels[j][:1]}
+            if len(known) > 1:
+                continue
+            same = int(not (piece_labels[i] and piece_labels[j]))
+            limit = s.length(_CROSSING_PX) * (1.0 if same else _LABELLED_CROSSING)
             for pi, _, ki, ci in piece_ends[i]:
                 for pj, _, kj, cj in piece_ends[j]:
                     distance = float(np.linalg.norm(pi - pj))
-                    if ki == kj == "boundary" and ci == cj and distance <= s.length(_CROSSING_PX):
-                        pairs.append((distance, i, j, (pi + pj) / 2.0))
+                    if ki == kj == "boundary" and ci == cj and distance <= limit:
+                        pairs.append((same, distance, i, j, (pi + pj) / 2.0))
     fields_of = {i: {piece.field} for i, piece in enumerate(pieces)}
     crossings: list[tuple[int, int, np.ndarray]] = []
-    for _, i, j, point in sorted(pairs, key=lambda p: p[0]):
+    for _, _, i, j, point in sorted(pairs, key=lambda p: p[:2]):
         a, b = root(i), root(j)
         if a != b:
             if fields_of[a] & fields_of[b]:
@@ -345,12 +443,7 @@ def detect_isotherms(
     ladder_notes: list[str] = []
     ladder_curves: list[int] = []
     for index, curve, line in boundaries:
-        path = curve.get("path", [])
-        known = []
-        for point_id in path:
-            entry = invariants.get(point_id) or {}
-            liquid = entry.get("liquid_wt")
-            known.append((point_id, _arc(page(liquid) - origin, line) if liquid else None, entry.get("temperature_C")))
+        known = known_on[index]
         arrows = curve.get("arrows") or []
         hits = [(_arc(point, line), pieces[i].group)
                 for i, ends in enumerate(piece_ends) for point, _, kind, c in ends if kind == "boundary" and c == index]
@@ -392,13 +485,17 @@ def detect_isotherms(
     keep = [k for k, (groups, _, _) in enumerate(ladders) if groups]
     ladders, ladder_notes = [ladders[k] for k in keep], [ladder_notes[k] for k in keep]
 
-    domains, rejected = solve_isotherm_temperatures(len(roots), group_labels, ladders, step_C)
+    base, rejected, _ = solve_isotherm_temperatures(len(roots), group_labels, ladders, step_C)
     for k in rejected:
         review.append(ReviewItem("isotherm-conflict", ladder_notes[k],
                                  f"order of {len(ladders[k][0])} crossing line(s) contradicts the other boundaries "
                                  f"or the labels; not used"))
     ladders = [ladder for k, ladder in enumerate(ladders) if k not in rejected]
     ladder_notes = [note for k, note in enumerate(ladder_notes) if k not in rejected]
+    stop = barrier | ~inside
+    chains = field_order_chains([np.array(p.pixels, float) - origin for p in pieces], [p.group for p in pieces], stop, s)
+    domains, _, unused = solve_isotherm_temperatures(len(roots), group_labels, ladders, step_C, chains)
+    log.append(f"field order: {len(chains)} sections across fields, {len(unused)} contradicting the rest not used")
     labelled_in_field: dict[str, set[float]] = {}
     for i, piece in enumerate(pieces):
         if piece_labels[i]:
@@ -417,8 +514,10 @@ def detect_isotherms(
             piece.temperature_C, piece.source = group_labels[g], "continuation"
             piece.evidence.insert(0, f"temperature printed on the same line in another field ({group_labels[g]:g})")
         elif len(options) == 1:
-            piece.temperature_C, piece.source = options[0], "boundary order"
+            piece.temperature_C, piece.source = options[0], "boundary order" if len(base[g]) == 1 else "field order"
             piece.inferred = _inferred(options[0], labelled_in_field.get(piece.field, set()), g, ladders, step_C)
+            if piece.source == "field order":
+                piece.evidence.append("one step from its neighbours across the field")
         else:
             piece.candidates = options if len(options) <= _MAX_CANDIDATES else []
         piece.evidence.append(f"ends: {piece.ends[0]}, {piece.ends[1]}")
@@ -429,7 +528,8 @@ def detect_isotherms(
     log.append(f"temperatures: {determined} of {len(pieces)} pieces "
                f"({sum(1 for p in pieces if p.source == 'label')} read, "
                f"{sum(1 for p in pieces if p.source == 'continuation')} continued, "
-               f"{sum(1 for p in pieces if p.source == 'boundary order')} from the boundary order); "
+               f"{sum(1 for p in pieces if p.source == 'boundary order')} from the boundary order, "
+               f"{sum(1 for p in pieces if p.source == 'field order')} from the order across the field); "
                f"{len(ladders)} boundary stretches with crossings")
     return IsothermDetection(isotherms=pieces, dropped=dropped, log=log, review=review)
 
@@ -447,6 +547,27 @@ def _inferred(temperature: float, labelled: set[float], group: int, ladders, ste
     if not lows:
         return None
     return {"between": [max(lows), min(highs)], "step": step_C}
+
+
+def _stretch_bounds(known: list[tuple[str, float | None, float | None]], arc: float) -> tuple[float, float] | None:
+    """Temperatures (low, high) of the path points of known temperature on either side of ``arc`` along a boundary."""
+    for (_, arc_a, t_a), (_, arc_b, t_b) in zip(known[:-1], known[1:]):
+        if arc_a is None or arc_b is None or t_a is None or t_b is None:
+            continue
+        if min(arc_a, arc_b) <= arc <= max(arc_a, arc_b):
+            return (min(t_a, t_b), max(t_a, t_b))
+    return None
+
+
+def _isotherm_value(text: str, step_C: float) -> float | None:
+    """°C of a printed isotherm temperature (3–4 digits, a multiple of ``step_C``), else None."""
+    digits = text.strip().lstrip("~").rstrip(".,")
+    if not digits.isdigit() or not 3 <= len(digits) <= 4:
+        return None
+    value = float(digits)
+    if not _LABEL_RANGE_C[0] <= value <= _LABEL_RANGE_C[1] or abs(value / step_C - round(value / step_C)) > 1e-9:
+        return None
+    return value
 
 
 def _describe(kind: str, curve: int | None, system: dict) -> str:
@@ -502,6 +623,27 @@ def _arc(p: np.ndarray, line: np.ndarray) -> float:
     distances = np.linalg.norm(a + t[:, None] * seg - p, axis=1)
     k = int(np.argmin(distances))
     return float(lengths[:k].sum() + t[k] * lengths[k])
+
+
+def _cornered(points: np.ndarray, s: LineScale) -> bool:
+    """Two straight parts (each ≥ 40 px, ≤ 2.5 px off its chord) meeting at a turn of at least 25°, split at
+    the point farthest from the whole chord."""
+    if len(points) < 3:
+        return False
+    a, b = points[0], points[-1]
+    chord = b - a
+    norm = float(np.linalg.norm(chord))
+    if norm == 0:
+        return False
+    k = int(np.argmax(np.abs((points[:, 0] - a[0]) * chord[1] - (points[:, 1] - a[1]) * chord[0])))
+    first, second = points[:k + 1], points[k:]
+    if min(float(np.linalg.norm(first[-1] - first[0])), float(np.linalg.norm(second[-1] - second[0]))) < s.length(_CORNER_ARM_PX):
+        return False
+    if max(_deviation(first), _deviation(second)) > s.length(_STRAIGHT_PX):
+        return False
+    u, v = first[-1] - first[0], second[-1] - second[0]
+    cos = float(u @ v) / (float(np.linalg.norm(u)) * float(np.linalg.norm(v)))
+    return cos <= math.cos(math.radians(_CORNER_DEG))
 
 
 def _deviation(points: np.ndarray) -> float:

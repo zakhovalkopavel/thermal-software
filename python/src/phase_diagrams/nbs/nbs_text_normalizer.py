@@ -1,7 +1,7 @@
 """
 phase_diagrams.nbs.nbs_text_normalizer — Fix recurrent OCR noise of the NSRDS-NBS 61 text layer.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Text index
+Spec: docs/scripts/phase-diagrams/NBS.md § Text index
 """
 from __future__ import annotations
 

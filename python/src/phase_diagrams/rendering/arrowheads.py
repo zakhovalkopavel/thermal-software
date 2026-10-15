@@ -1,7 +1,7 @@
 """
 phase_diagrams.rendering.arrowheads — Triangles marking a stored boundary arrow along a polyline.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Review outputs
+Spec: docs/scripts/phase-diagrams/OUTPUT.md § Review outputs
 """
 from __future__ import annotations
 

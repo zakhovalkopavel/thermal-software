@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.ternary_curve_filler — Fill ``polyline_wt`` (and boundary ``arrows``) of boundary curves, isotherms and inversion curves, and the liquid-immiscibility branches, in a ternary file.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Ternary curves, § Ternary files
+Spec: docs/scripts/phase-diagrams/WORKFLOW.md § Ternary curves, docs/scripts/phase-diagrams/OUTPUT.md § Ternary files
 """
 from __future__ import annotations
 

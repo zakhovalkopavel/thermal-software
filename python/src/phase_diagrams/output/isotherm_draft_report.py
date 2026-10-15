@@ -1,7 +1,7 @@
 """
 phase_diagrams.output.isotherm_draft_report — Markdown report of the isotherm detector: pieces, evidence, comparison with the config.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Isotherm detection
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Isotherm detection
 """
 from __future__ import annotations
 
@@ -24,7 +24,8 @@ def isotherm_draft_report(
     determined = [p for p in pieces if p.temperature_C is not None]
     lines.append(f"- {len(pieces)} isotherm pieces in {len({p.field for p in pieces})} fields; "
                  f"{len(determined)} with a temperature ({_count(pieces, 'label')} read, {_count(pieces, 'continuation')} "
-                 f"continued from another field, {_count(pieces, 'boundary order')} from the boundary order)")
+                 f"continued from another field, {_count(pieces, 'boundary order')} from the boundary order, "
+                 f"{_count(pieces, 'field order')} from the order across the field)")
     lines.append(f"- {len(detection.dropped)} thin lines dropped as not isotherms (leaders, joins, outside the fields)")
     if rows is not None:
         found = sum(1 for r in rows if r["pieces"])

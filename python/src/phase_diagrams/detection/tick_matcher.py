@@ -1,7 +1,7 @@
 """
 phase_diagrams.detection.tick_matcher — Pair detected tick pixels with the config tick values.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Frame and ticks
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Frame and ticks
 """
 from __future__ import annotations
 

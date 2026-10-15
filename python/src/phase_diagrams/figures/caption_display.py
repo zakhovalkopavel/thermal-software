@@ -1,7 +1,7 @@
 """
 phase_diagrams.figures.caption_display — Readable caption start for choosing a figure (CaO-FeO,-SiO, → CaO-FeOₓ-SiO₂).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § New ternary system
+Spec: docs/scripts/phase-diagrams/WORKFLOW.md § New ternary system
 """
 from __future__ import annotations
 

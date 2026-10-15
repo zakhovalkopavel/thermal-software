@@ -1,7 +1,7 @@
 """
 phase_diagrams.builders.auto_system_builder — Ternary system whose isotherms are only those found by the isotherm detector.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Isotherm detection
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Isotherm detection
 """
 from __future__ import annotations
 

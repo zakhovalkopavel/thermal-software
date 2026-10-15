@@ -1,7 +1,7 @@
 """
 phase_diagrams.detection.line_width_meter — Typical width of the drawn lines of a page (its pixel scale).
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Pixel scale
+Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Pixel scale
 """
 from __future__ import annotations
 

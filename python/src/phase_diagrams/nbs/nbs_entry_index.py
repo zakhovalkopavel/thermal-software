@@ -1,7 +1,7 @@
 """
 phase_diagrams.nbs.nbs_entry_index — Parse the NSRDS-NBS 61 text dump into NbsEntry objects.
 
-Spec: docs/scripts/PHASE_DIAGRAM_EXTRACTION_SPEC.md § Text index
+Spec: docs/scripts/phase-diagrams/NBS.md § Text index
 """
 from __future__ import annotations
 
