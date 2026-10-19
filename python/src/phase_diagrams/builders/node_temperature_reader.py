@@ -23,6 +23,9 @@ _NEAREST_SLACK_PX = 20.0
 _NO_PAIR = 1e9
 _CURVE_REACH_PX = 45.0
 _CURVE_END_PX = 10.0
+_FORMULA = re.compile(r"[A-Z][a-z0-9]")
+_NAME = re.compile(r"[a-z]{4}")
+_FORMULA_GAP = 0.8
 
 
 @dataclass(frozen=True)
@@ -91,23 +94,28 @@ def read_curve_temperatures(
     taken: set[int],
     step_C: float = 100.0,
     scale: LineScale | None = None,
+    end_temperatures: dict[int, list[float]] | None = None,
 ) -> list[CurveTemperature]:
     """Printed temperatures along the curves (maxima of a boundary, saddles): a temperature word not in
     ``taken`` (word indices already given to nodes), not a multiple of ``step_C`` (isotherm labels), within
     45 px of a curve pixel at least 10 px from the curve ends. ``curves``: graph edge index → page pixels
-    (N, 2). The word goes to the nearest such pixel; one point per word. Pixel sizes are for the reference
-    line width, scaled by ``scale``.
+    (N, 2). The word goes to the nearest such pixel; one point per word. ``end_temperatures`` (graph edge
+    index → temperatures read at its end nodes): a curve is not offered a value that is not above them,
+    since a point inside a boundary with a printed temperature is its maximum. A word printed right under
+    a formula (``_under_formula``) is the melting point of that compound, not a curve point. Pixel sizes
+    are for the reference line width, scaled by ``scale``.
     """
     s = scale or LineScale()
     reach, margin = s.length(_CURVE_REACH_PX), s.length(_CURVE_END_PX)
+    ends = end_temperatures or {}
     found = []
     for w, word in enumerate(words):
         value = printed_temperature(word.text)
-        if w in taken or value is None or value % step_C == 0:
+        if w in taken or value is None or value % step_C == 0 or _under_formula(word, words):
             continue
         best = None
         for k, pixels in curves.items():
-            if len(pixels) < 3:
+            if len(pixels) < 3 or any(value <= t for t in ends.get(k, [])):
                 continue
             steps = np.r_[0.0, np.cumsum(np.hypot(*np.diff(pixels, axis=0).T))]
             inner = np.flatnonzero((steps >= margin) & (steps <= steps[-1] - margin))
@@ -120,6 +128,17 @@ def read_curve_temperatures(
         if best is not None:
             found.append(CurveTemperature(best[1], best[2], value, word))
     return found
+
+
+def _under_formula(word: PageWord, words: list[PageWord]) -> bool:
+    """A word of a chemical formula (``_FORMULA``: a capital then a lower-case letter or a digit, no 4
+    lower-case letters in a row as in a phase name) lies above ``word``, overlapping it across, its bottom
+    at most 0.8 × the word's height above it."""
+    x0, y0, x1, y1 = word.box
+    gap = _FORMULA_GAP * (y1 - y0)
+    return any(other is not word and _FORMULA.search(other.text) and not _NAME.search(other.text)
+               and other.box[0] < x1 and other.box[2] > x0 and y0 - gap <= other.box[3] <= y0 + gap / 2
+               for other in words)
 
 
 def _box_distance(box: tuple[int, int, int, int], points: np.ndarray) -> np.ndarray:

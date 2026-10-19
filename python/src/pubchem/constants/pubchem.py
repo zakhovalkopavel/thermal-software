@@ -21,28 +21,31 @@ PUBCHEM_CAS_HEADING = "CAS"
 PUBCHEM_SUMMARY_HEADINGS: tuple[str, ...] = ("Melting Point", "Boiling Point", "Density", "Decomposition")
 PUBCHEM_SUMMARY_MAX_VALUES = 6
 PUBCHEM_BY_CAS, PUBCHEM_BY_FORMULA, PUBCHEM_BY_NAME = "cas", "formula", "name"
+# CAS → CID: try each route when compound/name has no synonym hit (see PubchemClient.answer).
+PUBCHEM_CAS_LOOKUP_STEPS: tuple[str, ...] = (
+    "compound/name",
+    "compound/xref/RN",
+    "substance/name",
+    "substance/xref/RN",
+)
+PUBCHEM_CAS_LOOKUP = ",".join(PUBCHEM_CAS_LOOKUP_STEPS)
 PUBCHEM_RANKING: tuple[str, ...] = ("AnnotationTypeCount", "LiteratureCount", "PatentCount")
 PUBCHEM_COMPOUND_URL = "https://pubchem.ncbi.nlm.nih.gov/compound/{cid}"
+# Identity / mass / charge / XLogP for the build, plus IsotopeAtomCount and PUBCHEM_RANKING so formula
+# answers can drop isotopes and pick the best CID. Kept short: large property lists often time out (504).
 PUBCHEM_PROPERTIES: tuple[str, ...] = (
-    "MolecularFormula", "MolecularWeight", "SMILES", "ConnectivitySMILES", "InChI", "InChIKey", "IUPACName", "Title",
-    "ExactMass", "MonoisotopicMass", "Charge", "XLogP", "TPSA", "Complexity",
-    "HBondDonorCount", "HBondAcceptorCount", "RotatableBondCount", "HeavyAtomCount", "IsotopeAtomCount",
-    "AtomStereoCount", "DefinedAtomStereoCount", "UndefinedAtomStereoCount",
-    "BondStereoCount", "DefinedBondStereoCount", "UndefinedBondStereoCount", "CovalentUnitCount",
-    "Volume3D", "XStericQuadrupole3D", "YStericQuadrupole3D", "ZStericQuadrupole3D",
-    "FeatureCount3D", "FeatureAcceptorCount3D", "FeatureDonorCount3D", "FeatureAnionCount3D",
-    "FeatureCationCount3D", "FeatureRingCount3D", "FeatureHydrophobeCount3D",
-    "ConformerModelRMSD3D", "EffectiveRotorCount3D", "ConformerCount3D", "Fingerprint2D",
-    "PatentCount", "PatentFamilyCount", "LiteratureCount", "AnnotationTypes", "AnnotationTypeCount",
-    "SourceCategories",
+    "MolecularFormula", "MolecularWeight", "SMILES", "ConnectivitySMILES", "InChI", "InChIKey",
+    "IUPACName", "Title", "ExactMass", "MonoisotopicMass", "Charge", "XLogP",
+    "IsotopeAtomCount", "AnnotationTypeCount", "LiteratureCount", "PatentCount",
 )
 PUBCHEM_DIR = "shared/sources/compound-data/pubchem"
 PUBCHEM_FILE = "pubchem-{cls}.jsonl"
+PUBCHEM_REFERENCES_FILE = "pubchem-references.jsonl"
 PUBCHEM_OK, PUBCHEM_NOT_FOUND, PUBCHEM_AMBIGUOUS, PUBCHEM_CHARGED = "ok", "notFound", "ambiguous", "charged"
 PUBCHEM_UNCLASSIFIED = "unclassified"
 PUBCHEM_CAS_CLASSES: tuple[str, ...] = ("inorganic", "organic", PUBCHEM_UNCLASSIFIED)
 
-PUBCHEM_DELAY = 1
+PUBCHEM_DELAY = 0.5
 PUBCHEM_CHUNK_SIZE = 50
 PUBCHEM_CHUNK_PAUSE = 10.0
 PUBCHEM_THROTTLE_LEVELS: tuple[str, ...] = ("Green", "Yellow", "Red", "Black")

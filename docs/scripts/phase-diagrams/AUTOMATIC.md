@@ -34,14 +34,17 @@ to compare with.
    multiples of the step costing 80 px more (isotherm labels) and a word going only to nodes at
    most 20 px farther than its nearest node. Labels left over, not round, within 45 px of a curve
    away from its ends become `saddle` points on it (`read_curve_temperatures`: maxima of a
-   boundary).
+   boundary). A curve is not offered a value that is not above the temperatures read at its
+   end nodes (a "maximum" below an end is a label of another point), and a word printed right
+   under a formula word (a capital then a lower-case letter or digit, no phase name; bottom
+   within 0.8 word height above it) is the melting point of that compound, not a curve point.
 6. **System** (`build_auto_ternary`): every kept curve (two curves through a node where only they
    end, with the same fields, are one), its nodes and saddles as points `auto-<°C>` (else
    `auto-j|e|o|s<n>`), types `ternary`, `binary`, `open end`, `saddle`; `polyline_wt` smoothed
    over 7 px and simplified to 0.1 wt%.
 7. **Isotherms and overlay**: `detect_isotherms` on this system (line width 0.5–1.55 line
    widths; the page words that are not point temperatures as side labels, the boxes of the
-   point-temperature words skipped as gap labels, see
+   point-temperature words skipped as gap labels, all page words as text to mask, see
    [Isotherm detection](ALGORITHMS.md#isotherm-detection)), `build_auto_system`, `build_field_approximation`, `build_compound_points` (node map
    of the system) and `render_ternary_overlay` with `auto_overlay_curves`, as `auto-overlay`.
 8. **Outputs** (`auto-full/`): `<system>.png` (overlay), `<system>.json` (the system; not a

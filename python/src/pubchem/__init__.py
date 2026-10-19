@@ -4,9 +4,9 @@ pubchem — Polite PubChem lookups (CAS numbers, formulas, names), kept in resum
 Independent of the compound data build. The fetch step reads the CAS list the build writes (and the
 compound-data records without a CAS, searched by formula) and appends one record per query to
 ``shared/sources/compound-data/pubchem/pubchem-<class>.jsonl`` (inorganic, organic, unclassified): the
-property request (every compound, every ``PUBCHEM_PROPERTIES`` field), the PUG View "Experimental
-Properties" of each compound and, for a formula or name search, the PUG View "CAS" section of the chosen
-compound. ``PubchemSearcher`` does the same on demand (new phase-diagram compounds, the
+property request (every compound, every ``PUBCHEM_PROPERTIES`` field), slim experimental values (original
+strings + ``refCode``/``refNumber``/``page``; details in ``pubchem-references.jsonl``) and, for a formula
+or name search, the PUG View "CAS" section of the chosen compound. ``PubchemSearcher`` does the same on demand (new phase-diagram compounds, the
 ``pubchem_search.py`` CLI and its query files). The build reads the files offline. Requests are paced by PubChem's
 ``X-Throttling-Control`` header; a block stops the run.
 

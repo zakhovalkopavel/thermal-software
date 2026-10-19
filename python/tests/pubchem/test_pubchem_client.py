@@ -63,26 +63,78 @@ class TestThrottleLevel:
 class TestClient:
     def test_found_and_url(self):
         client, urls, sleeps = _client([FOUND])
+        query = PubchemQuery.cas("1299-86-1")
         assert _lookup(client, "1299-86-1").status == "ok"
-        assert urls == ["https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/1299-86-1/property/"
-                        f"{','.join(PUBCHEM_PROPERTIES)}/JSON"]
-        assert urls[0] == PubchemQuery.cas("1299-86-1").url
-        assert len(PUBCHEM_PROPERTIES) == 47 and {"InChI", "ConnectivitySMILES", "XLogP"} <= set(PUBCHEM_PROPERTIES)
+        assert urls == [query.request_url]
+        assert query.url.startswith(query.request_url + "#lookup=")
+        assert len(PUBCHEM_PROPERTIES) == 16 and {"InChI", "ConnectivitySMILES", "XLogP", "IsotopeAtomCount"} <= set(PUBCHEM_PROPERTIES)
         assert sleeps == [] and client.level == "Green"
+
+    def test_cas_falls_back_to_xref_and_substance(self):
+        not_found = PubchemResponse(404, {"Fault": {"Code": "PUGREST.NotFound"}})
+        xref = PubchemResponse(200, {"IdentifierList": {"CID": [176530417]}})
+        substance = PubchemResponse(200, {"InformationList": {"Information": [
+            {"SID": 1}, {"SID": 2, "CID": [176530417]},
+        ]}})
+        props = PubchemResponse(200, {"PropertyTable": {"Properties": [
+            {"CID": 176530417, "MolecularFormula": "Br2CaH-", "Title": "Calcium;hydride;dibromide"},
+        ]}})
+        client, urls, _ = _client([not_found, xref, substance, substance, props])
+        answer = client.answer(PubchemQuery.cas("10024-43-8"))
+        assert answer is not None and answer.http_status == 200
+        assert answer.resolved_via == "compound/xref/RN+substance/name+substance/xref/RN"
+        assert answer.cids == [176530417]
+        assert "xref/RN/10024-43-8/cids" in urls[1]
+        assert urls[-1] == PubchemQuery.cas("10024-43-8").properties_url_for_cids([176530417])
+        assert answer.url == PubchemQuery.cas("10024-43-8").url
+
+    def test_cas_still_not_found_after_all_routes(self):
+        empty = PubchemResponse(404, {"Fault": {"Code": "PUGREST.NotFound"}})
+        client, urls, _ = _client([empty, empty, empty, empty])
+        answer = client.answer(PubchemQuery.cas("75-20-7"))
+        assert answer is not None and answer.http_status == 404 and answer.resolved_via is None
+        assert len(urls) == 4
+
+    def test_each_attempt_is_logged(self, caplog):
+        client, _, _ = _client([PubchemResponse(503), FOUND], busy_pause=60)
+        with caplog.at_level("INFO"):
+            assert _lookup(client, "1299-86-1").status == "ok"
+        lines = [r.getMessage() for r in caplog.records if "throttling" in r.getMessage() and " in " in r.getMessage()]
+        assert len(lines) == 2
+        assert "HTTP 503" in lines[0] and "1299-86-1" in lines[0]
+        assert "HTTP 200" in lines[1] and "throttling Green" in lines[1]
 
     def test_full_answer_is_attached(self):
         client, urls, _ = _client([FOUND])
-        answer = client.answer(PubchemQuery.cas("1299-86-1"))
-        assert (answer.http_status, answer.url, answer.body) == (200, urls[0], FOUND.data)
+        query = PubchemQuery.cas("1299-86-1")
+        answer = client.answer(query)
+        assert (answer.http_status, answer.url, answer.body) == (200, query.url, FOUND.data)
+        assert answer.fetched_url == urls[0] and answer.resolved_via == "compound/name"
         assert answer.retrieved.endswith("+00:00")
 
     def test_experimental_properties_of_a_cid(self):
-        section = {"Record": {"RecordNumber": 16685054, "Section": [], "Reference": []}}
+        section = {
+            "Record": {
+                "RecordNumber": 16685054,
+                "Reference": [{"ReferenceNumber": 1, "SourceName": "CAMEO Chemicals", "SourceID": "8234",
+                               "Name": "x", "Description": "d", "ANID": 1}],
+                "Section": [{"TOCHeading": "Experimental Properties", "Section": [
+                    {"TOCHeading": "Melting Point", "Information": [
+                        {"ReferenceNumber": 1, "Value": {"StringWithMarkup": [{"String": "825 °C"}]}}]}]}],
+            },
+        }
         client, urls, _ = _client([PubchemResponse(200, section, _throttling())])
         answer = client.experimental(16685054)
         assert urls == ["https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/16685054/JSON"
                         "?heading=Experimental+Properties"]
-        assert (answer.cid, answer.http_status, answer.url, answer.body) == (16685054, 200, urls[0], section)
+        assert (answer.cid, answer.http_status, answer.url, answer.body) == (16685054, 200, urls[0], None)
+        assert answer.values[0].heading == "Melting Point"
+        assert answer.values[0].citation[0].text == "825 °C"
+        assert answer.values[0].citation[0].values[0].number == 825
+        assert answer.values[0].citation[0].values[0].unit == "°C"
+        assert answer.values[0].citation[0].ref_code == "CAMEO-8234"
+        assert answer.references[0]["refCode"] == "CAMEO-8234"
+        assert "page" not in answer.references[0]
 
     def test_cas_section_of_a_cid(self):
         client, urls, _ = _client([PubchemResponse(200, {"Record": {}}, _throttling())])
@@ -98,15 +150,17 @@ class TestClient:
         fault = {"Fault": {"Code": "PUGVIEW.NotFound"}}
         client, urls, sleeps = _client([PubchemResponse(503), PubchemResponse(404, fault)], busy_pause=60)
         answer = client.experimental(1)
-        assert (answer.http_status, answer.body) == (404, fault)
+        assert (answer.http_status, answer.body, answer.values) == (404, None, ())
         assert len(urls) == 2 and [s for s in sleeps if s >= 10] == [60]
 
     def test_404_is_not_found(self):
         fault = {"Fault": {"Code": "PUGREST.NotFound", "Message": "No CID found"}}
-        client, _, _ = _client([PubchemResponse(404, fault, _throttling())])
+        empty = PubchemResponse(404, fault, _throttling())
+        client, urls, _ = _client([empty, empty, empty, empty])
         result = _lookup(client, "75-20-7")
         assert result.status == "notFound"
         assert (result.answer.http_status, result.answer.body) == (404, fault)
+        assert len(urls) == 4
 
     def test_yellow_and_red_slow_down_green_restores(self):
         client, _, _ = _client([
@@ -176,12 +230,13 @@ class TestClient:
 
     def test_service_overloaded_answer_is_kept_and_next_request_waits(self):
         events = []
-        answers = [PubchemResponse(404, None, _throttling(service="Black")), FOUND]
+        empty = PubchemResponse(404)
+        answers = [PubchemResponse(404, None, _throttling(service="Black")), empty, empty, empty, FOUND]
         client = PubchemClient(fetch=lambda url: answers.pop(0), delay=0, busy_pause=60,
                                sleep=lambda s: events.append(s) if s >= 10 else None,
                                on_pause=lambda: events.append("save"))
         assert _lookup(client, "54251-09-1").status == "notFound"
-        assert events == []
+        assert events == ["save", OVERLOADED_PAUSE]
         assert _lookup(client, "1299-86-1").status == "ok"
         assert events == ["save", OVERLOADED_PAUSE]
 

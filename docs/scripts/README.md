@@ -51,7 +51,7 @@ This directory contains documentation for Python processing scripts.
 
 ### [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md)
 **Specification for the PubChem fetch (compound data step 2) and on-demand PubChem searches**
-- Looks up in PubChem the CAS numbers the chemicals identifier files miss and searches the compound-data records without a CAS by formula: all 47 PUG REST properties, the PUG View "Experimental Properties" of every CID (melting / boiling point, density, solubility …) and, for a formula search, the CAS of the found compound
+- Looks up in PubChem the CAS numbers the chemicals identifier files miss and searches the compound-data records without a CAS by formula: the PUG REST `PUBCHEM_PROPERTIES` fields, the PUG View "Experimental Properties" of every CID (melting / boiling point, density, solubility …) and, for a formula search, the CAS of the found compound
 - On demand: `make pubchem-search Q="CaAl2O4"` (formula, name or CAS; `PubchemSearcher` from Python), `make pd-new … PUBCHEM=1` for the components of a new phase diagram, `make pubchem-search QUERY_FILE=shared/sources/pubchem-queries.txt` for the 551 formulas without a compound-data record
 - Polite and resumable: spacing by the `X-Throttling-Control` status, pauses when PubChem is busy or overloaded, stops when it blocks the client; every query is appended as soon as it is done
 - Package: `python/src/pubchem/`; CLI: `python/src/scripts/fetch_pubchem_identifiers.py` (`--class`, `--all-cas`, `--no-formulas`, `--retry`, `--no-experimental`, pacing options), `python/src/scripts/pubchem_search.py`

@@ -132,7 +132,7 @@ def _most_cited_cas(cas_numbers: Iterable[PubchemView], cid: int) -> Optional[st
     """The CAS most sources give on the page of ``cid`` (the first one on a tie)."""
     for view in cas_numbers:
         if view.cid == cid and view.http_status == 200:
-            counts = Counter(s.strip() for s in view_strings(view.body) if is_cas(s.strip()))
+            counts = Counter(s.strip() for s in view_strings(view) if is_cas(s.strip()))
             return counts.most_common(1)[0][0] if counts else None
     return None
 

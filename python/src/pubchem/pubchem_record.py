@@ -5,18 +5,21 @@ A CAS query (the compound data's missing CAS numbers):
 
     {"cas": "7647-14-5", "class": "inorganic",
      "properties": {"retrieved": …, "httpStatus": 200, "url": …, "body": {"PropertyTable": …}},
-     "experimental": [{"cid": 5234, "retrieved": …, "httpStatus": 200, "url": …, "body": {"Record": …}}]}
+     "experimental": [{"cid": 5234, "retrieved": …, "httpStatus": 200, "url": …,
+                       "values": [{"heading": "Melting Point", "value": "801 °C",
+                                   "refCode": "HSDB", "refNumber": 24, "page": "4-57"}]}]}
 
 A formula or name query (compound-data records without a CAS, new compounds) has ``key`` and ``search``
 instead of ``cas``, and the PUG View "CAS" section of the chosen compound in ``casNumbers``:
 
     {"key": "formula:Ag2S", "search": {"by": "formula", "text": "Ag2S", "hill": "Ag2S"}, "class": "inorganic",
-     "properties": {…}, "casNumbers": [{"cid": 166738, …}], "experimental": [{"cid": 166738, …}, …]}
+     "properties": {…}, "casNumbers": [{"cid": 166738, …, "body": {"Record": …}}],
+     "experimental": [{"cid": 166738, "values": […]}, …]}
 
 ``properties`` is the property request (every compound of the answer, every ``PUBCHEM_PROPERTIES`` field),
-``experimental`` the PUG View "Experimental Properties" of each compound the query stands for (all CIDs of
-a CAS or name answer; the formula matches of a formula answer). The status, the chosen compound and its CAS
-are derived (``result``), never stored.
+``experimental`` the slim PUG View "Experimental Properties" of each compound the query stands for
+(original strings + short refs; details in ``pubchem-references.jsonl``). The status, the chosen compound
+and its CAS are derived (``result``), never stored.
 
 Spec: docs/scripts/PUBCHEM_SPEC.md
 """

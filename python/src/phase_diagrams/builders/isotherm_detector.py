@@ -22,6 +22,7 @@ from phase_diagrams.detection.ring_detector import detect_rings
 from phase_diagrams.detection.skeleton_branches import skeleton_branches
 from phase_diagrams.detection.skeletonizer import skeletonize
 from phase_diagrams.detection.text_detector import detect_text_boxes
+from phase_diagrams.models.branch_chain import BranchChain
 from phase_diagrams.models.detected_isotherm import DetectedIsotherm
 from phase_diagrams.models.isotherm_detection import IsothermDetection
 from phase_diagrams.models.line_scale import LineScale
@@ -71,6 +72,26 @@ _MIN_CONFIDENCE = 25.0
 _DASHED_SHARE = 0.25
 _ARC_MARGIN_PX = 3.0
 _MAX_CANDIDATES = 8
+_WORD_CONFIDENCE = 60.0
+_WORD_HEIGHT_RATIO = 1.4
+_LOST_GLYPH_GROW = 0.6
+_LOST_GLYPH_HEIGHT = 1.3
+_LEADER_RUN_PX = 600
+_LEADER_RUN_GAP_PX = 5
+_LEADER_RUN_SIDE_PX = 2
+_LEADER_RUN_MIN_PX = 30.0
+_LEADER_WORD_PX = 12.0
+_TAIL_PX = 40.0
+_HOOK_PX = (8.0, 14.0, 20.0)
+_HOOK_LEAD_PX = 30.0
+_HOOK_DEG = 40.0
+_PROLONG_PX = 150.0
+_PROLONG_SIDE_PX = 8.0
+_PROLONG_DEG = 25.0
+_ALONG_DEG = 12.0
+_ALONG_TANGENT_PX = 10.0
+_THROUGH_TEXT_PX = 80.0
+_THROUGH_TEXT_DEG = 60.0
 
 
 def detect_isotherms(
@@ -84,22 +105,29 @@ def detect_isotherms(
     scale: LineScale | None = None,
     side_labels: list[PageWord] | None = None,
     skip_boxes: list[tuple[int, int, int, int]] | None = None,
+    text_words: list[PageWord] | None = None,
 ) -> IsothermDetection:
     """Isotherm pieces of ``system`` (boundary curves with ``polyline_wt``) on the page ``mask``.
 
     Thin lines: the ink inside the triangle without the frame (14 px band), the boundary curves
     (17 px band along their polylines), strokes wider than ``isotherm_width_px`` (+ 1.5 px; ink
     within 6 px of their cores), label
-    boxes (``detect_text_boxes``, + 3 px) and rings (+ 6 px); skeletonized, split into branches and
-    joined into lines by ``chain_branches`` (through crossings, breaks, dash gaps and labels).
+    boxes (``detect_text_boxes``, + 3 px), the boxes of the ``text_words`` that are text (``_real_words``)
+    with the ink lying wholly within them grown by 0.6 × their height (lost glyphs), and rings (+ 6 px);
+    skeletonized, split into branches and joined into lines by ``chain_branches`` (through crossings,
+    breaks, dash gaps and labels); end hooks cut (``_without_hooks``).
     Not isotherms: lines with < 30 px of ink or < 45 px across (digits the label detector missed);
+    straight lines whose ink runs straight on to a word with letters (``runs_to_word``: leaders);
     lines running on outside the triangle (ink within ±3 px on ≥ 70 % of 6–60 px beyond the edge:
     leaders of outside labels); straight lines (≤ 2.5 px off their chord) up to 150 px from a label
     to a free end or to within 30 px of a printed point (an atlas invariant pixel or a ring: leaders),
     or ≥ 100 px long ending at a ring (compatibility joins); two straight parts (each ≥ 40 px) meeting at a
     corner of at least 25° (joins, leaders: isotherms are smooth); lines outside every field region
     (``build_field_regions``). Ends are moved onto the
-    boundary or edge they point at (≤ 25 px ahead, else ≤ 16 px away).
+    boundary or edge they point at (``snap``); an end meeting a boundary at under 12° runs ``along``
+    it and is no crossing. Pieces of one field facing each other across a gap are joined
+    (``_join_prolongations``); a label end is carried on through the text to a hidden boundary where
+    the next field's line goes on (``_prolong_through_text``).
     Temperatures: a label in a line gap, or touching a line end ahead of it (≤ 80 px), is read by
     ``read_number`` (its glyph boxes plus every ink component lying wholly within them grown by
     0.8 glyph size: a long thin ``1`` is not a glyph box) (a multiple of ``step_C`` between 100 and 3000 °C with Tesseract confidence ≥ 25); pieces
@@ -142,6 +170,7 @@ def detect_isotherms(
 
     boundaries = [(index, curve, np.array([page(w) for w in curve["polyline_wt"]]) - origin)
                   for index, curve in enumerate(system.get("boundaryCurves", [])) if curve.get("polyline_wt")]
+    lines_by_index = {index: line for index, _, line in boundaries}
     triangle = corners - origin
     edges = [(triangle[k], triangle[(k + 1) % 3]) for k in range(3)]
 
@@ -162,6 +191,27 @@ def detect_isotherms(
     pad = s.count(_TEXT_PAD_PX)
     for bx0, by0, bx1, by1 in boxes:
         text[max(by0 - pad, 0):by1 + pad, max(bx0 - pad, 0):bx1 + pad] = True
+    words = _real_words(text_words or [])
+    lost = 0
+    for word in words:
+        wx0, wy0, wx1, wy1 = (int(word.box[0] - origin[0]), int(word.box[1] - origin[1]),
+                              int(word.box[2] - origin[0]), int(word.box[3] - origin[1]))
+        text[max(wy0 - pad, 0):max(wy1 + pad, 0), max(wx0 - pad, 0):max(wx1 + pad, 0)] = True
+        h = wy1 - wy0
+        gx0, gx1 = max(wx0 - int(_LOST_GLYPH_GROW * h), 0), min(wx1 + int(_LOST_GLYPH_GROW * h), width)
+        gy0, gy1 = max(wy0 - int(0.15 * h), 0), min(wy1 + int(0.15 * h), height)
+        if gx1 <= gx0 or gy1 <= gy0:
+            continue
+        parts, _ = ndimage.label(local[gy0:gy1, gx0:gx1], structure=np.ones((3, 3), int))
+        for k, found in enumerate(ndimage.find_objects(parts), start=1):
+            if (found and found[0].start > 0 and found[1].start > 0 and found[0].stop < gy1 - gy0
+                    and found[1].stop < gx1 - gx0 and found[0].stop - found[0].start <= _LOST_GLYPH_HEIGHT * h):
+                text[gy0 + found[0].start:gy0 + found[0].stop, gx0 + found[1].start:gx0 + found[1].stop] |= parts[found] == k
+                lost += 1
+    if text_words is not None:
+        log.append(f"{len(words)} of {len(text_words)} page words taken as text (confidence ≥ {_WORD_CONFIDENCE:g}, "
+                   f"≥ 2 letters or digits, text height); {lost} ink parts beside or inside them removed")
+    lettered = [w for w in words if sum(ch.isalpha() for ch in w.text) >= 2]
     ring_image = Image.new("1", (width, height), 0)
     for rx, ry, diameter in rings:
         r = diameter / 2.0 + s.length(_RING_PAD_PX)
@@ -184,22 +234,34 @@ def detect_isotherms(
             return None
         return regions.phases[int(Counter(values.tolist()).most_common(1)[0][0]) - 1]
 
-    def snap(p: np.ndarray, u: np.ndarray) -> tuple[np.ndarray, str, int | None]:
+    def snap(p: np.ndarray, u: np.ndarray, u_tail: np.ndarray | None = None) -> tuple[np.ndarray, str, int | None]:
+        """End of a line on the boundary or edge its ray (the last 8 px, else the last 40 px: the stroke
+        bends along a boundary where it merges into it) hits within 25 px, else on one within 16 px, else
+        ``label`` (text within 10 px) or ``free``. A boundary end ``along`` it when the line (its last
+        40 px) meets it at under 12°: the line merges into the boundary stroke, so where it really
+        reaches the boundary is not known and the end is no crossing."""
         reach = s.length(_SNAP_REACH_PX)
-        best: tuple[float, np.ndarray, str, int | None] | None = None
-        for index, _, line in boundaries:
-            hit = _ray_hit(p, u, line, reach)
-            if hit is not None and (best is None or hit[0] < best[0]):
-                best = (hit[0], hit[1], "boundary", index)
-        for a, b in edges:
-            hit = _ray_hit(p, u, np.array([a, b]), reach)
-            if hit is not None and (best is None or hit[0] < best[0]):
-                best = (hit[0], hit[1], "edge", None)
-        if best is not None:
-            return best[1], best[2], best[3]
+        course = u_tail if u_tail is not None else u
+
+        def on_boundary(point: np.ndarray, index: int) -> tuple[np.ndarray, str, int | None]:
+            along = _meeting_angle(lines_by_index[index], point, course, s.length(_ALONG_TANGENT_PX)) < _ALONG_DEG
+            return point, "along" if along else "boundary", index
+
+        for direction in (u, u_tail) if u_tail is not None else (u,):
+            best: tuple[float, np.ndarray, str, int | None] | None = None
+            for index, _, line in boundaries:
+                hit = _ray_hit(p, direction, line, reach)
+                if hit is not None and (best is None or hit[0] < best[0]):
+                    best = (hit[0], hit[1], "boundary", index)
+            for a, b in edges:
+                hit = _ray_hit(p, direction, np.array([a, b]), reach)
+                if hit is not None and (best is None or hit[0] < best[0]):
+                    best = (hit[0], hit[1], "edge", None)
+            if best is not None:
+                return on_boundary(best[1], best[3]) if best[2] == "boundary" else (best[1], best[2], best[3])
         near = min(((_nearest(p, line), index) for index, _, line in boundaries), key=lambda item: item[0][0], default=None)
         if near is not None and near[0][0] <= s.length(_NEAR_BOUNDARY_PX):
-            return near[0][1], "boundary", near[1]
+            return on_boundary(near[0][1], near[1])
         foot = min((_nearest(p, np.array([a, b])) for a, b in edges), key=lambda item: item[0])
         if foot[0] <= s.length(_NEAR_EDGE_PX):
             return foot[1], "edge", None
@@ -221,6 +283,33 @@ def detect_isotherms(
                 return False
             hits.append(bool(mask[at[:, 1], at[:, 0]].any()))
         return float(np.mean(hits)) >= _OUTSIDE_SHARE
+
+    def runs_to_word(points: np.ndarray, end: int) -> PageWord | None:
+        """Word (with letters) reached by the ink running straight on beyond an end of ``points`` (direction
+        of its last 40 px; following the ink ±2 px across, drifting ≤ 3 px + 8 %; gaps ≤ 5 px), at least
+        30 px beyond it."""
+        if not lettered:
+            return None
+        p, u = _tail(points, end, s.length(_TAIL_PX))
+        normal = np.array([-u[1], u[0]])
+        offsets = np.arange(-s.count(_LEADER_RUN_SIDE_PX), s.count(_LEADER_RUN_SIDE_PX) + 1)
+        last, gap, lateral = 0, 0, 0.0
+        for t in range(1, s.count(_LEADER_RUN_PX) + 1):
+            at = np.round(p + origin + t * u + (lateral + offsets)[:, None] * normal).astype(int)
+            ok = (at[:, 0] >= 0) & (at[:, 0] < mask.shape[1]) & (at[:, 1] >= 0) & (at[:, 1] < mask.shape[0])
+            hit = np.zeros(len(offsets), bool)
+            hit[ok] = mask[at[ok, 1], at[ok, 0]]
+            if hit.any():
+                last, gap = t, 0
+                lateral = float(np.clip(lateral + offsets[hit].mean(), -(3.0 + 0.08 * t), 3.0 + 0.08 * t))
+            else:
+                gap += 1
+                if gap > s.count(_LEADER_RUN_GAP_PX):
+                    break
+        if last < s.length(_LEADER_RUN_MIN_PX):
+            return None
+        reached = tuple(p + origin + last * u + lateral * normal)
+        return next((w for w in lettered if w.distance(reached) <= s.length(_LEADER_WORD_PX)), None)
 
     printed_points = [np.array(calibration.stored_to_page(*source["pixel"])) - origin
                       for point in system.get("invariantPoints", []) for source in point.get("sources", [])
@@ -273,10 +362,12 @@ def detect_isotherms(
     pieces: list[DetectedIsotherm] = []
     piece_ends: list[list[tuple[np.ndarray, np.ndarray, str, int | None]]] = []
     piece_labels: list[list[tuple[float, str]]] = []
+    piece_points: list[np.ndarray] = []
     dropped: list[tuple[list[tuple[float, float]], str]] = []
     short = 0
     step_px = s.count(_DIRECTION_PX)
     for chain in chains:
+        chain = _without_hooks(chain, s)
         points = chain.pixels
         if chain.ink_px < s.length(_MIN_INK_PX) or float(np.ptp(points, axis=0).max()) < s.length(_MIN_EXTENT_PX):
             short += 1
@@ -284,7 +375,7 @@ def detect_isotherms(
         ends = []
         for end in (0, 1):
             p, u = _end(points, end, step_px)
-            point, kind, curve = snap(p, u)
+            point, kind, curve = snap(p, u, _tail(points, end, s.length(_TAIL_PX))[1])
             ends.append((point, u, kind, curve))
         as_page = [tuple(map(float, p + origin)) for p in points]
         straight = "text" not in chain.gap_kinds() and _deviation(points) <= s.length(_STRAIGHT_PX)
@@ -301,6 +392,8 @@ def detect_isotherms(
             reason = "compatibility join (straight, ends at a ring)"
         elif "text" not in chain.gap_kinds() and _cornered(points, s):
             reason = "two straight segments with a corner (joins or a leader)"
+        elif straight and any(runs_to_word(points, end) is not None for end in (0, 1)):
+            reason = "leader of a word (its ink runs straight on to the word)"
         field = None if reason else field_of(points[:: max(1, len(points) // 50)])
         if reason is None and field is None:
             reason = "outside every field region"
@@ -314,7 +407,12 @@ def detect_isotherms(
                 log.append(f"{field} line at {_px(points[index - 1] + origin)}: {note}")
                 if value is not None:
                     labels.append((value, note))
-        for point, u, kind, _ in ends:
+        for e, (point, u, kind, curve) in enumerate(ends):
+            if kind == "along":
+                angle = _meeting_angle(lines_by_index[curve], point, _tail(points, e, s.length(_TAIL_PX))[1],
+                                       s.length(_ALONG_TANGENT_PX))
+                log.append(f"{field} line end {_px(point + origin)}: runs along the {_describe('boundary', curve, system)} "
+                           f"({angle:.0f}°, under {_ALONG_DEG:g}°); not a crossing")
             if kind == "label":
                 value, note = read_label(point, point + u * s.length(_LABEL_AHEAD_PX))
                 log.append(f"{field} line end {_px(point + origin)}: {note}")
@@ -328,6 +426,15 @@ def detect_isotherms(
         pieces.append(piece)
         piece_ends.append(ends)
         piece_labels.append(labels)
+        piece_points.append(points)
+    joined = _join_prolongations(pieces, piece_ends, piece_labels, piece_points, barrier, origin, s)
+    if joined:
+        log.append(f"{joined} gaps in a line bridged by prolonging both pieces (≤ {s.length(_PROLONG_PX):g} px, "
+                   f"≤ {s.length(_PROLONG_SIDE_PX):g} px off either piece's direction)")
+    carried = _prolong_through_text(pieces, piece_ends, piece_points, boundaries, origin, system, s)
+    if carried:
+        log.append(f"{carried} line ends at text carried on to a boundary hidden under it (≤ {s.length(_THROUGH_TEXT_PX):g} px; "
+                   "a line of the next field goes on from there)")
     log.append(f"{len(pieces)} isotherm pieces; {short} lines under {s.length(_MIN_INK_PX):g} px of ink "
                f"or {s.length(_MIN_EXTENT_PX):g} px across; "
                + ", ".join(f"{n} {reason}" for reason, n in Counter(r for _, r in dropped).items()))
@@ -549,6 +656,174 @@ def _inferred(temperature: float, labelled: set[float], group: int, ladders, ste
     return {"between": [max(lows), min(highs)], "step": step_C}
 
 
+def _without_hooks(chain: BranchChain, s: LineScale) -> BranchChain:
+    """``chain`` without a hook at either end: a last stretch of 8, 14 or 20 px turning more than 40° from
+    the 30 px before it (a crossing line or a leader tick taken at a junction), up to three times per end."""
+    points = chain.pixels
+    if len(points) < 3 or chain.closed:
+        return chain
+    arc = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(points, axis=0), axis=1))])
+    first, last = 0, len(points) - 1
+    lead = s.length(_HOOK_LEAD_PX)
+    for _ in range(3):
+        cut = False
+        for hook in (s.length(h) for h in _HOOK_PX):
+            k = int(np.searchsorted(arc, arc[first] + hook))
+            m = int(np.searchsorted(arc, arc[first] + hook + lead))
+            if m < last and _turn(points[k] - points[first], points[m] - points[k]) > _HOOK_DEG:
+                first, cut = k, True
+                break
+        for hook in (s.length(h) for h in _HOOK_PX):
+            k = int(np.searchsorted(arc, arc[last] - hook, side="right")) - 1
+            m = int(np.searchsorted(arc, arc[last] - hook - lead, side="right")) - 1
+            if m > first and _turn(points[last] - points[k], points[k] - points[m]) > _HOOK_DEG:
+                last, cut = k, True
+                break
+        if not cut:
+            break
+    if first == 0 and last == len(points) - 1:
+        return chain
+    trimmed = float(arc[first] + arc[-1] - arc[last])
+    gaps = [(index - first, kind) for index, kind in chain.gaps if first < index <= last]
+    return BranchChain(points[first:last + 1], gaps, max(chain.ink_px - trimmed, 0.0), chain.gap_px, chain.closed)
+
+
+def _prolong_through_text(pieces: list[DetectedIsotherm], piece_ends: list, piece_points: list,
+                          boundaries: list, origin: np.ndarray, system: dict, s: LineScale) -> int:
+    """Carry, in place, a ``label`` end (the line stops at text) on along its last 40 px to the first boundary
+    within 80 px, when a piece of another field has a crossing end on that boundary within 35 px of the hit
+    and runs on away from it (directions within 60° of each other): the boundary and the line are hidden under
+    the text. The end becomes a crossing at the hit, the piece is drawn on to it. Returns the ends carried."""
+    reach, near, tail = s.length(_THROUGH_TEXT_PX), s.length(_CROSSING_PX), s.length(_TAIL_PX)
+    ahead = math.cos(math.radians(_THROUGH_TEXT_DEG))
+    carried = 0
+    for i, piece in enumerate(pieces):
+        for e in (0, 1):
+            if piece_ends[i][e][2] != "label":
+                continue
+            p, u = _tail(piece_points[i], e, tail)
+            hits = [(hit, index) for index, _, line in boundaries if (hit := _ray_hit(p, u, line, reach)) is not None]
+            if not hits:
+                continue
+            (_, point), curve = min(hits, key=lambda item: item[0][0])
+            partner = None
+            for j, other in enumerate(pieces):
+                if other.field == piece.field:
+                    continue
+                for ej in (0, 1):
+                    q, _, kind, c = piece_ends[j][ej]
+                    if kind != "boundary" or c != curve or float(np.linalg.norm(q - point)) > near:
+                        continue
+                    if float(u @ -_tail(piece_points[j], ej, tail)[1]) >= ahead:
+                        partner = other
+            if partner is None:
+                continue
+            piece_ends[i][e] = (point, piece_ends[i][e][1], "boundary", curve)
+            ends = list(piece.ends)
+            ends[e] = _describe("boundary", curve, system)
+            piece.ends = (ends[0], ends[1])
+            at = tuple(map(float, point + origin))
+            piece.pixels = [at] + piece.pixels if e == 0 else piece.pixels + [at]
+            piece.straight = [1] + [k + 1 for k in piece.straight] if e == 0 else piece.straight + [len(piece.pixels) - 1]
+            piece.evidence.append(f"carried {float(np.linalg.norm(point - p)):.0f} px on through text to the boundary at "
+                                  f"{_px(point + origin)}, where the {partner.field} line goes on")
+            carried += 1
+    return carried
+
+
+def _join_prolongations(pieces: list[DetectedIsotherm], piece_ends: list, piece_labels: list, piece_points: list,
+                        barrier: np.ndarray, origin: np.ndarray, s: LineScale) -> int:
+    """Join, in place, pieces of one field whose label or free ends face each other: each end lies ahead of the
+    other's last 40 px (≤ 150 px apart, ≤ 8 px off its direction, directions opposite within 25°), the gap
+    crosses no boundary and the labels agree. Closest pairs first; returns the number of joins."""
+    reach, side, tail = s.length(_PROLONG_PX), s.length(_PROLONG_SIDE_PX), s.length(_TAIL_PX)
+    facing = -math.cos(math.radians(_PROLONG_DEG))
+    joins = 0
+    while True:
+        best = None
+        for i in range(len(pieces)):
+            for j in range(i + 1, len(pieces)):
+                if pieces[i].field != pieces[j].field:
+                    continue
+                if len({v for v, _ in piece_labels[i][:1] + piece_labels[j][:1]}) > 1:
+                    continue
+                for ei in (0, 1):
+                    if piece_ends[i][ei][2] not in ("label", "free"):
+                        continue
+                    p, u = _tail(piece_points[i], ei, tail)
+                    for ej in (0, 1):
+                        if piece_ends[j][ej][2] not in ("label", "free"):
+                            continue
+                        q, v = _tail(piece_points[j], ej, tail)
+                        d = q - p
+                        distance = float(np.linalg.norm(d))
+                        if distance == 0 or distance > reach or float(u @ v) > facing:
+                            continue
+                        if float(u @ d) <= 0 or float(-v @ d) <= 0:
+                            continue
+                        off = max(abs(float(u[0] * d[1] - u[1] * d[0])), abs(float(v[0] * d[1] - v[1] * d[0])))
+                        if off > side:
+                            continue
+                        line = p + np.outer(np.linspace(0.0, 1.0, int(distance) + 2), d)
+                        at = np.round(line).astype(int)
+                        ok = (at[:, 0] >= 0) & (at[:, 0] < barrier.shape[1]) & (at[:, 1] >= 0) & (at[:, 1] < barrier.shape[0])
+                        if barrier[at[ok, 1], at[ok, 0]].any():
+                            continue
+                        score = distance + off
+                        if best is None or score < best[0]:
+                            best = (score, i, j, ei, ej, distance, (p + q) / 2.0)
+        if best is None:
+            return joins
+        _, i, j, ei, ej, distance, middle = best
+        a, b = pieces[i], pieces[j]
+        a_pixels = a.pixels if ei == 1 else a.pixels[::-1]
+        a_straight = a.straight if ei == 1 else [len(a.pixels) - k for k in a.straight]
+        b_pixels = b.pixels if ej == 0 else b.pixels[::-1]
+        b_straight = b.straight if ej == 0 else [len(b.pixels) - k for k in b.straight]
+        a_ends = piece_ends[i] if ei == 1 else piece_ends[i][::-1]
+        b_ends = piece_ends[j] if ej == 0 else piece_ends[j][::-1]
+        a_points = piece_points[i] if ei == 1 else piece_points[i][::-1]
+        b_points = piece_points[j] if ej == 0 else piece_points[j][::-1]
+        a.pixels = list(a_pixels) + list(b_pixels)
+        a.straight = sorted(a_straight + [len(a_pixels)] + [k + len(a_pixels) for k in b_straight])
+        a.ends = (a.ends[0] if ei == 1 else a.ends[1], b.ends[1] if ej == 0 else b.ends[0])
+        a.dashed = a.dashed and b.dashed
+        a.evidence.append(f"joined across a {distance:.0f} px gap at {_px(middle + origin)} (both pieces prolonged meet)")
+        piece_ends[i] = [a_ends[0], b_ends[1]]
+        piece_points[i] = np.vstack([a_points, b_points])
+        piece_labels[i] = piece_labels[i] + [label for label in piece_labels[j] if label[0] not in {v for v, _ in piece_labels[i]}]
+        for items in (pieces, piece_ends, piece_labels, piece_points):
+            del items[j]
+        joins += 1
+
+
+def _turn(u: np.ndarray, v: np.ndarray) -> float:
+    """Angle (degrees) between two directions."""
+    nu, nv = float(np.linalg.norm(u)), float(np.linalg.norm(v))
+    if nu == 0 or nv == 0:
+        return 0.0
+    return math.degrees(math.acos(max(-1.0, min(1.0, float(u @ v) / (nu * nv)))))
+
+
+def _tail(points: np.ndarray, end: int, length: float) -> tuple[np.ndarray, np.ndarray]:
+    """End point of ``points`` (``end`` 0 or 1) and the outward direction over its last ``length`` px."""
+    ordered = points if end == 1 else points[::-1]
+    arc = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(ordered, axis=0), axis=1))])
+    k = max(int(np.searchsorted(arc, arc[-1] - length, side="right")) - 1, 0)
+    u = ordered[-1] - ordered[k]
+    norm = float(np.linalg.norm(u))
+    return ordered[-1].astype(float), (u / norm if norm > 0 else np.zeros(2))
+
+
+def _real_words(words: list[PageWord]) -> list[PageWord]:
+    """Words that are text, not lines read as text: confidence ≥ 60, at least 2 letters or digits and at
+    most 1.4 × the median height of the confident (≥ 80) words."""
+    heights = [w.box[3] - w.box[1] for w in words if w.confidence >= 80.0]
+    limit = _WORD_HEIGHT_RATIO * float(np.median(heights)) if len(heights) >= 3 else math.inf
+    return [w for w in words if w.confidence >= _WORD_CONFIDENCE and sum(ch.isalnum() for ch in w.text) >= 2
+            and w.box[3] - w.box[1] <= limit]
+
+
 def _stretch_bounds(known: list[tuple[str, float | None, float | None]], arc: float) -> tuple[float, float] | None:
     """Temperatures (low, high) of the path points of known temperature on either side of ``arc`` along a boundary."""
     for (_, arc_a, t_a), (_, arc_b, t_b) in zip(known[:-1], known[1:]):
@@ -571,9 +846,24 @@ def _isotherm_value(text: str, step_C: float) -> float | None:
 
 
 def _describe(kind: str, curve: int | None, system: dict) -> str:
-    if kind == "boundary" and curve is not None:
-        return "boundary " + "/".join(f or "?" for f in system["boundaryCurves"][curve].get("fields", []))
+    if kind in ("boundary", "along") and curve is not None:
+        fields = "/".join(f or "?" for f in system["boundaryCurves"][curve].get("fields", []))
+        return f"boundary {fields}" if kind == "boundary" else f"along boundary {fields}"
     return {"edge": "triangle edge", "label": "label", "free": "free end"}[kind]
+
+
+def _meeting_angle(line: np.ndarray, point: np.ndarray, direction: np.ndarray, span: float) -> float:
+    """Angle (0–90°) between ``direction`` and the polyline ``line`` around its point nearest ``point``
+    (the chord between the points ``span`` before and after it along the line)."""
+    steps = np.r_[0.0, np.cumsum(np.linalg.norm(np.diff(line, axis=0), axis=1))]
+    at = _arc(point, line)
+    a = np.array([np.interp(max(at - span, 0.0), steps, line[:, k]) for k in (0, 1)])
+    b = np.array([np.interp(min(at + span, steps[-1]), steps, line[:, k]) for k in (0, 1)])
+    tangent = b - a
+    norm = float(np.linalg.norm(tangent)) * float(np.linalg.norm(direction))
+    if norm == 0.0:
+        return 90.0
+    return math.degrees(math.acos(min(1.0, abs(float(np.dot(tangent, direction))) / norm)))
 
 
 def _end(points: np.ndarray, end: int, step: int) -> tuple[np.ndarray, np.ndarray]:

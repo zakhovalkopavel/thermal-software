@@ -134,22 +134,24 @@ Everything else is skipped, so an interrupted or stopped run is resumed by runni
 
 ### Property request (PUG REST)
 
-- **CAS:** `{PUBCHEM_API}/compound/name/{CAS}/property/<PUBCHEM_PROPERTIES>/JSON`. PubChem resolves the CAS through its synonyms, so one CAS can give several compounds, each with its CID and every property it has a value for.
+- **CAS:** find every CID PubChem associates with the registry number, then load properties:
+  1. `{PUBCHEM_API}/compound/name/{CAS}/property/<PUBCHEM_PROPERTIES>/JSON` (synonym index) — enough for most CAS numbers;
+  2. on HTTP 404, collect CIDs from, in order, `compound/xref/RN/{CAS}/cids`, `substance/name/{CAS}/cids`, `substance/xref/RN/{CAS}/cids` (`PUBCHEM_CAS_LOOKUP`);
+  3. `{PUBCHEM_API}/compound/cid/{cid,…}/property/…/JSON` for the union of those CIDs.
+  The stored `properties.url` is the canonical resume URL (`…/compound/name/{CAS}/property/…/JSON#lookup=…`); `fetchedUrl` / `resolvedVia` record the HTTP call that returned the table (e.g. `compound/xref/RN+substance/name`).
 - **Formula:** `{PUBCHEM_API}/compound/fastformula/{Hill}/property/…/JSON` returns every compound with exactly that formula, including ions and isotope variants. Ag2S gives 3; CaAl2O4 gives several duplicates.
 - **Name:** `{PUBCHEM_API}/compound/name/{name}/property/…/JSON`, through the synonyms. A name can land on another compound than intended, so check the formula.
 
-`PUBCHEM_PROPERTIES` is every property PUG REST offers (47):
+`PUBCHEM_PROPERTIES` is a short list (16), not every PUG REST tag — large lists often hit HTTP 504:
 
 | Group | Properties |
 |---|---|
 | Identifiers (8) | `MolecularFormula`, `MolecularWeight`, `SMILES`, `ConnectivitySMILES`, `InChI`, `InChIKey`, `IUPACName`, `Title` |
 | Mass and charge (3) | `ExactMass`, `MonoisotopicMass`, `Charge` |
-| Computed descriptors (15) | `XLogP`, `TPSA`, `Complexity`, `HBondDonorCount`, `HBondAcceptorCount`, `RotatableBondCount`, `HeavyAtomCount`, `IsotopeAtomCount`, `AtomStereoCount`, `DefinedAtomStereoCount`, `UndefinedAtomStereoCount`, `BondStereoCount`, `DefinedBondStereoCount`, `UndefinedBondStereoCount`, `CovalentUnitCount` |
-| 3D conformer (14) | `Volume3D`, `XStericQuadrupole3D`, `YStericQuadrupole3D`, `ZStericQuadrupole3D`, `FeatureCount3D`, `FeatureAcceptorCount3D`, `FeatureDonorCount3D`, `FeatureAnionCount3D`, `FeatureCationCount3D`, `FeatureRingCount3D`, `FeatureHydrophobeCount3D`, `ConformerModelRMSD3D`, `EffectiveRotorCount3D`, `ConformerCount3D` |
-| Fingerprint (1) | `Fingerprint2D` |
-| Counts and annotations (6) | `PatentCount`, `PatentFamilyCount`, `LiteratureCount`, `AnnotationTypes`, `AnnotationTypeCount`, `SourceCategories` |
+| Descriptor (1) | `XLogP` |
+| Formula ranking (4) | `IsotopeAtomCount`, `AnnotationTypeCount`, `LiteratureCount`, `PatentCount` (`PUBCHEM_RANKING`) |
 
-This is a superset of what the legacy fetchers kept: IUPAC name, formula, molar mass, InChI, InChIKey and canonical SMILES (now called `ConnectivitySMILES` by PubChem). A 404 (`PUGREST.NotFound`) is a valid answer and is stored.
+This covers what the build needs (identifiers, mass, charge, SMILES) plus the fields formula search uses to drop isotopes and pick the best CID. A 404 (`PUGREST.NotFound`) is a valid answer and is stored. Records stored under an older, longer property URL are asked again on the next run.
 
 ### CAS section (PUG View)
 
@@ -167,9 +169,12 @@ The property request returns computed data only. For every CID of `experimental_
 
 - **Which CIDs:** for a CAS or name query, every CID of the answer, not only the one the build uses. For a formula query, only the formula matches (neutral, no isotopes).
 - **History:** this is how `legacy/python_scripts/extract_experimental_properties.py` got melting points, but with the heading filter (NaCl: 48 KB instead of the whole 1.15 MB page).
-- **Contents:** subsections such as Physical Description, Color, Odor, Melting Point, Boiling Point, Flash Point, Density, Decomposition, Vapor Pressure, Solubility, Stability, Viscosity, Surface Tension and Refractive Index. Each value is text with a `ReferenceNumber` into the `Reference` list (HSDB, CRC, ILO …).
-- **Reading:** `view_strings(body, heading)` (`pubchem_view_text.py`) lists the strings under a heading, as the sources print them. Nothing parses them into numbers yet.
-- **404:** the compound has no experimental data (Ag2S). The 404 is stored.
+- **Stored slim:** the compound log does **not** keep PubChem's nested `Information` / `ExtendedReference` / `Markup` / depositor essays. Each heading becomes `{heading, citation: [{text, values: [{spec?, number, unit}], refCode, refNumber, refPage?}]}`. **`text`** is the original printed string (unchanged). **`values`** are parsed magnitudes: optional **`spec`** (label/condition from the text, e.g. `Triple point`), then **number** and **unit** in separate fields (empty when none parse). No literature source text on the compound line — that lives in the references file. **`refPage`** is per citation row (one source, many pages).
+- **Sources list:** `pubchem-references.jsonl` is a rateable catalog. Each line has a stable **`refNumber`** (1, 2, 3, … — position in this file), a unique **`refCode`**, and **`source`** (name / citation **without page**), plus optional `url` / ISBN / `sourceId`. No page on the source row. No content hash; if two different sources share the same stem, the later ones are `stem-2`, `stem-3`, ….
+- **`refCode`:** informative stem — e.g. `CRCHandbook-ed95-2014`, `MerckIndex-2013`, `HSDB-6341`, `CAMEO-8234` (no page in the code). **`refNumber`:** index in `pubchem-references.jsonl` (not PubChem's depositor number). **`refPage`:** from the literature citation when present, on the citation row only.
+- **Reading:** `view_strings(view_or_body, heading)` lists the original `text` strings under a heading (slim `values` or legacy `body`).
+- **404:** that CID has no Experimental Properties section (`values: []`). Another CID of the same query may still have data and sources.
+- **Legacy lines** that still hold a raw `body` are readable until re-fetched; new fetches always write slim `values`.
 
 The other sections of the compound page (Safety and Hazards, Pharmacology, Literature, Patents …) are not requested: they are large and mostly regulatory.
 
@@ -178,6 +183,7 @@ The other sections of the compound page (Safety and Hazards, Pharmacology, Liter
 [PubChem dynamic request throttling](https://pubchem.ncbi.nlm.nih.gov/docs/dynamic-request-throttling) allows at most 5 requests per second and 400 per minute. Every answer has an `X-Throttling-Control` header with a Green / Yellow / Red / Black status per counter: Request Count, Request Time (this client) and Service (the whole server).
 
 - **Spacing:** requests are spaced by `--delay`. The worst status of the last answer sets the spacing: Yellow ≥ 1 s, Red ≥ 5 s (`PUBCHEM_THROTTLE_DELAYS`), Green back to `--delay`.
+- **Progress:** every HTTP attempt logs one INFO line with local time, the request label (CAS, formula, or `CID … heading`), the outcome (`HTTP 200` / `HTTP 504` / network error), the duration of that call, and the current throttle level.
 - **Blocked:** HTTP 403, or Black on a client counter (`PUBCHEM_CLIENT_COUNTERS`), stops the run at once (exit code 2).
 - **Server overloaded:** Black on the Service counter (seen at 577–990 %) is not a block. A 200 or 404 answer is kept, and the next request first waits `--busy-pause` × `PUBCHEM_OVERLOADED_PAUSE_MULTIPLIER` (1, i.e. 30 s). An error answer is asked again after that pause.
 - **Busy:** 503, 429, other 5xx and network failures pause the whole run. The pause is `Retry-After` when given, else `--busy-pause` × 1, 2, 4 … (at most × `PUBCHEM_BUSY_PAUSE_MAX_MULTIPLIER`, 4). The spacing rises to ≥ 1 s and the same request is made again: a refused request is never skipped in favour of the next one.
@@ -196,8 +202,24 @@ One JSON line per query (`PubchemRecord.to_json`). A CAS query:
                 "body": {"PropertyTable": {"Properties": [{"CID": 5234, "MolecularFormula": "ClNa", …}]}}},
  "experimental": [{"cid": 5234, "retrieved": "2026-10-14T09:30:02+00:00", "httpStatus": 200,
                    "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug_view/data/compound/5234/JSON?heading=Experimental+Properties",
-                   "body": {"Record": {"RecordNumber": 5234, "Section": […], "Reference": […]}}}]}
+                   "values": [{"heading": "Melting Point",
+                               "citation": [{"text": "801 °C",
+                                             "values": [{"number": 801, "unit": "°C"}],
+                                             "refCode": "CRCHandbook-ed95-2014",
+                                             "refNumber": 1, "refPage": "4-58"}]}]}]}
 ```
+
+Example with several magnitudes in one printed string:
+
+```json
+{"heading": "Melting Point",
+ "citation": [{"text": "Red: Triple point = 590 °C; sublimation point = 431 °C",
+               "values": [{"spec": "Red: Triple point", "number": 590, "unit": "°C"},
+                          {"spec": "sublimation point", "number": 431, "unit": "°C"}],
+               "refCode": "CRCHandbook-ed88-2007", "refNumber": 1, "refPage": "4-57"}]}
+```
+
+
 
 A formula or name query has `key` and `search` instead of `cas`, and the CAS section in `casNumbers`:
 
@@ -205,16 +227,25 @@ A formula or name query has `key` and `search` instead of `cas`, and the CAS sec
 {"key": "formula:Ag2S", "search": {"by": "formula", "text": "Ag2S", "hill": "Ag2S"}, "class": "inorganic",
  "properties": {…, "url": "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/fastformula/Ag2S/property/…/JSON", …},
  "casNumbers": [{"cid": 166738, …, "url": "…/pug_view/data/compound/166738/JSON?heading=CAS", "body": {"Record": …}}],
- "experimental": [{"cid": 166738, "httpStatus": 404, …}, …]}
+ "experimental": [{"cid": 166738, "httpStatus": 404, "values": []}, …]}
+```
+
+`pubchem-references.jsonl` (same folder), one line per source (rateable list — no page):
+
+```json
+{"refNumber": 1, "refCode": "CRCHandbook-ed95-2014",
+ "source": "Haynes, W.M. (ed.). CRC Handbook of Chemistry and Physics. 95th Edition. CRC Press LLC, Boca Raton: FL 2014"}
+{"refNumber": 2, "refCode": "HSDB-6341", "source": "Hazardous Substances Data Bank (HSDB)",
+ "url": "https://pubchem.ncbi.nlm.nih.gov/source/hsdb/6341", "sourceId": "6341"}
 ```
 
 - **`key`:** the query key. Formula keys use the Hill formula (`formula:Al2CaO4` for `CaAl2O4`); name keys are lower case with single spaces (`name:tricalcium silicate`).
 - **`search`:** `text` is what was asked; `hill` is present for formulas only.
 - **`class`:** the class of the compound when it was fetched; it picks the file.
-- **`properties`:** the property request. `retrieved` is the UTC time, `httpStatus` 200 or 404, and `body` is PubChem's JSON as sent (`PropertyTable`, or the `Fault` of a 404).
-- **`casNumbers`:** searches only; one item for the chosen compound, with the same keys as an experimental item.
-- **`experimental`:** one item per CID of `experimental_cids`, with the same keys plus `cid`. It is empty for a 404 or with `--no-experimental`.
-- **Not stored:** the response headers. The status, the chosen compound and its CAS are derived when the file is read, never stored.
+- **`properties`:** the property request. `retrieved` is the UTC time, `httpStatus` 200 or 404, `url` is the resume identity, and `body` is PubChem's JSON as sent (`PropertyTable`, or the `Fault` of a 404). Optional `fetchedUrl` / `resolvedVia` when a CAS used a fallback route.
+- **`casNumbers`:** searches only; one item for the chosen compound, still with the raw PUG View `body` (CAS strings).
+- **`experimental`:** one item per CID of `experimental_cids`, with slim `values` (not the raw page). Empty `values` for a 404 or with `--no-experimental`.
+- **Not stored in the compound line:** full `Reference` / `ExtendedReference` / markup; those live in `pubchem-references.jsonl`. Response headers, status and the chosen compound are derived when the file is read.
 
 ### Writing and reading
 
@@ -259,7 +290,7 @@ A formula or name query has `key` and `search` instead of `cas`, and the CAS sec
 The `pubchem/` package under `python/src/` depends only on `chemical_formula`; `compound_data` and the phase-diagram CLI use it. Each file has one export.
 
 - **Client:**
-  - `pubchem_client.py` `PubchemClient`: `answer(query)`, `view(cid, heading)`, `experimental(cid)`, `cas_numbers(cid)`; pacing, throttling, pauses, and the `on_pause` hook.
+  - `pubchem_client.py` `PubchemClient`: `answer(query)`, `view(cid, heading)`, `experimental(cid)` (slim), `cas_numbers(cid)`; pacing, throttling, pauses, and the `on_pause` hook.
   - `pubchem_throttle.py` `throttle_level`, `throttle_statuses`.
   - `pubchem_response.py` `PubchemResponse`: status, JSON, `X-Throttling-Control`, `Retry-After`.
   - `pubchem_blocked_error.py` `PubchemBlockedError`; `pubchem_transient_error.py` `PubchemTransientError`.
@@ -271,17 +302,20 @@ The `pubchem/` package under `python/src/` depends only on `chemical_formula`; `
 - **Models:**
   - `pubchem_record.py` `PubchemRecord`: one line of a class file, with `result`, `experimental_cids`, `missing_cids`, `missing_cas_cid` and `light`.
   - `pubchem_answer.py` `PubchemAnswer`: the property answer, with `properties` and `cids`.
-  - `pubchem_view.py` `PubchemView`: the PUG View answer of one CID (experimental properties or the CAS section).
+  - `pubchem_view.py` `PubchemView`: slim experimental `values` or CAS / legacy `body`; `from_experimental_response`.
+  - `experimental_value.py` `ExperimentalProperty` / `ExperimentalCitation` / `ExperimentalQuantity`: heading + `citation[]` with `text`, `values[{spec?,number,unit}]`, `refCode`, `refNumber`, `refPage`.
   - `pubchem_result.py` `PubchemResult`: the status classification, with `from_formula_search`, `formula_matches`, `name` and `answer`.
 - **Text:**
-  - `pubchem_view_text.py` `view_strings`.
+  - `pubchem_view_text.py` `view_strings` (slim or legacy).
   - `pubchem_record_summary.py` `record_summary`, `record_headline`, `experimental_values`.
+  - `parsers/experimental_properties.py` `parse_experimental`, `parse_quantities`, `ref_code`, `page_of`.
 - **Files:**
   - `pubchem_paths.py` `pubchem_files`: class → file.
   - `parsers/pubchem_records.py` `iter_pubchem_records`, `read_pubchem_records`, `read_pubchem_lines`.
-  - `pubchem_records_writer.py` `append_pubchem_record`, `compact_pubchem_files`.
+  - `pubchem_records_writer.py` `append_pubchem_record`, `compact_pubchem_files` (also references file).
+  - `pubchem_references.py` `append_pubchem_references`, `read_pubchem_references`, `compact_pubchem_references`.
   - `parsers/cas_list.py` `read_cas_list`; `parsers/compound_classes.py` `read_compound_classes`; `parsers/formula_compounds.py` `read_formula_compounds`.
-- **Constants:** `constants/pubchem.py`: the APIs, `PUBCHEM_PROPERTIES`, headings, query kinds, `PUBCHEM_RANKING`, summary headings, folder and file names, classes, statuses, pacing.
+- **Constants:** `constants/pubchem.py`: the APIs, `PUBCHEM_PROPERTIES`, headings, query kinds, `PUBCHEM_RANKING`, summary headings, folder and file names (`PUBCHEM_REFERENCES_FILE`), classes, statuses, pacing.
 - **CLI:**
   - `python/src/scripts/fetch_pubchem_identifiers.py`
   - `python/src/scripts/pubchem_search.py`
@@ -320,7 +354,7 @@ The `pubchem/` package under `python/src/` depends only on `chemical_formula`; `
   - Searcher: stores once and reuses across instances; a stored record comes back with its bodies.
   - Text and files: `view_strings` (strings, and numbers with units), the summary lines, `read_pubchem_lines`, `read_formula_compounds`.
 - **Client** (`test_pubchem_client.py`):
-  - URLs and answers: the URL has all 47 properties; the formula URL; the full answer is attached (200, and the `Fault` of a 404); the experimental and CAS-section URLs; a 404 is kept.
+  - URLs and answers: the URL has all `PUBCHEM_PROPERTIES` fields; the formula URL; the full answer is attached (200, and the `Fault` of a 404); the experimental and CAS-section URLs; a 404 is kept.
   - Throttling: the worst status wins, statuses per counter, a missing header; Yellow and Red slow down, Green restores.
   - Pauses:
     - 503 and network failures pause, then ask the same request again;
@@ -346,7 +380,7 @@ The `pubchem/` package under `python/src/` depends only on `chemical_formula`; `
    docker compose run --rm python sh -c 'python src/scripts/fetch_pubchem_identifiers.py --out-dir /tmp/pc --limit 3 && wc -l /tmp/pc/*'
    ```
 
-   It writes 3 lines over the class files. An `ok` record has a `PropertyTable` with up to 47 properties per compound and one experimental item per CID. A not-found CAS has a 404 and no experimental items.
+   It writes 3 lines over the class files. An `ok` record has a `PropertyTable` with the `PUBCHEM_PROPERTIES` fields per compound and one experimental item per CID. A not-found CAS has a 404 and no experimental items.
 3. Run it again in the same container. The stored queries are skipped (`3 stored`), the next 3 are fetched, and no key has two lines.
 4. A live search into a scratch folder:
 

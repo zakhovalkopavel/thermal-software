@@ -293,6 +293,12 @@ boundary curves (candidate after `pd-curves`, else the dataset file).
 1. **Thin lines.** The ink inside the triangle, without the frame (14 px band), the boundary
    curves (17 px band along their polylines), strokes wider than `isothermStrokeWidth_px` (+ 1.5 px;
    ink within 6 px of their cores), label boxes (`detect_text_boxes`, + 3 px) and rings (+ 6 px).
+   With page words (`text_words`, `auto` and `auto-overlay`): the boxes of the words that are
+   text (`_real_words`: confidence ≥ 60, at least 2 letters or digits, at most 1.4 × the median
+   height of the words read with confidence ≥ 80 — lines read as text such as `\` or `AWN.` are
+   taller) are masked too (+ 3 px), with every ink component lying wholly within the box grown by
+   0.6 × its height across and 0.15 × along, at most 1.3 × its height (glyphs the reader lost,
+   such as a thin `1` next to the word), so letters and digits never become part of a line.
 2. **Branches.** Zhang–Suen skeleton split at junctions (three or more 0 → 1 changes around a
    pixel; the junction pixel and its skeleton neighbours form a cluster), spurs ≤ 8 px pruned
    (`skeleton_branches`).
@@ -301,16 +307,35 @@ boundary curves (candidate after `pd-curves`, else the dataset file).
    lies ahead of the other and the gap does not touch the frame or a boundary: ≤ 14 px (break),
    ≤ 30 px next to a dash (≤ 70 px), ≤ 130 px when ≥ 30 % of the gap lies on label boxes (a
    label printed in the line; the gap is drawn straight, a `straight` waypoint in the draft).
+   A hook at a line end — its last 8, 14 or 20 px turning more than 40° from the 30 px before
+   (a crossing line or a leader tick taken at a junction) — is cut, up to three times per end
+   (`_without_hooks`).
 4. **Not isotherms.** Lines with < 30 px of ink or < 45 px across (digits the label detector
-   missed); straight or ≤ 150 px lines running on outside the triangle (leaders of outside
+   missed); straight lines whose ink runs straight on beyond an end, over at least 30 px and up
+   to 600 px (direction of its last 40 px, following the ink ±2 px across, drifting ≤ 3 px + 8 %,
+   gaps ≤ 5 px), to within 12 px of a page word with letters (leaders of words such as a phase
+   name); straight or ≤ 150 px lines running on outside the triangle (leaders of outside
    labels; a long curved line ending at an edge marker is kept); straight lines up to 150 px
    from a label to a free end or a printed point (leaders); straight lines ≥ 100 px ending at a
    ring (compatibility joins); two straight parts (each ≥ 40 px, ≤ 2.5 px off its chord) meeting
    at a turn ≥ 25° without a label gap (joins or kinked leaders); lines outside every field region
    (`build_field_regions`: the triangle split by the boundaries, a region takes the phase of
    the boundaries along ≥ 80 % of its outline).
-5. **Ends.** Each end moves onto the boundary or edge it points at (≤ 25 px ahead, else
-   ≤ 16 px away); otherwise it is a label end (label box within 10 px) or a free end.
+5. **Ends.** Each end moves onto the boundary or edge it points at (≤ 25 px ahead along its
+   last 8 px, else along its last 40 px — the stroke bends along a boundary where it merges into
+   it — else ≤ 16 px away); otherwise it is a label end (label box within 10 px) or a free end.
+   A boundary end whose line (last 40 px) meets the boundary at under 12° runs `along` it: the
+   line merges into the boundary stroke, so where it really reaches the boundary is unknown; it
+   is no crossing (no grouping, no boundary order; the order across the field still places it).
+   Lines interrupted by text or crossing lines are rebuilt by prolongation:
+   - two pieces of one field whose label or free ends face each other are one line when each end
+     lies ahead of the other's last 40 px (≤ 150 px apart, ≤ 8 px off its direction, directions
+     opposite within 25°), the gap crosses no boundary and their labels agree; closest pairs
+     first (`_join_prolongations`; the gap is drawn straight);
+   - a label end is carried on along its last 40 px to the first boundary within 80 px when a
+     piece of the next field has a crossing end within 35 px of the hit and runs on away from it
+     (within 60°): line and boundary are hidden under the text; the end becomes that crossing
+     and the piece is drawn on to it (`_prolong_through_text`).
 6. **Temperatures**, by source:
    - `label`: a label in a line gap or ahead of a label end (≤ 80 px) is read by
      `read_rotated_number` (its glyph boxes plus the ink components lying wholly within them

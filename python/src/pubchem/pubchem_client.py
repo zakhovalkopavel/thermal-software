@@ -2,12 +2,15 @@
 pubchem.pubchem_client — Ask PubChem PUG REST / PUG View without pushing a busy server.
 
 ``answer``: the property request of a ``PubchemQuery`` (``compound/name/{CAS or name}`` or
-``compound/fastformula/{Hill}`` with every ``PUBCHEM_PROPERTIES`` field); one query can give several
-compounds. ``view``: one section of a compound page, ``GET {PUBCHEM_VIEW_API}/data/compound/{CID}/JSON?heading=…``
-(``experimental``: "Experimental Properties", as in legacy/python_scripts/extract_experimental_properties.py
-but only that section instead of the whole page; ``cas_numbers``: "CAS"). Every request is paced as follows:
+``compound/fastformula/{Hill}`` with every ``PUBCHEM_PROPERTIES`` field). For a CAS, when
+``compound/name`` 404s, CIDs are collected from ``compound/xref/RN``, ``substance/name`` and
+``substance/xref/RN``, then properties are asked by CID. ``view``: one section of a compound page,
+``GET {PUBCHEM_VIEW_API}/data/compound/{CID}/JSON?heading=…`` (``experimental`` / ``cas_numbers``).
+Every request is paced as follows:
 
   * requests are spaced by ``delay`` (default ``PUBCHEM_DELAY``; PubChem allows 5/s and 400/min);
+  * every attempt is logged at INFO with local time, label, HTTP status or error, duration and
+    throttle level;
   * ``X-Throttling-Control`` on every answer: Yellow → ≥ 1 s between requests, Red → ≥ 5 s,
     Green → back to ``delay``;
   * HTTP 403 or Black on a client counter (Request Count, Request Time: this client is blocked) →
@@ -36,9 +39,11 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Optional
 from urllib.parse import quote_plus
 
+from pubchem.cas_cids import cids_from_body
 from pubchem.constants.pubchem import (
-    PUBCHEM_BUSY_PAUSE, PUBCHEM_BUSY_PAUSE_MAX_MULTIPLIER, PUBCHEM_CAS_HEADING, PUBCHEM_CLIENT_COUNTERS,
-    PUBCHEM_DELAY, PUBCHEM_EXPERIMENTAL_HEADING, PUBCHEM_MAX_WAIT, PUBCHEM_OVERLOADED_PAUSE_MULTIPLIER,
+    PUBCHEM_BUSY_PAUSE, PUBCHEM_BUSY_PAUSE_MAX_MULTIPLIER, PUBCHEM_BY_CAS, PUBCHEM_BY_FORMULA,
+    PUBCHEM_CAS_HEADING, PUBCHEM_CAS_LOOKUP_STEPS, PUBCHEM_CLIENT_COUNTERS, PUBCHEM_DELAY,
+    PUBCHEM_EXPERIMENTAL_HEADING, PUBCHEM_MAX_WAIT, PUBCHEM_OVERLOADED_PAUSE_MULTIPLIER,
     PUBCHEM_SERVICE_COUNTER, PUBCHEM_THROTTLE_DELAYS, PUBCHEM_VIEW_API,
 )
 from pubchem.pubchem_answer import PubchemAnswer
@@ -92,12 +97,61 @@ class PubchemClient:
         """Property answer of ``query`` (a 404 when PubChem knows nothing); None for an unexpected 4xx
         answer (not stored, asked again next run).
 
-        Raises ``PubchemBlockedError`` when PubChem blocks or keeps refusing.
+        CAS queries try every ``PUBCHEM_CAS_LOOKUP_STEPS`` route before giving up. Raises
+        ``PubchemBlockedError`` when PubChem blocks or keeps refusing.
         """
-        response = self._request(query.url, query.text)
+        if query.by == PUBCHEM_BY_CAS:
+            return self._answer_cas(query)
+        response = self._request(query.request_url, query.text)
         if response is None:
             return None
-        return PubchemAnswer(_now(), response.status, query.url, response.data)
+        via = "compound/fastformula" if query.by == PUBCHEM_BY_FORMULA else "compound/name"
+        return PubchemAnswer(_now(), response.status, query.url, response.data,
+                             fetched_url=query.request_url, resolved_via=via)
+
+    def _answer_cas(self, query: PubchemQuery) -> Optional[PubchemAnswer]:
+        """``compound/name`` first; on 404, union CIDs from the other CAS lookup steps, then properties by CID."""
+        primary = self._request(query.request_url, f"{query.text} compound/name")
+        if primary is None:
+            return None
+        if primary.status == 200:
+            return PubchemAnswer(_now(), 200, query.url, primary.data,
+                                 fetched_url=query.request_url, resolved_via="compound/name")
+        if primary.status != 404:
+            return PubchemAnswer(_now(), primary.status, query.url, primary.data, fetched_url=query.request_url)
+
+        cids: list[int] = []
+        seen: set[int] = set()
+        sources: list[str] = []
+        for step in PUBCHEM_CAS_LOOKUP_STEPS:
+            if step == "compound/name":
+                continue
+            response = self._request(query.cas_cids_url(step), f"{query.text} {step}")
+            if response is None or response.status == 404:
+                continue
+            if response.status != 200:
+                continue
+            found = cids_from_body(response.data)
+            if not found:
+                continue
+            sources.append(step)
+            for cid in found:
+                if cid not in seen:
+                    seen.add(cid)
+                    cids.append(cid)
+
+        if not cids:
+            return PubchemAnswer(_now(), 404, query.url, primary.data,
+                                 fetched_url=query.request_url, resolved_via=None)
+
+        prop_url = query.properties_url_for_cids(cids)
+        via = "+".join(sources)
+        label = f"{query.text} cid/{','.join(str(c) for c in cids)}"
+        props = self._request(prop_url, label)
+        if props is None:
+            return None
+        logger.info("[pubchem] %s: resolved via %s → %d CID(s)", query.text, via, len(cids))
+        return PubchemAnswer(_now(), props.status, query.url, props.data, fetched_url=prop_url, resolved_via=via)
 
     def view(self, cid: int, heading: str) -> Optional[PubchemView]:
         """Section ``heading`` of the page of compound ``cid`` (a 404 when the page has none); None for an
@@ -110,8 +164,11 @@ class PubchemClient:
         return PubchemView(cid, _now(), response.status, url, response.data)
 
     def experimental(self, cid: int) -> Optional[PubchemView]:
-        """"Experimental Properties" of compound ``cid``."""
-        return self.view(cid, PUBCHEM_EXPERIMENTAL_HEADING)
+        """"Experimental Properties" of compound ``cid``, stored slim (values + separate references)."""
+        raw = self.view(cid, PUBCHEM_EXPERIMENTAL_HEADING)
+        if raw is None:
+            return None
+        return PubchemView.from_experimental_response(raw.cid, raw.retrieved, raw.http_status, raw.url, raw.body)
 
     def cas_numbers(self, cid: int) -> Optional[PubchemView]:
         """"CAS" section of compound ``cid`` (the CAS numbers each source gives)."""
@@ -123,14 +180,17 @@ class PubchemClient:
             self._wait()
             response: Optional[PubchemResponse] = None
             overloaded = False
+            started = time.monotonic()
             try:
                 response = self._fetch(url)
             except PubchemTransientError as exc:
                 reason = str(exc)
+                self._log_request(label, reason, time.monotonic() - started)
             else:
                 reason = f"HTTP {response.status}"
                 statuses = throttle_statuses(response.throttling)
                 self._adapt(response.throttling)
+                self._log_request(label, reason, time.monotonic() - started)
                 if response.status == 403 or any(statuses.get(c) == "Black" for c in PUBCHEM_CLIENT_COUNTERS):
                     raise PubchemBlockedError(f"{label}: {reason}, X-Throttling-Control: {response.throttling or '-'}")
                 overloaded = statuses.get(PUBCHEM_SERVICE_COUNTER) == "Black"
@@ -151,6 +211,12 @@ class PubchemClient:
             else:
                 pause = self._busy_pause * min(2 ** self._pauses, self._busy_pause_max_multiplier)
             self._pause(pause, f"{label}: {reason}, PubChem busy")
+
+    def _log_request(self, label: str, outcome: str, elapsed: float) -> None:
+        """One INFO line per attempt: local time, what was asked, outcome, duration, throttle level."""
+        stamp = datetime.now().strftime("%H:%M:%S")
+        logger.info("[pubchem] %s %s: %s in %.2f s (throttling %s)",
+                    stamp, label, outcome, elapsed, self.level or "-")
 
     def _overloaded_pause(self) -> float:
         return self._busy_pause * PUBCHEM_OVERLOADED_PAUSE_MULTIPLIER

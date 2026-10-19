@@ -18,6 +18,7 @@ from pubchem.pubchem_record_summary import experimental_values, record_headline,
 from pubchem.pubchem_records_writer import append_pubchem_record
 from pubchem.pubchem_result import PubchemResult
 from pubchem.pubchem_searcher import PubchemSearcher
+from pubchem.pubchem_view import PubchemView
 from pubchem.pubchem_view_text import view_strings
 
 AG2S_ION = {"CID": 9, "MolecularFormula": "Ag2S+2", "Charge": 2}
@@ -138,7 +139,8 @@ class _Client:
     def experimental(self, cid):
         self.requests.append(("experimental", cid))
         body = self.views.get((cid, "experimental"))
-        return view(cid, body, 200 if body else 404)
+        status = 200 if body else 404
+        return PubchemView.from_experimental_response(cid, "2026-10-14T10:00:00+00:00", status, f"https://x/{cid}", body)
 
     def cas_numbers(self, cid):
         self.requests.append(("cas", cid))
@@ -200,11 +202,16 @@ class TestSearcher:
         assert len(client.requests) == 3
         assert read_pubchem_records(searcher.files.values())["formula:Ag2S"][1] == searcher.files["inorganic"]
 
-    def test_stored_record_has_experimental_bodies(self, tmp_path):
+    def test_stored_record_has_experimental_values(self, tmp_path):
         client = _Client({"formula:Ag2S": [AG2S]}, {(166738, "experimental"): MELTING_BODY})
         PubchemSearcher(tmp_path, client).search("Ag2S")
         stored = PubchemSearcher(tmp_path, _Client({})).stored("formula:Ag2S")
-        assert stored.experimental[0].body == MELTING_BODY
+        assert stored.experimental[0].body is None
+        cites = stored.experimental[0].values[0].citation
+        assert [c.text for c in cites] == ["825 °C", "825 °C", "1517 °F"]
+        assert [(c.values[0].number, c.values[0].unit) for c in cites] == [
+            (825.0, "°C"), (825.0, "°C"), (1517.0, "°F"),
+        ]
 
 
 class TestText:

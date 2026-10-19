@@ -162,6 +162,22 @@ def test_curve_temperatures_take_unused_non_round_labels_next_to_a_curve():
     assert found[0].edge == 3 and found[0].value == 1062 and 90 <= found[0].index <= 130
 
 
+def test_a_curve_is_not_given_a_temperature_below_one_read_at_its_ends():
+    pixels = np.column_stack([np.arange(0, 201, dtype=float), np.zeros(201)])
+    words = [PageWord("1063", 90.0, (90, 10, 130, 25))]
+    assert read_curve_temperatures({3: pixels}, words, taken=set(), end_temperatures={3: [1104.0, 1850.0]}) == []
+    found = read_curve_temperatures({3: pixels}, words, taken=set(), end_temperatures={3: [1050.0]})
+    assert [t.value for t in found] == [1063.0]
+
+
+def test_a_temperature_printed_under_a_formula_is_no_curve_point():
+    pixels = np.column_stack([np.arange(0, 201, dtype=float), np.zeros(201)])
+    melting = PageWord("1526", 82.0, (90, 10, 130, 25))
+    for above, kept in (("Al,", 0), ("Naz0", 0), ("Mullite", 1), ("1600", 1)):
+        words = [PageWord(above, 60.0, (80, -12, 120, 4)), melting]
+        assert len(read_curve_temperatures({3: pixels}, words, taken=set())) == kept, above
+
+
 def _line(a, b) -> np.ndarray:
     n = int(max(abs(b[0] - a[0]), abs(b[1] - a[1]))) + 1
     return np.column_stack([np.linspace(a[0], b[0], n), np.linspace(a[1], b[1], n)])

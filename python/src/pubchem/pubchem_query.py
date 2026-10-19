@@ -1,7 +1,10 @@
 """
 pubchem.pubchem_query — What is asked of PubChem: a CAS number, a formula or a name.
 
-- ``cas``: ``compound/name/{CAS}`` (PubChem resolves the CAS through its synonyms); key = the CAS.
+- ``cas``: resolve to CIDs then properties. Primary: ``compound/name/{CAS}`` (synonyms). Fallbacks when
+  that 404s: ``compound/xref/RN``, ``substance/name``, ``substance/xref/RN`` (``PUBCHEM_CAS_LOOKUP``),
+  then ``compound/cid/{…}/property/…``. Key = the CAS. Resume URL carries ``#lookup=…`` so an older
+  name-only ``notFound`` is asked again.
 - ``formula``: ``compound/fastformula/{Hill}`` (every compound with exactly that formula, ions and isotope
   variants included); key = ``formula:<Hill>``. Used for compound-data records without a CAS and for new
   compounds (a phase-diagram compound, a line of a query file).
@@ -16,7 +19,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Optional
+from typing import Iterable, Optional
 from urllib.parse import quote
 
 from chemical_formula.formula_cleaner import clean_formula
@@ -24,7 +27,7 @@ from chemical_formula.formula_elements import formula_elements
 from chemical_formula.hill_formula import hill_formula
 from pubchem.cas_number import is_cas
 from pubchem.constants.pubchem import (
-    PUBCHEM_API, PUBCHEM_BY_CAS, PUBCHEM_BY_FORMULA, PUBCHEM_BY_NAME, PUBCHEM_PROPERTIES,
+    PUBCHEM_API, PUBCHEM_BY_CAS, PUBCHEM_BY_FORMULA, PUBCHEM_BY_NAME, PUBCHEM_CAS_LOOKUP, PUBCHEM_PROPERTIES,
 )
 
 _FORMULA_START = re.compile(r"^(\d+\s*)?[A-Z(\[]")
@@ -82,12 +85,35 @@ class PubchemQuery:
 
     @property
     def url(self) -> str:
-        """Property request (an answer stored with another URL predates ``PUBCHEM_PROPERTIES``)."""
+        """Canonical resume / stored URL (CAS includes ``#lookup=…`` for the fallback chain)."""
+        if self.by == PUBCHEM_BY_CAS:
+            return f"{self.request_url}#lookup={PUBCHEM_CAS_LOOKUP}"
+        return self.request_url
+
+    @property
+    def request_url(self) -> str:
+        """HTTP URL of the primary property request (no fragment)."""
         if self.by == PUBCHEM_BY_FORMULA:
             path = f"fastformula/{quote(self.hill or '', safe='')}"
         else:
             path = f"name/{quote(self.text, safe='')}"
         return f"{PUBCHEM_API}/compound/{path}/property/{','.join(PUBCHEM_PROPERTIES)}/JSON"
+
+    def cas_cids_url(self, step: str) -> str:
+        """CID-list URL for one CAS lookup step (``compound/xref/RN``, ``substance/name``, …)."""
+        cas = quote(self.text, safe="")
+        if step == "compound/xref/RN":
+            return f"{PUBCHEM_API}/compound/xref/RN/{cas}/cids/JSON"
+        if step == "substance/name":
+            return f"{PUBCHEM_API}/substance/name/{cas}/cids/JSON"
+        if step == "substance/xref/RN":
+            return f"{PUBCHEM_API}/substance/xref/RN/{cas}/cids/JSON"
+        raise ValueError(f"not a CAS CID step: {step!r}")
+
+    def properties_url_for_cids(self, cids: Iterable[int]) -> str:
+        """Property table for the given CIDs (fallback after CAS → CID resolution)."""
+        joined = ",".join(str(c) for c in cids)
+        return f"{PUBCHEM_API}/compound/cid/{joined}/property/{','.join(PUBCHEM_PROPERTIES)}/JSON"
 
 
 def _hill(text: str) -> Optional[str]:

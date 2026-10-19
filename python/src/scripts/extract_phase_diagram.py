@@ -1030,7 +1030,8 @@ def _cmd_auto(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
     temperatures = read_node_temperatures(graph.nodes, words, args.step, scale)
     taken = {i for i, word in enumerate(words) if any(word is w for _, w in temperatures.values())}
     kept = {k: np.asarray(edge.pixels, float) for k, edge in enumerate(graph.edges) if k not in naming.dropped}
-    saddles = read_curve_temperatures(kept, words, taken, args.step, scale)
+    ends = {k: [temperatures[n][0] for n in graph.edges[k].nodes if n in temperatures] for k in kept}
+    saddles = read_curve_temperatures(kept, words, taken, args.step, scale, end_temperatures=ends)
     system = build_auto_ternary(start, graph, naming, temperatures, calibration, saddles=saddles)
     points = system["invariantPoints"]
     _say("auto", f"{len(system['boundaryCurves'])} boundary curves, {len(points)} points "
@@ -1042,7 +1043,7 @@ def _cmd_auto(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
     point_words = [w for _, w in temperatures.values()] + [t.word for t in saddles]
     detection = detect_isotherms(system, mask, calibration, invariants, width, args.step, read_rotated_number, scale,
                                  side_labels=[w for w in words if not any(w is p for p in point_words)],
-                                 skip_boxes=[w.box for w in point_words])
+                                 skip_boxes=[w.box for w in point_words], text_words=words)
     auto = build_auto_system(system, detection, calibration)
     known = sum(1 for p in detection.isotherms if p.temperature_C is not None)
     _say("auto", f"isotherms: {len(detection.isotherms)} pieces, {known} with a temperature")

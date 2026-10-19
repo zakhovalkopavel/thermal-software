@@ -22,8 +22,8 @@ Output
 ------
   shared/sources/compound-data/pubchem/pubchem-<class>.jsonl — inorganic, organic, unclassified (CAS
                                             the index does not know); one JSON line per query: the
-                                            property answer (every compound with all 47
-                                            PUBCHEM_PROPERTIES, or PubChem's Fault), the PUG View
+                                            property answer (every compound with every
+                                            PUBCHEM_PROPERTIES field, or PubChem's Fault), the PUG View
                                             "Experimental Properties" of its compounds (melting and
                                             boiling point, density, decomposition … with references)
                                             and, for a formula search, the "CAS" section

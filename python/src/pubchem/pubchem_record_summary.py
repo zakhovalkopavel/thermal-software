@@ -41,7 +41,7 @@ def experimental_values(record: PubchemRecord, heading: str, cid: Optional[int] 
     """Distinct strings under ``heading`` on the page of ``cid`` (default: the chosen compound)."""
     cid = cid if cid is not None else record.result.cid
     view = next((v for v in record.experimental if v.cid == cid), None)
-    return list(dict.fromkeys(view_strings(view.body if view else None, heading)))
+    return list(dict.fromkeys(view_strings(view, heading) if view else []))
 
 
 def record_summary(record: PubchemRecord) -> list[str]:
