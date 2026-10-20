@@ -44,7 +44,7 @@ This directory contains documentation for Python processing scripts.
 - NASA-7 / NASA-9 species keys are attached per record (Hill formula, name suffix, ΔfH°(298.15) check); Lennard-Jones σ and ε/k from the Poling and Magalhães tables
 - Packages: `python/src/chemical_formula/`, `chemicals_tables/` (table parsers), `pubchem/` (PubChem client and per-class files), `dataset_layout/` (file names, output clearing), `compound_data/` (merge and output)
 - CLI: `python/src/scripts/build_compound_data.py`, `python/src/scripts/fetch_pubchem_identifiers.py`
-- Make commands: `make compound-data-build` (step 1, offline, also writes `missing-cas.txt`), `make compound-data-pubchem` (step 2: PubChem identifiers of the missing CAS numbers and CAS of the records without one, slow and resumable, then rebuild), `make compound-data-test`
+- Make commands: `make compound-data-build` (step 1, offline, also writes `missing-cas.txt`), `make compound-data-pubchem` (step 2: PubChem identifiers of the missing CAS numbers and CAS of the records without one, slow and resumable), `make compound-data-test`
 - Source files: `shared/sources/compound-data/chemicals/` (https://github.com/CalebBell/chemicals, pinned commit), `shared/sources/compound-data/nist-janaf/`, `shared/sources/NASA/` (NASA-7 / NASA-9 keys, checked by ΔfH°), the PubChem files `shared/sources/compound-data/pubchem/pubchem-{inorganic,organic,unclassified}.jsonl` and `shared/sources/transport-parameters.json` (White, NASA TN D-481, Mamedov 2014, Svehla 1995)
 - Output: `shared/processed/compound-data/inorganic/<Element>/<IUPAC formula>-<name>.json`, `organic/<family>/<Hill>-<name>.json`, `unresolved.json`, `index.json`, `units.json`, `sources.json` + `interactions.json` (cleared before writing)
 - Report: `tmp/reports/python/compound-data/report.json`
@@ -55,7 +55,7 @@ This directory contains documentation for Python processing scripts.
 - On demand: `make pubchem-search Q="CaAl2O4"` (formula, name or CAS; `PubchemSearcher` from Python), `make pd-new … PUBCHEM=1` for the components of a new phase diagram, `make pubchem-search QUERY_FILE=shared/sources/pubchem-queries.txt` for the 551 formulas without a compound-data record
 - Polite and resumable: spacing by the `X-Throttling-Control` status, pauses when PubChem is busy or overloaded, stops when it blocks the client; every query is appended as soon as it is done
 - Package: `python/src/pubchem/`; CLI: `python/src/scripts/fetch_pubchem_identifiers.py` (`--class`, `--all-cas`, `--no-formulas`, `--retry`, `--no-experimental`, pacing options), `python/src/scripts/pubchem_search.py`
-- Make commands: `make compound-data-pubchem PUBCHEM_ARGS="…"` (then rebuilds the compound data), `make pubchem-search Q="…"`
+- Make commands: `make compound-data-pubchem PUBCHEM_ARGS="…"`, `make pubchem-search Q="…"`
 - Output: `shared/sources/compound-data/pubchem/pubchem-{inorganic,organic,unclassified}.jsonl`, one JSON line per query (CAS, `formula:<Hill>`, `name:<name>`) with the full answers
 
 ---

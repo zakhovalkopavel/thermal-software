@@ -1,9 +1,10 @@
 """
 pubchem.pubchem_references — Rateable sources list for PubChem experimental values.
 
-Each line is one source with a stable ``refNumber`` (1, 2, 3, … — position in this file), a unique
+Each line is one source with a stable ``refNumber`` (1, 2, 3, …; gaps stay), a unique
 informative ``refCode`` (work + edition/year; ``-2``, ``-3``, … when stems collide), and ``source``
-(name / citation without page). Optional ``url``, ISBN, etc. No page — one source covers many values.
+(name / citation without page). Lines are ordered by ``refCode``. Optional ``url``, ISBN, etc.
+No page — one source covers many values.
 
 Compound properties store ``citation`` rows with that ``refNumber`` / ``refCode`` and optional
 ``refPage``.
@@ -78,15 +79,12 @@ def register_sources(
 
 
 def append_pubchem_references(path: Path, rows: Iterable[dict[str, Any]]) -> int:
-    """Append source rows; returns how many were written."""
+    """Add source rows and keep the file ordered by ``refCode``. Returns how many were written."""
     rows = list(rows)
     if not rows:
         return 0
     path.parent.mkdir(parents=True, exist_ok=True)
-    prefix = "\n" if _ends_inside_a_line(path) else ""
-    with path.open("a", encoding="utf-8") as fh:
-        for i, row in enumerate(rows):
-            fh.write(("" if i else prefix) + json.dumps(row, ensure_ascii=False) + "\n")
+    _write_rows(path, _read_rows(path) + rows)
     return len(rows)
 
 
@@ -96,21 +94,23 @@ def read_pubchem_references(path: Path) -> dict[str, dict[str, Any]]:
     return by_code
 
 
+def ref_code_order(row: dict[str, Any]) -> str:
+    """Sort key for the references file."""
+    return str(row.get("refCode") or "")
+
+
 def compact_pubchem_references(path: Path) -> int:
-    """Keep one line per source text / refCode, ordered by ``refNumber`` (numbers stay stable)."""
+    """Keep one line per ``refCode``, ordered by ``refCode``. ``refNumber`` stays as stored."""
     if not path.is_file():
         return 0
     by_code, _, _ = _catalog(path)
-    with path.open(encoding="utf-8") as fh:
-        total = sum(1 for text in fh if text.strip())
-    if total == len(by_code):
+    current = _read_rows(path)
+    ordered = sorted(by_code.values(), key=ref_code_order)
+    same_order = [row.get("refCode") for row in current] == [row.get("refCode") for row in ordered]
+    if len(current) == len(ordered) and same_order:
         return 0
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    with tmp.open("w", encoding="utf-8") as fh:
-        for row in sorted(by_code.values(), key=lambda r: int(r["refNumber"])):
-            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
-    tmp.replace(path)
-    return total - len(by_code)
+    _write_rows(path, ordered)
+    return len(current) - len(ordered)
 
 
 def _catalog(path: Path) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]], int]:
@@ -153,9 +153,21 @@ def _allocate_code(stem: str, by_code: dict[str, dict[str, Any]]) -> str:
     return f"{stem}-{index}"
 
 
-def _ends_inside_a_line(path: Path) -> bool:
-    if not path.is_file() or path.stat().st_size == 0:
-        return False
-    with path.open("rb") as fh:
-        fh.seek(-1, 2)
-        return fh.read(1) != b"\n"
+def _read_rows(path: Path) -> list[dict[str, Any]]:
+    if not path.is_file():
+        return []
+    rows: list[dict[str, Any]] = []
+    with path.open(encoding="utf-8") as fh:
+        for text in fh:
+            text = text.strip()
+            if text:
+                rows.append(json.loads(text))
+    return rows
+
+
+def _write_rows(path: Path, rows: Iterable[dict[str, Any]]) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w", encoding="utf-8") as fh:
+        for row in sorted(rows, key=ref_code_order):
+            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+    tmp.replace(path)

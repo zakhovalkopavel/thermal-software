@@ -75,6 +75,18 @@ class TestRecord:
         assert record.missing_cids == [1]
         assert pubchem_record("75-20-7", "organic", []).missing_cids == []
 
+    def test_all_404_experimental_is_stored_empty(self):
+        empty = view(1, None, 404)
+        record = pubchem_record("1299-86-1", "inorganic", [AL4C3, {**AL4C3, "CID": 1}],
+                                experimental=(empty, view(2, None, 404)))
+        data = record.to_json()
+        assert data["experimental"] == [] and data["experimentalDone"] is True
+        loaded = PubchemRecord.from_json(data)
+        assert loaded.missing_cids == [] and loaded.experimental == ()
+        unfinished = pubchem_record("1299-86-1", "inorganic", [AL4C3])
+        assert unfinished.to_json().get("experimentalDone") is None
+        assert unfinished.missing_cids == [16685054]
+
     def test_cids_of_every_compound(self):
         body = {"PropertyTable": {"Properties": [AL4C3, {**AL4C3, "CID": 1}]}}
         assert PubchemAnswer(DAY, 200, "https://x", body).cids == [16685054, 1]

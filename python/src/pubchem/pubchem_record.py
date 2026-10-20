@@ -46,6 +46,7 @@ class PubchemRecord:
     experimental: tuple[PubchemView, ...] = ()
     cas_numbers: tuple[PubchemView, ...] = ()
     light: bool = field(default=False, compare=False)
+    experimental_done: bool = False
 
     @property
     def key(self) -> str:
@@ -66,7 +67,12 @@ class PubchemRecord:
 
     @property
     def missing_cids(self) -> list[int]:
-        """``experimental_cids`` without experimental properties in this record."""
+        """``experimental_cids`` without experimental properties in this record.
+
+        ``experimental_done`` means every CID was asked and none had values (the stored list is empty).
+        """
+        if self.experimental_done:
+            return []
         done = {e.cid for e in self.experimental}
         return [cid for cid in self.experimental_cids if cid not in done]
 
@@ -94,7 +100,7 @@ class PubchemRecord:
         )
         cas_numbers = tuple(PubchemView.from_json(v) for v in data.get("casNumbers", []))
         return cls(query, data["class"], PubchemAnswer.from_json(data["properties"]), items, cas_numbers,
-                   light=not experimental)
+                   light=not experimental, experimental_done=bool(data.get("experimentalDone")))
 
     def to_json(self) -> dict[str, Any]:
         """One line of the class file; raises ValueError for a ``light`` record."""
@@ -110,5 +116,14 @@ class PubchemRecord:
         out = {**head, "class": self.compound_class, "properties": self.answer.to_json()}
         if self.query.by != PUBCHEM_BY_CAS:
             out["casNumbers"] = [v.to_json() for v in self.cas_numbers]
-        out["experimental"] = [e.to_json() for e in self.experimental]
+        if _experimental_is_empty(self.experimental) or (self.experimental_done and not self.experimental):
+            out["experimental"] = []
+            out["experimentalDone"] = True
+        else:
+            out["experimental"] = [e.to_json() for e in self.experimental]
         return out
+
+
+def _experimental_is_empty(views: tuple[PubchemView, ...]) -> bool:
+    """Every view is an HTTP 404 with no values. A mix of 404s and real values is kept."""
+    return bool(views) and all(view.http_status == 404 and not view.values and view.body is None for view in views)

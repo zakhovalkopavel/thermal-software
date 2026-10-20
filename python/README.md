@@ -187,7 +187,7 @@ Merges the CRC, Perry, Poling, Yaws, TRC, Zabransky, NIST WebBook Shomate and VD
 **Make commands**:
 ```bash
 make compound-data-build   # step 1: build all files + report + missing-cas.txt (offline)
-make compound-data-pubchem # step 2: missing CAS + records without CAS → PubChem → one file per class (slow, resumable), then step 1 again
+make compound-data-pubchem # step 2: missing CAS + records without CAS → PubChem → one file per class (slow, resumable)
 make pubchem-search Q="CaAl2O4"  # on demand: formula, name or CAS → PubChem (printed, kept in the class files)
 make pubchem-search QUERY_FILE=shared/sources/pubchem-queries.txt  # the 551 formulas without a compound-data record
 make compound-data-test    # run unit tests of the five packages (needs rdkit in the python_packages volume)

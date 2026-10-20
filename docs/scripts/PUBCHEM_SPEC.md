@@ -37,7 +37,6 @@ flowchart LR
   cas["PUG View CAS section (1 per found compound of a search)"] --> one
   view["PUG View Experimental Properties (1 per CID)"] --> one
   one --> files["pubchem-{inorganic,organic,unclassified}.jsonl"]
-  files --> rebuild["make compound-data-build (identifiers, cas of formula: records)"]
 ```
 
 ## Running
@@ -45,12 +44,12 @@ flowchart LR
 ### Fetch step
 
 ```bash
-make compound-data-pubchem                                          # missing CAS + records without CAS, then rebuild
+make compound-data-pubchem                                          # missing CAS + records without CAS
 make compound-data-pubchem PUBCHEM_ARGS="--class inorganic unclassified"
 make compound-data-pubchem PUBCHEM_ARGS="--all-cas --class organic"
 ```
 
-The Make target passes `PUBCHEM_ARGS` to the CLI and runs `make compound-data-build` at the end. The CLI is `python/src/scripts/fetch_pubchem_identifiers.py`:
+The Make target passes `PUBCHEM_ARGS` to the CLI and stops when the class files are written. Run `make compound-data-build` yourself when those files should be read into the compound data. The CLI is `python/src/scripts/fetch_pubchem_identifiers.py`:
 
 | Option | Default | Meaning |
 |---|---|---|
@@ -170,10 +169,10 @@ The property request returns computed data only. For every CID of `experimental_
 - **Which CIDs:** for a CAS or name query, every CID of the answer, not only the one the build uses. For a formula query, only the formula matches (neutral, no isotopes).
 - **History:** this is how `legacy/python_scripts/extract_experimental_properties.py` got melting points, but with the heading filter (NaCl: 48 KB instead of the whole 1.15 MB page).
 - **Stored slim:** the compound log does **not** keep PubChem's nested `Information` / `ExtendedReference` / `Markup` / depositor essays. Each heading becomes `{heading, citation: [{text, values: [{spec?, number, unit}], refCode, refNumber, refPage?}]}`. **`text`** is the original printed string (unchanged). **`values`** are parsed magnitudes: optional **`spec`** (label/condition from the text, e.g. `Triple point`), then **number** and **unit** in separate fields (empty when none parse). No literature source text on the compound line — that lives in the references file. **`refPage`** is per citation row (one source, many pages).
-- **Sources list:** `pubchem-references.jsonl` is a rateable catalog. Each line has a stable **`refNumber`** (1, 2, 3, … — position in this file), a unique **`refCode`**, and **`source`** (name / citation **without page**), plus optional `url` / ISBN / `sourceId`. No page on the source row. No content hash; if two different sources share the same stem, the later ones are `stem-2`, `stem-3`, ….
-- **`refCode`:** informative stem — e.g. `CRCHandbook-ed95-2014`, `MerckIndex-2013`, `HSDB-6341`, `CAMEO-8234` (no page in the code). **`refNumber`:** index in `pubchem-references.jsonl` (not PubChem's depositor number). **`refPage`:** from the literature citation when present, on the citation row only.
+- **Sources list:** `pubchem-references.jsonl` is a rateable catalog, ordered by **`refCode`**. Each line has a stable **`refNumber`** (1, 2, 3, …; gaps stay; not the line position), a unique **`refCode`**, and **`source`** (the work or the database), plus optional `url` / ISBN / `sourceId`. A page, a product number, an access date, and the chemical looked up in a database are not part of `source`. An online article is the encyclopedia, its edition, and the article title. No content hash; if two different sources share the same stem, the later ones are `stem-2`, `stem-3`, ….
+- **`refCode`:** informative stem — e.g. `CRCHandbook-ed95-2014`, `MerckIndex-2013`, `HSDB-6341`, `CAMEO-8234` (no page in the code). The references file is sorted by this stem. **`refNumber`:** stable catalog index (not PubChem's depositor number, and not the line position). **`refPage`:** from the literature citation when present, on the citation row only.
 - **Reading:** `view_strings(view_or_body, heading)` lists the original `text` strings under a heading (slim `values` or legacy `body`).
-- **404:** that CID has no Experimental Properties section (`values: []`). Another CID of the same query may still have data and sources.
+- **404:** that CID has no Experimental Properties section (`values: []`). Another CID of the same query may still have data and sources. When every CID of the record is a 404 with no values, the line stores `"experimental": []` and `"experimentalDone": true`, so those CIDs are not asked again. A record that was never asked has `"experimental": []` and no `experimentalDone`.
 - **Legacy lines** that still hold a raw `body` are readable until re-fetched; new fetches always write slim `values`.
 
 The other sections of the compound page (Safety and Hazards, Pharmacology, Literature, Patents …) are not requested: they are large and mostly regulatory.
