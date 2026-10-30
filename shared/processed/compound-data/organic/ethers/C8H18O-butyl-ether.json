@@ -1,0 +1,328 @@
+{
+  "class": "organic",
+  "group": "ethers",
+  "displayFormula": "C8H18O",
+  "hill": "C8H18O",
+  "elements": [
+    "C",
+    "H",
+    "O"
+  ],
+  "entries": {
+    "142-96-1": {
+      "name": "butyl ether",
+      "Mr": 0.13022792000000002,
+      "smiles": "CCCCOCCCC",
+      "inchikey": "DURPTKYDGMDSBL-UHFFFAOYSA-N",
+      "pubchemCid": 8909,
+      "families": [
+        "ethers",
+        "alkanes"
+      ],
+      "identifierRef": [
+        779,
+        "idPubchemSmall"
+      ],
+      "properties": {
+        "acentricFactor": [
+          {
+            "value": 0.448,
+            "ref": [
+              "Yaws2014",
+              1043,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "boilingPoint": [
+          {
+            "value": 415.37,
+            "ref": "pubchem1302"
+          },
+          {
+            "value": 413.95,
+            "ref": "pubchem356"
+          },
+          {
+            "value": 415.15,
+            "ref": "pubchem931"
+          },
+          {
+            "value": 415.15,
+            "ref": "pubchem1402"
+          },
+          {
+            "value": 414.15,
+            "ref": [
+              "Yaws2014",
+              1781,
+              "yawsTb"
+            ]
+          }
+        ],
+        "criticalPressure": [
+          {
+            "value": 2460000,
+            "ref": [
+              "Yaws2014",
+              1043,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "criticalTemperature": [
+          {
+            "value": 584.1,
+            "ref": [
+              "Yaws2014",
+              1043,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "criticalVolume": [
+          {
+            "value": 0.000487,
+            "ref": [
+              "Yaws2014",
+              1043,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "density": [
+          {
+            "value": 800.0,
+            "ref": "pubchem931"
+          }
+        ],
+        "enthalpyFormation298": [
+          {
+            "value": -377900,
+            "phase": "liquid",
+            "ref": [
+              "CRC95",
+              736,
+              "crcStdThermo"
+            ]
+          },
+          {
+            "value": -332800,
+            "phase": "gas",
+            "ref": [
+              "CRC95",
+              736,
+              "crcStdThermo"
+            ]
+          },
+          {
+            "value": -333900,
+            "phase": "gas",
+            "ref": [
+              "TRC1994",
+              364,
+              "trcGasCp"
+            ]
+          },
+          {
+            "value": -332900,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              753,
+              "yawsHfS0g"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 502.55,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              753,
+              "yawsHfS0g"
+            ]
+          }
+        ],
+        "heatCapacity298": [
+          {
+            "value": 278.2,
+            "phase": "liquid",
+            "ref": [
+              "CRC95",
+              736,
+              "crcStdThermo"
+            ]
+          }
+        ],
+        "meltingPoint": [
+          {
+            "value": 175.37,
+            "ref": "pubchem1302"
+          },
+          {
+            "value": 177.95,
+            "ref": "pubchem356"
+          },
+          {
+            "value": 178.15,
+            "ref": "pubchem931"
+          },
+          {
+            "value": 175.15,
+            "ref": "pubchem1402"
+          }
+        ]
+      },
+      "equations": {
+        "heatCapacity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "trcCp",
+                "ref": [
+                  "TRC1994",
+                  364,
+                  "trcGasCp"
+                ],
+                "vars": {
+                  "a0": 4,
+                  "a1": 2076000,
+                  "a2": 252,
+                  "a3": 87.994,
+                  "a4": -6.086,
+                  "a5": 10820000,
+                  "a6": 105,
+                  "a7": 158,
+                  "I": -5328.7,
+                  "J": 9.14
+                },
+                "min": 298,
+                "max": 1000,
+                "k": 8.31446261815324
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quartic",
+                "ref": [
+                  "Perry8",
+                  80,
+                  "perry153Dippr100"
+                ],
+                "vars": {
+                  "a": 270720,
+                  "b": -259.83,
+                  "c": 0.95427,
+                  "d": 0,
+                  "e": 0
+                },
+                "min": 175.3,
+                "max": 450,
+                "k": 0.001
+              },
+              {
+                "type": "zabranskySpline",
+                "ref": [
+                  "Zabransky1996",
+                  645,
+                  "zabransky"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.1,
+                      "Tmax": 298.1,
+                      "a1": 33.5326,
+                      "a2": 0,
+                      "a3": 0,
+                      "a4": 0
+                    }
+                  ]
+                },
+                "min": 298.1,
+                "max": 298.1,
+                "k": 8.31446261815324,
+                "dataType": "p",
+                "uncertainty": "III"
+              }
+            ]
+          }
+        },
+        "thermalConductivity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN102",
+                "ref": [
+                  "Perry8",
+                  216,
+                  "perry314"
+                ],
+                "vars": {
+                  "c1": 0.0032694,
+                  "c2": 0.58633,
+                  "c3": 1259.9,
+                  "c4": 300890
+                },
+                "min": 323.15,
+                "max": 1000
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN102",
+                "ref": [
+                  "Perry8",
+                  216,
+                  "perry312"
+                ],
+                "vars": {
+                  "c1": 7.7147e-08,
+                  "c2": 0.79906,
+                  "c3": 80.765,
+                  "c4": 0
+                },
+                "min": 175.3,
+                "max": 1000
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "Perry8",
+                  215,
+                  "perry313"
+                ],
+                "vars": {
+                  "c1": 10.027,
+                  "c2": 206,
+                  "c3": -3.1607,
+                  "c4": 0,
+                  "c5": 0
+                },
+                "min": 175.3,
+                "max": 414.15
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

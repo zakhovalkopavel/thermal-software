@@ -1,0 +1,260 @@
+{
+  "class": "inorganic",
+  "group": "Ag",
+  "displayFormula": "AgNO3",
+  "hill": "AgNO3",
+  "elements": [
+    "Ag",
+    "N",
+    "O"
+  ],
+  "entries": {
+    "7761-88-8": {
+      "name": "silver nitrate",
+      "Mr": 0.1698731,
+      "smiles": "[N+](=O)([O-])[O-].[Ag+]",
+      "inchikey": "SQGYOTSLMSWVJD-UHFFFAOYSA-N",
+      "pubchemCid": 24470,
+      "identifierRef": [
+        9805,
+        "idPubchemLarge"
+      ],
+      "properties": {
+        "boilingPoint": [
+          {
+            "value": 713.15,
+            "ref": "pubchem1302"
+          },
+          {
+            "value": 713.15,
+            "ref": "pubchem1211"
+          }
+        ],
+        "density": [
+          {
+            "value": 4350.0,
+            "ref": "pubchem931"
+          },
+          {
+            "value": 4350,
+            "ref": [
+              "CRC95",
+              607,
+              "crcConstants"
+            ]
+          }
+        ],
+        "enthalpyFormation298": [
+          {
+            "value": -124400,
+            "phase": "solid",
+            "ref": [
+              "CRC95",
+              1756,
+              "crcStdThermo"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 140.9,
+            "phase": "solid",
+            "ref": [
+              "CRC95",
+              1756,
+              "crcStdThermo"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": -33400,
+            "phase": "solid",
+            "ref": [
+              "CRC95",
+              1756,
+              "crcStdThermo"
+            ]
+          }
+        ],
+        "heatCapacity298": [
+          {
+            "value": 93.1,
+            "phase": "solid",
+            "ref": [
+              "CRC95",
+              1756,
+              "crcStdThermo"
+            ]
+          }
+        ],
+        "heatOfFusion": [
+          {
+            "value": 11720,
+            "ref": [
+              "CRC95",
+              751,
+              "crcHfus"
+            ]
+          }
+        ],
+        "meltingPoint": [
+          {
+            "value": 485.37,
+            "ref": "pubchem1302"
+          },
+          {
+            "value": 485.15,
+            "ref": "pubchem1211"
+          },
+          {
+            "value": 485.15,
+            "ref": "pubchem931"
+          },
+          {
+            "value": 483.15,
+            "ref": "pubchem1402"
+          },
+          {
+            "value": 483.15,
+            "ref": [
+              "CRC95",
+              607,
+              "crcConstants"
+            ]
+          }
+        ],
+        "molarVolume": [
+          {
+            "value": 3.90512643678161e-05,
+            "phase": "solid",
+            "ref": [
+              "CRC95",
+              485,
+              "crcSolidDensity"
+            ]
+          }
+        ]
+      },
+      "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "CRC95",
+                  99,
+                  "crcMoltenDensity"
+                ],
+                "vars": {
+                  "a": 4500.4987,
+                  "b": -1.098
+                },
+                "min": 483.15,
+                "max": 633.15,
+                "raw": {
+                  "rho0": 3970,
+                  "k": 1.098,
+                  "Tm": 483.15,
+                  "Tmax": 633.15
+                }
+              }
+            ]
+          }
+        },
+        "heatCapacity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linearHyperbolic",
+                "ref": [
+                  "Perry8",
+                  283,
+                  "perry151"
+                ],
+                "vars": {
+                  "a": 30.2,
+                  "b": 0,
+                  "d": 0
+                },
+                "min": 482,
+                "max": 541,
+                "k": 4.184,
+                "error": 5
+              },
+              {
+                "type": "zabranskySpline",
+                "ref": [
+                  "Zabransky1996",
+                  1107,
+                  "zabransky"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 491.1,
+                      "Tmax": 541.2,
+                      "a1": 16.6055,
+                      "a2": 0,
+                      "a3": 0,
+                      "a4": 0
+                    }
+                  ]
+                },
+                "min": 491.1,
+                "max": 541.2,
+                "k": 8.31446261815324,
+                "dataType": "p",
+                "uncertainty": "IV"
+              }
+            ]
+          },
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linearHyperbolic",
+                "ref": [
+                  "Perry8",
+                  281,
+                  "perry151"
+                ],
+                "vars": {
+                  "a": 18.83,
+                  "b": 0.016,
+                  "d": 0
+                },
+                "min": 273,
+                "max": 433,
+                "k": 4.184,
+                "variant": "α",
+                "error": 2
+              },
+              {
+                "type": "linearHyperbolic",
+                "ref": [
+                  "Perry8",
+                  282,
+                  "perry151"
+                ],
+                "vars": {
+                  "a": 25.7,
+                  "b": 0,
+                  "d": 0
+                },
+                "min": 433,
+                "max": 482,
+                "k": 4.184,
+                "variant": "β",
+                "error": 5
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,258 @@
+{
+  "class": "organic",
+  "group": "halogenated",
+  "displayFormula": "C7F16",
+  "hill": "C7F16",
+  "elements": [
+    "C",
+    "F"
+  ],
+  "entries": {
+    "335-57-9": {
+      "name": "hexadecafluoroheptane",
+      "Mr": 0.388049351,
+      "smiles": "C(C(C(C(F)(F)F)(F)F)(F)F)(C(C(C(F)(F)F)(F)F)(F)F)(F)F",
+      "inchikey": "LGUZHRODIJCVOC-UHFFFAOYSA-N",
+      "pubchemCid": 9553,
+      "families": [
+        "halogenated",
+        "alkanes"
+      ],
+      "identifierRef": [
+        814,
+        "idPubchemSmall"
+      ],
+      "properties": {
+        "boilingPoint": [
+          {
+            "value": 355.65,
+            "ref": [
+              "Yaws2014",
+              2022,
+              "yawsTb"
+            ]
+          }
+        ],
+        "enthalpyFormation298": [
+          {
+            "value": -3420000,
+            "phase": "liquid",
+            "ref": [
+              "CRC95",
+              794,
+              "crcStdThermo"
+            ]
+          },
+          {
+            "value": -3383600,
+            "phase": "gas",
+            "ref": [
+              "CRC95",
+              794,
+              "crcStdThermo"
+            ]
+          },
+          {
+            "value": -3364300,
+            "phase": "gas",
+            "ref": [
+              "TRC1994",
+              461,
+              "trcGasCp"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 561.8,
+            "phase": "liquid",
+            "ref": [
+              "CRC95",
+              794,
+              "crcStdThermo"
+            ]
+          }
+        ],
+        "heatCapacity298": [
+          {
+            "value": 316.03,
+            "phase": "gas",
+            "ref": [
+              "Poling5",
+              196,
+              "poling"
+            ]
+          },
+          {
+            "value": 419,
+            "phase": "liquid",
+            "ref": [
+              "CRC95",
+              794,
+              "crcStdThermo"
+            ]
+          }
+        ],
+        "heatOfFusion": [
+          {
+            "value": 6950,
+            "ref": [
+              "CRC95",
+              373,
+              "crcHfus"
+            ]
+          }
+        ]
+      },
+      "equations": {
+        "heatCapacity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quartic",
+                "ref": [
+                  "Poling5",
+                  196,
+                  "poling"
+                ],
+                "vars": {
+                  "a": 3.002,
+                  "b": 0.170245,
+                  "c": -0.00021365,
+                  "d": 1.33e-07,
+                  "e": -3.341e-11
+                },
+                "min": 200,
+                "max": 1000,
+                "k": 8.31446261815324
+              },
+              {
+                "type": "trcCp",
+                "ref": [
+                  "TRC1994",
+                  461,
+                  "trcGasCp"
+                ],
+                "vars": {
+                  "a0": 4,
+                  "a1": 20328000,
+                  "a2": 1591,
+                  "a3": 46.312,
+                  "a4": 17.183,
+                  "a5": 240000,
+                  "a6": 33,
+                  "a7": 30,
+                  "I": -2467.4,
+                  "J": 28.46
+                },
+                "min": 200,
+                "max": 1500,
+                "k": 8.31446261815324
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "zabranskyQuasiPolynomial",
+                "ref": [
+                  "Zabransky1996",
+                  677,
+                  "zabransky"
+                ],
+                "vars": {
+                  "Tc": 474.8,
+                  "a1": -2.70258,
+                  "a2": 0.350776,
+                  "a3": 24.3069,
+                  "a4": 52.7572,
+                  "a5": -31.6186,
+                  "a6": 7.04356
+                },
+                "min": 221.9,
+                "max": 470,
+                "k": 8.31446261815324,
+                "dataType": "p",
+                "uncertainty": "IV"
+              },
+              {
+                "type": "zabranskySpline",
+                "ref": [
+                  "Zabransky1996",
+                  676,
+                  "zabransky"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 221.9,
+                      "Tmax": 430,
+                      "a1": 28.7965,
+                      "a2": 8.66306,
+                      "a3": -0.849044,
+                      "a4": 0.123279
+                    },
+                    {
+                      "Tmin": 430,
+                      "Tmax": 470,
+                      "a1": -41025.5,
+                      "a2": 28651.2,
+                      "a3": -6661.9,
+                      "a4": 516.484
+                    }
+                  ]
+                },
+                "min": 221.9,
+                "max": 470,
+                "k": 8.31446261815324,
+                "dataType": "p",
+                "uncertainty": [
+                  "III",
+                  "V"
+                ]
+              },
+              {
+                "type": "zabranskySpline",
+                "ref": [
+                  "Zabransky1996",
+                  679,
+                  "zabransky"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 221.9,
+                      "Tmax": 430,
+                      "a1": 30.2751,
+                      "a2": 6.80646,
+                      "a3": -0.0815833,
+                      "a4": 0.0188636
+                    },
+                    {
+                      "Tmin": 430,
+                      "Tmax": 470,
+                      "a1": -24434.5,
+                      "a2": 17075.3,
+                      "a3": -3969.49,
+                      "a4": 307.725
+                    }
+                  ]
+                },
+                "min": 221.9,
+                "max": 470,
+                "k": 8.31446261815324,
+                "dataType": "sat",
+                "uncertainty": [
+                  "III",
+                  "V"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

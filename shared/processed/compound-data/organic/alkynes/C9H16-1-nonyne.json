@@ -1,0 +1,301 @@
+{
+  "class": "organic",
+  "group": "alkynes",
+  "displayFormula": "C9H16",
+  "hill": "C9H16",
+  "elements": [
+    "C",
+    "H"
+  ],
+  "entries": {
+    "3452-09-3": {
+      "name": "1-nonyne",
+      "Mr": 0.12422333999999999,
+      "smiles": "CCCCCCCC#C",
+      "inchikey": "OSSQSXOTMIGBCF-UHFFFAOYSA-N",
+      "pubchemCid": 18937,
+      "families": [
+        "alkynes",
+        "alkanes"
+      ],
+      "identifierRef": [
+        1311,
+        "idPubchemSmall"
+      ],
+      "properties": {
+        "acentricFactor": [
+          {
+            "value": 0.471,
+            "ref": [
+              "Yaws2014",
+              3152,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "boilingPoint": [
+          {
+            "value": 423.85,
+            "ref": [
+              "Yaws2014",
+              6782,
+              "yawsTb"
+            ]
+          }
+        ],
+        "criticalPressure": [
+          {
+            "value": 2610000,
+            "ref": [
+              "Yaws2014",
+              3152,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "criticalTemperature": [
+          {
+            "value": 598.05,
+            "ref": [
+              "Yaws2014",
+              3152,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "criticalVolume": [
+          {
+            "value": 0.000497,
+            "ref": [
+              "Yaws2014",
+              3152,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "enthalpyFormation298": [
+          {
+            "value": 16300,
+            "phase": "liquid",
+            "ref": [
+              "CRC95",
+              1490,
+              "crcStdThermo"
+            ]
+          },
+          {
+            "value": 62300,
+            "phase": "gas",
+            "ref": [
+              "CRC95",
+              1490,
+              "crcStdThermo"
+            ]
+          },
+          {
+            "value": 100300,
+            "phase": "gas",
+            "ref": [
+              "TRC1994",
+              1223,
+              "trcGasCp"
+            ]
+          },
+          {
+            "value": 61700,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              2030,
+              "yawsHfS0g"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 487,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              2030,
+              "yawsHfS0g"
+            ]
+          }
+        ]
+      },
+      "equations": {
+        "heatCapacity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "trcCp",
+                "ref": [
+                  "TRC1994",
+                  1223,
+                  "trcGasCp"
+                ],
+                "vars": {
+                  "a0": 4,
+                  "a1": 1848000,
+                  "a2": 294,
+                  "a3": 64.897,
+                  "a4": 8.564,
+                  "a5": -18210000,
+                  "a6": 109,
+                  "a7": 128,
+                  "I": 264,
+                  "J": 16.46
+                },
+                "min": 200,
+                "max": 1500,
+                "k": 8.31446261815324
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quartic",
+                "ref": [
+                  "Perry8",
+                  252,
+                  "perry153Dippr100"
+                ],
+                "vars": {
+                  "a": 253580,
+                  "b": -366.3,
+                  "c": 1.4881,
+                  "d": 0,
+                  "e": 0
+                },
+                "min": 223.15,
+                "max": 423.85,
+                "k": 0.001
+              },
+              {
+                "type": "zabranskyQuasiPolynomial",
+                "ref": [
+                  "Zabransky1996",
+                  1037,
+                  "zabransky"
+                ],
+                "vars": {
+                  "Tc": 611,
+                  "a1": -2.25541,
+                  "a2": 0.0464528,
+                  "a3": 13.8267,
+                  "a4": 36.353,
+                  "a5": -4.61843,
+                  "a6": 0.197382
+                },
+                "min": 290,
+                "max": 450.5,
+                "k": 8.31446261815324,
+                "dataType": "p",
+                "uncertainty": "III"
+              },
+              {
+                "type": "zabranskySpline",
+                "ref": [
+                  "Zabransky1996",
+                  1038,
+                  "zabransky"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 290,
+                      "Tmax": 450.5,
+                      "a1": 14.0741,
+                      "a2": 6.03858,
+                      "a3": 0,
+                      "a4": 0
+                    }
+                  ]
+                },
+                "min": 290,
+                "max": 450.5,
+                "k": 8.31446261815324,
+                "dataType": "p",
+                "uncertainty": "III"
+              }
+            ]
+          }
+        },
+        "thermalConductivity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN102",
+                "ref": [
+                  "Perry8",
+                  315,
+                  "perry314"
+                ],
+                "vars": {
+                  "c1": 1.6681e-05,
+                  "c2": 1.218,
+                  "c3": -199.41,
+                  "c4": 144580
+                },
+                "min": 423.85,
+                "max": 1000
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN102",
+                "ref": [
+                  "Perry8",
+                  315,
+                  "perry312"
+                ],
+                "vars": {
+                  "c1": 6.1447e-07,
+                  "c2": 0.50705,
+                  "c3": 287.19,
+                  "c4": 0
+                },
+                "min": 223.15,
+                "max": 1000
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "Perry8",
+                  310,
+                  "perry313"
+                ],
+                "vars": {
+                  "c1": -2.3409,
+                  "c2": 715.52,
+                  "c3": -1.222,
+                  "c4": 0,
+                  "c5": 0
+                },
+                "min": 223.15,
+                "max": 487.2
+              }
+            ]
+          }
+        }
+      },
+      "nasa9": [
+        "C9H16"
+      ]
+    }
+  }
+}
