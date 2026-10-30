@@ -6,9 +6,10 @@ and ``<out_dir>/organic/<family>/<formula>-<name>.json``, entries keyed by CAS (
 plus ``unresolved.json``, ``index.json``, ``units.json``, ``sources.json`` and ``interactions.json``
 (transport data of species pairs) in ``<out_dir>``, and the CAS list for the PubChem step
 (``write_missing_cas``, in the report directory).
-Values cite their row as ``ref: [RefKey, line, fileKey]``; ``sources.json`` maps the file keys to
-the pinned repository files and gives the URL templates of the JANAF table ids (``janaf``) and the
-NASA datasets of the ``nasa7`` / ``nasa9`` keys (``nasa``).
+Values cite their row as ``ref: [RefKey, line, fileKey]``, except a PubChem experimental value,
+which cites ``pubchem`` + the catalog number (``pubchem151``). ``sources.json`` maps the file keys to
+the pinned repository files, explains that PubChem citation, and gives the URL templates of the JANAF
+table ids (``janaf``) and the NASA datasets of the ``nasa7`` / ``nasa9`` keys (``nasa``).
 Units are listed once, in ``units.json``. Compound files carry no ``generatedAt``, so a rebuild only
 changes the files whose data changed.
 
@@ -77,8 +78,18 @@ def write_compound_sources(
     for table in pubchem_tables:
         payload["files"][table.key] = {"name": table.name, "path": table.path, "ref": None, "url": None}
     if pubchem_tables:
-        payload["pubchem"] = {"api": PUBCHEM_API, "cache": str(Path(pubchem_tables[0].path).parent),
-                              "compoundUrl": PUBCHEM_COMPOUND_URL}
+        folder = Path(pubchem_tables[0].path).parent
+        payload["pubchem"] = {
+            "api": PUBCHEM_API,
+            "cache": str(folder),
+            "compoundUrl": PUBCHEM_COMPOUND_URL,
+            "references": str(folder / "pubchem-references.jsonl"),
+            "ref": "pubchem{refNumber}",
+            "refNote": "pubchem151 is refNumber 151 in references (source, refCode). "
+                       "The same refNumber is on the citation in the class file "
+                       "(pubchem-inorganic.jsonl or pubchem-organic.jsonl). "
+                       "It is not a key of the main references database.",
+        }
     for table in transport_tables:
         payload["files"][table.key] = {"name": table.name, "path": table.path, "ref": table.ref.value, "url": None}
     path = _write(out_dir / "sources.json", payload)

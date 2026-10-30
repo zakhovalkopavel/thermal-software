@@ -62,7 +62,7 @@ class CompoundRecord:
 
     def refs(self) -> list[str]:
         """Sorted ref keys used by any value of the record."""
-        keys = {v.ref.value for values in self.properties.values() for v in values}
+        keys = {v.ref.value for values in self.properties.values() for v in values if v.ref is not None}
         keys |= {v.ref.value for phases in self.equations.values() for values in phases.values() for v in values}
         keys |= {r.ref.value for r in self.raw}
         keys |= {v.ref.value for values in self.transport.values() for v in values}

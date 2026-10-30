@@ -20,6 +20,8 @@ Ions, the electron, D/T species and fractional formulas (``Air``) are skipped. T
 lets ``nasa9-new.dat`` replace ``nasa9-origin.dat`` keys (``CO2`` is not carbon dioxide there); the
 ΔfH° check keeps such keys off the records and reports them.
 
+The temperature bounds of a polynomial are not copied onto melting or boiling points.
+
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md
 Refs: docs/REFERENCES.md  [8] NASA7, [23] NASA9
 """

@@ -30,12 +30,13 @@ from compound_data.constants.janaf_cas_index import JANAF_CAS_INDEX
 from compound_data.constants.nasa_source import NASA7_DATASET, NASA7_FILE, NASA9_DATASET, NASA9_FILES
 from compound_data.equation_check import check_equations
 from compound_data.janaf_links import attach_janaf
-from compound_data.merger import MergeResult, merge_compounds
+from compound_data.merger import MergeResult, merge_compounds, order_values
 from compound_data.nasa_links import attach_nasa, nasa7_species, nasa9_species
 from compound_data.parsers.janaf_cas_index import read_janaf_cas_index
 from compound_data.parsers.transport_parameters import TransportParameters, parse_transport_parameters
 from compound_data.pubchem_formula_links import attach_pubchem_formulas
 from compound_data.pubchem_identifiers import load_pubchem_identifiers
+from compound_data.pubchem_properties import attach_pubchem_properties
 from compound_data.pubchem_sources import PubchemSources, read_pubchem_sources
 from janaf.janaf_index import load_janaf_index
 from janaf.janaf_source import JanafSource
@@ -79,8 +80,11 @@ def build_compound_data(
     ``janaf_dir`` is the NIST-JANAF copy (``py-janaf/data``, ``py-janaf/janaf.json``,
     ``PROVENANCE.txt``); its table ids are attached to the records by Hill formula.
     ``pubchem_dir`` holds the PubChem files (``pubchem-<class>.jsonl``), used for CAS numbers the
-    chemicals identifier files do not have and for the CAS of records without one (formula searches). ``nasa_dir`` holds the NASA-7 / NASA-9 sources (``shared/sources/NASA``);
-    their species keys are attached by Hill formula, checked by ΔfH°(298.15).
+    chemicals identifier files do not have, for the CAS of records without one (formula searches),
+    and for experimental melting points, boiling points and densities (cited ``pubchem`` + refNumber).
+    ``nasa_dir`` holds the NASA-7 / NASA-9 sources (``shared/sources/NASA``);
+    their species keys are attached by Hill formula, checked by ΔfH°(298.15). The polynomial
+    temperature bounds are not used as melting or boiling points.
     ``transport_file`` is ``shared/sources/transport-parameters.json`` (White, TN D-481, Mamedov 2014, Svehla 1995).
     """
     chem = read_chemicals_source(source_dir / "PROVENANCE.txt")
@@ -93,7 +97,7 @@ def build_compound_data(
     identifiers = load_identifiers(source_dir, chem, wanted)
     chemicals_resolved = len(identifiers)
     missing_cas = sorted(wanted - identifiers.keys())
-    pubchem = read_pubchem_sources(pubchem_dir) if pubchem_dir is not None else PubchemSources()
+    pubchem = read_pubchem_sources(pubchem_dir, experimental=True) if pubchem_dir is not None else PubchemSources()
     pubchem_counts: dict[str, int] = {}
     if pubchem_dir is not None:
         added, pubchem_counts, pubchem_issues = load_pubchem_identifiers(pubchem, set(missing_cas))
@@ -119,6 +123,10 @@ def build_compound_data(
         formula_issues, formula_counts = attach_pubchem_formulas(merge.records.values(), pubchem)
         issues += formula_issues
         pubchem_counts.update(formula_counts)
+        pubchem_counts.update(attach_pubchem_properties(list(merge.records.values()), pubchem))
+
+    for record in merge.records.values():
+        order_values(record)
 
     interactions, interaction_issues = _resolve_interactions(transport.interactions, merge.records)
     issues += interaction_issues

@@ -189,6 +189,10 @@ class TestCanonicalSource:
         assert canonicalize_source(monograph)[0] != canonicalize_source(monograph_1994)[0]
         journal = "Atkinson R; Journal of Physical and Chemical Reference Data. Monograph 2 (1994)"
         assert canonicalize_source(journal)[0] == canonicalize_source(monograph_1994)[0]
+        no_word = "Atkinson R; J Phys Chem Ref Data No 1 (1989)"
+        year_only = "Atkinson R; J Phys Chem Ref Data (1989)"
+        assert canonicalize_source(no_word)[0] == canonicalize_source(year_only)[0] == canonicalize_source(monograph)[0]
+        assert canonicalize_source("Atkinson R et al; J Phys Chem Ref Data 21")[0] != canonicalize_source(monograph)[0]
 
         fenaroli = "Burdock, G.A. (ed.). Fenaroli's Handbook of Flavor Ingredients. 6th ed.Boca Raton, FL 2010"
         fenaroli_short = ("Burdock GA, ed; Fenaroli's Handbook of Flavor Ingredients. "
@@ -202,7 +206,9 @@ class TestCanonicalSource:
                         "Houston, TX: Gulf Publishing Co. (1994)")
         yaws_1 = "Yaws CL; Handbook of Vapor Pressure. Vol 1: C1-C4 Compounds. Houston, TX: Gulf Pub Co (1994)"
         assert canonicalize_source(yaws_3)[0] == canonicalize_source(yaws_3_other)[0]
-        assert canonicalize_source(yaws_3)[0] != canonicalize_source(yaws_1)[0]
+        assert canonicalize_source(yaws_3) == ("Yaws CL; Handbook of Vapor Pressure.", "3")
+        assert canonicalize_source(yaws_1)[0] == canonicalize_source(yaws_3)[0]
+        assert canonicalize_source(yaws_1)[1] == "1"
 
         assert canonicalize_source("http://foodb.ca/compounds/FDB015439") == (
             "http://foodb.ca/compounds", "FDB015439")
@@ -223,7 +229,12 @@ class TestCanonicalSource:
                  "Hemisphere Pub Corp (1999)")
         assert canonicalize_source(daubert)[0] == canonicalize_source(daubert_full)[0]
         assert canonicalize_source(daubert)[0] != canonicalize_source(daubert.replace("1989", "1995"))[0]
-        assert "Design Institute" in canonicalize_source(dippr)[0]
+        assert canonicalize_source(dippr)[0].endswith("(1999)")
+        assert canonicalize_source(dippr)[0] != canonicalize_source(daubert)[0]
+        greyden = ("Daubert TE et al; Physical and Thermodynamic Properties of Pure Chemicals "
+                    "Data Compilation. Columbus, OH: Greyden Press (1999)")
+        assert "Greyden" in canonicalize_source(greyden)[0]
+        assert canonicalize_source(greyden)[0] != canonicalize_source(dippr)[0]
 
         pesticide = ("MacBean C, ed; e-Pesticide Manual. 15th ed., ver. 5.1, Alton, UK; "
                      "British Crop Protection Council. Zinc phosphide (1314-84-7) (2008-2010)")
@@ -296,6 +307,81 @@ class TestCanonicalSource:
         assert canonicalize_source(sulfamate)[0] == "The e-Pesticide Manual, Version 2.2"
         assert canonicalize_source(chlorate)[1] == "Sodium chlorate (7775-09-9)"
 
+    def test_same_edition_joins_and_dates_stay(self):
+        ullmann = ("Gerhartz, W. (exec ed.). Ullmann's Encyclopedia of Industrial Chemistry. "
+                   "5th ed.Vol A1: Deerfield Beach, FL: VCH Publishers, 1985 to Present., p. VA16 (1990)")
+        ullmann_bare = ullmann.split("., p.")[0]
+        assert canonicalize_source(ullmann)[0] == canonicalize_source(ullmann_bare)[0]
+        assert canonicalize_source(ullmann)[1] == "VA16"
+        assert "5th" in canonicalize_source(ullmann)[0]
+        assert "7th" not in canonicalize_source(ullmann)[0]
+
+        aldrich_2000 = ("Aldrich; Handbook of Fine Chemicals and Laboratory Equipment. 2000-20001. "
+                        "Wilwaukee, WI: Alrich Chem Co. p. 641 (2000)")
+        aldrich_2003 = aldrich_2000.replace("2000-20001", "2003-2004").replace("(2000)", "(2003)")
+        assert canonicalize_source(aldrich_2000)[0] == "Aldrich; Handbook of Fine Chemicals. 2000-2001"
+        assert canonicalize_source(aldrich_2000)[0] != canonicalize_source(aldrich_2003)[0]
+        assert canonicalize_source(aldrich_2000)[1] == "641"
+
+        phenols = "USEPA; Ambient Water Quality Criteria Doc: Chlorinated Phenols p.C-119 (1980) EPA 440/5-80-032"
+        pcbs = phenols.replace("Chlorinated Phenols p.C-119", "Polychlorinated Biphenyls p.A-3").replace(
+            "440/5-80-032", "440/5-80-068")
+        assert canonicalize_source(phenols)[0] != canonicalize_source(pcbs)[0]
+        assert canonicalize_source(phenols)[1] == "C-119"
+
+        crc = ("Lide, D.R. (ed.). CRC Handbook of Chemistry and Physics. 79th ed. "
+               "Boca Raton, FL: CRC Press Inc., 1998-1999., p. 3-2693-269")
+        assert canonicalize_source(crc)[0] == canonicalize_source(crc.split("., p.")[0])[0]
+        assert canonicalize_source(crc)[1] == "3-2693-269"
+
+        dated = ("Bayer Environmental Science; DeltaGuard G Insecticide Granule, MSDS Number 102000015309, "
+                 "Version 1.0, Revision Date 06/20/2008")
+        assert canonicalize_source(dated)[1] is None
+        assert "06/20/2008" in canonicalize_source(dated)[0]
+
+        sittig_1980 = "Sittig M; Handbook of Toxic and Hazardous Chemicals p.151 (1980)"
+        sittig_1981 = "Sittig M; Handbook of Toxic and Hazardous Chemicals p.21 (1981)"
+        assert canonicalize_source(sittig_1980)[0] != canonicalize_source(sittig_1981)[0]
+        assert "1980" in canonicalize_source(sittig_1980)[0]
+        journal = "Chattopadhyay S, Ziemann PJ; Aerosol Science and Technology, 39:1085-1100 (2005)"
+        assert canonicalize_source(journal) == (
+            "Chattopadhyay S, Ziemann PJ; Aerosol Science and Technology 39 (2005)", "1085-1100")
+
+        bureau_1981 = "Bureau of Explosives; Emergency Handling of Haz Matl in Surface Trans p.94 (1981)"
+        bureau_2002 = ("Association of American Railroads/Bureau of Explosives; Emergency Handling of "
+                       "Hazardous Materials in Surface Transportation. Pueblo, CO. 2002")
+        assert canonicalize_source(bureau_1981)[0] != canonicalize_source(bureau_2002)[0]
+        hoak = ("Hoak RD; Purdue Eng Ext Serv 41: 229 (1957) as cited in USEPA; Ambient Water Quality "
+                "Criteria Doc: Chlorinated Phenols p.C-2 (1980) EPA 440/5-80-032")
+        assert "440/5-80-032" not in canonicalize_source(hoak)[0]
+        assert "1957" in canonicalize_source(hoak)[0]
+        sax_12 = ("Lewis, R.J. Sr. (ed) Sax's Dangerous Properties of Industrial Materials. 12th ed. "
+                  "Wiley-Interscience, Wiley & Sons, Inc. Hoboken, NJ. 2012., p. 448`")
+        sax_12_bare = sax_12.split("., p.")[0]
+        assert canonicalize_source(sax_12)[0] == canonicalize_source(sax_12_bare)[0]
+        jprs_plural = ("Aleksandrov VN; Toxic Agents. Washington, DC: Joint Publications Research Service. "
+                       "NTIS JPRS 48748 (1969)")
+        jprs_singular = jprs_plural.replace("Publications", "Publication")
+        jprs_paged = ("NTIS; JPRS 48748 Aleksandrov VN Toxic Agents. Joint Publications Research Service. "
+                      "Washington, DC p.43-122 Chpt 3 (1969)")
+        assert canonicalize_source(jprs_plural)[0] == canonicalize_source(jprs_singular)[0]
+        assert canonicalize_source(jprs_plural)[0] == canonicalize_source(jprs_paged)[0]
+        assert canonicalize_source(jprs_paged)[1] == "43-122"
+        hansch_hash = "Hansch C, Leo A; Medchem Project, Claremont, CA: Pomona College. Issue #26 (1985)"
+        hansch_no = "Hansch C, Leo AJ; Medchem Project Issue No. 26 (1985)"
+        assert canonicalize_source(hansch_hash)[0] == canonicalize_source(hansch_no)[0]
+        assert canonicalize_source(hansch_no)[0] != canonicalize_source(
+            "Hansch C, Leo AJ; Medchem Project Issue No. 19 (1981)")[0]
+        agr = "Buttery RG et al; J Agr Food Chem 17 (1969)"
+        agric = "Buttery RG et al; J Agric Food Chem 17 (1969)"
+        assert canonicalize_source(agr)[0] == canonicalize_source(agric)[0]
+        assert canonicalize_source(agr)[0] != canonicalize_source(
+            "Buttery RG et al; J Agric Food Chem 19 (1971)")[0]
+        atmos_3 = "Atkinson R; Atmos Chem Phys 3"
+        atmos_3_et = "Atkinson R et al; Atmos Chem Phys 3"
+        assert canonicalize_source(atmos_3)[0] == canonicalize_source(atmos_3_et)[0]
+        assert canonicalize_source(atmos_3)[0] != canonicalize_source("Atkinson R et al; Atmos Chem Phys 6")[0]
+
 
 class TestParseExperimental:
     def test_stem_has_no_page_or_hash(self):
@@ -315,6 +401,86 @@ class TestParseExperimental:
         ]
         assert {r["refCode"] for r in refs} == {"CRCHandbook-ed88-2007", "MerckIndex-2013"}
         assert all("page" not in r and "p. 4-57" not in r["source"] for r in refs)
+
+    def test_same_work_with_a_dropped_word(self):
+        same = [
+            ("Atkinson R; Int J Chem Kinet 19 (1987)", "Atkinson R; Internat J Chem Kin 19 (1987)"),
+            ("DOI:10.1021/acs.est.2c00201 | https://tarheels.live/bakerlab/", "DOI:10.1021/acs.est.2c00201"),
+            ("Daubert TE, Danner RP; Physical and Thermodynamic Properties of Pure Chemicals Data Compilation (1997)",
+             "Daubert TE, Danner RP; Physical and Thermodynamic Properties of Pure Chemicals Data Compilation. "
+             "Design Institute. Hemisphere (1997) Supplement 7"),
+            ("Dean JA; Lange's Handbook of Chemistry. 13th ed.",
+             "Dean, J.A. (ed.). Lange's Handbook of Chemistry. 13 ed. New York, NY: McGraw-Hill Book Co., 1985"),
+            ("Flick EW; Industrial Solvents Handbook. 4th ed Park Ridge, NJ: Noyes Data Corp (1991)",
+             "Flick, E.W. (ed.). Industrial Solvents Handbook 4 th ed. Noyes Data Corporation., Park Ridge, NJ., 1991"),
+            ("General Electric Co; Material Safety Data Sheet MSDS #3 (1984)",
+             "General Electric Co; Material Safety Data Sheet #389 (1984)"),
+            ("Yalkowsky SH, Dannenfelser RM; Aquasol Database of Aqueous Solubility. 5th ed. 1992",
+             "Yalkowsky SH, He Yan, Jain P; Handbook of Aqueous Solubility Data. (1992)"),
+            ("Zwolinksi BJ, Wilhoit RC; Handbook of vapor pressures and heats of vaporizaton of hydrocarbons "
+             "and related compounds (1971)",
+             "Zwolinski BJ, Wilhoit RC; Handbook of Vapor Pressures and Heats of Formation of Hydrocarbons "
+             "and Related Compounds (1971)"),
+            ("Boublick T et al; The Vapor Pressure of Pure Substances. Amsterdam, The Netherlands: "
+             "Elsevier Sci Publ (1984)",
+             "Boublik T et al; The Vapor Pressures of Pure Substances Vol 17 (1984)"),
+            ("Boublik T et al; The Vapor Pressures of Pure Substances Vol 17 (1984)",
+             "Boublik T et al; The Vapor Pressures of Pure Substances (1984)"),
+            ("MSDS", "From MSDS"),
+            ("MSDS Label", "From MSDS."),
+            ("Fire Protection Guide to Hazardous Materials. 13 ed. Quincy, MA: National Fire Protection Association, 2002",
+             "Fire Protection Guide to Hazardous Materials. 13 ed. Quincy, MA: National Fire Protection Association, "
+             "2002., p. 325-69-"),
+        ]
+        for left, right in same:
+            assert canonicalize_source(left)[0] == canonicalize_source(right)[0]
+        assert canonicalize_source("DOI:10.1021/acs.est.2c00201")[0] != canonicalize_source(
+            "DOI:10.1021/acs.jproteome.1c00820")[0]
+        assert canonicalize_source(
+            "General Electric Co; Material Safety Data Sheet #434 (1982)")[0] != canonicalize_source(
+            "General Electric Co; Material Safety Data Sheet #3 (1984)")[0]
+        assert canonicalize_source(
+            "Riddick JA et al; Organic Solvents NY,NY: John Wiley & Sons Inc. (1984)")[0] != canonicalize_source(
+            "Riddick JA et al; Organic Solvents. 4th ed. NY: Wiley (1986)")[0]
+        assert canonicalize_source(
+            "Yalkowsky SH, He Yan, Jain P; Handbook of Aqueous Solubility Data. (2003)")[0] != canonicalize_source(
+            "Yalkowsky SH, Dannenfelser RM; Aquasol Database of Aqueous Solubility. 5th ed. 1992")[0]
+        epi_312_2000 = "US EPA; Estimation Program Interface (EPI) Suite. Ver.3.12. 2000"
+        epi_312_2004 = "US EPA; Estimation Program Interface (EPI) Suite. Ver.3.12. Nov 30, 2004"
+        epi_311 = "US EPA; Estimation Program Interface (EPI) Suite. Ver.3.11. June 10, 2003"
+        epi_311_windows = ("US EPA; Estimation Programs Interface (EPI). ver. 3.11. "
+                           "U.S. EPA version for Windows. Washington, DC: U.S. EPA (2003)")
+        epi_41_jan = "US EPA; Estimation Program Interface (EPI) Suite. Ver. 4.1. Jan, 2011"
+        epi_41_nov = "US EPA; Estimation Program Interface (EPI) Suite. Ver. 4.1. Nov, 2012"
+        epi_41_hydro = "US EPA; Estimation Program Interface (EPI) Suite. PCHYDRO. Ver. 4.1. Nov, 2012"
+        epi_411 = "US EPA; Estimation Program Interface (EPI) Suite. Ver. 4.11. Nov, 2012"
+        epi_411_file = epi_411 + ". EPI Suite Links. SRC Fate Pointer File"
+        assert canonicalize_source(epi_312_2000)[0] == canonicalize_source(epi_312_2004)[0]
+        assert canonicalize_source(epi_311)[0] == canonicalize_source(epi_311_windows)[0]
+        assert canonicalize_source(epi_41_jan)[0] == canonicalize_source(epi_41_nov)[0]
+        assert canonicalize_source(epi_41_hydro) == (
+            "US EPA; Estimation Program Interface (EPI) Suite. Ver. 4.1", "PCHYDRO")
+        assert canonicalize_source(epi_411)[0] == canonicalize_source(epi_411_file)[0]
+        assert canonicalize_source(epi_41_jan)[0] != canonicalize_source(epi_411)[0]
+        assert canonicalize_source(epi_311)[0] != canonicalize_source(epi_312_2000)[0]
+        assert canonicalize_source("LI,J & PERDUE,EM (1995)")[0] == canonicalize_source(
+            "LI,J & PURDUE,EM (1995)")[0]
+        assert canonicalize_source(
+            "Southwick GR, Keller JL; Water Air Soil Pollut 28 (1986)")[0] == canonicalize_source(
+            "Southworth GR, Keller JL; Water Air Soil Pollut 28 (1986)")[0]
+        assert canonicalize_source("TACAKS-NOVAK,K ET AL. (1995)")[0] == canonicalize_source(
+            "TAKACS-NOVAK,K ET AL. (1995)")[0]
+        assert "Purdue" in canonicalize_source(
+            "Hoak RD; Purdue Eng Ext Serv 41 (1957)")[0]
+        assert canonicalize_source("MEYLAN,WM & HOWARD,PH (1995)")[0] == (
+            "Meylan WM, Howard PH; J Pharm Sci 84 (1995)")
+        assert canonicalize_source("MEYLAN,WM et al. (1996)")[0] == (
+            "Meylan WM, Howard PH, Boethling RS; Environ Toxicol Chem 15 (1996)")
+        assert canonicalize_source("Meylan WM, Howard PH; Environ Toxicol Chem 10 (1991)")[0] != (
+            "Meylan WM, Howard PH, Boethling RS; Environ Toxicol Chem 15 (1996)")
+        assert canonicalize_source(
+            "Khan I, Brimblecombe P; J Aerosol Sci 23(Suppl. 1): S897-S900 (1992)") == (
+            "Khan I, Brimblecombe P; J Aerosol Sci 23 (1992)", "S897-S900")
 
     def test_register_assigns_index_and_disambiguates_stem(self, tmp_path: Path):
         path = tmp_path / "pubchem-references.jsonl"

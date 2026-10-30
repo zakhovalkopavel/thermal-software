@@ -39,7 +39,7 @@ The JSON format is described by the backend interfaces in [utils/compound-data/]
 - **Molten density:** stored as a backend `linear` equation, plus the verbatim row in `raw`.
 - **Perry rows without a range:** 29 rows, the 13 monatomic-gas rows with Cp = 4.97 cal/(mol K) and 16 salts and hydrates (CuSO4·5H2O, H2S2O7, ...). They are kept as `raw` only, with no equation.
 - **Tables with no earlier backend type:** stored under new type names, implemented in the backend with this dataset (see [New equation types](#new-equation-types)).
-- **Links to other datasets:** only ids are written: NIST-JANAF table ids (`janaf`, see [JANAF table ids](#janaf-table-ids)) and NASA-7 / NASA-9 species keys (`nasa7`, `nasa9`, matched by formula and checked by ΔfH°(298.15), see [NASA species keys](#nasa-species-keys)). The polynomials stay in their own datasets.
+- **Links to other datasets:** NIST-JANAF table ids (`janaf`) and, from the same tables, melting and boiling points (see [JANAF table ids](#janaf-table-ids)). NASA-7 / NASA-9 species keys (`nasa7`, `nasa9`, matched by formula and checked by ΔfH°(298.15), see [NASA species keys](#nasa-species-keys)). The polynomials stay in their own datasets. A NASA temperature bound is not used as a melting or boiling point.
 - **Missing ranges:**
   - VDI liquid properties take Tm..Tc from the VDI rows of the same CAS.
   - VDI gas properties get `min/max = null`, so `min` and `max` are nullable in the dataset.
@@ -202,7 +202,7 @@ flowchart LR
 Property names follow the backend where a name exists (`enthalpyFormation298`, `gibbsEnergy298`, and `Mr` in kg/mol). The others are camelCase.
 
 - **CRC 95th ed.** (new reference `CRC95`):
-  - `Misc/Physical Constants of Inorganic Compounds.csv`: meltingPoint, boilingPoint, density.
+  - `Misc/Physical Constants of Inorganic Compounds.csv`: meltingPoint, boilingPoint, density. This table is the last choice for those three properties (see [Which value comes first](#which-value-comes-first)).
   - `Phase Change/CRC Handbook Heat of Fusion.tsv`: heatOfFusion.
   - `Heat Capacity/CRC Standard Thermodynamic Properties of Chemical Substances.tsv`: enthalpyFormation298, gibbsEnergy298, entropy298 and heatCapacity298, each per phase (solid, liquid, gas).
   - `Density/CRC Solid Inorganic Constant Densities.tsv`: molarVolume.
@@ -216,6 +216,18 @@ Property names follow the backend where a name exists (`enthalpyFormation298`, `
   - The PubChem compound id is kept as `pubchemCid` (the `Inorganic db` uses negative ids for compounds PubChem does not have; those give none).
   - The formula is cleaned of footnote prefixes (Perry `22 SO2` becomes `SO2`) and of trailing spaces.
   - `Mr` = MW / 1000.
+
+### Which value comes first
+
+Every source row is kept. The list order is the preference, so the first value is the one to use:
+
+1. NIST-JANAF. A `CRYSTAL <--> LIQUID` (or solid–liquid) transition is `meltingPoint`, and `LIQUID <--> GAS` is `boilingPoint`, in kelvin, cited `[NISTJANAF, line, tableId]`. The line is the transition row of `shared/sources/compound-data/nist-janaf/py-janaf/data/{tableId}.txt`. `sources.json` → `janaf.tableUrl` and `janaf.nistUrl` open that table. A crystal–gas transition is sublimation and is not copied.
+2. NIST WebBook (`NISTWebBook`).
+3. PubChem experimental melting point, boiling point and density, cited `pubchem` + the catalog number (`pubchem1`, `pubchem151`). See [PubChem experimental values](#pubchem-experimental-values).
+4. The other tables, in the equation priority order (Perry, Poling, VDI, CRC, TRC, Zabransky). A source that is not in that list (Yaws, transport parameters) follows them.
+5. `Misc/Physical Constants of Inorganic Compounds.csv` (`crcConstants`, still ref `CRC95`). It is used only when none of the sources above has that property.
+
+Heat-capacity equations are a separate order: Perry, then Poling, then VDI, then CRC, and that first implemented type is `def`. NASA polynomial temperature bounds are not written as melting or boiling points.
 
 ---
 
@@ -380,7 +392,10 @@ Built by `compound_data.compound_units`: scalar property units come from the `Pr
   "pubchem": {
     "api": "https://pubchem.ncbi.nlm.nih.gov/rest/pug",
     "cache": "shared/sources/compound-data/pubchem",
-    "compoundUrl": "https://pubchem.ncbi.nlm.nih.gov/compound/{cid}"
+    "compoundUrl": "https://pubchem.ncbi.nlm.nih.gov/compound/{cid}",
+    "references": "shared/sources/compound-data/pubchem/pubchem-references.jsonl",
+    "ref": "pubchem{refNumber}",
+    "refNote": "pubchem151 is refNumber 151 in references (source, refCode). The same refNumber is on the citation in the class file. It is not a key of the main references database."
   }
 }
 ```
@@ -391,10 +406,10 @@ Perry files Al2O3 under 39377-45-2 (a PubChem ionic entry) and CRC under 1344-28
 
 ### Links to the source repository
 
-- Every `PropertyValue`, `EquationValue` and `raw` entry has `ref: [RefKey, line, fileKey]`. The RefKey is the short key of [REFERENCES.md](../REFERENCES.md); the line is 1-based in the source file (for the Shomate JSON, the line of the CAS key).
+- Every `PropertyValue`, `EquationValue` and `raw` entry has `ref: [RefKey, line, fileKey]`, except a PubChem experimental value, whose `ref` is the string `pubchem` + catalog number (`pubchem151`). The RefKey is the short key of [REFERENCES.md](../REFERENCES.md); the line is 1-based in the source file (for the Shomate JSON, the line of the CAS key). A JANAF melting or boiling point uses the table id as the file key (`[NISTJANAF, line, tableId]`), opened with `sources.json` → `janaf.tableUrl`.
 - Rows used from other tables are cited the same way: `tcRef` (DIPPR 114 Tc from Yaws) and `rangeRef` (VDI liquid Tm/Tc).
 - The identifiers (formula, MW, SMILES) carry `identifierRef: [line, fileKey]` (the identifier databases have no RefKey).
-- `sources.json` maps each file key (`TableSpec.key` in `constants/source_tables.py`) to the table name, repo path, RefKey and file URL pinned to the commit in `PROVENANCE.txt`. The row URL is `lineUrl` = `{url}#L{line}`.
+- `sources.json` maps each file key (`TableSpec.key` in `constants/source_tables.py`) to the table name, repo path, RefKey and file URL pinned to the commit in `PROVENANCE.txt`. The row URL is `lineUrl` = `{url}#L{line}`. `pubchem.references` is `pubchem-references.jsonl` and `pubchem.ref` is the form of a PubChem value citation. Those catalog rows are not copied into the main references database.
 - Per-row details sit next to `ref`: `variant` (polymorph from a CRC label such as `Aluminum oxide (α)`, or the Perry 2-151 subphase, `glass` for Perry `gls` rows), `error` (Perry %, footnoted cells stay text such as `"1a"`; White ± %), `dataType` and `uncertainty` (Zabransky), `potential`, `basis`, `citation`, `TminK` and `originalRef` (transport parameters; `originalRef` is the RefKey White took the table from).
 - The build report keeps the full form (table, label, line, URL) for every conflict and issue.
 
@@ -402,18 +417,18 @@ Perry files Al2O3 under 39377-45-2 (a PubChem ionic entry) and CRC under 1344-28
 
 ### JANAF table ids
 
-The build parses the NIST-JANAF copy (`shared/sources/compound-data/nist-janaf/`) with the `janaf` package (`parse_janaf_tables`, `read_janaf_source`) and writes only the table ids into the records (`janaf`), not the values. The tables are in `shared/processed/JANAF/` (`make janaf-parse`); `index.json` there maps an id to its file. That dataset uses the same folder layout (main element / organic family, one file per compound, `index.json`, `units.json`, `sources.json`); the class and organic family of a carbon compound come from this dataset's `index.json`, so run `make compound-data-build` before `make janaf-parse`. It also uses the same refs system: each table has `ref: [RefKey, line, tableId]`, resolved by its own `sources.json` ([JANAF_PARSER_SPEC.md](JANAF_PARSER_SPEC.md#refs-and-sourcesjson)).
+The build parses the NIST-JANAF copy (`shared/sources/compound-data/nist-janaf/`) with the `janaf` package (`parse_janaf_tables`, `read_janaf_source`) and writes the table ids into the records (`janaf`). A crystal–liquid transition of an attached table is also `meltingPoint`, and a liquid–gas transition is `boilingPoint` (kelvin, `ref: [NISTJANAF, line, tableId]`). The polynomials stay in the JANAF dataset. The tables are in `shared/processed/JANAF/` (`make janaf-parse`); `index.json` there maps an id to its file. That dataset uses the same folder layout (main element / organic family, one file per compound, `index.json`, `units.json`, `sources.json`); the class and organic family of a carbon compound come from this dataset's `index.json`, so run `make compound-data-build` before `make janaf-parse`. It also uses the same refs system: each table has `ref: [RefKey, line, tableId]`, resolved by its own `sources.json` ([JANAF_PARSER_SPEC.md](JANAF_PARSER_SPEC.md#refs-and-sourcesjson)).
 
 Matching, per table:
 1. **CAS:** the chemicals `dev/data/janaf/janaf_tables_index.csv` row of the table gives a CAS. The CSV has no table id, so rows match tables by (Hill formula, state, name); CSV formulas are normalised to Hill (`H14B10` → `B10H14`), and a JANAF name with a trailing formula group (`Aluminum Bromide ((AlBr3)2)`) also matches the short CSV name. When the CAS is a record with the same Hill formula, the table goes to that record only.
 2. **Formula:** otherwise (no CSV row, CAS not in the records, or a CAS record with another formula), the table goes to every record with its Hill formula. A JANAF formula is plain symbol-count pairs, so `Mo1O2.750` is MoO2.75, not an adduct.
-3. **New record:** a formula without any record gets one, keyed by the CSV CAS when its tables share one unused CAS, else `formula:<Hill>`. It has the JANAF name and formula and no values.
+3. **New record:** a formula without any record gets one, keyed by the CSV CAS when its tables share one unused CAS, else `formula:<Hill>`. It has the JANAF name and formula, and melting or boiling points when the tables list those transitions.
 
 Ions (`Al1+`, 177 tables) and deuterium species (15 tables) are skipped. The report lists `janafIon`, `janafIsotope`, `janafCasFormulaMismatch` (CSV CAS whose record has another formula, e.g. AlBO2 vs pubchem AlBH2O2), `janafCasRowUnmatched` (CSV rows with no table, e.g. Sodium Carbonate written as CNaO3), `janafSharedFormula` (formula fallback onto several records) and `janafRecordCreated`. The CLI options are `--janaf-dir` and `--no-janaf`.
 
 ### NASA species keys
 
-The build parses the NASA sources in `shared/sources/NASA/` with the `nasa_thermo` package (the same files and merge order as `make nasa-parse`: `nasa7-origin.dat`; `nasa9-origin.dat` then `nasa9-new.dat`, the later file wins) and writes only the species keys into the records (`nasa7`, `nasa9`; all phases, e.g. `["H2O", "H2O(L)", "H2O(s)"]`). The species are in `shared/processed/NASA/nasa7.json` / `nasa9.json` (`species[key]`); `backend/data/nasa/` is a copy with the same keys.
+The build parses the NASA sources in `shared/sources/NASA/` with the `nasa_thermo` package (the same files and merge order as `make nasa-parse`: `nasa7-origin.dat`; `nasa9-origin.dat` then `nasa9-new.dat`, the later file wins) and writes only the species keys into the records (`nasa7`, `nasa9`; all phases, e.g. `["H2O", "H2O(L)", "H2O(s)"]`). The low and high temperatures of a polynomial are not used as a melting or boiling point. The species are in `shared/processed/NASA/nasa7.json` / `nasa9.json` (`species[key]`); `backend/data/nasa/` is a copy with the same keys.
 
 Matching, per species (`compound_data/nasa_links.py`):
 1. **Formula:** the Hill formula of the element slots the parser now reads (`elements`, see [NASA_THERMO_PARSER_SPEC.md](NASA_THERMO_PARSER_SPEC.md)). Records whose name marks them deuterated (`methanol-d3`, `furan-d4`) are not candidates: the chemicals formulas of some of them have H for D. Ions, the electron, D/T species, fractional formulas (`Air`, `Jet-A` stays as C12H23 without a record) and unparsed keys are skipped.
@@ -435,12 +450,23 @@ The chemicals identifier files are a partial PubChem sample: 3,976 CAS numbers o
 - **Step 1** (`make compound-data-build`): the build uses whatever the PubChem files hold and writes `tmp/reports/python/compound-data/missing-cas.txt`, the CAS numbers no chemicals identifier file has (one per line, `#` header; independent of the PubChem files, so `--retry` can re-query).
 - **Step 2** (`make compound-data-pubchem`): looks those CAS numbers up in PubChem, and searches the records without a CAS (`formula:…`, 162) by their Hill formula. It does not rebuild the compound data; run `make compound-data-build` when the new files should be read. The results go to `shared/sources/compound-data/pubchem/pubchem-{inorganic,organic,unclassified}.jsonl`: one line per query, with the full property answer, the experimental properties of its CIDs and, for a formula search, the CAS section of the found compound. On-demand searches (`make pubchem-search Q="CaAl2O4"`, `pd-new PUBCHEM=1`, the query list) write to the same files.
 - **Statuses:** `ok` (one compound, or several with one Hill formula), `ambiguous` (different formulas), `charged` (only an ion, Perry's Mg 22537-22-0 → `Mg+2`) and `notFound`; only `ok` is used. See [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md#statuses).
-- **Build:** `ok` records are the last identifier source (after the chemicals files), with `identifierRef: [line, "idPubchemRestInorganic"]` (the line and key of the class file; `idPubchemRestOrganic`, `idPubchemRestUnclassified`) and `pubchemCid`. When a CAS has several lines, the newest wins. The experimental bodies are not loaded. A PubChem identity can contradict a row's own formula, and the detach rule then handles it: Perry's Al 3303-34-2 is L-alanyl-L-leucine in PubChem, so the Perry row becomes `formula:Al` and the unidentified rule moves it onto 7429-90-5. CLI options `--pubchem-dir` and `--no-pubchem`; without the files the build logs a warning.
+- **Build:** `ok` records are the last identifier source (after the chemicals files), with `identifierRef: [line, "idPubchemRestInorganic"]` (the line and key of the class file; `idPubchemRestOrganic`, `idPubchemRestUnclassified`) and `pubchemCid`. When a CAS has several lines, the newest wins. Experimental melting points, boiling points and densities are loaded and copied onto the record (see [PubChem experimental values](#pubchem-experimental-values)). A PubChem identity can contradict a row's own formula, and the detach rule then handles it: Perry's Al 3303-34-2 is L-alanyl-L-leucine in PubChem, so the Perry row becomes `formula:Al` and the unidentified rule moves it onto 7429-90-5. CLI options `--pubchem-dir` and `--no-pubchem`; without the files the build logs a warning.
 - **Records without CAS** (`pubchem_formula_links.py`): an `ok` formula search `formula:<Hill>` adds `cas` (the CAS most sources give on the compound's PubChem page), `casRef: [line, "idPubchemRest<Class>"]` and `pubchemCid` to the record, which keeps its `formula:` id and its `noCas` entry (no re-keying, no merging). Runs after the JANAF and NASA steps, so the records JANAF creates (`formula:AlF` …) are included. Not added, and reported:
   - `pubchemCasExists`: the found CAS is already a record or a moved CAS (`record`, `recordFormula`). Either the compound is in the data twice, or that record has a wrong formula: 21548-73-2 is Ag2HS (protonated identifier formula) where PubChem has Ag2S, and 13595-82-9 is AlF3 in the sources where PubChem has AlF;
   - `pubchemFormulaSearchAmbiguous` / `pubchemFormulaSearchNotFound` (with the candidates).
 
-  The counts `pubchemFormulaCas`, `pubchemFormulaCidOnly` (found compound without a CAS section), `pubchemCasExists`, `pubchemFormulaSearch<Status>` and `pubchemFormulaNotFetched` go to the report. The PubChem files are read once (`pubchem_sources.py` `read_pubchem_sources`) for the CAS identifiers and the formula links.
+  The counts `pubchemFormulaCas`, `pubchemFormulaCidOnly` (found compound without a CAS section), `pubchemCasExists`, `pubchemFormulaSearch<Status>` and `pubchemFormulaNotFetched` go to the report. The PubChem files are read once (`pubchem_sources.py` `read_pubchem_sources`, with the experimental bodies) for the CAS identifiers, the formula links and the experimental values. The report counts `pubchemProperties` (values copied) and `pubchemPropertiesSkipped` (a melting, boiling or density citation that had no convertible number).
+
+### PubChem experimental values
+
+Melting point, boiling point and density from the class-file experimental sections are copied onto the compound. The value is in the dataset unit (K, kg/m³). °C and °F are converted; g/cm³ and g/mL are converted to kg/m³. A temperature printed beside a density, a boiling point at a reduced pressure, and a decomposition or sublimation note are not copied. Other headings (solubility, vapor pressure, logP, …) stay in the PubChem files only.
+
+The citation is the string `pubchem` + `refNumber` from that citation, for example `pubchem151`. It is not added to `shared/references/references.json` and it does not appear in the record's `refs` list.
+
+To find `pubchem151`:
+
+1. Open `shared/sources/compound-data/pubchem/pubchem-references.jsonl` and take the line whose `refNumber` is 151. `source` is the work; `refCode` is its catalog code. `sources.json` → `pubchem.references` is that file, and `pubchem.ref` is the form `pubchem{refNumber}`.
+2. The same `refNumber` is on the citation in `pubchem-inorganic.jsonl` or `pubchem-organic.jsonl` (the record of the compound's CAS, or `formula:<Hill>`), under `experimental` → `values` → `citation`. `text` is the original printed string; `values` are the parsed number and unit; `refPage` is the page when the citation had one.
 
 ### PubChem query list
 
@@ -539,7 +565,7 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
   - `builder.py` `build_compound_data` (parse → identifiers → merge → checks → JANAF → NASA → interaction ids; `BuildResult.missing_cas`, `BuildResult.nasa`, `BuildResult.transport_tables`, `BuildResult.interactions`);
   - `parsers/transport_parameters.py` `parse_transport_parameters` with `constants/transport_source.py` (`TRANSPORT_TABLES`, `ORIGINAL_REFS`, `TRANSPORT_COLUMNS`, `POTENTIALS`), see [Transport parameters](#transport-parameters);
   - `merger.py` `merge_compounds` (with the detach and unidentified rules), `compound_record.py` `CompoundRecord`, `formula_override.py` with `constants/formula_overrides.py` `FORMULA_OVERRIDES`, `constants/source_priority.py` `SOURCE_PRIORITY`, `class_override.py` `ClassOverride` with `constants/class_overrides.py` `CLASS_OVERRIDES`;
-  - `pubchem_sources.py` `PubchemSources`, `read_pubchem_sources` (class files read once, with their tables), `pubchem_identifiers.py` `load_pubchem_identifiers` (class file records → `Identifier`), `pubchem_formula_links.py` `attach_pubchem_formulas` (`cas` of records without CAS), `constants/pubchem_source.py` (`PUBCHEM_TABLES` per class, `MISSING_CAS_FILE`);
+  - `pubchem_sources.py` `PubchemSources`, `read_pubchem_sources` (class files read once, with their tables), `pubchem_identifiers.py` `load_pubchem_identifiers` (class file records → `Identifier`), `pubchem_formula_links.py` `attach_pubchem_formulas` (`cas` of records without CAS), `pubchem_properties.py` `attach_pubchem_properties` (melting point, boiling point, density cited `pubchem` + refNumber), `constants/pubchem_source.py` (`PUBCHEM_TABLES` per class, `MISSING_CAS_FILE`);
   - `janaf_links.py` `attach_janaf`, `parsers/janaf_cas_index.py` `read_janaf_cas_index`, `constants/janaf_cas_index.py` `JANAF_CAS_INDEX`;
   - `nasa_links.py` `attach_nasa`, `nasa7_species`, `nasa9_species` (`NasaSpecies`: key, elements, phase, H°(298.15) of the fit), `constants/nasa_source.py` (file names, datasets, `HF_TOLERANCE`, `HF_TOLERANCE_SINGLE`);
   - `equation_check.py` `check_equations`;

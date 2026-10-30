@@ -1,8 +1,9 @@
 """
 compound_data.pubchem_sources — The PubChem class files as the build reads them, once for all PubChem steps.
 
-The newest record per query key (CAS, ``formula:<Hill>``) without the experimental bodies, and the
-``idPubchemRest<Class>`` table of each file (``sources.json`` key, ``[line, key]`` refs).
+The newest record per query key (CAS, ``formula:<Hill>``). ``experimental=False`` leaves the
+experimental bodies out (identifiers and formula links). The property step reads them. Each file has
+an ``idPubchemRest<Class>`` table (``sources.json`` key, ``[line, key]`` refs).
 
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md
 """
@@ -36,14 +37,17 @@ class PubchemSources:
         return record, self.tables[path], line
 
 
-def read_pubchem_sources(pubchem_dir: Path) -> PubchemSources:
-    """Every class file under ``pubchem_dir``; empty with a warning when there is none."""
+def read_pubchem_sources(pubchem_dir: Path, experimental: bool = False) -> PubchemSources:
+    """Every class file under ``pubchem_dir``; empty with a warning when there is none.
+
+    ``experimental=True`` keeps the experimental bodies (melting point, boiling point, density).
+    """
     files = {cls: path for cls, path in pubchem_files(pubchem_dir).items() if path.is_file()}
     if not files:
         logger.warning("[pubchem] No pubchem-<class>.jsonl in %s — run make compound-data-pubchem", pubchem_dir)
         return PubchemSources()
     tables = {path: _table(cls, path) for cls, path in files.items()}
-    return PubchemSources(read_pubchem_records(files.values()), tables)
+    return PubchemSources(read_pubchem_records(files.values(), experimental), tables)
 
 
 def _table(cls: str, path: Path) -> TableSpec:

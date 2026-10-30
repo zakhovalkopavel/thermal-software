@@ -9,7 +9,7 @@ from the SMILES (``OrganicFamilyClassifier``), else from the formula when it alo
 (``formula_family``, reported).
 Inorganic carbon-free records without identifier (CAS unknown to the identifier files, or no CAS)
 move onto the single identified record of their formula (``other_cas``). No values are averaged;
-equations are ordered by ``SOURCE_PRIORITY``.
+equations are ordered by ``SOURCE_PRIORITY``; scalar properties by ``property_rank``.
 
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md
 """
@@ -36,7 +36,7 @@ from compound_data.class_override import ClassOverride
 from compound_data.compound_record import CompoundRecord
 from compound_data.constants.class_overrides import CLASS_OVERRIDES
 from compound_data.constants.formula_overrides import FORMULA_OVERRIDES
-from compound_data.constants.source_priority import SOURCE_PRIORITY
+from compound_data.constants.source_priority import SOURCE_PRIORITY, property_rank
 from compound_data.formula_override import FormulaOverride
 
 _CHARGE = re.compile(r"[+-]\d*$")
@@ -287,19 +287,24 @@ def _add_value(record: CompoundRecord, entry: SourceEntry) -> None:
         record.transport.setdefault(entry.property, []).append(value)
 
 
-def _priority(value: Any) -> int:
+def _equation_priority(value: Any) -> int:
     try:
         return SOURCE_PRIORITY.index(value.ref)
     except ValueError:
         return len(SOURCE_PRIORITY)
 
 
+def order_values(record: CompoundRecord) -> None:
+    """Put each property and equation list in source order. See ``property_rank`` and ``SOURCE_PRIORITY``."""
+    _sort_by_priority(record)
+
+
 def _sort_by_priority(record: CompoundRecord) -> None:
     for prop, values in record.properties.items():
-        record.properties[prop] = sorted(values, key=_priority)
+        record.properties[prop] = sorted(values, key=property_rank)
     for phases in record.equations.values():
         for phase, values in phases.items():
-            phases[phase] = sorted(values, key=_priority)
+            phases[phase] = sorted(values, key=_equation_priority)
 
 
 def _molar_mass(identifier: Optional[Identifier], override: Optional[FormulaOverride]) -> Optional[float]:

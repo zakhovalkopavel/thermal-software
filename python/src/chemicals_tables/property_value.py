@@ -20,7 +20,7 @@ class PropertyValue:
     """
 
     value: float
-    ref: RefKey
+    ref: Optional[RefKey]
     source: SourceLink
     phase: Optional[str] = None
 

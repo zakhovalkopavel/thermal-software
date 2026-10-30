@@ -10,7 +10,9 @@ Matching, per table:
    that formula share one, else ``formula:<Hill>``.
 
 Ions (``Al1+``) and deuterium species (``D2O1``) are skipped; they have no chemicals counterpart.
-Only the ids are written; the tables are in ``shared/processed/JANAF/`` (``index.json``).
+The ids are written, and a crystal–liquid or liquid–gas transition is also a melting or boiling
+point (Kelvin, cited ``[NISTJANAF, line, tableId]``). The tables are in ``shared/processed/JANAF/``
+(``index.json``). A crystal–gas transition is sublimation and is not used.
 
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md
 Refs: docs/REFERENCES.md  [36] NISTJANAF
@@ -27,9 +29,12 @@ from chemical_formula.formula_family import formula_family
 from chemical_formula.hill_formula import hill_formula
 from chemical_formula.iupac_formula import iupac_formula
 from chemicals_tables.report_issue import report_issue
+from chemicals_tables.property_value import PropertyValue
+from chemicals_tables.source_link import SourceLink
 from compound_data.compound_record import CompoundRecord
 from janaf.janaf_formula import janaf_charge, janaf_counts
 from janaf.janaf_table import JanafTable
+from references import RefKey
 
 JANAF_TABLE = "NIST-JANAF"
 
@@ -70,6 +75,7 @@ def attach_janaf(
         record = records.get(cas) if cas else None
         if record is not None and record.hill == hill:
             _add_ids(record, [table.table_id])
+            _add_transitions(record, table)
             continue
         if record is not None:
             issues.append(_issue("janafCasFormulaMismatch", table, cas=cas, csvLine=csv_line,
@@ -100,6 +106,8 @@ def attach_janaf(
                                        formula=hill, ids=sorted(r.id for r in targets), tables=ids))
         for record in targets:
             _add_ids(record, ids)
+            for table, _ in group:
+                _add_transitions(record, table)
     return issues
 
 
@@ -117,6 +125,31 @@ def _row_key(
 
 def _add_ids(record: CompoundRecord, ids: list[str]) -> None:
     record.janaf = sorted(set(record.janaf) | set(ids))
+
+
+def _add_transitions(record: CompoundRecord, table: JanafTable) -> None:
+    """Crystal↔liquid is a melting point; liquid↔gas is a boiling point. Both are already in kelvin."""
+    for transition in table.transitions:
+        name = _transition_property(transition.label)
+        if name is None:
+            continue
+        link = SourceLink(JANAF_TABLE, table.table_id, "", RefKey.NISTJANAF, transition.line)
+        record.properties.setdefault(name, []).append(
+            PropertyValue(transition.T, RefKey.NISTJANAF, link))
+
+
+def _transition_property(label: str) -> Optional[str]:
+    sides = [part.strip() for part in label.upper().split("<-->")]
+    if len(sides) != 2:
+        return None
+    left, right = sides
+    if {left, right} == {"LIQUID", "GAS"}:
+        return "boilingPoint"
+    if "GAS" in (left, right):
+        return None
+    if "LIQUID" in (left, right) and {left, right} & {"CRYSTAL", "SOLID"}:
+        return "meltingPoint"
+    return None
 
 
 def _new_record(

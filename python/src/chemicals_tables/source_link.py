@@ -30,9 +30,15 @@ class SourceLink:
     line: Optional[int] = None
     label: Optional[str] = None
     extra: dict[str, Any] = field(default_factory=dict)
+    ref_text: Optional[str] = None
 
-    def to_ref(self) -> list:
-        """``[RefKey, line, fileKey]``; identifier rows have no ref and give ``[line, fileKey]``."""
+    def to_ref(self) -> list | str:
+        """``[RefKey, line, fileKey]``; identifier rows have no ref and give ``[line, fileKey]``.
+
+        ``ref_text`` is a catalog citation that is not a RefKey (``pubchem151``).
+        """
+        if self.ref_text is not None:
+            return self.ref_text
         if self.ref is None:
             return [self.line, self.key]
         return [self.ref.value, self.line, self.key]

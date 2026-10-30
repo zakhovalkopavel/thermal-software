@@ -138,6 +138,9 @@ class TestSources:
         assert data["files"]["idPubchemRestOrganic"]["path"] == organic.path
         assert data["pubchem"]["cache"] == "shared/sources/compound-data/pubchem"
         assert data["pubchem"]["compoundUrl"] == "https://pubchem.ncbi.nlm.nih.gov/compound/{cid}"
+        assert data["pubchem"]["references"] == "shared/sources/compound-data/pubchem/pubchem-references.jsonl"
+        assert data["pubchem"]["ref"] == "pubchem{refNumber}"
+        assert "refNumber 151" in data["pubchem"]["refNote"]
 
     def test_no_sources_block_without_files(self, tmp_path, chem):
         data = json.loads(write_compound_sources(tmp_path, chem, DAY).read_text(encoding="utf-8"))
