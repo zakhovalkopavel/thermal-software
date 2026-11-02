@@ -20,6 +20,50 @@
         "idPubchemLarge"
       ],
       "properties": {
+        "enthalpyFormation298": [
+          {
+            "value": -866000.0,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              11330,
+              "nbsTables"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 306.0,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              11330,
+              "nbsTables"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": -838000.0,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              11330,
+              "nbsTables"
+            ]
+          }
+        ],
+        "heatCapacity298": [
+          {
+            "value": 71.5,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              11330,
+              "nbsTables"
+            ]
+          }
+        ],
         "meltingPoint": [
           {
             "value": 901.15,
@@ -28,6 +72,36 @@
         ]
       },
       "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  3201,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 2.6903,
+                  "b": -0.000459
+                },
+                "min": 930.0,
+                "max": 1100.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "2%",
+                "raw": {
+                  "data": [
+                    2.6903,
+                    -0.000459
+                  ]
+                }
+              }
+            ]
+          }
+        },
         "heatCapacity": {
           "solid": {
             "def": 0,
@@ -47,6 +121,96 @@
                 "min": 290,
                 "max": 319,
                 "k": 4.184
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1529,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 228.7,
+                  "b": -0.0398
+                },
+                "min": 1005.0,
+                "max": 1250.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "uncertainty": "2%",
+                "raw": {
+                  "data": [
+                    228.7,
+                    -0.0398
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1256,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -3.72471390712,
+                  "c2": 10013.7965292,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 916.0,
+                "max": 1010.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "5%",
+                "raw": {
+                  "data": [
+                    0.02412,
+                    83258.81
+                  ],
+                  "comment": "NaPO3: Revised temperature range, accuracy upgraded."
+                }
+              },
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1257,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -1.82865169541,
+                  "c2": 8163.41508297,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 1010.0,
+                "max": 1290.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "5%",
+                "raw": {
+                  "data": [
+                    0.16063,
+                    67873.98
+                  ]
+                }
               }
             ]
           }

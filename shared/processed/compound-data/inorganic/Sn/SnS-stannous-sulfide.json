@@ -86,6 +86,15 @@
               1349,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": 119200.0,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              3169,
+              "nbsTables"
+            ]
           }
         ],
         "entropy298": [
@@ -154,6 +163,35 @@
         ]
       },
       "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  3535,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 5.111,
+                  "b": -0.000683
+                },
+                "min": 1193.0,
+                "max": 1324.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "raw": {
+                  "data": [
+                    5.111,
+                    -0.000683
+                  ]
+                }
+              }
+            ]
+          }
+        },
         "heatCapacity": {
           "solid": {
             "def": 0,

@@ -100,6 +100,15 @@
               1792,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": -730500.0,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              8885,
+              "nbsTables"
+            ]
           }
         ],
         "heatCapacity298": [
@@ -110,6 +119,15 @@
               "CRC95",
               1792,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": 48.62,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              8885,
+              "nbsTables"
             ]
           }
         ],
@@ -174,6 +192,36 @@
         ]
       },
       "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  2767,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 3.235,
+                  "b": -0.000524
+                },
+                "min": 1650.0,
+                "max": 2100.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "3%",
+                "raw": {
+                  "data": [
+                    3.235,
+                    -0.000524
+                  ]
+                }
+              }
+            ]
+          }
+        },
         "heatCapacity": {
           "gas": {
             "def": 0,

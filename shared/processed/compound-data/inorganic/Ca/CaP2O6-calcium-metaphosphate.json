@@ -19,6 +19,43 @@
         64959,
         "idPubchemLarge"
       ],
+      "properties": {
+        "enthalpyFormation298": [
+          {
+            "value": -2456000.0,
+            "phase": "solid",
+            "ref": [
+              "NBS1982",
+              9423,
+              "nbsTables"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 146.65,
+            "phase": "solid",
+            "variant": "β",
+            "ref": [
+              "NBS1982",
+              9422,
+              "nbsTables"
+            ]
+          }
+        ],
+        "heatCapacity298": [
+          {
+            "value": 145.1,
+            "phase": "solid",
+            "variant": "β",
+            "ref": [
+              "NBS1982",
+              9422,
+              "nbsTables"
+            ]
+          }
+        ]
+      },
       "equations": {
         "heatCapacity": {
           "solid": {
@@ -39,6 +76,36 @@
                 "min": 287,
                 "max": 371,
                 "k": 4.184
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  386,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 243.6,
+                  "b": -0.0108
+                },
+                "min": 1280.0,
+                "max": 1383.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "uncertainty": "4%",
+                "raw": {
+                  "data": [
+                    243.6,
+                    -0.0108
+                  ]
+                }
               }
             ]
           }

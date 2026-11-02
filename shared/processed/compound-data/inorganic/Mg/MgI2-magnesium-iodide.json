@@ -160,6 +160,29 @@
                   "Tm": 907.15,
                   "Tmax": 1161.15
                 }
+              },
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  2769,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 3.642,
+                  "b": -0.000651
+                },
+                "min": 965.0,
+                "max": 1161.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "1.5%",
+                "raw": {
+                  "data": [
+                    3.642,
+                    -0.000651
+                  ]
+                }
               }
             ]
           }
@@ -278,7 +301,81 @@
         244,
         "idPubchemRestInorganic"
       ],
+      "properties": {
+        "enthalpyFormation298": [
+          {
+            "value": -364000.0,
+            "phase": "solid",
+            "ref": [
+              "NBS1982",
+              8982,
+              "nbsTables"
+            ]
+          },
+          {
+            "value": -172000.0,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              8983,
+              "nbsTables"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 129.7,
+            "phase": "solid",
+            "ref": [
+              "NBS1982",
+              8982,
+              "nbsTables"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": -358200.0,
+            "phase": "solid",
+            "ref": [
+              "NBS1982",
+              8982,
+              "nbsTables"
+            ]
+          }
+        ]
+      },
       "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  2769,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 3.642,
+                  "b": -0.000651
+                },
+                "min": 965.0,
+                "max": 1161.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "1.5%",
+                "raw": {
+                  "data": [
+                    3.642,
+                    -0.000651
+                  ]
+                }
+              }
+            ]
+          }
+        },
         "heatCapacity": {
           "gas": {
             "def": 0,

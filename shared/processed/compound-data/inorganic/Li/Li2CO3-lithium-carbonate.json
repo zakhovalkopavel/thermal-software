@@ -129,6 +129,36 @@
         ]
       },
       "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  2660,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 2.2026,
+                  "b": -0.0003729
+                },
+                "min": 1012.0,
+                "max": 1115.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "0.5%",
+                "raw": {
+                  "data": [
+                    2.2026,
+                    -0.0003729
+                  ]
+                }
+              }
+            ]
+          }
+        },
         "heatCapacity": {
           "liquid": {
             "def": 0,
@@ -192,6 +222,70 @@
                 },
                 "min": 298.0,
                 "max": 993.0
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1342,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 284.6,
+                  "b": -0.0406
+                },
+                "min": 1023.0,
+                "max": 1123.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "uncertainty": "1.5%",
+                "raw": {
+                  "data": [
+                    284.6,
+                    -0.0406
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1097,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -2.44645546341,
+                  "c2": 4433.56654291,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 1019.0,
+                "max": 1197.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "3%",
+                "raw": {
+                  "data": [
+                    0.0866,
+                    36862.49
+                  ],
+                  "comment": "Measurements were extended to include 100% NaCl. Comparison with the recommended NaCl data set shows the agreement is within 1%."
+                }
               }
             ]
           }

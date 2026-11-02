@@ -234,6 +234,59 @@
         ]
       },
       "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  634,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 1.8324,
+                  "b": -0.00024718
+                },
+                "min": 723.0,
+                "max": 1300.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "1.5%",
+                "raw": {
+                  "data": [
+                    1.8324,
+                    -0.00024718
+                  ]
+                }
+              },
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  635,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 1.6035,
+                  "b": -6.7737e-05
+                },
+                "min": 1300.0,
+                "max": 1890.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "1.5%",
+                "raw": {
+                  "data": [
+                    1.6035,
+                    -6.7737e-05
+                  ]
+                }
+              }
+            ]
+          }
+        },
         "heatCapacity": {
           "gas": {
             "def": 0,
@@ -352,6 +405,95 @@
                 },
                 "min": 298.0,
                 "max": 723.0
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  355,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 37.9,
+                  "b": 0.0354
+                },
+                "min": 973.0,
+                "max": 1673.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "uncertainty": "4%",
+                "raw": {
+                  "data": [
+                    37.9,
+                    0.0354
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  331,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -0.41400143913,
+                  "c2": 11141.5374031,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 873.0,
+                "max": 1023.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "10%",
+                "raw": {
+                  "data": [
+                    0.661,
+                    92635.31
+                  ]
+                }
+              },
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  332,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": 1.90776314498,
+                  "c2": 9407.90627357,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 1410.0,
+                "max": 1893.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "8%",
+                "raw": {
+                  "data": [
+                    6.738,
+                    78221.19
+                  ]
+                }
               }
             ]
           }

@@ -164,6 +164,29 @@
                   "Tm": 1129.15,
                   "Tmax": 1277.15
                 }
+              },
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  3286,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 2.4797,
+                  "b": -0.0004487
+                },
+                "min": 1138.0,
+                "max": 1277.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "1%",
+                "raw": {
+                  "data": [
+                    2.4797,
+                    -0.0004487
+                  ]
+                }
               }
             ]
           }
@@ -247,6 +270,70 @@
                 },
                 "min": 298.0,
                 "max": 1123.0
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1569,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 268.5,
+                  "b": -0.0502
+                },
+                "min": 1143.0,
+                "max": 1278.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "uncertainty": "1%",
+                "raw": {
+                  "data": [
+                    268.5,
+                    -0.0502
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1297,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -1.66405250571,
+                  "c2": 3467.9670596,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 1134.0,
+                "max": 1234.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "3%",
+                "raw": {
+                  "data": [
+                    0.18937,
+                    28834.1
+                  ],
+                  "comment": "Measurements were extended to include 100% NaCl. Comparison with the recommended NaCl data set shows the agreement is within 1%."
+                }
               }
             ]
           }

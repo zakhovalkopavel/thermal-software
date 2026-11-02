@@ -164,6 +164,29 @@
                   "Tm": 607.15,
                   "Tmax": 730.15
                 }
+              },
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1999,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 2.3063,
+                  "b": -0.0007235
+                },
+                "min": 620.0,
+                "max": 730.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "0.5%",
+                "raw": {
+                  "data": [
+                    2.3063,
+                    -0.0007235
+                  ]
+                }
               }
             ]
           }
@@ -227,6 +250,97 @@
                 "max": 401,
                 "k": 4.184,
                 "error": 10
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1023,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 154.715,
+                  "b": -0.071708
+                },
+                "min": 620.0,
+                "max": 760.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "uncertainty": "0.5%",
+                "raw": {
+                  "data": [
+                    154.715,
+                    -0.071708
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  885,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -2.55915617042,
+                  "c2": 2221.26164093,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 615.0,
+                "max": 760.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "2%",
+                "raw": {
+                  "data": [
+                    0.07737,
+                    18468.48
+                  ],
+                  "comment": "Extended to 970 K over the common T range, the two data sets agree to within 0.7%."
+                }
+              },
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  886,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -2.46037405,
+                  "c2": 2156.31656365,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 620.0,
+                "max": 970.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "1.2%",
+                "raw": {
+                  "data": [
+                    0.085403,
+                    17928.5
+                  ],
+                  "comment": "KNO3: Recommended data, shift from previous evaluation."
+                }
               }
             ]
           }

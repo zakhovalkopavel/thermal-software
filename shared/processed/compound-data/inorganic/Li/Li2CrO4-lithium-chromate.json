@@ -20,6 +20,17 @@
         "idPubchemLarge"
       ],
       "properties": {
+        "enthalpyFormation298": [
+          {
+            "value": -1388700.0,
+            "phase": "solid",
+            "ref": [
+              "NBS1982",
+              10680,
+              "nbsTables"
+            ]
+          }
+        ],
         "heatOfFusion": [
           {
             "value": 30500,
@@ -30,6 +41,68 @@
             ]
           }
         ]
+      },
+      "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  2673,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 2.693,
+                  "b": -0.0004412
+                },
+                "min": 783.0,
+                "max": 933.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "raw": {
+                  "data": [
+                    2.693,
+                    -0.0004412
+                  ],
+                  "comment": "Accuracy is set at +/-0.5% (comparisons with recommended values)."
+                }
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1354,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 275.9,
+                  "b": -0.0624
+                },
+                "min": 850.0,
+                "max": 970.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "raw": {
+                  "data": [
+                    275.9,
+                    -0.0624
+                  ],
+                  "comment": "Accuracy set at 1-2% (comparison with recommended values)."
+                }
+              }
+            ]
+          }
+        }
       }
     }
   }

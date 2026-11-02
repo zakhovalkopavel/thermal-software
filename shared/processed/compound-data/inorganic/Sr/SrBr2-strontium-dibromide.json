@@ -78,6 +78,15 @@
               2019,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": -444000.0,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              9730,
+              "nbsTables"
+            ]
           }
         ],
         "heatCapacity298": [
@@ -88,6 +97,15 @@
               "CRC95",
               2019,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": 60.7,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              9730,
+              "nbsTables"
             ]
           }
         ],
@@ -146,6 +164,29 @@
                   "k": 0.745,
                   "Tm": 930.15,
                   "Tmax": 1277.15
+                }
+              },
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  3536,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 4.39,
+                  "b": -0.000745
+                },
+                "min": 950.0,
+                "max": 1277.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "1%",
+                "raw": {
+                  "data": [
+                    4.39,
+                    -0.000745
+                  ]
                 }
               }
             ]
@@ -258,6 +299,36 @@
                 },
                 "min": 298.0,
                 "max": 930.0
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1656,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 190.0,
+                  "b": -0.0439
+                },
+                "min": 930.0,
+                "max": 1284.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "uncertainty": "1%",
+                "raw": {
+                  "data": [
+                    190.0,
+                    -0.0439
+                  ]
+                }
               }
             ]
           }

@@ -175,6 +175,26 @@
               1759,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": -59900.0,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              4627,
+              "nbsTables"
+            ]
+          }
+        ],
+        "heatCapacity298": [
+          {
+            "value": 61.09,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              4627,
+              "nbsTables"
+            ]
           }
         ],
         "heatOfFusion": [
@@ -247,6 +267,29 @@
                   "k": 3.235,
                   "Tm": 529.15,
                   "Tmax": 627.15
+                }
+              },
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1397,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 6.9435,
+                  "b": -0.0032351
+                },
+                "min": 532.0,
+                "max": 627.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "2%",
+                "raw": {
+                  "data": [
+                    6.9435,
+                    -0.0032351
+                  ]
                 }
               }
             ]
@@ -379,6 +422,39 @@
                 },
                 "min": 298.0,
                 "max": 530.0
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  723,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -3.21887582487,
+                  "c2": 2280.14014223,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 541.0,
+                "max": 631.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "10%",
+                "raw": {
+                  "data": [
+                    0.04,
+                    18958.02
+                  ]
+                }
               }
             ]
           }

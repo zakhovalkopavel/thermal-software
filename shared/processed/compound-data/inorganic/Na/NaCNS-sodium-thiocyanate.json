@@ -27,6 +27,17 @@
             "ref": "pubchem931"
           }
         ],
+        "enthalpyFormation298": [
+          {
+            "value": -170500.0,
+            "phase": "solid",
+            "ref": [
+              "NBS1982",
+              11596,
+              "nbsTables"
+            ]
+          }
+        ],
         "meltingPoint": [
           {
             "value": 573.15,
@@ -49,6 +60,102 @@
             ]
           }
         ]
+      },
+      "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  3259,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 1.7103,
+                  "b": -0.0003817
+                },
+                "min": 603.0,
+                "max": 661.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "1.5%",
+                "raw": {
+                  "data": [
+                    1.7103,
+                    -0.0003817
+                  ],
+                  "comment": "NaSCN: Recommended data, shift from previous evaluation."
+                }
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1556,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 134.9312,
+                  "b": -0.05266
+                },
+                "min": 583.0,
+                "max": 597.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "uncertainty": "1.5%",
+                "raw": {
+                  "data": [
+                    134.9312,
+                    -0.05266
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1282,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -3.0088175131,
+                  "c2": 2332.97973037,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 578.0,
+                "max": 634.1,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "2%",
+                "raw": {
+                  "data": [
+                    0.04935,
+                    19397.35
+                  ]
+                }
+              }
+            ]
+          }
+        }
       }
     }
   }

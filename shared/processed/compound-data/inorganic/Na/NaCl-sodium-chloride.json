@@ -140,6 +140,15 @@
               1696,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": -196660.0,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              10828,
+              "nbsTables"
+            ]
           }
         ],
         "heatCapacity298": [
@@ -150,6 +159,15 @@
               "CRC95",
               1696,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": 35.77,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              10828,
+              "nbsTables"
             ]
           }
         ],
@@ -236,6 +254,29 @@
                   "k": 0.543,
                   "Tm": 1073.85,
                   "Tmax": 1300.15
+                }
+              },
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  2857,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 2.1389,
+                  "b": -0.0005426
+                },
+                "min": 1080.0,
+                "max": 1300.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "0.5%",
+                "raw": {
+                  "data": [
+                    2.1389,
+                    -0.0005426
+                  ]
                 }
               }
             ]
@@ -357,6 +398,97 @@
                 },
                 "min": 298.0,
                 "max": 1073.0
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1456,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 191.16,
+                  "b": -0.07188
+                },
+                "min": 1080.0,
+                "max": 1240.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "uncertainty": "0.5%",
+                "raw": {
+                  "data": [
+                    191.16,
+                    -0.07188
+                  ],
+                  "comment": "Accuracy set at +/-15% (comparisons with recommended values)."
+                }
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1157,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -2.4160673901,
+                  "c2": 2641.20845616,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 1080.0,
+                "max": 1210.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "0.2%",
+                "raw": {
+                  "data": [
+                    0.089272,
+                    21960.09
+                  ]
+                }
+              },
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1158,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -2.21472074655,
+                  "c2": 2439.94462626,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 1080.0,
+                "max": 1500.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "2.4%",
+                "raw": {
+                  "data": [
+                    0.109184,
+                    20286.7
+                  ],
+                  "comment": "Extended to 1500 K; Over common T range these results are uniformly higher, i.e.:1080 K, 1%; 1200 K, 3.5%."
+                }
               }
             ]
           }

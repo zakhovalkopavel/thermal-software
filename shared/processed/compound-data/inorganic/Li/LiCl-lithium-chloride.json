@@ -152,6 +152,15 @@
               1669,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": -216700.0,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              10324,
+              "nbsTables"
+            ]
           }
         ],
         "heatCapacity298": [
@@ -162,6 +171,15 @@
               "CRC95",
               1669,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": 33.22,
+            "phase": "gas",
+            "ref": [
+              "NBS1982",
+              10324,
+              "nbsTables"
             ]
           }
         ],
@@ -260,6 +278,29 @@
                   "k": 0.432,
                   "Tm": 883.15,
                   "Tmax": 1054.15
+                }
+              },
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  2422,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 1.8842,
+                  "b": -0.0004328
+                },
+                "min": 894.0,
+                "max": 1054.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "0.5%",
+                "raw": {
+                  "data": [
+                    1.8842,
+                    -0.0004328
+                  ]
                 }
               }
             ]
@@ -363,6 +404,69 @@
                 },
                 "min": 298.0,
                 "max": 883.0
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1240,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 189.28,
+                  "b": -0.06973
+                },
+                "min": 903.0,
+                "max": 1060.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "uncertainty": "1%",
+                "raw": {
+                  "data": [
+                    189.28,
+                    -0.06973
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1000,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -2.22082079119,
+                  "c2": 2298.5840246,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 894.0,
+                "max": 1113.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "1%",
+                "raw": {
+                  "data": [
+                    0.10852,
+                    19111.37
+                  ]
+                }
               }
             ]
           }

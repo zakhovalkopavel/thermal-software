@@ -184,6 +184,36 @@
         ]
       },
       "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  3603,
+                  "moltenSaltDensity"
+                ],
+                "vars": {
+                  "a": 2.856,
+                  "b": -0.00045
+                },
+                "min": 980.0,
+                "max": 1140.0,
+                "k": 1000.0,
+                "dataType": "P1",
+                "uncertainty": "2.5%",
+                "raw": {
+                  "data": [
+                    2.856,
+                    -0.00045
+                  ]
+                }
+              }
+            ]
+          }
+        },
         "heatCapacity": {
           "liquid": {
             "def": 0,
@@ -238,6 +268,68 @@
                 },
                 "min": 298.0,
                 "max": 943.0
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "linear",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1667,
+                  "moltenSaltSurfaceTension"
+                ],
+                "vars": {
+                  "a": 100.5,
+                  "b": -0.0118
+                },
+                "min": 953.0,
+                "max": 1273.0,
+                "k": 0.001,
+                "dataType": "P1",
+                "raw": {
+                  "data": [
+                    100.5,
+                    -0.0118
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN101",
+                "ref": [
+                  "NISTMoltenSalts",
+                  1412,
+                  "moltenSaltViscosity"
+                ],
+                "vars": {
+                  "c1": -1.50959257746,
+                  "c2": 5393.63105741,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 940.0,
+                "max": 1150.0,
+                "k": 0.001,
+                "dataType": "+E",
+                "uncertainty": "10%",
+                "raw": {
+                  "data": [
+                    0.221,
+                    44844.86
+                  ]
+                }
               }
             ]
           }
