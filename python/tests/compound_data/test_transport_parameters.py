@@ -48,6 +48,10 @@ TABLES = [
         {"species": "N2", "components": ["N2"], "cas": N2, "epsilonToK": 95.05, "sigma": 3.698},
         {"species": "C6H6–CH4O", "components": ["C6H6", "CH4O"], "cas": None, "epsilonToK": 450.0, "sigma": 4.5},
     ]},
+    {"id": "hirschfelder1954-lj", "rows": [
+        {"compound": "Nitrogen", "formula": "N2", "cas": N2, "epsilonToK": 71.4, "sigma": 3.798},
+        {"compound": "Methane", "formula": "CH4", "cas": CH4, "epsilonToK": 148.6, "sigma": 3.758},
+    ]},
     {"id": "svehla1995-table-1", "rows": [
         {"species": ["N2", "N2"], "cas": [N2, N2], "property": "viscosity", "pdfPage": 12,
          "methods": [
@@ -88,7 +92,7 @@ class TestTables:
     def test_tables_and_counts(self, parsed):
         result, _ = parsed
         assert [t.key for t in result.tables] == [TRANSPORT_TABLES[t["id"]].key for t in TABLES]
-        assert len(result.entries) == 21
+        assert len(result.entries) == 25
         assert len(result.interactions) == 2
 
     def test_unknown_table_is_reported(self, tmp_path):
@@ -166,6 +170,19 @@ class TestPotentials:
         assert eps.value.to_dict() == {"value": 95.05, "potential": "lennardJones", "basis": "secondVirial",
                                        "ref": ["Mamedov2014", eps.value.source.line, "mamedov2014T1"]}
         assert [(i["issue"], i["label"]) for i in result.issues] == [("transportMixtureSkipped", "C6H6–CH4O")]
+
+    def test_hirschfelder_ce407_lennard_jones(self, parsed):
+        result, _ = parsed
+        nitrogen = [e for e in _by_key(result, "hirschfelder1954LJ") if e.cas == N2]
+        sigma, eps = nitrogen
+        assert (sigma.formula, sigma.label, sigma.value.value) == ("N2", "Nitrogen", 3.798e-10)
+        assert eps.value.to_dict() == {
+            "value": 71.4, "potential": "lennardJones",
+            "ref": ["Hirschfelder1954", eps.value.source.line, "hirschfelder1954LJ"],
+        }
+        methane = [e for e in _by_key(result, "hirschfelder1954LJ") if e.cas == CH4]
+        assert [e.property for e in methane] == ["collisionDiameter", "epsilonToKb"]
+        assert methane[0].value.value == 3.758e-10 and methane[1].value.value == 148.6
 
 
 class TestSvehla:

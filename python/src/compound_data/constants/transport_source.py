@@ -1,12 +1,14 @@
 """
 compound_data.constants.transport_source — Tables of ``shared/sources/transport-parameters.json``.
 
-The file is a hand transcription of White (Viscous Fluid Flow), NASA TN D-481, Mamedov & Somuncu 2014
-and Svehla 1995 (NASA TM-4647), with the printed units. Each table gets its own file key, so the ref
-tuple ``[RefKey, line, fileKey]`` keeps one RefKey per key; the line is the row's first line in the file.
+The file is a hand transcription of White (Viscous Fluid Flow), NASA TN D-481, Mamedov & Somuncu 2014,
+Svehla 1995 (NASA TM-4647) and Hirschfelder, Curtiss & Bird 1954 (CE 407 notes PDF), with the printed
+units. Each table gets its own file key, so the ref tuple ``[RefKey, line, fileKey]`` keeps one RefKey
+per key; the line is the row's first line in the file.
 
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md
-Refs: docs/REFERENCES.md  [20] White3, [43] Svehla1962, [44] Itean1961, [45] Svehla1995, [46] Mamedov2014
+Refs: docs/REFERENCES.md  [20] White3, [43] Svehla1962, [44] Itean1961, [45] Svehla1995, [46] Mamedov2014,
+      [49] Hirschfelder1954
 """
 from __future__ import annotations
 
@@ -28,6 +30,10 @@ TRANSPORT_TABLES: dict[str, TableSpec] = {
     "white-table-a-7": TableSpec("White Table A-7", "whiteA7", TRANSPORT_FILE, RefKey.White3),
     "itean1961-table-3": TableSpec("TN D-481 Table III", "itean1961T3", TRANSPORT_FILE, RefKey.Itean1961),
     "mamedov2014-table-1": TableSpec("Mamedov 2014 Table 1", "mamedov2014T1", TRANSPORT_FILE, RefKey.Mamedov2014),
+    "hirschfelder1954-lj": TableSpec(
+        "Hirschfelder 1954 Lennard-Jones force constants", "hirschfelder1954LJ", TRANSPORT_FILE,
+        RefKey.Hirschfelder1954,
+    ),
     "svehla1995-table-1": TableSpec("Svehla 1995 Table I", "svehla1995T1", TRANSPORT_FILE, RefKey.Svehla1995),
 }
 """Table id in the file → spec (file key, ref)."""

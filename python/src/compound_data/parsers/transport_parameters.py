@@ -3,10 +3,10 @@ compound_data.parsers.transport_parameters — ``shared/sources/transport-parame
 
 - White Tables 1-2, 1-3, A-6: ``sutherland`` and ``powerLaw`` equations of gas viscosity and thermal
   conductivity (``vars {y0, T0, S}`` / ``{y0, T0, n}``; A-6 in its SI columns, without a range).
-- White Table A-7, TN D-481 Table III, Mamedov 2014 Table 1: ``collisionDiameter`` [m] and ``epsilonToKb``
-  [K] tagged with their ``potential``; TN D-481 adds ``stockmayerDelta`` and ``dipoleMoment`` [C m].
-  Mamedov's values are fitted to second virial coefficients (``basis: secondVirial``); its benzene
-  mixture rows are reported and skipped.
+- White Table A-7, Hirschfelder 1954 (CE 407 notes), TN D-481 Table III, Mamedov 2014 Table 1:
+  ``collisionDiameter`` [m] and ``epsilonToKb`` [K] tagged with their ``potential``; TN D-481 adds
+  ``stockmayerDelta`` and ``dipoleMoment`` [C m]. Mamedov's values are fitted to second virial
+  coefficients (``basis: secondVirial``); its benzene mixture rows are reported and skipped.
 - Svehla 1995 Table I: a pure-species row (both species the same, with a CAS) becomes a ``transport``
   value of the record (its methods, σ in m) plus the σ, ε/k, δ, ρ*, V0* of its potential; the other
   rows (binary pairs, the electron, H6F6) are returned as interactions for ``interactions.json``.
@@ -14,7 +14,8 @@ compound_data.parsers.transport_parameters — ``shared/sources/transport-parame
 Every value cites ``[RefKey, line, fileKey]``, the line being the first line of the row in the file.
 
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md
-Refs: docs/REFERENCES.md  [20] White3, [44] Itean1961, [45] Svehla1995, [46] Mamedov2014
+Refs: docs/REFERENCES.md  [20] White3, [44] Itean1961, [45] Svehla1995, [46] Mamedov2014,
+      [49] Hirschfelder1954
 """
 from __future__ import annotations
 
@@ -167,6 +168,14 @@ def _white_a7(out: TransportParameters, spec: TableSpec, table_id: str, row: dic
                                      _link(spec, table_id, line, label, potential="lennardJones")))
 
 
+def _hirschfelder_lj(out: TransportParameters, spec: TableSpec, table_id: str, row: dict, line: int) -> None:
+    """CE 407 / Hirschfelder 1954 force constants. Same SI properties as White Table A-7."""
+    cas, formula, label = row.get("cas"), _formula(row.get("formula")), row["compound"]
+    for prop, key in (("collisionDiameter", "sigma"), ("epsilonToKb", "epsilonToK")):
+        out.entries.append(_property(cas, formula, label, prop, row[key],
+                                     _link(spec, table_id, line, label, potential="lennardJones")))
+
+
 def _itean(out: TransportParameters, spec: TableSpec, table_id: str, row: dict, line: int) -> None:
     cas, formula, label = row.get("cas"), _formula(row.get("formula")), row["molecule"]
     for prop, key in (("collisionDiameter", "sigma"), ("epsilonToKb", "epsilonToK"), ("stockmayerDelta", "delta"),
@@ -239,5 +248,6 @@ _PARSERS = {
     "white-table-a-7": _white_a7,
     "itean1961-table-3": _itean,
     "mamedov2014-table-1": _mamedov,
+    "hirschfelder1954-lj": _hirschfelder_lj,
     "svehla1995-table-1": _svehla,
 }
