@@ -7,14 +7,14 @@
  *   S/R   = a1·ln T + a2·T + a3·T²/2 + a4·T³/3 + a5·T⁴/4 + a7
  *   G     = H − T·S
  *
- * Reference values: NIST WebBook JANAF tables
+ * Reference values: the gas (or reference-state) row in shared/processed/JANAF
  *
  * Verifies:
- *   - CO2 Cp at 300 K and 1000 K vs NIST
- *   - N2 Cp at 300 K and 1000 K vs NIST
+ *   - CO2 Cp at 300 K and 1000 K vs the JANAF row
+ *   - N2 Cp at 300 K and 1000 K vs the JANAF row
  *   - Tswitch continuity: Cp agrees at 999.999 K and 1000.001 K within 1 J/(mol·K)
- *   - enthalpy() sign and magnitude (CO2 ≈ -393.5 kJ/mol at 298 K)
- *   - entropy() is positive; CO2 S° at 298 K ≈ 213.8 J/(mol·K)
+ *   - enthalpy() at 298.15 K vs the JANAF enthalpy of formation
+ *   - entropy() is positive; S° at 298.15 K vs the JANAF row
  *   - G = H − T·S identity
  *   - calculateAverage() spanning Tswitch handled correctly
  *   - integral() exact polynomial antiderivative via FD check
@@ -23,9 +23,9 @@
 
 import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa7-equation-method';
 import { compoundNasa7 } from '../../../../src/common/thermal/utils/nasa';
-import { CO2 } from '../../../../src/common/thermal/compound/gas/co2';
-import { N2  } from '../../../../src/common/thermal/compound/gas/n2';
+import { CO2, N2 } from '../../../../src/common/thermal/compound/gas';
 import { PHYSICAL_CONSTANTS } from '../../../../src/common/thermal/constants/physical.constants';
+import { janafGasRow } from '../janaf-gas-row.util';
 
 const method = new Nasa7EquationMethod();
 const R = PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK;
@@ -35,14 +35,12 @@ const R = PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK;
 describe('Nasa7EquationMethod — CO2', () => {
   const vars = compoundNasa7(CO2)!.nasa7;
 
-  // NIST JANAF: CO2 Cp at 300 K = 37.135 J/(mol·K)
-  it('Cp at 300 K ≈ 37.1 J/(mol·K) (NIST JANAF)', () => {
-    expect(method.calculate(300, vars, 200, 6000)).toBeCloseTo(37.135, 0);
+  it('Cp at 300 K matches the JANAF row', () => {
+    expect(method.calculate(300, vars, 200, 6000)).toBeCloseTo(janafGasRow('CO2', 300).Cp!, 0);
   });
 
-  // NIST JANAF: CO2 Cp at 1000 K = 54.308 J/(mol·K)
-  it('Cp at 1000 K ≈ 54.3 J/(mol·K) (NIST JANAF)', () => {
-    expect(method.calculate(1000, vars, 200, 6000)).toBeCloseTo(54.308, 0);
+  it('Cp at 1000 K matches the JANAF row', () => {
+    expect(method.calculate(1000, vars, 200, 6000)).toBeCloseTo(janafGasRow('CO2', 1000).Cp!, 0);
   });
 
   it('Cp at 2000 K is between 56 and 62 J/(mol·K)', () => {
@@ -51,14 +49,14 @@ describe('Nasa7EquationMethod — CO2', () => {
     expect(cp).toBeLessThan(62);
   });
 
-  // CO2 standard enthalpy of formation ≈ -393.51 kJ/mol
-  it('enthalpy at 298 K ≈ −393.5 kJ/mol', () => {
-    expect(method.enthalpy(298, vars) / 1000).toBeCloseTo(-393.5, 0);
+  it('enthalpy at 298.15 K matches the JANAF enthalpy of formation', () => {
+    const row = janafGasRow('CO2', 298.15);
+    expect(method.enthalpy(row.T, vars) / 1000).toBeCloseTo(row.dfH!, 0);
   });
 
-  // NIST: S°(298 K) for CO2 ≈ 213.8 J/(mol·K)
-  it('entropy at 298 K ≈ 213.8 J/(mol·K) (NIST JANAF)', () => {
-    expect(method.entropy(298, vars)).toBeCloseTo(213.8, 0);
+  it('entropy at 298.15 K matches the JANAF row', () => {
+    const row = janafGasRow('CO2', 298.15);
+    expect(method.entropy(row.T, vars)).toBeCloseTo(row.S!, 0);
   });
 
   it('entropy is positive at all temperatures', () => {
@@ -99,24 +97,22 @@ describe('Nasa7EquationMethod — CO2', () => {
 describe('Nasa7EquationMethod — N2', () => {
   const vars = compoundNasa7(N2)!.nasa7;
 
-  // NIST JANAF: N2 Cp at 300 K ≈ 29.12 J/(mol·K)
-  it('Cp at 300 K ≈ 29.1 J/(mol·K)', () => {
-    expect(method.calculate(300, vars, 200, 6000)).toBeCloseTo(29.12, 0);
+  it('Cp at 300 K matches the JANAF row', () => {
+    expect(method.calculate(300, vars, 200, 6000)).toBeCloseTo(janafGasRow('N2', 300).Cp!, 0);
   });
 
-  // NIST JANAF: N2 Cp at 1000 K ≈ 32.70 J/(mol·K) — uses high-range coefficients
-  it('Cp at 1000 K ≈ 32.7 J/(mol·K) (high-range coefficients)', () => {
-    expect(method.calculate(1000, vars, 200, 6000)).toBeCloseTo(32.70, 0);
+  it('Cp at 1000 K matches the JANAF row (high-range coefficients)', () => {
+    expect(method.calculate(1000, vars, 200, 6000)).toBeCloseTo(janafGasRow('N2', 1000).Cp!, 0);
   });
 
-  // N2 Hf° = 0 J/mol (reference element); a6 encodes this
-  it('enthalpy at 298 K is within ±500 J/mol of 0 (reference element)', () => {
-    expect(Math.abs(method.enthalpy(298, vars))).toBeLessThan(500);
+  it('enthalpy at 298.15 K is within ±500 J/mol of the JANAF enthalpy of formation', () => {
+    const row = janafGasRow('N2', 298.15);
+    expect(Math.abs(method.enthalpy(row.T, vars) - row.dfH! * 1000)).toBeLessThan(500);
   });
 
-  // NIST: N2 S°(298 K) ≈ 191.6 J/(mol·K)
-  it('entropy at 298 K ≈ 191.6 J/(mol·K)', () => {
-    expect(method.entropy(298, vars)).toBeCloseTo(191.6, 0);
+  it('entropy at 298.15 K matches the JANAF row', () => {
+    const row = janafGasRow('N2', 298.15);
+    expect(method.entropy(row.T, vars)).toBeCloseTo(row.S!, 0);
   });
 
   it('G = H − T·S identity at 500 K', () => {

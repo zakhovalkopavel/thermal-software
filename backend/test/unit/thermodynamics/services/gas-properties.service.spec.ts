@@ -5,12 +5,13 @@ import { compoundNasa7, compoundNasa9 } from '../../../../src/common/thermal/uti
 import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa7-equation-method';
 import { Nasa9EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa9-equation-method';
 import { PHYSICAL_CONSTANTS } from '../../../../src/common/thermal/constants/physical.constants';
+import { janafGasRow } from '../../thermal/janaf-gas-row.util';
 
 describe('GasPropertiesService — absolute enthalpy, entropy, Gibbs energy', () => {
   const gas = new GasPropertiesService();
 
-  // NO/NO2 compound files carry older ΔHf values (≈1 kJ/mol below the NASA datasets)
-  const tolerance_kJ = (sp: string): number => (sp === 'NO' || sp === 'NO2' ? 1.5 : 0.5);
+  // Tabulated ΔHf is the first gas-phase compound-data value (CRC). NASA H(298.15) can differ by ~1 kJ/mol.
+  const TOLERANCE_KJ = 2;
 
   it('H, S, G come from NASA-9 when present, NASA-7 otherwise', () => {
     const n2 = compoundNasa9(GAS_REGISTRY['N2'])!.nasa9;
@@ -41,7 +42,7 @@ describe('GasPropertiesService — absolute enthalpy, entropy, Gibbs energy', ()
     'absoluteEnthalpy(%s, 298.15 K) equals enthalpyFormation298',
     (sp) => {
       const h = gas.absoluteEnthalpy(sp as Species, 298.15);
-      expect(Math.abs(h - GAS_REGISTRY[sp].enthalpyFormation298!) / 1000).toBeLessThan(tolerance_kJ(sp));
+      expect(Math.abs(h - GAS_REGISTRY[sp].enthalpyFormation298!) / 1000).toBeLessThan(TOLERANCE_KJ);
     },
   );
 
@@ -68,10 +69,11 @@ describe('GasPropertiesService — absolute enthalpy, entropy, Gibbs energy', ()
     expect(gas.absoluteEnthalpyMixture(y, 1500)).toBeCloseTo(expected, 6);
   });
 
-  it('entropy at 298.15 K matches standard values (NIST)', () => {
-    expect(gas.entropy(Species.CO2, 298.15)).toBeCloseTo(213.8, 0);
-    expect(gas.entropy(Species.H2O, 298.15)).toBeCloseTo(188.8, 0);
-    expect(gas.entropy(Species.SO2, 298.15)).toBeCloseTo(248.2, 0);
+  it('entropy at 298.15 K matches the JANAF row', () => {
+    for (const formula of ['CO2', 'H2O', 'SO2']) {
+      const row = janafGasRow(formula, 298.15);
+      expect(gas.entropy(formula as Species, row.T)).toBeCloseTo(row.S!, 0);
+    }
   });
 
   it('gibbsEnergy = H_abs − T·S', () => {
