@@ -55,6 +55,7 @@ import { GlassViscosityProfileResultDto } from '../dto/glass-viscosity/curve/gla
 import { TemperatureAtViscosityResultDto } from '../dto/glass-viscosity/curve/temperature-at-viscosity-result.dto';
 import { CompositionConversionResultDto } from '../dto/glass-viscosity/composition-conversion-result.dto';
 import { ViscosityModel } from '../enums/viscosity-model.enum';
+import { toOxideCompositionRecord } from '../utils/oxide-composition-record.util';
 
 @ApiTags('Refractory Calculations')
 @Controller('refractory')
@@ -87,7 +88,7 @@ export class RefractoryController {
   @ApiResponse({ status: 400, description: 'Invalid input' })
   calculatePhaseEquilibrium(@Body() dto: PhaseCalculationDto) {
     return this.phaseEquilibriumService.calculatePhaseEquilibrium({
-      composition: dto.composition as Record<string, number>,
+      composition: toOxideCompositionRecord(dto.composition),
       temperature: dto.temperature,
       totalMass: dto.totalMass,
     });
@@ -105,7 +106,7 @@ export class RefractoryController {
   @ApiResponse({ status: 400, description: 'Invalid input' })
   identifyMineralPhases(@Body() dto: MineralPhaseDto) {
     return this.mineralPhaseService.identifyPhases(
-      dto.composition as Record<string, number>,
+      toOxideCompositionRecord(dto.composition),
       dto.temperature ?? 1400,
     );
   }
@@ -288,7 +289,7 @@ export class RefractoryController {
   @ApiResponse({ status: 400, description: 'Invalid input' })
   calculateThermalConductivity(@Body() dto: ThermalConductivityDto) {
     return this.thermalPerformanceService.calculateThermalConductivity(
-      dto.composition as Record<string, number>,
+      toOxideCompositionRecord(dto.composition),
       dto.temperature,
       dto.porosity,
     );
@@ -306,7 +307,7 @@ export class RefractoryController {
   @ApiResponse({ status: 400, description: 'Invalid input' })
   calculateRefractoriness(@Body() dto: RefractorinessDto) {
     return this.refractorinessService.calculateRefractoriness(
-      dto.composition as Record<string, number>,
+      toOxideCompositionRecord(dto.composition),
       dto.standard,
       dto.testTemperature,
     );
