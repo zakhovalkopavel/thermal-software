@@ -6,8 +6,9 @@ type the backend implements becomes ``def``.
 
 Scalar properties use ``property_rank``: NIST-JANAF, then the NIST WebBook, then a PubChem
 experimental value (``pubchem`` + catalog number), then the other sources in ``SOURCE_PRIORITY``,
-and ``Physical Constants of Inorganic Compounds.csv`` last. NASA polynomial temperature bounds are
-not property values.
+then a source that is not in that list (the NBS tables, which are also written only into an empty
+phase), and ``Physical Constants of Inorganic Compounds.csv`` last. NASA polynomial temperature bounds
+are not property values.
 
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md
 Refs: docs/REFERENCES.md  [36] NISTJANAF, [32] NISTWebBook, [34] Perry8, [7] Poling5, [41] VDI2010,

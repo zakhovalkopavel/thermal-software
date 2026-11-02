@@ -41,13 +41,18 @@ def write_compound_sources(
     out_dir: Path, chem: ChemicalsSource, generated_at: str, janaf: Optional[JanafSource] = None,
     pubchem_tables: Iterable[TableSpec] = (), nasa: Optional[dict[str, Any]] = None,
     transport_tables: Iterable[TableSpec] = (),
+    nbs_tables: Iterable[TableSpec] = (),
+    molten_tables: Iterable[TableSpec] = (),
+    book_gas_tables: Iterable[TableSpec] = (),
 ) -> Path:
     """Write ``sources.json``: repository, commit, license, the file-key → file map, the JANAF and NASA links.
 
     With ``pubchem_tables`` (the PubChem class files that were read), the map gets their keys
     (``idPubchemRestInorganic`` …, local files, ``url: null``) and a ``pubchem`` block with the folder and the
-    compound URL template for ``pubchemCid``. ``transport_tables`` add their file keys (the local
-    transport-parameters file, ``url: null``).
+    compound URL template for ``pubchemCid``.     ``transport_tables`` add their file keys (the local
+    transport-parameters file, ``url: null``). ``nbs_tables`` add the corrected NBS tables CSV the same way.
+    ``molten_tables`` add the molten-salt density, surface-tension and viscosity files.
+    ``book_gas_tables`` add the hand-moved book gas equation tables.
     """
     payload: dict[str, Any] = {
         "generatedAt": generated_at,
@@ -90,8 +95,8 @@ def write_compound_sources(
                        "(pubchem-inorganic.jsonl or pubchem-organic.jsonl). "
                        "It is not a key of the main references database.",
         }
-    for table in transport_tables:
-        payload["files"][table.key] = {"name": table.name, "path": table.path, "ref": table.ref.value, "url": None}
+    for table in (*transport_tables, *nbs_tables, *molten_tables, *book_gas_tables):
+        payload["files"][table.key] = {"name": table.name, "path": table.path, "ref": table.ref.value if table.ref else None, "url": None}
     path = _write(out_dir / "sources.json", payload)
     logger.info("[output] Written → %s  (%d files)", path, len(payload["files"]))
     return path

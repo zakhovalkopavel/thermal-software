@@ -63,6 +63,8 @@ Backend types come from [equation-type.dto.ts](../../backend/src/common/thermal/
   - The chemicals function `CRC_inorganic` computes ρ = ρ0 − k·(T − Tm).
   - Stored as backend `linear` (a + b·T), with `vars {a: rho0 + k·Tm, b: -k}`, `min: Tm`, `max: Tmax` and `raw {rho0, k, Tm, Tmax}`.
   - Check: `CRC_inorganic(300, 2370.0, 2.687, 239.08) = 2206.30796`.
+- **NIST molten salts** (reference `NISTMoltenSalts`, `shared/sources/NIST-molten-salts/`, former SRD 27). A pure salt is composition `100` and a name with no hyphen. The equation is liquid. Density is g/cm³ with `k: 1000` (kg/m³), surface tension is mN/m with `k: 0.001` (N/m), viscosity is mN·s/m² with `k: 0.001` (Pa·s). `P1`–`P4` are `linear`, `quadratic`, `cubic` and `quartic`. `+E`, a·exp(b / (8.31441·T)), and `E1`, a·exp(b / (8.31441·T) + c / T²), are `dipprN101` (`c3 = 0`; `E1` uses `c5 = -2`). `E2`, a single point (`DP`) and a composition isotherm (`I1`–`I4`) are not a temperature equation, so a pure salt does not store them. Electrical conductivity has no compound property. An empty property gets the equation. A property that already has one keeps it, and this equation is added when the type, the coefficients or the temperature range differ. The same equation is not copied again. `NISTMoltenSalts` is not in the equation priority list, so an earlier source stays `def`. A formula with no record is not given one. Several inorganic carbon-free records of one formula are all filled; several records of a carbon formula are `moltenFormulaAmbiguous`. File keys: `moltenSaltDensity`, `moltenSaltSurfaceTension`, `moltenSaltViscosity`. The printed coefficients and comment stay in `raw`.
+- **Molten-salt mixtures** (`shared/processed/molten-salt-mixtures/mixtures.json`, the same reference). A hyphenated salt name is a mixture. It is not a compound and it has no CAS, so it is not a record in the compound dataset. `components` are the printed formulas and their Hill formulas. `composition` is mole percent of those components in that order. A cell such as `0-100 AgBr` is `{range, of}`: the isotherm's composition variable is the mole percent of the named component. `P1`–`P4`, `+E` and `E1` are the same temperature equations as a pure salt, at that composition. `I1`–`I4` are polynomials in that mole percent at one temperature (`min`) and have no `type`. `DP` is one value at `T`. `E2` keeps `dataType` and the printed coefficients. Electrical conductivity is included here, Ω⁻¹·cm⁻¹ with `k: 100` (S/m); its file key is `moltenSaltConductivity`. A pure salt (composition `100`, no hyphen) is not copied into this file. Data files: https://data.nist.gov/pdr/lps/ark:/88434/mds2-2298.
 - **Poling databank, ideal-gas Cp** (`PolingDatabank.tsv`, ref `Poling5`).
   - The chemicals function `Poling` computes Cp = R·(a0 + a1·T + a2·T² + a3·T³ + a4·T⁴).
   - Stored as backend `quartic`, with `vars {a: a0, b: a1, c: a2, d: a3, e: a4}`, `k: R` (the R value chemicals uses), `min/max: Tmin/Tmax`, phase gas.
@@ -205,6 +207,7 @@ Property names follow the backend where a name exists (`enthalpyFormation298`, `
   - `Misc/Physical Constants of Inorganic Compounds.csv`: meltingPoint, boilingPoint, density. This table is the last choice for those three properties (see [Which value comes first](#which-value-comes-first)).
   - `Phase Change/CRC Handbook Heat of Fusion.tsv`: heatOfFusion.
   - `Heat Capacity/CRC Standard Thermodynamic Properties of Chemical Substances.tsv`: enthalpyFormation298, gibbsEnergy298, entropy298 and heatCapacity298, each per phase (solid, liquid, gas).
+- **NBS tables** (reference `NBS1982`, `shared/sources/NBS/NBS_Tables_with_ErratumValues.csv`, the 1989 erratum applied): the same four properties at 298.15 K, from a pure `g` → gas, `l` → liquid, or `cr` / `am` / `vit` → solid row. ΔfH° and ΔfG° are kJ/mol in the CSV and J/mol in the record. A value is written only when that property and phase are still empty, so it fills a gap and does not replace JANAF, the WebBook, CRC or Yaws. `cr` is used before `cr2`, and a crystal before amorphous or vitreous. Ions, isotopes, aqueous rows (`ai`, `ao`, `aq`) and `in N H2O` rows are not used. A formula with no record is not given one. Several inorganic carbon-free records of one formula are all filled; several records of a carbon formula are reported as `nbsFormulaAmbiguous` and skipped. The file key is `nbsTables`.
   - `Density/CRC Solid Inorganic Constant Densities.tsv`: molarVolume.
 - **Yaws 2014** (new reference `Yaws2014`):
   - Collection: criticalTemperature, criticalPressure, criticalVolume, acentricFactor.
@@ -243,6 +246,7 @@ Heat-capacity equations are a separate order: Perry, then Poling, then VDI, then
 | `white-table-a-7` | `whiteA7` | `White3` (`originalRef: Svehla1962`) | `collisionDiameter`, `epsilonToKb`, `potential: lennardJones` |
 | `itean1961-table-3` | `itean1961T3` | `Itean1961` (NASA TN D-481 Table III) | σ, ε/k, `stockmayerDelta`, `dipoleMoment` [C m], `potential: stockmayer` |
 | `mamedov2014-table-1` | `mamedov2014T1` | `Mamedov2014` | σ, ε/k, `potential: lennardJones`, `basis: secondVirial` |
+| `hirschfelder1954-lj` | `hirschfelder1954LJ` | `Hirschfelder1954` (CE 407 notes PDF) | σ, ε/k, `potential: lennardJones` |
 | `svehla1995-table-1` | `svehla1995T1` | `Svehla1995` (NASA TM-4647 Table I) | `transport` block + potential parameters; pairs → `interactions.json` |
 
 - **Equations:** White's power law and Sutherland law become the types `powerLaw` and `sutherland` (see [New equation types](#new-equation-types)) under `equations.viscosity.gas` / `equations.thermalConductivity.gas`. `error` is the printed ± % (2 for the Sutherland range). Tables 1-2 / 1-3 print SI; Table A-6 prints °R and slug/(ft h), so its precomputed `si` columns are used.
@@ -252,6 +256,7 @@ Heat-capacity equations are a separate order: Perry, then Poling, then VDI, then
   - The σ, ε/k, δ, ρ*, V0* of its `lennardJones` / `stockmayer` / `correspondingStates` methods are also written as properties, with `potential`, `basis`, `citation` (the printed source) and `TminK` next to `ref`.
   - All other rows (binary diffusion, ion and electron pairs, H6F6) go to `interactions.json` with `ids` (the record of each species by CAS or `otherCas`, `null` for the electron, ions and H6F6). A CAS without record is reported as `transportInteractionNoRecord`.
 - The CLI options are `--transport-file` (default `shared/sources/transport-parameters.json`) and `--no-transport`; a missing file logs a warning.
+- **Book gas equations** (`shared/sources/book-gas-equations.json`): gas heat-capacity, viscosity and thermal-conductivity equations that were moved by hand from local gas compound files into compound-data (Perry 7 DIPPR 107, Borgnakke, Yaws 1999, Incropera, Szargut). File keys stay `perry7Gas`, `borgnakkeGas`, `yaws1999Gas`, `incroperaGas`, `szargutGas`. The build merges them like the transport file, so a rebuild does not drop them. CLI: `--book-gas-file` / `--no-book-gas`.
 
 ---
 
@@ -562,12 +567,15 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
   - `equation_eval.py` `evaluate_equation`, a Python copy of the backend `calculate` formulas for every type. It clamps T to min/max when they are set, then applies `k`. It is used by the tests and the sanity report, and gave the reference values of the backend unit tests.
 - **`pubchem/`**, polite PubChem lookups (step 2), independent of the build: client, records, class files and constants, see [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md#files).
 - **`compound_data/`**, merge and output (step 1):
-  - `builder.py` `build_compound_data` (parse → identifiers → merge → checks → JANAF → NASA → interaction ids; `BuildResult.missing_cas`, `BuildResult.nasa`, `BuildResult.transport_tables`, `BuildResult.interactions`);
+  - `builder.py` `build_compound_data` (parse → identifiers → merge → molten-salt equations → checks → JANAF → NASA → NBS gaps → interaction ids; `BuildResult.missing_cas`, `BuildResult.nasa`, `BuildResult.transport_tables`, `BuildResult.nbs_tables`, `BuildResult.molten_tables`, `BuildResult.interactions`);
   - `parsers/transport_parameters.py` `parse_transport_parameters` with `constants/transport_source.py` (`TRANSPORT_TABLES`, `ORIGINAL_REFS`, `TRANSPORT_COLUMNS`, `POTENTIALS`), see [Transport parameters](#transport-parameters);
   - `merger.py` `merge_compounds` (with the detach and unidentified rules), `compound_record.py` `CompoundRecord`, `formula_override.py` with `constants/formula_overrides.py` `FORMULA_OVERRIDES`, `constants/source_priority.py` `SOURCE_PRIORITY`, `class_override.py` `ClassOverride` with `constants/class_overrides.py` `CLASS_OVERRIDES`;
   - `pubchem_sources.py` `PubchemSources`, `read_pubchem_sources` (class files read once, with their tables), `pubchem_identifiers.py` `load_pubchem_identifiers` (class file records → `Identifier`), `pubchem_formula_links.py` `attach_pubchem_formulas` (`cas` of records without CAS), `pubchem_properties.py` `attach_pubchem_properties` (melting point, boiling point, density cited `pubchem` + refNumber), `constants/pubchem_source.py` (`PUBCHEM_TABLES` per class, `MISSING_CAS_FILE`);
   - `janaf_links.py` `attach_janaf`, `parsers/janaf_cas_index.py` `read_janaf_cas_index`, `constants/janaf_cas_index.py` `JANAF_CAS_INDEX`;
   - `nasa_links.py` `attach_nasa`, `nasa7_species`, `nasa9_species` (`NasaSpecies`: key, elements, phase, H°(298.15) of the fit), `constants/nasa_source.py` (file names, datasets, `HF_TOLERANCE`, `HF_TOLERANCE_SINGLE`);
+  - `nbs_links.py` `attach_nbs`, `nbs_values`, `constants/nbs_source.py` (`NBS_FILE`, `NBS_PROPERTIES`);
+  - `molten_salt_links.py` `attach_molten_salts`, `molten_salt_equations`, `molten_salt_mixtures.py` `read_molten_salt_mixtures`, `write_molten_salt_mixtures`, `constants/molten_salt_source.py` (`MOLTEN_SALT_DIR`, `MOLTEN_SALT_FILES`, `MOLTEN_SALT_R`);
+  - `parsers/book_gas_equations.py` `parse_book_gas_equations`, `constants/book_gas_source.py` (`BOOK_GAS_FILE`, `BOOK_GAS_TABLES`);
   - `equation_check.py` `check_equations`;
   - `compound_file.py` `CompoundFile`, `compound_files.py` `compound_files` (records → files, see [File layout](#file-layout)), `compound_units.py` `compound_units` with `constants/units.py`;
   - `writers.py` `write_compound_json`, `write_unresolved`, `write_compound_index`, `write_compound_units`, `write_compound_sources`, `write_interactions` and `write_missing_cas`, following the pattern of [janaf/writers.py](../../python/src/janaf/writers.py), with `allow_nan=False`.
@@ -575,7 +583,7 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
 
 ### CLI and Make
 
-- CLI `python/src/scripts/build_compound_data.py`, with arguments `--source-dir`, `--janaf-dir`, `--no-janaf`, `--nasa-dir` (default `shared/sources/NASA`), `--no-nasa`, `--pubchem-dir` (default `shared/sources/compound-data/pubchem`), `--no-pubchem`, `--transport-file` (default `shared/sources/transport-parameters.json`), `--no-transport`, `--out-dir` (cleared after a successful build, before writing), `--report-dir` and `-v`.
+- CLI `python/src/scripts/build_compound_data.py`, with arguments `--source-dir`, `--janaf-dir`, `--no-janaf`, `--nasa-dir` (default `shared/sources/NASA`), `--no-nasa`, `--pubchem-dir` (default `shared/sources/compound-data/pubchem`), `--no-pubchem`, `--transport-file` (default `shared/sources/transport-parameters.json`), `--no-transport`, `--nbs-file` (default `shared/sources/NBS/NBS_Tables_with_ErratumValues.csv`), `--no-nbs`, `--molten-dir` (default `shared/sources/NIST-molten-salts`), `--no-molten`, `--molten-out-dir` (default `shared/processed/molten-salt-mixtures`), `--book-gas-file` (default `shared/sources/book-gas-equations.json`), `--no-book-gas`, `--out-dir` (cleared after a successful build, before writing), `--report-dir` and `-v`.
 - CLI `python/src/scripts/fetch_pubchem_identifiers.py` (step 2) and `pubchem_search.py` (on demand), see [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md#running).
 - Make file `scripts/make.d/11-compound-data.mk`, with targets `compound-data-build` (step 1), `compound-data-pubchem` (step 2 only), `pubchem-search` and `compound-data-test` (all five test folders).
 
@@ -591,6 +599,8 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
   - `[41] VDI2010`: VDI Heat Atlas, 2nd ed., Springer 2010, PPDS coefficients.
   - `[42] Magalhaes2013`: Magalhães, Lito, Da Silva, Silva, J. Supercrit. Fluids 76 (2013) 94–114, Lennard-Jones σ and ε/k from viscosity data (`MagalhaesLJ.tsv`).
   - `[43] Svehla1962` (NASA TR R-132, the original of White Table A-7), `[44] Itean1961` (NASA TN D-481, Stockmayer force constants), `[45] Svehla1995` (NASA TM-4647, Table I) and `[46] Mamedov2014` (Mamedov & Somuncu, Lennard-Jones parameters from second virial coefficients): the transport parameters.
+  - `[48] NISTMoltenSalts`: NIST Properties of Molten Salts Database, formerly SRD 27. Liquid density, surface tension and viscosity of a pure salt (`shared/sources/NIST-molten-salts/`).
+  - `[49] Hirschfelder1954`: Hirschfelder, Curtiss & Bird, *Molecular Theory of Gases and Liquids* (Wiley, 1954). Lennard-Jones force constants from the CE 407 notes PDF (`hirschfelder1954-lj` in `shared/sources/transport-parameters.json`).
   - `White3` [20]: Tables 1-2, 1-3, A-6 and A-7.
 - **Existing references to extend:**
   - `Perry8` [34]: add Tables 2-151, 2-153 (DIPPR 100 and 114) and 2-313.

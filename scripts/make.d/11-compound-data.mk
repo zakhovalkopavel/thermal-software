@@ -10,7 +10,10 @@
 #               shared/sources/NASA/ (NASA-7 / NASA-9 species keys, checked by ΔfH°(298.15)),
 #               shared/sources/compound-data/pubchem/pubchem-{inorganic,organic,unclassified}.jsonl (step 2: one line
 #               per CAS or formula search with the full property answer and the PUG View experimental properties of its CIDs),
-#               shared/sources/transport-parameters.json (White, TN D-481, Mamedov 2014, Svehla 1995)
+#               shared/sources/transport-parameters.json (White, TN D-481, Mamedov 2014, Hirschfelder 1954, Svehla 1995),
+#               shared/sources/book-gas-equations.json (hand-moved Perry7/Borgnakke/Yaws/Incropera/Szargut gas equations),
+#               shared/sources/NBS/NBS_Tables_with_ErratumValues.csv (298.15 K values for an empty phase),
+#               shared/sources/NIST-molten-salts/ (pure-salt liquid equations; mixtures → shared/processed/molten-salt-mixtures/)
 # Output files: shared/processed/compound-data/{inorganic/<Element>,organic/<family>}/<formula>-<name>.json,
 #               unresolved.json, index.json, units.json, sources.json, interactions.json (the folder is cleared first)
 # Report: tmp/reports/python/compound-data/report.json, missing-cas.txt

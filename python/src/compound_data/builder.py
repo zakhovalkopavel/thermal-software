@@ -28,10 +28,15 @@ from chemicals_tables.table_spec import TableSpec
 from compound_data.compound_record import CompoundRecord
 from compound_data.constants.janaf_cas_index import JANAF_CAS_INDEX
 from compound_data.constants.nasa_source import NASA7_DATASET, NASA7_FILE, NASA9_DATASET, NASA9_FILES
+from compound_data.constants.nbs_source import nbs_table
 from compound_data.equation_check import check_equations
+from compound_data.molten_salt_links import attach_molten_salts
+from compound_data.molten_salt_mixtures import read_molten_salt_mixtures
 from compound_data.janaf_links import attach_janaf
 from compound_data.merger import MergeResult, merge_compounds, order_values
 from compound_data.nasa_links import attach_nasa, nasa7_species, nasa9_species
+from compound_data.nbs_links import attach_nbs
+from compound_data.parsers.book_gas_equations import BookGasEquations, parse_book_gas_equations
 from compound_data.parsers.janaf_cas_index import read_janaf_cas_index
 from compound_data.parsers.transport_parameters import TransportParameters, parse_transport_parameters
 from compound_data.pubchem_formula_links import attach_pubchem_formulas
@@ -58,6 +63,9 @@ class BuildResult:
     ``missing_cas`` are the CAS numbers the chemicals identifier files do not have (input of the PubChem step).
     ``transport_tables`` are the tables of the transport-parameters file that were read (for ``sources.json``),
     ``interactions`` its pair rows with the record ids of their species (``interactions.json``).
+    ``nbs_tables`` is the corrected NBS CSV. ``molten_tables`` are the pure-salt files that were read.
+    ``molten_mixtures`` are the salt mixtures (no CAS), written apart from the compound files.
+    ``book_gas_tables`` are the hand-moved book gas equation tables.
     """
 
     chem: ChemicalsSource
@@ -69,11 +77,18 @@ class BuildResult:
     missing_cas: list[str] = field(default_factory=list)
     transport_tables: list[TableSpec] = field(default_factory=list)
     interactions: list[dict[str, Any]] = field(default_factory=list)
+    nbs_tables: list[TableSpec] = field(default_factory=list)
+    molten_tables: list[TableSpec] = field(default_factory=list)
+    molten_mixtures: list[dict[str, Any]] = field(default_factory=list)
+    molten_mixture_tables: list[TableSpec] = field(default_factory=list)
+    book_gas_tables: list[TableSpec] = field(default_factory=list)
 
 
 def build_compound_data(
     source_dir: Path, janaf_dir: Optional[Path] = None, pubchem_dir: Optional[Path] = None,
     nasa_dir: Optional[Path] = None, transport_file: Optional[Path] = None,
+    nbs_file: Optional[Path] = None, molten_dir: Optional[Path] = None,
+    book_gas_file: Optional[Path] = None,
 ) -> BuildResult:
     """Parse every table under ``source_dir`` (the chemicals copy with ``PROVENANCE.txt``).
 
@@ -86,12 +101,22 @@ def build_compound_data(
     their species keys are attached by Hill formula, checked by ΔfH°(298.15). The polynomial
     temperature bounds are not used as melting or boiling points.
     ``transport_file`` is ``shared/sources/transport-parameters.json`` (White, TN D-481, Mamedov 2014, Svehla 1995).
+    ``nbs_file`` is the corrected NBS tables CSV. Its 298.15 K values fill a property and phase the record
+    does not already have.
+    ``molten_dir`` is the NIST molten-salts extract. A pure salt adds a liquid density, surface-tension
+    or viscosity equation, including when that property already has a different equation. A mixture
+    is kept on ``BuildResult.molten_mixtures`` and is not given a compound record.
+    ``book_gas_file`` is the hand-moved book gas equations (Perry 7, Borgnakke, Yaws 1999, Incropera,
+    Szargut) so a rebuild does not drop them.
     """
     chem = read_chemicals_source(source_dir / "PROVENANCE.txt")
     entries, issues = parse_source_entries(source_dir, chem)
     transport = _parse_transport(transport_file)
     entries += transport.entries
     issues += transport.issues
+    book_gas = _parse_book_gas(book_gas_file)
+    entries += book_gas.entries
+    issues += book_gas.issues
 
     wanted = {e.cas for e in entries if e.cas}
     identifiers = load_identifiers(source_dir, chem, wanted)
@@ -107,6 +132,23 @@ def build_compound_data(
                 len(identifiers), len(wanted), len(identifiers) - chemicals_resolved)
 
     merge = merge_compounds(entries, identifiers, OrganicFamilyClassifier())
+
+    molten_counts: dict[str, int] = {}
+    molten_tables: list[TableSpec] = []
+    molten_mixtures: list[dict[str, Any]] = []
+    molten_mixture_tables: list[TableSpec] = []
+    if molten_dir is not None:
+        if molten_dir.is_dir():
+            molten_issues, molten_counts, molten_tables = attach_molten_salts(merge.records.values(), molten_dir)
+            issues += molten_issues
+            molten_mixtures, molten_mixture_tables, mixture_counts = read_molten_salt_mixtures(molten_dir)
+            molten_counts.update(mixture_counts)
+            logger.info("[molten-salts] %d equations, %d written (%d already stored); %d mixtures",
+                        molten_counts["moltenEquations"], molten_counts["moltenFilled"], molten_counts["moltenSame"],
+                        molten_counts["moltenMixtures"])
+        else:
+            logger.warning("[molten-salts] Not found: %s — molten salts skipped", molten_dir)
+
     equation_issues, checks = check_equations(merge.records.values())
 
     janaf_source, janaf_counts = None, {}
@@ -125,6 +167,18 @@ def build_compound_data(
         pubchem_counts.update(formula_counts)
         pubchem_counts.update(attach_pubchem_properties(list(merge.records.values()), pubchem))
 
+    nbs_counts: dict[str, int] = {}
+    nbs_tables: list[TableSpec] = []
+    if nbs_file is not None:
+        if nbs_file.is_file():
+            nbs_issues, nbs_counts = attach_nbs(merge.records.values(), nbs_file)
+            issues += nbs_issues
+            nbs_tables = [nbs_table(nbs_file)]
+            logger.info("[nbs] %d values, %d written where a phase was missing",
+                        nbs_counts["nbsValues"], nbs_counts["nbsFilled"])
+        else:
+            logger.warning("[nbs] Not found: %s — NBS tables skipped", nbs_file)
+
     for record in merge.records.values():
         order_values(record)
 
@@ -135,6 +189,9 @@ def build_compound_data(
         "transportRecords": sum(1 for r in merge.records.values() if r.transport),
         "transportInteractions": len(interactions),
     } if transport_file is not None else {}
+    book_gas_counts = {
+        "bookGasEntries": len(book_gas.entries),
+    } if book_gas_file is not None else {}
 
     grouped: dict[str, list[dict[str, Any]]] = {}
     for issue in issues:
@@ -165,7 +222,10 @@ def build_compound_data(
             "equationIssues": len(equation_issues),
             **janaf_counts,
             **nasa_counts,
+            **nbs_counts,
+            **molten_counts,
             **transport_counts,
+            **book_gas_counts,
             **{kind: len(items) for kind, items in sorted(grouped.items())},
         },
         "formulaConflicts": merge.conflicts,
@@ -183,7 +243,21 @@ def build_compound_data(
     }
     return BuildResult(chem=chem, merge=merge, report=report, janaf=janaf_source, nasa=nasa_block,
                        pubchem_tables=list(pubchem.tables.values()), missing_cas=missing_cas, transport_tables=transport.tables,
-                       interactions=interactions)
+                       interactions=interactions, nbs_tables=nbs_tables, molten_tables=molten_tables,
+                       molten_mixtures=molten_mixtures, molten_mixture_tables=molten_mixture_tables,
+                       book_gas_tables=book_gas.tables)
+
+
+def _parse_book_gas(book_gas_file: Optional[Path]) -> BookGasEquations:
+    """Parse the hand-moved book gas equations; empty with a warning when the file is missing."""
+    if book_gas_file is None:
+        return BookGasEquations()
+    if not book_gas_file.is_file():
+        logger.warning("[book-gas] Not found: %s — hand-moved book gas equations skipped", book_gas_file)
+        return BookGasEquations()
+    parsed = parse_book_gas_equations(book_gas_file)
+    logger.info("[parse] %-32s %6d values", "Book gas equations", len(parsed.entries))
+    return parsed
 
 
 def _parse_transport(transport_file: Optional[Path]) -> TransportParameters:

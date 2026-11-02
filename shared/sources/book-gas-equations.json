@@ -1,0 +1,1176 @@
+{
+  "$comment": "Gas equations that were moved by hand from local compound TypeScript/JSON into shared/processed/compound-data. The build reads this file so a rebuild keeps them. line is the original book citation line kept in ref: [RefKey, line, fileKey].",
+  "sources": {
+    "Perry7": {
+      "refKey": "Perry7",
+      "citation": "Perry's Chemical Engineers' Handbook 7th ed."
+    },
+    "Borgnakke": {
+      "refKey": "Borgnakke",
+      "citation": "Borgnakke & Sonntag — Thermodynamic and Transport Properties",
+      "url": "https://engineering.wayne.edu/mechanical/pdfs/thermodynamic-_tables-updated.pdf"
+    },
+    "Yaws1999": {
+      "refKey": "Yaws1999",
+      "citation": "Yaws — Chemical Properties Handbook"
+    },
+    "Incropera": {
+      "refKey": "Incropera",
+      "citation": "Incropera et al. — Fundamentals of Heat and Mass Transfer 6th ed.",
+      "url": "https://booksite.elsevier.com/9780750683661/Appendix_C.pdf"
+    },
+    "Szargut": {
+      "refKey": "Szargut",
+      "citation": "Szargut — Termodynamika Techniczna"
+    }
+  },
+  "tables": [
+    {
+      "id": "perry7Gas",
+      "title": "Perry's Chemical Engineers' Handbook 7th ed.",
+      "source": "Perry7",
+      "refKey": "Perry7",
+      "phase": "gas",
+      "note": "Hand-moved from local gas compound files into compound-data; kept here so a rebuild does not drop them.",
+      "rows": [
+        {
+          "cas": "74-82-8",
+          "formula": "CH4",
+          "name": "Methane",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "dipprN107",
+          "vars": {
+            "c1": 19250.0,
+            "c2": 51760.0,
+            "c3": 1701.9,
+            "c4": 31890.0,
+            "c5": 757.87
+          },
+          "min": 50,
+          "max": 1500,
+          "line": 223,
+          "k": 0.001
+        },
+        {
+          "cas": "124-38-9",
+          "formula": "CO2",
+          "name": "carbon dioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "dipprN107",
+          "vars": {
+            "c1": 29370.0,
+            "c2": 34540.0,
+            "c3": 1428.0,
+            "c4": 26400.0,
+            "c5": 588
+          },
+          "min": 50,
+          "max": 5000,
+          "line": 223,
+          "k": 0.001
+        },
+        {
+          "cas": "7664-41-7",
+          "formula": "H3N",
+          "name": "ammonia",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "dipprN107",
+          "vars": {
+            "c1": 33430.0,
+            "c2": 48980.0,
+            "c3": 2036.0,
+            "c4": 22560.0,
+            "c5": 882
+          },
+          "min": 100,
+          "max": 1500,
+          "line": 223,
+          "k": 0.001
+        },
+        {
+          "cas": "7727-37-9",
+          "formula": "N2",
+          "name": "nitrogen",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "dipprN107",
+          "vars": {
+            "c1": 29110.0,
+            "c2": 8610.0,
+            "c3": 1701.6,
+            "c4": 100.0,
+            "c5": 909.79
+          },
+          "min": 50,
+          "max": 1500,
+          "line": 223,
+          "k": 0.001
+        },
+        {
+          "cas": "10102-43-9",
+          "formula": "NO",
+          "name": "nitric oxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "maierKelley",
+          "vars": {
+            "a": 8.05,
+            "b": 0.000233,
+            "d": -156300
+          },
+          "min": 300,
+          "max": 5000,
+          "line": 206
+        },
+        {
+          "cas": "10102-43-9",
+          "formula": "NO",
+          "name": "nitric oxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 34980.0,
+            "b": -35.32,
+            "c": 0.07729,
+            "d": -5.7357e-05,
+            "e": 1.4526e-08
+          },
+          "min": 100,
+          "max": 1500,
+          "line": 223,
+          "k": 0.001
+        },
+        {
+          "cas": "7782-44-7",
+          "formula": "O2",
+          "name": "oxygen",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "dipprN107",
+          "vars": {
+            "c1": 29100.0,
+            "c2": 10040.0,
+            "c3": 2526.5,
+            "c4": 9360.0,
+            "c5": 1153.8
+          },
+          "min": 50,
+          "max": 1500,
+          "line": 223,
+          "k": 0.001
+        },
+        {
+          "cas": "7446-09-5",
+          "formula": "O2S",
+          "name": "sulfur dioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "dipprN107",
+          "vars": {
+            "c1": 33380.0,
+            "c2": 25860.0,
+            "c3": 932.8,
+            "c4": 10880.0,
+            "c5": 423.7
+          },
+          "min": 100,
+          "max": 1500,
+          "line": 223,
+          "k": 0.001
+        },
+        {
+          "cas": "7446-09-5",
+          "formula": "O2S",
+          "name": "sulfur dioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 7.7,
+            "b": 0.0053,
+            "c": -8.3e-07
+          },
+          "min": 300,
+          "max": 2500,
+          "line": 208
+        },
+        {
+          "cas": "7446-11-9",
+          "formula": "O3S",
+          "name": "sulfur trioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "dipprN107",
+          "vars": {
+            "c1": 33410.0,
+            "c2": 49680.0,
+            "c3": 873.2,
+            "c4": 28560.0,
+            "c5": 393.74
+          },
+          "min": 100,
+          "max": 1500,
+          "line": 223,
+          "k": 0.001
+        }
+      ]
+    },
+    {
+      "id": "borgnakkeGas",
+      "title": "Borgnakke & Sonntag — Thermodynamic and Transport Properties",
+      "source": "Borgnakke",
+      "refKey": "Borgnakke",
+      "phase": "gas",
+      "note": "Hand-moved from local gas compound files into compound-data; kept here so a rebuild does not drop them.",
+      "url": "https://engineering.wayne.edu/mechanical/pdfs/thermodynamic-_tables-updated.pdf",
+      "rows": [
+        {
+          "cas": "74-82-8",
+          "formula": "CH4",
+          "name": "Methane",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 19.89,
+            "b": 0.05024,
+            "c": 1.269e-05,
+            "d": -1.101e-08
+          },
+          "min": 273,
+          "max": 1500,
+          "line": 911
+        },
+        {
+          "cas": "630-08-0",
+          "formula": "CO",
+          "name": "carbon monoxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 28.16,
+            "b": 0.001675,
+            "c": 5.372e-06,
+            "d": -2.22e-09
+          },
+          "min": 273,
+          "max": 1800,
+          "line": 911
+        },
+        {
+          "cas": "124-38-9",
+          "formula": "CO2",
+          "name": "carbon dioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 22.26,
+            "b": 0.05981,
+            "c": -3.501e-05,
+            "d": 7.469e-09
+          },
+          "min": 273,
+          "max": 1800,
+          "line": 911
+        },
+        {
+          "cas": "1333-74-0",
+          "formula": "H2",
+          "name": "hydrogen",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 29.11,
+            "b": -0.001916,
+            "c": 4.003e-06,
+            "d": -8.704e-10
+          },
+          "min": 273,
+          "max": 1800,
+          "line": 911
+        },
+        {
+          "cas": "7732-18-5",
+          "formula": "H2O",
+          "name": "water",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 32.24,
+            "b": 0.001924,
+            "c": 1.055e-05,
+            "d": -3.596e-09
+          },
+          "min": 273,
+          "max": 1800,
+          "line": 911
+        },
+        {
+          "cas": "7664-41-7",
+          "formula": "H3N",
+          "name": "ammonia",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 27.568,
+            "b": 0.02563,
+            "c": 9.9072e-06,
+            "d": -6.6909e-09
+          },
+          "min": 273,
+          "max": 1500,
+          "line": 911
+        },
+        {
+          "cas": "7727-37-9",
+          "formula": "N2",
+          "name": "nitrogen",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 28.9,
+            "b": -0.001571,
+            "c": 8.081e-06,
+            "d": -2.873e-09
+          },
+          "min": 273,
+          "max": 1800,
+          "line": 911
+        },
+        {
+          "cas": "10102-43-9",
+          "formula": "NO",
+          "name": "nitric oxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 29.34,
+            "b": -0.0009395,
+            "c": 9.747e-06,
+            "d": -4.187e-09
+          },
+          "min": 273,
+          "max": 1500,
+          "line": 911
+        },
+        {
+          "cas": "10102-44-0",
+          "formula": "NO2",
+          "name": "nitrogen dioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 22.9,
+            "b": 0.05715,
+            "c": -3.52e-05,
+            "d": 7.87e-09
+          },
+          "min": 273,
+          "max": 1500,
+          "line": 911
+        },
+        {
+          "cas": "7782-44-7",
+          "formula": "O2",
+          "name": "oxygen",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 25.48,
+            "b": 0.0152,
+            "c": -7.155e-06,
+            "d": 1.312e-09
+          },
+          "min": 273,
+          "max": 1800,
+          "line": 911
+        },
+        {
+          "cas": "7446-09-5",
+          "formula": "O2S",
+          "name": "sulfur dioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 25.78,
+            "b": 0.05795,
+            "c": -3.812e-05,
+            "d": 8.612e-09
+          },
+          "min": 273,
+          "max": 1800,
+          "line": 911
+        },
+        {
+          "cas": "7446-11-9",
+          "formula": "O3S",
+          "name": "sulfur trioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "cubic",
+          "vars": {
+            "a": 16.4,
+            "b": 0.1458,
+            "c": -0.000112,
+            "d": 3.242e-08
+          },
+          "min": 273,
+          "max": 1300,
+          "line": 911
+        }
+      ]
+    },
+    {
+      "id": "yaws1999Gas",
+      "title": "Yaws — Chemical Properties Handbook",
+      "source": "Yaws1999",
+      "refKey": "Yaws1999",
+      "phase": "gas",
+      "note": "Hand-moved from local gas compound files into compound-data; kept here so a rebuild does not drop them.",
+      "rows": [
+        {
+          "cas": "7440-37-1",
+          "formula": "Ar",
+          "name": "argon",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "linear",
+          "vars": {
+            "a": 20.786,
+            "b": 0
+          },
+          "min": 100,
+          "max": 6000,
+          "line": 51
+        },
+        {
+          "cas": "7440-37-1",
+          "formula": "Ar",
+          "name": "argon",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 44.997,
+            "b": 0.63892,
+            "c": -0.00012455
+          },
+          "min": 150,
+          "max": 1500,
+          "line": 473,
+          "k": 1e-06
+        },
+        {
+          "cas": "74-82-8",
+          "formula": "CH4",
+          "name": "Methane",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 23.64,
+            "b": 0.04793,
+            "c": 1.965e-05,
+            "d": -4.468e-08,
+            "e": 1.442e-11
+          },
+          "min": 50,
+          "max": 1500,
+          "line": 53
+        },
+        {
+          "cas": "74-82-8",
+          "formula": "CH4",
+          "name": "Methane",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 3.844,
+            "b": 0.40112,
+            "c": -0.00014303
+          },
+          "min": 91,
+          "max": 1500,
+          "line": 475,
+          "k": 1e-06
+        },
+        {
+          "cas": "630-08-0",
+          "formula": "CO",
+          "name": "carbon monoxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 29.108,
+            "b": -0.0019816,
+            "c": 4.0034e-06,
+            "d": -2.9872e-09,
+            "e": 7.0327e-13
+          },
+          "min": 50,
+          "max": 5000,
+          "line": 51
+        },
+        {
+          "cas": "630-08-0",
+          "formula": "CO",
+          "name": "carbon monoxide",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 23.811,
+            "b": 0.53944,
+            "c": -0.00010983
+          },
+          "min": 70,
+          "max": 1500,
+          "line": 455,
+          "k": 1e-06
+        },
+        {
+          "cas": "124-38-9",
+          "formula": "CO2",
+          "name": "carbon dioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 27.437,
+            "b": 0.042315,
+            "c": -1.9555e-05,
+            "d": 3.9968e-09,
+            "e": -2.9872e-13
+          },
+          "min": 50,
+          "max": 5000,
+          "line": 51
+        },
+        {
+          "cas": "124-38-9",
+          "formula": "CO2",
+          "name": "carbon dioxide",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 11.811,
+            "b": 0.49838,
+            "c": -0.00010851
+          },
+          "min": 195,
+          "max": 1500,
+          "line": 455,
+          "k": 1e-06
+        },
+        {
+          "cas": "1333-74-0",
+          "formula": "H2",
+          "name": "hydrogen",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 29.11,
+            "b": -0.001916,
+            "c": 4.003e-06,
+            "d": -8.704e-10,
+            "e": 0.0
+          },
+          "min": 50,
+          "max": 3000,
+          "line": 53
+        },
+        {
+          "cas": "1333-74-0",
+          "formula": "H2",
+          "name": "hydrogen",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 27.758,
+            "b": 0.212,
+            "c": -3.28e-05
+          },
+          "min": 14,
+          "max": 1500,
+          "line": 475,
+          "k": 1e-06
+        },
+        {
+          "cas": "7732-18-5",
+          "formula": "H2O",
+          "name": "water",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 30.36,
+            "b": 0.00961,
+            "c": 1.184e-06,
+            "d": -1.378e-09,
+            "e": 6.5e-13
+          },
+          "min": 50,
+          "max": 6000,
+          "line": 51
+        },
+        {
+          "cas": "7732-18-5",
+          "formula": "H2O",
+          "name": "water",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": -36.826,
+            "b": 0.429,
+            "c": -1.62e-05
+          },
+          "min": 373,
+          "max": 1500,
+          "line": 475,
+          "k": 1e-06
+        },
+        {
+          "cas": "7664-41-7",
+          "formula": "H3N",
+          "name": "ammonia",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 33.573,
+            "b": -0.012581,
+            "c": 8.8906e-05,
+            "d": -7.1783e-08,
+            "e": 1.8569e-11
+          },
+          "min": 100,
+          "max": 1500,
+          "line": 53
+        },
+        {
+          "cas": "7664-41-7",
+          "formula": "H3N",
+          "name": "ammonia",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": -7.874,
+            "b": 0.367,
+            "c": -4.47e-06
+          },
+          "min": 195,
+          "max": 1000,
+          "line": 475,
+          "k": 1e-06
+        },
+        {
+          "cas": "7727-37-9",
+          "formula": "N2",
+          "name": "nitrogen",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 29.342,
+            "b": -0.0035395,
+            "c": 1.0076e-05,
+            "d": -4.3116e-09,
+            "e": 2.5935e-13
+          },
+          "min": 50,
+          "max": 1500,
+          "line": 53
+        },
+        {
+          "cas": "7727-37-9",
+          "formula": "N2",
+          "name": "nitrogen",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 42.606,
+            "b": 0.475,
+            "c": -9.88e-05
+          },
+          "min": 150,
+          "max": 1500,
+          "line": 475,
+          "k": 1e-06
+        },
+        {
+          "cas": "10102-43-9",
+          "formula": "NO",
+          "name": "nitric oxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 33.227,
+            "b": -0.023626,
+            "c": 5.3156e-05,
+            "d": -3.7858e-08,
+            "e": 9.1197e-12
+          },
+          "min": 50,
+          "max": 1500,
+          "line": 53
+        },
+        {
+          "cas": "10102-43-9",
+          "formula": "NO",
+          "name": "nitric oxide",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 0.00176,
+            "b": 8.2369e-05,
+            "c": -1.2527e-08
+          },
+          "min": 110,
+          "max": 1000,
+          "line": 528
+        },
+        {
+          "cas": "10102-43-9",
+          "formula": "NO",
+          "name": "nitric oxide",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 39.921,
+            "b": 0.537,
+            "c": -0.000124
+          },
+          "min": 150,
+          "max": 1500,
+          "line": 475,
+          "k": 1e-06
+        },
+        {
+          "cas": "10102-44-0",
+          "formula": "NO2",
+          "name": "nitrogen dioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 32.791,
+            "b": -0.00074294,
+            "c": 8.1722e-05,
+            "d": -8.2872e-08,
+            "e": 2.4424e-11
+          },
+          "min": 50,
+          "max": 1500,
+          "line": 53
+        },
+        {
+          "cas": "10102-44-0",
+          "formula": "NO2",
+          "name": "nitrogen dioxide",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": -0.01289,
+            "b": 0.0001039,
+            "c": -2.1445e-08
+          },
+          "min": 298,
+          "max": 1000,
+          "line": 528
+        },
+        {
+          "cas": "10102-44-0",
+          "formula": "NO2",
+          "name": "nitrogen dioxide",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": -372.375,
+            "b": 2.33,
+            "c": -0.00215
+          },
+          "min": 295,
+          "max": 460,
+          "line": 475,
+          "k": 1e-06
+        },
+        {
+          "cas": "7782-44-7",
+          "formula": "O2",
+          "name": "oxygen",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 29.526,
+            "b": -0.0088999,
+            "c": 3.8083e-05,
+            "d": -3.2629e-08,
+            "e": 8.8607e-12
+          },
+          "min": 50,
+          "max": 1500,
+          "line": 53
+        },
+        {
+          "cas": "7782-44-7",
+          "formula": "O2",
+          "name": "oxygen",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 44.224,
+            "b": 0.562,
+            "c": -0.000113
+          },
+          "min": 150,
+          "max": 1500,
+          "line": 475,
+          "k": 1e-06
+        },
+        {
+          "cas": "7446-09-5",
+          "formula": "O2S",
+          "name": "sulfur dioxide",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": -11.103,
+            "b": 0.502,
+            "c": -0.000108
+          },
+          "min": 200,
+          "max": 1000,
+          "line": 476,
+          "k": 1e-06
+        },
+        {
+          "cas": "7446-11-9",
+          "formula": "O3S",
+          "name": "sulfur trioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 22.466,
+            "b": 0.11981,
+            "c": -9.0842e-05,
+            "d": 2.5503e-08,
+            "e": -7.9208e-13
+          },
+          "min": 100,
+          "max": 1500,
+          "line": 54
+        },
+        {
+          "cas": "7446-11-9",
+          "formula": "O3S",
+          "name": "sulfur trioxide",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": -0.00354,
+            "b": 5.0217e-05,
+            "c": -5.5547e-09
+          },
+          "min": 275,
+          "max": 998,
+          "line": 529
+        },
+        {
+          "cas": "7446-11-9",
+          "formula": "O3S",
+          "name": "sulfur trioxide",
+          "property": "viscosity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": -12.039,
+            "b": 0.543,
+            "c": -0.00016
+          },
+          "min": 298,
+          "max": 694,
+          "line": 476,
+          "k": 1e-06
+        }
+      ]
+    },
+    {
+      "id": "incroperaGas",
+      "title": "Incropera et al. — Fundamentals of Heat and Mass Transfer 6th ed.",
+      "source": "Incropera",
+      "refKey": "Incropera",
+      "phase": "gas",
+      "note": "Hand-moved from local gas compound files into compound-data; kept here so a rebuild does not drop them.",
+      "url": "https://booksite.elsevier.com/9780750683661/Appendix_C.pdf",
+      "rows": [
+        {
+          "cas": "74-82-8",
+          "formula": "CH4",
+          "name": "Methane",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": -0.00935,
+            "b": 0.00014028,
+            "c": 3.318e-08
+          },
+          "min": 91,
+          "max": 1500,
+          "line": 838
+        },
+        {
+          "cas": "630-08-0",
+          "formula": "CO",
+          "name": "carbon monoxide",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 0.00158,
+            "b": 8.2511e-05,
+            "c": -1.9081e-08
+          },
+          "min": 70,
+          "max": 1500,
+          "line": 838
+        },
+        {
+          "cas": "124-38-9",
+          "formula": "CO2",
+          "name": "carbon dioxide",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": -0.012,
+            "b": 0.00010208,
+            "c": -2.2403e-08
+          },
+          "min": 195,
+          "max": 1500,
+          "line": 838
+        },
+        {
+          "cas": "1333-74-0",
+          "formula": "H2",
+          "name": "hydrogen",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 0.03951,
+            "b": 0.00045918,
+            "c": -6.4933e-08
+          },
+          "min": 14,
+          "max": 1500,
+          "line": 838
+        },
+        {
+          "cas": "7732-18-5",
+          "formula": "H2O",
+          "name": "water",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 0.00053,
+            "b": 4.7093e-05,
+            "c": 4.9551e-08
+          },
+          "min": 273,
+          "max": 1500,
+          "line": 838
+        },
+        {
+          "cas": "7664-41-7",
+          "formula": "H3N",
+          "name": "ammonia",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 0.00457,
+            "b": 2.3239e-05,
+            "c": 1.481e-07
+          },
+          "min": 200,
+          "max": 700,
+          "line": 838
+        },
+        {
+          "cas": "7727-37-9",
+          "formula": "N2",
+          "name": "nitrogen",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 0.00309,
+            "b": 7.593e-05,
+            "c": -1.1014e-08
+          },
+          "min": 78,
+          "max": 1500,
+          "line": 839
+        },
+        {
+          "cas": "7782-44-7",
+          "formula": "O2",
+          "name": "oxygen",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": 0.00121,
+            "b": 8.6157e-05,
+            "c": -1.3346e-08
+          },
+          "min": 80,
+          "max": 1500,
+          "line": 839
+        },
+        {
+          "cas": "7446-09-5",
+          "formula": "O2S",
+          "name": "sulfur dioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "quartic",
+          "vars": {
+            "a": 29.637,
+            "b": 0.034735,
+            "c": 9.2903e-06,
+            "d": -2.9885e-08,
+            "e": 1.0937e-11
+          },
+          "min": 100,
+          "max": 1500,
+          "line": 834
+        },
+        {
+          "cas": "7446-09-5",
+          "formula": "O2S",
+          "name": "sulfur dioxide",
+          "property": "thermalConductivity",
+          "phase": "gas",
+          "type": "quadratic",
+          "vars": {
+            "a": -0.00394,
+            "b": 4.4847e-05,
+            "c": 2.1066e-09
+          },
+          "min": 198,
+          "max": 1000,
+          "line": 839
+        }
+      ]
+    },
+    {
+      "id": "szargutGas",
+      "title": "Szargut — Termodynamika Techniczna",
+      "source": "Szargut",
+      "refKey": "Szargut",
+      "phase": "gas",
+      "note": "Hand-moved from local gas compound files into compound-data; kept here so a rebuild does not drop them.",
+      "rows": [
+        {
+          "cas": "124-38-9",
+          "formula": "CO2",
+          "name": "carbon dioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "maierKelley",
+          "vars": {
+            "a": 44.17,
+            "b": 0.00904,
+            "d": -854000.0
+          },
+          "min": 298,
+          "max": 2500,
+          "line": 268
+        },
+        {
+          "cas": "7727-37-9",
+          "formula": "N2",
+          "name": "nitrogen",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "linear",
+          "vars": {
+            "a": 27.88,
+            "b": 0.00427
+          },
+          "min": 298,
+          "max": 2500,
+          "line": 268
+        },
+        {
+          "cas": "7782-44-7",
+          "formula": "O2",
+          "name": "oxygen",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "maierKelley",
+          "vars": {
+            "a": 29.98,
+            "b": 0.0042,
+            "d": -170000.0
+          },
+          "min": 298,
+          "max": 3000,
+          "line": 268
+        },
+        {
+          "cas": "7446-09-5",
+          "formula": "O2S",
+          "name": "sulfur dioxide",
+          "property": "heatCapacity",
+          "phase": "gas",
+          "type": "maierKelley",
+          "vars": {
+            "a": 178.11,
+            "b": 0.01063,
+            "d": -594000.0
+          },
+          "min": 298,
+          "max": 1800,
+          "line": 274
+        }
+      ]
+    }
+  ]
+}

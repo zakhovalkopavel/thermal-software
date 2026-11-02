@@ -23,9 +23,10 @@ Sources (shared/sources/NASA/)
 Sources (shared/sources/transport-parameters.json)
 --------------------------------------------------
   Hand transcription of White (Viscous Fluid Flow 3e) Tables 1-2, 1-3, A-6, A-7, NASA TN D-481 Table III
-  (Stockmayer), Mamedov & Somuncu 2014 Table 1 and Svehla 1995 (NASA TM-4647) Table I:
-  power-law / Sutherland equations, σ and ε/k tagged by potential, and Svehla's transport methods
-  (the pure species on the records, the pairs in interactions.json)
+  (Stockmayer), Mamedov & Somuncu 2014 Table 1, Hirschfelder/Curtiss/Bird 1954 Lennard-Jones force
+  constants (CE 407 notes PDF) and Svehla 1995 (NASA TM-4647) Table I: power-law / Sutherland
+  equations, σ and ε/k tagged by potential, and Svehla's transport methods (the pure species on the
+  records, the pairs in interactions.json)
 
 Sources (shared/sources/compound-data/pubchem/)
 -----------------------------------------------
@@ -113,6 +114,27 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--no-transport", action="store_true", help="Do not read the transport parameters")
     p.add_argument(
+        "--book-gas-file", metavar="FILE", type=Path, default=Path("shared/sources/book-gas-equations.json"),
+        help="Hand-moved book gas equations kept across rebuilds (default: %(default)s)",
+    )
+    p.add_argument("--no-book-gas", action="store_true", help="Do not read the hand-moved book gas equations")
+    p.add_argument(
+        "--nbs-file", metavar="FILE", type=Path,
+        default=Path("shared/sources/NBS/NBS_Tables_with_ErratumValues.csv"),
+        help="Corrected NBS tables; fills a 298.15 K value only when that phase is missing (default: %(default)s)",
+    )
+    p.add_argument("--no-nbs", action="store_true", help="Do not read the NBS tables")
+    p.add_argument(
+        "--molten-dir", metavar="DIR", type=Path, default=Path("shared/sources/NIST-molten-salts"),
+        help="NIST molten-salts extract; pure salts add liquid density, surface tension and viscosity "
+             "equations (default: %(default)s)",
+    )
+    p.add_argument("--no-molten", action="store_true", help="Do not read the molten-salt files")
+    p.add_argument(
+        "--molten-out-dir", metavar="DIR", type=Path, default=Path("shared/processed/molten-salt-mixtures"),
+        help="Mixtures, which have no CAS and are not compound records (default: %(default)s)",
+    )
+    p.add_argument(
         "--out-dir", metavar="DIR", type=Path, default=Path("shared/processed/compound-data"),
         help="Output directory (default: %(default)s)",
     )
@@ -139,12 +161,15 @@ def main(argv: list[str] | None = None) -> int:
         write_compound_index, write_compound_json, write_compound_sources, write_compound_units, write_interactions,
         write_missing_cas, write_unresolved,
     )
+    from compound_data.molten_salt_mixtures import write_molten_salt_mixtures
     from dataset_layout.clear_dataset_dir import clear_dataset_dir
 
     try:
         result = build_compound_data(
             args.source_dir, None if args.no_janaf else args.janaf_dir, None if args.no_pubchem else args.pubchem_dir,
             None if args.no_nasa else args.nasa_dir, None if args.no_transport else args.transport_file,
+            None if args.no_nbs else args.nbs_file, None if args.no_molten else args.molten_dir,
+            None if args.no_book_gas else args.book_gas_file,
         )
         generated_at = datetime.now(timezone.utc).isoformat()
         files = compound_files(result.merge.records.values())
@@ -154,8 +179,12 @@ def main(argv: list[str] | None = None) -> int:
         write_compound_index(files, args.out_dir, generated_at)
         write_compound_units(args.out_dir)
         write_compound_sources(args.out_dir, result.chem, generated_at, result.janaf, result.pubchem_tables, result.nasa,
-                               result.transport_tables)
+                               result.transport_tables, result.nbs_tables, result.molten_tables, result.book_gas_tables)
         write_interactions(args.out_dir, result.interactions, generated_at)
+        if not args.no_molten and args.molten_dir.is_dir():
+            write_molten_salt_mixtures(
+                args.molten_out_dir, result.molten_mixtures, result.molten_mixture_tables, generated_at,
+            )
 
         args.report_dir.mkdir(parents=True, exist_ok=True)
         report_path = args.report_dir / "report.json"

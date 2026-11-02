@@ -99,4 +99,10 @@ export enum RefKey {
   Svehla1995 = 'Svehla1995',
   /** [46] Mamedov B.A., Somuncu E. — Analytical treatment of second virial coefficient over Lennard-Jones (2n–n) potential, J. Mol. Struct. 1068 (2014) */
   Mamedov2014 = 'Mamedov2014',
+  /** [47] Wagman et al. — NBS Tables of Chemical Thermodynamic Properties (1982) */
+  NBS1982 = 'NBS1982',
+  /** [48] NIST Properties of Molten Salts Database (formerly SRD 27) (1991) */
+  NISTMoltenSalts = 'NISTMoltenSalts',
+  /** [49] Hirschfelder, Curtiss, Bird — Molecular Theory of Gases and Liquids (1954) */
+  Hirschfelder1954 = 'Hirschfelder1954',
 }

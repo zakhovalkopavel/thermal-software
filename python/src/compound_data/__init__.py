@@ -19,6 +19,10 @@ Sub-modules
   compound_data.pubchem_identifiers  — load_pubchem_identifiers (PubChem records → identifiers)
   compound_data.pubchem_formula_links — attach_pubchem_formulas (cas of records without CAS from formula searches)
   compound_data.janaf_links          — attach_janaf (JANAF table ids by CAS index and Hill formula)
+  compound_data.nbs_links            — attach_nbs (NBS 298.15 K values for an empty phase)
+  compound_data.molten_salt_links    — attach_molten_salts (liquid density, surface tension, viscosity)
+  compound_data.molten_salt_mixtures — read_molten_salt_mixtures (mixtures, no CAS, outside compound data)
+  compound_data.parsers.book_gas_equations — parse_book_gas_equations (hand-moved book gas equations)
   compound_data.equation_check       — check_equations (report sanity check)
   compound_data.writers              — compound files, unresolved.json, index.json, units.json, sources.json,
                                        interactions.json, missing-cas.txt
