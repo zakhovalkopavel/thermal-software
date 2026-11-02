@@ -31,7 +31,7 @@ type RawTotals = {
  * Chemical composition of a mix of library raw materials on the fired basis:
  * loss on ignition removed, the 8 accepted oxides (also rescaled to 100 %),
  * other oxides, non-oxide components by group, dropped metal impurities and the
- * true density of the fired mix. Algorithm: docs/algorithms/MIX_COMPOSITION_ALGORITHM.md
+ * true density of the fired mix. Algorithm: docs/algorithms/mix/MIX_COMPOSITION_ALGORITHM.md
  */
 @Injectable()
 export class MixCompositionService {

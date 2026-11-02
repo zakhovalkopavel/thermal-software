@@ -36,7 +36,7 @@ type MaterialBasis = {
  * Thermal properties of a fired library raw material, or a mix of them, versus
  * temperature: dense solid λ, effective λ at a porosity, Cp, bulk density and
  * diffusivity. All fired phases are kept (SiC, TiN, AlN, C, … are not oxidised).
- * Algorithm: docs/algorithms/MIX_THERMAL_ALGORITHM.md
+ * Algorithm: docs/algorithms/mix/MIX_THERMAL_ALGORITHM.md
  */
 @Injectable()
 export class MixThermalService {
