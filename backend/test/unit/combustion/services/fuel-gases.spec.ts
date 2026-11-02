@@ -45,22 +45,14 @@ describe('Fuel gases (ethane … propylene) and MAP gas', () => {
     }
   });
 
-  // Eakin & Ellington 1963, Table 1: μ [μP] = B·T^1.5/(T + S), T and S in °R
-  it.each([
-    [Species.C2H6, 7.461, 466.2],
-    [Species.C3H8, 6.805, 502.4],
-    [Species.C4H10, 6.861, 600.0],
-  ])('Sutherland of %s reproduces Eakin1963 B = %d, S = %d °R', (sp, B, S_R) => {
-    for (const T_K of [250, 300, 500, 800]) {
-      const T_R = 1.8 * T_K;
-      const mu_paper = B * T_R ** 1.5 / (T_R + S_R) * 1e-7;
-      expect(Math.abs(transport.viscosity(sp, T_K) / mu_paper - 1)).toBeLessThan(1e-4);
-    }
-  });
-
-  it('gases without a published Sutherland constant are rejected by TransportService.viscosity', () => {
-    for (const sp of [Species.iC4H10, Species.C2H2, Species.C3H4, Species.aC3H4, Species.C3H6]) {
-      expect(() => transport.viscosity(sp, 300)).toThrow('No Sutherland parameters');
+  it('fuel gases have no Sutherland row, so viscosity is the compound-data equation', () => {
+    for (const sp of [
+      Species.C2H6, Species.C3H8, Species.C4H10, Species.iC4H10,
+      Species.C2H2, Species.C3H4, Species.aC3H4, Species.C3H6,
+    ]) {
+      expect(GAS_REGISTRY[sp].sutherlandParams).toBeUndefined();
+      const fromData = new CompoundPropertyResolver(GAS_REGISTRY[sp]).viscosity(300);
+      expect(transport.viscosity(sp, 300)).toBeCloseTo(fromData, 10);
     }
   });
 

@@ -1,20 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 import { GAS_REGISTRY } from '../../../common/thermal/compound/gas/registry';
+import { Common } from '../../../common/thermal/utils/common';
 import { Species } from '../enums/species.enum';
 
 @Injectable()
 export class TransportService {
 
   /**
-   * Dynamic viscosity of a pure species via Sutherland's law [Pa·s]
-   * μ = μ0·(T/T0)^1.5·(T0+S)/(T+S)
-   * Source: [Leg] furnaceCombustion/classes/TransportProperties.js
+   * Dynamic viscosity of a pure species [Pa·s].
+   * Sutherland parameters from compound data when that record has a Sutherland row;
+   * otherwise the record's default gas-viscosity equation.
    */
   viscosity(species: Species, T_K: number): number {
-    const p = GAS_REGISTRY[species]?.sutherlandParams;
-    if (!p) throw new Error(`No Sutherland parameters for ${species}`);
-    return p.mu0 * Math.pow(T_K / p.T0, 1.5) * (p.T0 + p.S) / (T_K + p.S);
+    const compound = GAS_REGISTRY[species];
+    if (!compound) throw new Error(`Unknown species: ${species}`);
+    const p = compound.sutherlandParams;
+    if (p) return p.mu0 * Math.pow(T_K / p.T0, 1.5) * (p.T0 + p.S) / (T_K + p.S);
+    const entry = compound.viscosity.values[compound.viscosity.def];
+    return Common.equation(entry.type).calculate(T_K, entry.vars as never, entry.min, entry.max, entry.k ?? 1);
   }
 
   /**
@@ -23,7 +27,7 @@ export class TransportService {
    */
   viscosityMix(moleFractions: Partial<Record<Species, number>>, T_K: number): number {
     const species = (Object.keys(moleFractions) as Species[])
-      .filter(sp => (moleFractions[sp] ?? 0) > 0 && GAS_REGISTRY[sp]?.sutherlandParams);
+      .filter(sp => (moleFractions[sp] ?? 0) > 0 && GAS_REGISTRY[sp]);
     const mu_i: Record<string, number> = {};
     for (const sp of species) mu_i[sp] = this.viscosity(sp, T_K);
 
@@ -65,7 +69,7 @@ export class TransportService {
     cpBySpecies: Partial<Record<Species, number>>,
   ): number {
     const species = (Object.keys(moleFractions) as Species[])
-      .filter(sp => (moleFractions[sp] ?? 0) > 0 && GAS_REGISTRY[sp]?.sutherlandParams);
+      .filter(sp => (moleFractions[sp] ?? 0) > 0 && GAS_REGISTRY[sp]);
     let num = 0; let den = 0;
     for (const sp of species) {
       const y  = moleFractions[sp] ?? 0;

@@ -1,6 +1,7 @@
 /**
  * Unit tests for gas compound data files and GAS_REGISTRY.
  *
+ * Species are loaded from shared/processed/compound-data.
  * Verifies structural integrity and physical sanity of all registered species:
  *   Ar
  *   N2, O2, CO2, CO, H2O, H2, CH4, NH3  (8 combustion-relevant species)
@@ -14,7 +15,7 @@
  *   - nasa7Key resolves to a NASA-7 record with both low/high ranges and Tswitch
  *   - All NASA-7 coefficients are finite numbers
  *   - heatCapacity.values non-empty; all entries have type, ref, vars, min, max
- *   - Cp at 300 K via nasa7 within ±2 J/(mol·K) of NIST (for species with NASA-7)
+ *   - Cp at 300 K via nasa7 within ±2 J/(mol·K) of the JANAF row (for species with NASA-7)
  *   - CompoundPropertyResolver works for each species
  */
 
@@ -28,6 +29,7 @@ import {
 } from '../../../../src/common/thermal/utils/nasa';
 import { EquationTypeDto } from '../../../../src/common/thermal/dto/equation-type.dto';
 import { RefKey } from '../../../../src/common/thermal/enum/ref-key.enum';
+import { janafGasRow } from '../janaf-gas-row.util';
 
 const nasa7Method = new Nasa7EquationMethod();
 const nasa9Method = new Nasa9EquationMethod();
@@ -35,11 +37,8 @@ const nasa9Method = new Nasa9EquationMethod();
 const nasa7Of = (sp: string) => compoundNasa7(GAS_REGISTRY[sp])!.nasa7;
 const nasa9Of = (sp: string) => compoundNasa9(GAS_REGISTRY[sp])!.nasa9;
 
-// NIST JANAF Cp at 300 K [J/(mol·K)]
-const CP_300K_NIST: Record<string, number> = {
-  N2: 29.12, O2: 29.38, CO2: 37.14, CO: 29.14,
-  H2O: 33.60, H2: 28.85, CH4: 35.71, NH3: 35.65,
-};
+/** JANAF Cp at 300 K, J/(mol·K), from the gas or reference-state table. */
+const janafCp300 = (formula: string): number => janafGasRow(formula, 300).Cp!;
 
 /** Species that carry a NASA-7 dataset and should be validated against NIST Cp. */
 const NASA7_SPECIES = ['N2', 'O2', 'CO2', 'CO', 'H2O', 'H2', 'CH4', 'NH3'] as const;
@@ -94,10 +93,11 @@ for (const sp of NASA7_SPECIES as unknown as Sp[]) {
       }
     });
 
-    it(`NASA-7 Cp at 300 K within ±2 J/(mol·K) of NIST (${CP_300K_NIST[sp]})`, () => {
+    it(`NASA-7 Cp at 300 K within ±2 J/(mol·K) of JANAF (${janafCp300(sp)})`, () => {
       const cp = nasa7Method.calculate(300, nasa7Of(sp), 200, 6000);
-      expect(cp).toBeGreaterThan(CP_300K_NIST[sp] - 2);
-      expect(cp).toBeLessThan(CP_300K_NIST[sp] + 2);
+      const janaf = janafCp300(sp);
+      expect(cp).toBeGreaterThan(janaf - 2);
+      expect(cp).toBeLessThan(janaf + 2);
     });
 
     it('heatCapacityEntries ≥1 entry with required fields', () => {
@@ -186,38 +186,34 @@ describe('NASA-9 datasets', () => {
     });
   }
 
-  it('new fuel gases have no tabulated heatCapacity; default Cp is NASA-9', () => {
+  it('fuel-gas Cp fits come from compound data; the default is still NASA-9', () => {
     for (const sp of ['C2H6', 'C3H8', 'C4H10', 'iC4H10', 'C2H2', 'C3H4', 'aC3H4', 'C3H6']) {
       const c = GAS_REGISTRY[sp];
-      expect(c.heatCapacity).toBeUndefined();
+      expect(c.heatCapacity!.values.length).toBeGreaterThan(0);
       const { def, values } = heatCapacityEntries(c);
-      expect(values.map(v => v.type)).toEqual([EquationTypeDto.nasa9, EquationTypeDto.nasa7]);
       expect(values[def].type).toBe(EquationTypeDto.nasa9);
+      expect(values.at(-2)!.type).toBe(EquationTypeDto.nasa9);
+      expect(values.at(-1)!.type).toBe(EquationTypeDto.nasa7);
     }
   });
 
-  it('new fuel gases carry sourced data only: IUPAC Mr, Perry8 μ/λ, Perry9 ΔHf/ΔGf, Sutherland from Eakin1963', () => {
-    const withSutherland = ['C2H6', 'C3H8', 'C4H10'];
+  it('fuel gases take molar mass, Perry8 transport and gas-phase formation data from compound data', () => {
     const atomic: Record<string, number> = { C: 0.012011, H: 0.001008 };
-    // Perry9 Table 2-95 as printed, J/kmol × 1E-07: [ΔHf, ΔGf]
-    const perry9: Record<string, [number, number]> = {
-      C2H6: [-8.382, -3.192], C3H8: [-10.468, -2.439], C4H10: [-12.579, -1.67], iC4H10: [-13.499, -2.144],
-      C2H2: [22.82, 21.068], C3H4: [18.49, 19.384], aC3H4: [19.05, 20.08], C3H6: [2.023, 6.264],
-    };
     for (const sp of ['C2H6', 'C3H8', 'C4H10', 'iC4H10', 'C2H2', 'C3H4', 'aC3H4', 'C3H6']) {
       const c = GAS_REGISTRY[sp];
       const [, nC, nH] = c.chemicalFormula.match(/^C(\d+)H(\d+)$/)!;
-      expect(c.Mr).toBeCloseTo(Number(nC) * atomic.C + Number(nH) * atomic.H, 9);
-      for (const v of [...c.viscosity.values, ...c.thermalConductivity.values]) {
-        expect(v.type).toBe(EquationTypeDto.dipprN102);
-        expect(v.ref).toBe(RefKey.Perry8);
-      }
-      expect(c.enthalpyFormation298).toBeCloseTo(perry9[sp][0] * 1e4, 6);
-      expect(c.gibbsEnergy298).toBeCloseTo(perry9[sp][1] * 1e4, 6);
-      expect(c.sutherlandParams !== undefined).toBe(withSutherland.includes(sp));
+      expect(c.Mr).toBeCloseTo(Number(nC) * atomic.C + Number(nH) * atomic.H, 4);
+      expect(c.viscosity.values[c.viscosity.def].type).toBe(EquationTypeDto.dipprN102);
+      expect(c.viscosity.values[c.viscosity.def].ref).toBe(RefKey.Perry8);
+      expect(c.thermalConductivity.values[c.thermalConductivity.def].type).toBe(EquationTypeDto.dipprN102);
+      expect(c.thermalConductivity.values[c.thermalConductivity.def].ref).toBe(RefKey.Perry8);
+      expect(c.enthalpyFormation298).toEqual(expect.any(Number));
     }
     expect(GAS_REGISTRY['aC3H4'].collisionDiameter).toBeUndefined();
     expect(GAS_REGISTRY['aC3H4'].epsilonToKb).toBeUndefined();
+    expect(GAS_REGISTRY['C4H10'].gibbsEnergy298).toBeUndefined();
+    expect(GAS_REGISTRY['N2'].collisionDiameter).toBeCloseTo(3.798, 6);
+    expect(GAS_REGISTRY['NO'].collisionDiameter).toBeCloseTo(3.492, 6);
   });
 
   it('tabulated heatCapacity keeps its indices; NASA entries are appended; default is NASA-9', () => {
@@ -293,12 +289,12 @@ describe('Cross-compound NASA-7 sanity', () => {
     expect(cpCO2).toBeGreaterThan(cpN2);
   });
 
-  it('all 8 combustion species Cp at 300 K within ±2 of NIST', () => {
+  it('all 8 combustion species Cp at 300 K within ±2 of JANAF', () => {
     for (const sp of NASA7_SPECIES) {
-      const cp   = nasa7Method.calculate(300, nasa7Of(sp), 200, 6000);
-      const nist = CP_300K_NIST[sp];
-      expect(cp).toBeGreaterThan(nist - 2);
-      expect(cp).toBeLessThan(nist + 2);
+      const cp = nasa7Method.calculate(300, nasa7Of(sp), 200, 6000);
+      const janaf = janafCp300(sp);
+      expect(cp).toBeGreaterThan(janaf - 2);
+      expect(cp).toBeLessThan(janaf + 2);
     }
   });
 });

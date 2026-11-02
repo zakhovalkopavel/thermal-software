@@ -1,23 +1,7 @@
-export { Ar  } from './ar';
-export { N2  } from './n2';
-export { O2  } from './o2';
-export { CO2 } from './co2';
-export { CO  } from './co';
-export { H2  } from './h2';
-export { H2O } from './h2o';
-export { CH4 } from './ch4';
-export { C2H6 } from './c2h6';
-export { C3H8 } from './c3h8';
-export { C4H10 } from './c4h10';
-export { iC4H10 } from './ic4h10';
-export { C2H2 } from './c2h2';
-export { C3H4 } from './c3h4';
-export { aC3H4 } from './ac3h4';
-export { C3H6 } from './c3h6';
-export { NH3 } from './nh3';
-export { NO  } from './no';
-export { NO2 } from './no2';
-export { SO2 } from './so2';
-export { SO3 } from './so3';
+export {
+  Ar, N2, O2, CO2, CO, H2O, H2, CH4,
+  C2H6, C3H8, C4H10, iC4H10, C2H2, C3H4, aC3H4, C3H6,
+  NH3, SO2, SO3, NO, NO2,
+  GAS_REGISTRY,
+} from './registry';
 export { Air } from './air';
-export { GAS_REGISTRY } from './registry';

@@ -15,8 +15,7 @@
 
 import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-properties/compound-property-resolver';
 import { RefKey } from '../../../../src/common/thermal/enum/ref-key.enum';
-import { CO2 } from '../../../../src/common/thermal/compound/gas/co2';
-import { N2  } from '../../../../src/common/thermal/compound/gas/n2';
+import { CO2, N2 } from '../../../../src/common/thermal/compound/gas';
 import { CompoundValue } from '../../../../src/common/thermal/interfaces/compound-value.interface';
 import { EquationTypeDto } from '../../../../src/common/thermal/dto/equation-type.dto';
 import { compoundNasa7, compoundNasa9 } from '../../../../src/common/thermal/utils/nasa';
@@ -94,16 +93,18 @@ describe('CompoundPropertyResolver — nasa7 default (CO2)', () => {
 describe('CompoundPropertyResolver — preferred by index (N2)', () => {
   const resolver = new CompoundPropertyResolver(N2);
 
-  it('preferred=0 selects quartic (Yaws1999) — bypasses nasa7', () => {
+  it('preferred=0 selects the first compound-data Cp (Perry8) — bypasses NASA', () => {
     const cp = resolver.heatCapacity(300, 0);
     expect(cp).toBeGreaterThan(28);
     expect(cp).toBeLessThan(31);
+    expect(cp).not.toBeCloseTo(resolver.heatCapacity(300), 4);
   });
 
-  it('preferred=1 selects cubic (Borgnakke)', () => {
+  it('preferred=1 selects the second compound-data Cp (Poling5)', () => {
     const cp = resolver.heatCapacity(300, 1);
     expect(cp).toBeGreaterThan(28);
     expect(cp).toBeLessThan(31);
+    expect(cp).not.toBeCloseTo(resolver.heatCapacity(300, 0), 4);
   });
 
   it('preferred=99 (out of range) falls back to the default', () => {
@@ -116,16 +117,12 @@ describe('CompoundPropertyResolver — preferred by index (N2)', () => {
 describe('CompoundPropertyResolver — preferred by RefKey (N2)', () => {
   const resolver = new CompoundPropertyResolver(N2);
 
-  it('preferred=RefKey.Yaws1999 selects quartic entry', () => {
-    const cp = resolver.heatCapacity(300, RefKey.Yaws1999);
-    expect(cp).toBeGreaterThan(28);
-    expect(cp).toBeLessThan(31);
+  it('preferred=RefKey.Perry8 selects the Perry8 row', () => {
+    expect(resolver.heatCapacity(300, RefKey.Perry8)).toBeCloseTo(resolver.heatCapacity(300, 0), 8);
   });
 
-  it('preferred=RefKey.Borgnakke selects cubic entry', () => {
-    const cp = resolver.heatCapacity(300, RefKey.Borgnakke);
-    expect(cp).toBeGreaterThan(28);
-    expect(cp).toBeLessThan(31);
+  it('preferred=RefKey.Poling5 selects the Poling5 row', () => {
+    expect(resolver.heatCapacity(300, RefKey.Poling5)).toBeCloseTo(resolver.heatCapacity(300, 1), 8);
   });
 
   it('preferred=RefKey that is absent falls back to the default', () => {
