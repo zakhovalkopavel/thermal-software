@@ -2,7 +2,7 @@
 compound_data.constants.nasa_source — NASA-7 / NASA-9 files the build links to and the ΔfH° check tolerance.
 
 The keys written to the records (``nasa7``, ``nasa9``) are the species keys of ``NASA7_DATASET`` and
-``NASA9_DATASET`` (``make nasa-parse``); ``backend/data/nasa/`` is a copy with the same keys.
+``NASA9_DATASET`` (``make nasa-parse``). The backend reads these files directly.
 
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md
 Refs: docs/REFERENCES.md  [8] NASA7, [23] NASA9

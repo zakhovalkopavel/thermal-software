@@ -84,7 +84,7 @@ calcReynolds(@Body() dto: ReynoldsInputDto): ScalarDimensionlessResultDto {
 
 ```typescript
 // ✅ CORRECT — type for data shape
-export type AlyLeeEquation = { c1: number; c2: number; /* ... */ };
+export type DipprN107Equation = { c1: number; c2: number; /* ... */ };
 
 // ✅ CORRECT — interface for behaviour
 export interface Equation<T> {
@@ -93,7 +93,7 @@ export interface Equation<T> {
 }
 
 // ❌ WRONG — interface used as data shape
-export interface AlyLeeVars { c1: number; c2: number; }
+export interface DipprN107Vars { c1: number; c2: number; }
 
 // ❌ WRONG — type and class in the same file
 export type Foo = { a: number };
@@ -110,13 +110,13 @@ self-documenting.
 import { RefKey } from '../../dto/ref-key.dto';
 
 // ✅ CORRECT — RefKey enum value
-{ type: EquationTypeDto.alyLee, ref: RefKey.Perry7, page: 223, k: 1e-3, vars: { ... }, min: 100, max: 2273 }
+{ type: EquationTypeDto.dipprN107, ref: RefKey.Perry7, page: 223, k: 1e-3, vars: { ... }, min: 100, max: 2273 }
 
 // ❌ WRONG — raw number
-{ type: EquationTypeDto.alyLee, ref: 4, page: 223, vars: { ... }, min: 100, max: 2273 }
+{ type: EquationTypeDto.dipprN107, ref: 4, page: 223, vars: { ... }, min: 100, max: 2273 }
 
 // ❌ WRONG — no reference at all
-{ type: EquationTypeDto.alyLee, vars: { ... }, min: 100, max: 2273 }
+{ type: EquationTypeDto.dipprN107, vars: { ... }, min: 100, max: 2273 }
 ```
 
 `RefKey` is defined in `backend/src/common/thermal/enum/ref-key.enum.ts` and its machine-readable metadata
@@ -136,9 +136,8 @@ Verified antiderivatives for all equation types used in `heatCapacity`, `viscosi
 | `quadratic` | ✅ | algebra |
 | `cubic` | ✅ | algebra |
 | `quartic` | ✅ | algebra |
-| `linearHyperbolic` | ✅ | algebra |
-| `linearHyperbolicLogarithmic` | ✅ | ref WolframAlpha |
-| `alyLee` (DIPPR-107) | ✅ | ref WolframAlpha — `c1T + c2c3·coth(c3/T) − c4c5·tanh(c5/T)` |
+| `maierKelley` | ✅ | algebra |
+| `dipprN107` | ✅ | ref WolframAlpha — `c1T + c2c3·coth(c3/T) − c4c5·tanh(c5/T)` |
 | `dipprN102` | ❌ | no closed form for arbitrary c2 — use Gauss–Legendre |
 | `nasa7` | ✅ (polynomial) | algebra — but lives in `CompoundValue.nasa7`, not in property buckets |
 | `nasa9` | ✅ (polynomial + 1/T + ln T) | algebra — but lives in `CompoundValue.nasa9`, not in property buckets |
@@ -150,8 +149,8 @@ The corresponding coefficient **type** lives in its own file in `type/`.
 They are always separate files — never merged.
 
 ```
-type/aly-lee-equation.ts        ← export type AlyLeeEquation
-utils/aly-lee-equation-method.ts ← export class AlyLeeEquationMethod implements Equation<AlyLeeEquation>
+type/dippr-n107-equation.ts        ← export type DipprN107Equation
+utils/dippr-equation-107-method.ts ← export class DipprEquation107Method implements Equation<DipprN107Equation>
 ```
 
 ### 6. NASA-7 and NASA-9 are Separate Properties
@@ -159,7 +158,7 @@ utils/aly-lee-equation-method.ts ← export class AlyLeeEquationMethod implement
 property bucket. They are referenced by **top-level keys** (`nasa7Key`, `nasa9Key`) on `CompoundValue`, separate from `heatCapacity`.
 **NASA-9 is the modern format and is preferred when available.**
 
-The coefficients live in the NASA databases `backend/data/nasa/nasa7.json` / `nasa9.json`
+The coefficients live in the NASA databases `shared/processed/NASA/nasa7.json` / `nasa9.json`
 (read by `utils/nasa-database.ts`); a compound stores only the exact species keys.
 
 ```typescript
@@ -256,7 +255,7 @@ Before committing any file, verify:
 - [ ] **Python:** every module/class/function using literature data has a `Refs:` docstring citation using `[N] KeyName` format
 - [ ] **Python:** `from references import RefKey` used for any runtime reference lookup — never raw integers
 - [ ] New reference sources added to `shared/references/references.json` and `make references-generate` run before use (`make references-check` passes)
-- [ ] NASA data is referenced by `CompoundValue.nasa7Key`/`nasa9Key` (exact keys in `backend/data/nasa/*.json`) — coefficients are **not** copied into the compound or into `heatCapacity.values`
+- [ ] NASA data is referenced by `CompoundValue.nasa7Key`/`nasa9Key` (exact keys in `shared/processed/NASA/*.json`) — coefficients are **not** copied into the compound or into `heatCapacity.values`
 - [ ] Closed-form integral used where it exists — no unnecessary numerical integration
 - [ ] Property calculations go through `CompoundPropertyResolver`, not direct equation method calls
 - [ ] File name is `kebab-case`, class name is `PascalCase`

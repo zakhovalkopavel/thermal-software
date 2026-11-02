@@ -27,7 +27,7 @@ Common library reference:
 |-----------|---------|-----------------|
 | **NASA-7 polynomial** | `GasPropertiesService` | `Cp/R = a1 + a2T + a3T² + a4T³ + a5T⁴`; two ranges at `Tswitch` |
 | **NASA-9 polynomial** | `GasPropertiesService` | 9-coefficient, variable T ranges; preferred format |
-| **Aly-Lee (DIPPR-107)** | `GasPropertiesService` | `c1 + c2[c3/T/sinh(c3/T)]² + c4[c5/T/cosh(c5/T)]²` |
+| **DIPPR 107 (Aly–Lee)** | `GasPropertiesService` | `c1 + c2[c3/T/sinh(c3/T)]² + c4[c5/T/cosh(c5/T)]²` |
 | **Sutherland viscosity** | `TransportService` | `μ = μ₀(T/T₀)^(3/2)(T₀+S)/(T+S)` |
 | **Eucken conductivity** | `TransportService` | `λ = μ(Cp + 5R/4M)` |
 | **Ideal gas density** | `TransportService` | `ρ = PM/(RT)` |

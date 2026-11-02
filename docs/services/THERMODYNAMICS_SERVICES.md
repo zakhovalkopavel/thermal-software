@@ -15,7 +15,7 @@ This document covers the **actual computation** each service performs.
 ```
 ThermodynamicsModule
 ├── FluidPropertyService          ← orchestration: resolves species/mixture, delegates maths
-├── GasPropertiesService          ← Cp (NASA-7, Aly-Lee, polynomial), mixture Cp, enthalpy
+├── GasPropertiesService          ← Cp (NASA-7, DIPPR 107, polynomial), mixture Cp, enthalpy
 ├── TransportService              ← μ (Sutherland), λ (Eucken), ρ (ideal gas), ν
 ├── DimensionlessCalculationService ← orchestration: re/pr/gr/ra/Nu/HTC from flat fluid input
 ├── DimensionlessNumbersService   ← pure formulas: Re, Pr, Gr, Ra, Nu (correlations), HTC
@@ -66,8 +66,8 @@ S/R  = a1·ln(T) + a2·T + a3T²/2 + a4T³/3 + a5T⁴/4 + a7
 ```
 Switch temperature (`Tswitch`) selects low/high coefficient set.
 
-**Correlations in registry:** Aly-Lee (DIPPR-107), quartic polynomial (Yaws), NASA-7, NASA-9.
-NASA-7/NASA-9 coefficients come from `backend/data/nasa/*.json` via the compound's `nasa7Key` /
+**Correlations in registry:** DIPPR 107 (Aly–Lee), quartic polynomial (Yaws), NASA-7, NASA-9.
+NASA-7/NASA-9 coefficients come from `shared/processed/NASA/*.json` via the compound's `nasa7Key` /
 `nasa9Key`. Default for Cp, H, S and G is **NASA-9, NASA-7 second** (`compoundNasaThermo`); outside
 the dataset range H and S are extrapolated with the boundary Cp. `enthalpy()` / `enthalpyMixture()`
 return the sensible enthalpy H(T) − H(298.15 K); `absoluteEnthalpy()` the formation-referenced one.

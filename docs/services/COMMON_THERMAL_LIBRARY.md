@@ -10,9 +10,9 @@ the thermodynamics module and any future modules that need gas-phase property da
 ## Structure
 
 ```
-backend/data/nasa/
-├── nasa7.json                  ← NASA-7 database (1136 species), read at runtime
-└── nasa9.json                  ← NASA-9 database (3953 species), read at runtime
+shared/processed/NASA/
+├── nasa7.json                  ← NASA-7 database, read at runtime
+└── nasa9.json                  ← NASA-9 database, read at runtime
 
 backend/src/common/thermal/
 ├── index.ts                    ← barrel export
@@ -31,7 +31,7 @@ backend/src/common/thermal/
 ├── type/                       ← coefficient type aliases (one per file)
 │   ├── nasa7-equation.ts
 │   ├── nasa9-equation.ts
-│   ├── aly-lee-equation.ts
+│   ├── dippr-n107-equation.ts
 │   ├── quartic-equation.ts
 │   └── …
 ├── enum/
@@ -45,7 +45,7 @@ backend/src/common/thermal/
 │   └── index.ts
 └── utils/                      ← one export per file, each folder has an index.ts
     ├── common.ts               ← Common helper methods
-    ├── equation-methods/       ← one class per correlation (NASA-7/9, DIPPR, Aly-Lee, …)
+    ├── equation-methods/       ← one class per correlation (NASA-7/9, DIPPR, …)
     ├── nasa/                   ← NASA database loader, nasa7Species / nasa9Species, compoundNasa*
     └── compound-properties/    ← CompoundPropertyResolver, heatCapacityEntries
 
@@ -67,11 +67,11 @@ Sixteen pure-species compounds, keyed by the `Species` enum from the thermodynam
 |-----|------|-------------|--------------|
 | `N2` | Nitrogen | 0.028014 | NASA-7 (GRI-Mech), Yaws quartic Cp, Sutherland μ (White 2006) |
 | `O2` | Oxygen | 0.031999 | NASA-7, Yaws quartic Cp, Sutherland μ |
-| `CO2` | Carbon dioxide | 0.044010 | NASA-7, Aly-Lee Cp (Perry 7th ed.) |
+| `CO2` | Carbon dioxide | 0.044010 | NASA-7, DIPPR 107 Cp (Perry 7th ed.) |
 | `H2O` | Water vapour | 0.018015 | NASA-7, polynomial Cp |
 | `CO` | Carbon monoxide | 0.028010 | NASA-7, polynomial Cp |
 | `H2` | Hydrogen | 0.002016 | NASA-7, polynomial Cp |
-| `CH4` | Methane | 0.016043 | NASA-7, Aly-Lee Cp |
+| `CH4` | Methane | 0.016043 | NASA-7, DIPPR 107 Cp |
 | `NH3` | Ammonia | 0.017031 | Polynomial Cp |
 | `NO` | Nitric oxide | 0.030006 | NASA-7 |
 | `NO2` | Nitrogen dioxide | 0.046006 | Polynomial Cp |
@@ -87,8 +87,8 @@ Each compound object (`CompoundValue`) carries:
 - `collisionDiameter?` [Å], `epsilonToKb?` [K] — Lennard-Jones parameters for Chapman-Enskog; absent when
   no published value exists (`DiffusionService` then throws)
 - `sutherlandParams?: { mu0, T0, S }` — Sutherland viscosity parameters
-- `nasa7Key?` — exact species key in `backend/data/nasa/nasa7.json` (e.g. `"N2"`, `"C4H10,isobutane"`)
-- `nasa9Key?` — exact species key in `backend/data/nasa/nasa9.json` (e.g. `"N2"`, `"Air"`)
+- `nasa7Key?` — exact species key in `shared/processed/NASA/nasa7.json` (e.g. `"N2"`, `"C4H10,isobutane"`)
+- `nasa9Key?` — exact species key in `shared/processed/NASA/nasa9.json` (e.g. `"N2"`, `"Air"`)
 - `heatCapacity?: { def, values: EquationValue[] }` — tabulated Cp correlations; optional when a NASA key is given
 
 NASA coefficients are **not** stored in the compound files. Every registry species has a `nasa7Key`;
@@ -110,8 +110,8 @@ export interface CompoundValue {
   collisionDiameter?: number;           // Å (Lennard-Jones σ; absent without a published value)
   epsilonToKb?: number;                 // K  (Lennard-Jones ε/k)
   sutherlandParams?: { mu0: number; T0: number; S: number };
-  nasa7Key?: string;                    // key in backend/data/nasa/nasa7.json
-  nasa9Key?: string;                    // key in backend/data/nasa/nasa9.json
+  nasa7Key?: string;                    // key in shared/processed/NASA/nasa7.json
+  nasa9Key?: string;                    // key in shared/processed/NASA/nasa9.json
   heatCapacity?: {                      // optional when a NASA key is present
     def: number;                        // index of default equation
     values: EquationValue[];
@@ -121,8 +121,8 @@ export interface CompoundValue {
 
 ### NASA databases (`utils/nasa-database.ts`)
 
-`backend/data/nasa/nasa7.json` and `nasa9.json` are the parser output (`make nasa-parse`, then
-`make nasa-install` copies them into the backend). They are read with `fs` on first use and cached
+`shared/processed/NASA/nasa7.json` and `nasa9.json` are the parser output (`make nasa-parse`).
+They are read with `fs` on first use and cached
 — not imported, so the TypeScript compiler never type-checks the 5 MB files. The directory is found
 by walking up from the module, so it works from `src/` (ts-jest, ts-node) and from `dist/`.
 
@@ -167,8 +167,8 @@ export interface EquationValue {
 | `quadratic` | a + b·T + c·T² | `{ a, b, c }` |
 | `cubic` | + d·T³ | `{ a, b, c, d }` |
 | `quartic` | + e·T⁴ | `{ a, b, c, d, e }` |
-| `linearHyperbolic` | a + b·T + d/T² | `{ a, b, d }` |
-| `alyLee` | DIPPR-107: c1 + c2·[c3/T / sinh(c3/T)]² + c4·[c5/T / cosh(c5/T)]² | `{ c1, c2, c3, c4, c5 }` |
+| `maierKelley` | a + b·T + d/T² | `{ a, b, d }` |
+| `dipprN107` | DIPPR 107 (Aly–Lee): c1 + c2·[c3/T / sinh(c3/T)]² + c4·[c5/T / cosh(c5/T)]² | `{ c1, c2, c3, c4, c5 }` |
 | `dipprN102` | c1·T^c2 / (1 + c3/T + c4/T²) | `{ c1, c2, c3, c4 }` |
 | `nasa7` | 7-coefficient polynomial (Cp, H, S, G) | — read from `nasa7.json` by `nasa7Key`, not here |
 | `nasa9` | 9-coefficient (variable ranges) | — read from `nasa9.json` by `nasa9Key`, not here |
@@ -326,7 +326,7 @@ keyed by `RefKey`. The enum is generated from `shared/references/references.json
 ## Adding a New Gas Compound
 
 1. Create `compound/gas/<formula>.ts` exporting one `const` of type `CompoundValue`.
-2. Set `nasa7Key` / `nasa9Key` to the exact species keys in `backend/data/nasa/nasa7.json` /
+2. Set `nasa7Key` / `nasa9Key` to the exact species keys in `shared/processed/NASA/nasa7.json` /
    `nasa9.json` (isomers carry a suffix, e.g. `"C3H4,propyne"`). `heatCapacity` only for tabulated
    fits that are not NASA polynomials; omit it when there are none. Check that NASA-9 H(298.15) equals
    `enthalpyFormation298` — some `nasa9.json` keys (CO2, O2, NO2) hold data of another species;

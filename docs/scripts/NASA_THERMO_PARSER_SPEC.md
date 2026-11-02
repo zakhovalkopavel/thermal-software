@@ -551,8 +551,8 @@ If `--nasa9` is omitted, `nasa9.json` is not written.
 
 ## Mapping to TypeScript compound files
 
-The backend reads the JSON directly. `make nasa-install` copies `nasa7.json` and `nasa9.json`
-to `backend/data/nasa/`, where `backend/src/common/thermal/utils/nasa-database.ts` loads them.
+The backend reads `shared/processed/NASA/nasa7.json` and `nasa9.json` directly
+(`backend/src/common/thermal/utils/nasa/load-nasa-database.util.ts`).
 Coefficients are **not** copied into compound files — a compound references the species by its
 exact key:
 

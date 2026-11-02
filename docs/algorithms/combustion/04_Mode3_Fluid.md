@@ -39,7 +39,7 @@ Registry species usable in `fuelGas` besides CH4/H2/CO:
 | `aC3H4` | propadiene (allene) | — |
 | `C3H6` | propylene | 45.8 |
 
-Compound data (`common/thermal/compound/gas/`): NASA-7 and NASA-9 read from `backend/data/nasa/nasa7.json`
+Compound data (`common/thermal/compound/gas/`): NASA-7 and NASA-9 read from `shared/processed/NASA/nasa7.json`
 / `nasa9.json` by `nasa7Key` / `nasa9Key` (e.g. `"C3H4,propyne"`; Cp defaults to NASA-9; H, S, G(T)
 come from the NASA datasets). Only sourced numbers are stored: Mr as the sum of IUPAC 2021 atomic
 weights, `enthalpyFormation298` / `gibbsEnergy298` from Perry 9th ed. Table 2-95 (DIPPR 801, `Perry9`;

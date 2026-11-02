@@ -76,6 +76,8 @@ services:
         condition: service_healthy
     networks:
       - thermal-network
+    volumes:
+      - shared_data:/app/shared
     labels:
       - "app.version=${APP_VERSION}"
       - "app.name=backend"

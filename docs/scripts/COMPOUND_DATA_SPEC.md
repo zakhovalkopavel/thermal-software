@@ -35,7 +35,7 @@ The JSON format is described by the backend interfaces in [utils/compound-data/]
   Examples: TiO2, TiI, TiF4, ZnB4O9, Al2SiO5, Al6Si2O13, MgAl2O4, NH3, N2H4, SiC, XeF2. Element counts carry no structure, so hydrates and double salts are not rebuilt (LiCl·H2O → LiH2OCl).
 - **Coefficients:** every coefficient row is stored in the backend form `EquationValue` = `{type, ref, page?, vars, min, max, k?}` (see [equation-value.interface.ts](../../backend/src/common/thermal/interfaces/equation-value.interface.ts)).
   - `vars` hold the source's verbatim numbers.
-  - `k` converts the result to the backend unit, as the existing entries do (e.g. CO2 Perry7 Aly-Lee uses `k: 1e-3`).
+  - `k` converts the result to the backend unit, as the existing entries do (e.g. CO2 Perry7 DIPPR 107 uses `k: 1e-3`).
 - **Molten density:** stored as a backend `linear` equation, plus the verbatim row in `raw`.
 - **Perry rows without a range:** 29 rows, the 13 monatomic-gas rows with Cp = 4.97 cal/(mol K) and 16 salts and hydrates (CuSO4·5H2O, H2S2O7, ...). They are kept as `raw` only, with no equation.
 - **Tables with no earlier backend type:** stored under new type names, implemented in the backend with this dataset (see [New equation types](#new-equation-types)).
@@ -53,12 +53,12 @@ Backend types come from [equation-type.dto.ts](../../backend/src/common/thermal/
 - **Perry 2-151, solid/liquid/gas Cp, in cal/(mol K)** (`Perrys Table 2-151.tsv`).
   - The chemicals function `Perry_151` computes Cp = 4.184·(a + b·T + c/T² + d·T²).
   - In the TSV, 50 rows have a `/T^2` term and 8 rows have a `*T^2` term. **No row has both**, so every row fits an existing type.
-  - Rows with no `*T^2` term become backend `linearHyperbolic` (a + b·T + d/T²), with `vars {a, b, d: <"/T^2 term">}` and `k: 4.184`. In the backend's naming, `d` is the 1/T² coefficient.
+  - Rows with no `*T^2` term become backend `maierKelley` (a + b·T + d/T²), with `vars {a, b, d: <"/T^2 term">}` and `k: 4.184`. In the backend's naming, `d` is the 1/T² coefficient.
   - Rows with a `*T^2` term become backend `quadratic` (a + b·T + c·T²), with `vars {a, b, c: <"*T^2 term">}` and `k: 4.184`. These are 8 rows: MnCO3, MnO2, Mn2O3, MnO, SO2 g, HI g, MnS, Mn3O4.
   - 29 rows have no Tmin or Tmax: the monatomic gases K, H, Ne, Kr, Hg, Na, Ar, Cs (twice), He, Xe, Rn and Li, all with Cp = 4.97 cal/(mol K) = 5/2·R, and 16 salts and hydrates. The backend needs numeric `min` and `max`, so these rows are kept in `raw` and listed in the report.
   - The `Ful CAS` column is wrong for some rows (Ne is filed under 79-24-3, nitroethane; CoS under 463-58-1, carbonyl sulfide). See the detach rule in [Records](#records).
   - Phases map as follows: c and gls go to `solid` (the subphase is kept, e.g. glass), l to `liquid`, g to `gas`.
-  - Check: `Perry_151(300, 4.8, 0.00322, 0, 0) = 24.124944` (chemicals docstring) must equal the `linearHyperbolic` result.
+  - Check: `Perry_151(300, 4.8, 0.00322, 0, 0) = 24.124944` (chemicals docstring) must equal the `maierKelley` result.
 - **CRC molten density, in kg/m3** (`CRC Inorganics densties of molten compounds and salts.tsv`).
   - The chemicals function `CRC_inorganic` computes ρ = ρ0 − k·(T − Tm).
   - Stored as backend `linear` (a + b·T), with `vars {a: rho0 + k·Tm, b: -k}`, `min: Tm`, `max: Tmax` and `raw {rho0, k, Tm, Tmax}`.
@@ -303,7 +303,7 @@ shared/processed/compound-data/
     └── halogenated/CCl4-carbon-tetrachloride.json, C2F6-..., ...
 ```
 
-The compound files carry no units, no source links and no `generatedAt` (a rebuild only changes files whose data changed). `units.json` lists the unit of every value; the backend interfaces ([compound-data-properties.interface.ts](../../backend/src/common/thermal/utils/compound-data/compound-data-properties.interface.ts), [compound-data-equations.interface.ts](../../backend/src/common/thermal/utils/compound-data/compound-data-equations.interface.ts)) document the same units. Each value cites its source row as `ref: [RefKey, line, fileKey]`, and `sources.json` resolves the file key.
+The compound files carry no units, no source links and no `generatedAt` (a rebuild only changes files whose data changed). `units.json` lists the unit of every value; the backend interfaces ([compound-data-properties.interface.ts](../../backend/src/common/thermal/utils/compound-data/interfaces/property/compound-data-properties.interface.ts), [compound-data-equations.interface.ts](../../backend/src/common/thermal/utils/compound-data/interfaces/equation/compound-data-equations.interface.ts)) document the same units. Each value cites its source row as `ref: [RefKey, line, fileKey]`, and `sources.json` resolves the file key.
 
 ### File layout
 
@@ -336,7 +336,7 @@ The compound files carry no units, no source links and no `generatedAt` (a rebui
           "equations": {
             "heatCapacity": {
               "solid": {"def": 0, "values": [
-                {"type": "linearHyperbolic", "ref": ["Perry8", 459, "perry151"],
+                {"type": "maierKelley", "ref": ["Perry8", 459, "perry151"],
                  "vars": {"a": 22.08, "b": 0.008971, "d": -522500}, "min": 273, "max": 1973, "k": 4.184, "error": 3}]}
             }
           }
@@ -428,7 +428,7 @@ Ions (`Al1+`, 177 tables) and deuterium species (15 tables) are skipped. The rep
 
 ### NASA species keys
 
-The build parses the NASA sources in `shared/sources/NASA/` with the `nasa_thermo` package (the same files and merge order as `make nasa-parse`: `nasa7-origin.dat`; `nasa9-origin.dat` then `nasa9-new.dat`, the later file wins) and writes only the species keys into the records (`nasa7`, `nasa9`; all phases, e.g. `["H2O", "H2O(L)", "H2O(s)"]`). The low and high temperatures of a polynomial are not used as a melting or boiling point. The species are in `shared/processed/NASA/nasa7.json` / `nasa9.json` (`species[key]`); `backend/data/nasa/` is a copy with the same keys.
+The build parses the NASA sources in `shared/sources/NASA/` with the `nasa_thermo` package (the same files and merge order as `make nasa-parse`: `nasa7-origin.dat`; `nasa9-origin.dat` then `nasa9-new.dat`, the later file wins) and writes only the species keys into the records (`nasa7`, `nasa9`; all phases, e.g. `["H2O", "H2O(L)", "H2O(s)"]`). The low and high temperatures of a polynomial are not used as a melting or boiling point. The species are in `shared/processed/NASA/nasa7.json` / `nasa9.json` (`species[key]`). The backend reads those files.
 
 Matching, per species (`compound_data/nasa_links.py`):
 1. **Formula:** the Hill formula of the element slots the parser now reads (`elements`, see [NASA_THERMO_PARSER_SPEC.md](NASA_THERMO_PARSER_SPEC.md)). Records whose name marks them deuterated (`methanol-d3`, `furan-d4`) are not candidates: the chemicals formulas of some of them have H for D. Ions, the electron, D/T species, fractional formulas (`Air`, `Jet-A` stays as C12H23 without a record) and unparsed keys are skipped.
@@ -557,7 +557,7 @@ Five packages under `python/src/`, one export per file. Dependencies point one w
 - **`chemicals_tables/`**, the CalebBell/chemicals tables → source entries:
   - models: `source_link.py` `SourceLink`, `property_value.py` `PropertyValue`, `equation_value.py` `EquationValue` (type, ref, vars, min, max, k, source, raw), `raw_value.py` `RawValue`, `transport_value.py` `TransportValue` (Svehla methods, match temperature), `source_entry.py` `SourceEntry` (one parsed value before merging), `identifier.py` `Identifier`, `table_spec.py` `TableSpec`, `coefficient_spec.py` `CoefficientSpec` (columns mapped to vars, type, k, property, phase, Tmin/Tmax columns, ref), `property_column.py`, `chemicals_source.py` `ChemicalsSource` (whose `file_url(path, line)` percent-encodes the path);
   - constants: `constants/equation_type.py` `EquationType` (a StrEnum with the existing `equation-type.dto.ts` values, including the [new types](#new-equation-types)), `constants/planned_equation_types.py` `PLANNED_EQUATION_TYPES` (types written before the backend implements them; empty now), `constants/source_tables.py` `SOURCE_TABLES`, `constants/coefficient_tables.py` `COEFFICIENT_TABLES` (Poling, Perry 2-153 DIPPR 100/114, 2-312, 2-313, 2-314, TRC), `constants/gas_constant.py` `GAS_CONSTANT`, `constants/identity_overrides.py` `IDENTITY_OVERRIDES`;
-  - parsers: `parsers/property_table.py` `parse_property_table`, `parsers/coefficient_table.py` `parse_coefficient_table`, `parsers/perry_151.py` `parse_perry_151` (linearHyperbolic or quadratic per row), `parsers/crc_molten_density.py` `parse_crc_molten_density`, `parsers/shomate_json.py` `parse_shomate_json` (per-phase `ranges`, line of each CAS key), `parsers/zabransky.py` `parse_zabransky` (spline rows per CAS and data type → one piecewise equation; quasi-polynomial rows → single equations), `parsers/vdi_ppds.py` `parse_vdi_ppds` (8 files, liquid ranges from the VDI Tm/Tc rows), `parsers/identifiers.py` `load_identifiers`, `parsers/provenance.py` `read_chemicals_source`, `parsers/tsv_reader.py`, `parsers/number.py` (integers stay integers), `parsers/cas.py`;
+  - parsers: `parsers/property_table.py` `parse_property_table`, `parsers/coefficient_table.py` `parse_coefficient_table`, `parsers/perry_151.py` `parse_perry_151` (maierKelley or quadratic per row), `parsers/crc_molten_density.py` `parse_crc_molten_density`, `parsers/shomate_json.py` `parse_shomate_json` (per-phase `ranges`, line of each CAS key), `parsers/zabransky.py` `parse_zabransky` (spline rows per CAS and data type → one piecewise equation; quasi-polynomial rows → single equations), `parsers/vdi_ppds.py` `parse_vdi_ppds` (8 files, liquid ranges from the VDI Tm/Tc rows), `parsers/identifiers.py` `load_identifiers`, `parsers/provenance.py` `read_chemicals_source`, `parsers/tsv_reader.py`, `parsers/number.py` (integers stay integers), `parsers/cas.py`;
   - logic: `source_entries.py` `parse_source_entries` (all parsers + identity overrides), `identity_override.py` `IdentityOverride`, `identity_resolver.py` `apply_identity_overrides`, `label_variant.py` `label_variant` (trailing `(...)` of a source label), `report_issue.py`;
   - `equation_eval.py` `evaluate_equation`, a Python copy of the backend `calculate` formulas for every type. It clamps T to min/max when they are set, then applies `k`. It is used by the tests and the sanity report, and gave the reference values of the backend unit tests.
 - **`pubchem/`**, polite PubChem lookups (step 2), independent of the build: client, records, class files and constants, see [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md#files).
@@ -608,7 +608,7 @@ One folder per package: `python/tests/chemical_formula/` (formulas, classes, mai
 
 
 - **Equation mapping** (checked against the chemicals docstrings and the backend):
-  - Perry_151 at 300 K gives 24.124944 through linearHyperbolic with k 4.184.
+  - Perry_151 at 300 K gives 24.124944 through maierKelley with k 4.184.
   - The MnO row goes to quadratic.
   - A row with no range gets no equation.
   - CRC_inorganic(300, 2370.0, 2.687, 239.08) gives 2206.30796 through linear.
@@ -677,7 +677,7 @@ One folder per package: `python/tests/chemical_formula/` (formulas, classes, mai
 2. `make compound-data-build` (step 1, offline; writes `missing-cas.txt`).
 3. `make compound-data-pubchem` (step 2: the first run takes hours for 3,976 CAS numbers, later runs only query new ones). If it stops with exit code 2, PubChem refused requests or stayed busy: wait and run it again. See [PUBCHEM_SPEC.md](PUBCHEM_SPEC.md#verification). Then `make compound-data-build` to read the new files.
 4. Spot-check with `rg --no-ignore`:
-   - Al2O3 `1344-28-1` has CRC meltingPoint 2327.15. Al2O3 `39377-45-2` (Perry's CAS) has a Perry solid `linearHyperbolic` with `d: -522500` and `k: 4.184`.
+   - Al2O3 `1344-28-1` has CRC meltingPoint 2327.15. Al2O3 `39377-45-2` (Perry's CAS) has a Perry solid `maierKelley` with `d: -522500` and `k: 4.184`.
    - MnO has `quadratic`.
    - C3H8 viscosity `dipprN102` equals `c3h8.ts`.
    - Water (`7732-18-5`) has gas `shomate` with 2 ranges (500–1700 and 1700–6000 K) and liquid `shomate` 298–500 K.

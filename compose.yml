@@ -80,6 +80,7 @@ services:
       - thermal-network
     volumes:
       - ./backend:/app  # Bind mount entire backend folder
+      - ./shared:/app/shared
       - backend_node_modules:/app/node_modules  # Override with volume for performance
     labels:
       - "app.version=${APP_VERSION}"

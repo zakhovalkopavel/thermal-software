@@ -41,13 +41,13 @@ export interface CompoundValue {
   readonly sutherlandParams?: { mu0: number; T0: number; S: number };
 
   /**
-   * Exact species key in `backend/data/nasa/nasa7.json` (ref NASA7), e.g. "N2", "C4H10,isobutane".
+   * Exact species key in `shared/processed/NASA/nasa7.json` (ref NASA7), e.g. "N2", "C4H10,isobutane".
    * The NASA-7 coefficients (Cp, H, S, G) are read from there — see `compoundNasa7`.
    */
   readonly nasa7Key?: string;
 
   /**
-   * Exact species key in `backend/data/nasa/nasa9.json` (ref NASA9), e.g. "N2", "Air".
+   * Exact species key in `shared/processed/NASA/nasa9.json` (ref NASA9), e.g. "N2", "Air".
    * The NASA-9 coefficients are read from there — see `compoundNasa9`.
    */
   readonly nasa9Key?: string;

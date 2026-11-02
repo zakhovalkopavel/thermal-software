@@ -1,10 +1,10 @@
 /**
  * Constants of `POST /refractory/mix/thermal` (fired library raw materials and their mixes).
- * Algorithm: docs/algorithms/MIX_THERMAL_ALGORITHM.md
+ * Algorithm: docs/algorithms/mix/MIX_THERMAL_ALGORITHM.md
  */
 export const MIX_THERMAL_CONSTANTS = {
   /**
-   * Fired phase key → condensed NASA-9 species (`data/nasa/nasa9.json`) in ascending temperature order.
+   * Fired phase key → condensed NASA-9 species (`shared/processed/NASA/nasa9.json`) in ascending temperature order.
    * Consecutive species are polymorphs (α-quartz → β-quartz → β-cristobalite, monoclinic → tetragonal ZrO₂).
    * Phases missing here use the material's library Cp for their share.
    */
