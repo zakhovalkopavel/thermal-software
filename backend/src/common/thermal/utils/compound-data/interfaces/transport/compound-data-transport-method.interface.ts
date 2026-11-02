@@ -1,18 +1,4 @@
-import { CompoundDataRef } from './compound-data-ref.type';
-
-export type CompoundDataTransportMethodName =
-  | 'lennardJones'
-  | 'stockmayer'
-  | 'exp6'
-  | 'correspondingStates'
-  | 'modifiedEucken'
-  | 'experimental'
-  | 'theoretical'
-  | 'prandtlExtrapolation'
-  | 'exponentialRepulsive'
-  | 'scaledFrom'
-  | 'sameAs'
-  | 'literature';
+import { CompoundDataTransportMethodName } from './compound-data-transport-method-name.type';
 
 /**
  * One method Svehla 1995 (NASA TM-4647) Table I used for a property, in the printed order.
@@ -57,18 +43,4 @@ export interface CompoundDataTransportMethod {
   sigmaEpsilonSource?: string;
   rhoV0Source?: string;
   estimatedFrom?: string;
-}
-
-/** How the NASA Lewis transport fit of one property was obtained (Svehla 1995 Table I, one row) */
-export interface CompoundDataTransportValue {
-  methods: CompoundDataTransportMethod[];
-  /** High- and low-temperature data forced to agree here [K] */
-  matchTemperatureK?: number;
-  ref: CompoundDataRef;
-}
-
-/** `CompoundDataRecord.transport`: pure-species rows of Svehla 1995 Table I */
-export interface CompoundDataTransport {
-  viscosity?: CompoundDataTransportValue[];
-  thermalConductivity?: CompoundDataTransportValue[];
 }

@@ -1,5 +1,5 @@
 import { CompoundDataEquationList } from './compound-data-equation-list.interface';
-import { CompoundDataPhase } from './compound-data-phase.type';
+import { CompoundDataPhase } from '../property/compound-data-phase.type';
 
 type ByPhase = Partial<Record<CompoundDataPhase, CompoundDataEquationList>>;
 

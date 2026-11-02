@@ -1,6 +1,6 @@
-import { RefKey } from '../../enum/ref-key.enum';
+import { RefKey } from '../../../../enum/ref-key.enum';
 import { CompoundDataEquationType } from './compound-data-equation-type.type';
-import { CompoundDataRef } from './compound-data-ref.type';
+import { CompoundDataRef } from '../property/compound-data-ref.type';
 
 /**
  * Coefficient row in the `EquationValue` shape, with `ref` as the source row tuple.

@@ -1,14 +1,21 @@
-import { CompoundDataEquations } from './compound-data-equations.interface';
-import { CompoundDataProperties } from './compound-data-properties.interface';
-import { CompoundDataRawValue } from './compound-data-raw-value.interface';
-import { CompoundDataLineRef } from './compound-data-ref.type';
-import { CompoundDataTransport } from './compound-data-transport.interface';
+import { CompoundDataEquations } from '../equation/compound-data-equations.interface';
+import { CompoundDataProperties } from '../property/compound-data-properties.interface';
+import { CompoundDataRawValue } from '../property/compound-data-raw-value.interface';
+import { CompoundDataLineRef } from '../property/compound-data-line-ref.type';
+import { CompoundDataTransport } from '../transport/compound-data-transport.interface';
 
 /**
  * One compound (one CAS, or one formula without CAS): `CompoundDataCompoundFile.entries[key]`.
  * The CAS (entry key), Hill formula and elements (file level) are not repeated; null and empty fields are left out.
  */
 export interface CompoundDataRecord {
+  /**
+   * Only on records without CAS (entry "noCas", id "formula:…"): the CAS a PubChem formula search found,
+   * e.g. "21548-73-2" (Ag2S); the record keeps its key
+   */
+  cas?: string;
+  /** Search record `cas` came from: [line, "idPubchemRest<Class>"] */
+  casRef?: CompoundDataLineRef;
   /** Source formula when it differs from the Hill key (isotopes, charges), e.g. "C2D4O" */
   formula?: string;
   /** Identifier database name, else the first source label */
@@ -23,7 +30,7 @@ export interface CompoundDataRecord {
   pubchemCid?: number;
   /** Organic functional families, specific → general */
   families?: string[];
-  /** Identifier row the formula, name and Mr came from (chemicals files, or the local PubChem cache "idPubchemRest") */
+  /** Identifier row the formula, name and Mr came from (chemicals files, or a local PubChem class file "idPubchemRest<Class>") */
   identifierRef?: CompoundDataLineRef;
   /** Source CAS numbers unknown to every identifier source whose rows were moved here (Perry Mg 22537-22-0) */
   otherCas?: string[];

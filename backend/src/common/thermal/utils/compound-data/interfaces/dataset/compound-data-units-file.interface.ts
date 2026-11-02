@@ -1,6 +1,6 @@
-import { CompoundDataEquations } from './compound-data-equations.interface';
-import { CompoundDataProperties } from './compound-data-properties.interface';
-import { CompoundDataTransportMethod } from './compound-data-transport.interface';
+import { CompoundDataEquations } from '../equation/compound-data-equations.interface';
+import { CompoundDataProperties } from '../property/compound-data-properties.interface';
+import { CompoundDataTransportMethod } from '../transport/compound-data-transport-method.interface';
 
 /** `units.json`: unit of every value in the dataset (SI), e.g. "J/(mol K)", "kg/m3", "1" (dimensionless) */
 export interface CompoundDataUnitsFile {

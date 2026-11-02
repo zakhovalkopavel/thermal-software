@@ -1,4 +1,4 @@
-import { RefKey } from '../../enum/ref-key.enum';
+import { RefKey } from '../../../../enum/ref-key.enum';
 import { CompoundDataPhase } from './compound-data-phase.type';
 import { CompoundDataRef } from './compound-data-ref.type';
 

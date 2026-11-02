@@ -1,9 +1,8 @@
-import { RefKey } from '../../enum/ref-key.enum';
-import { CompoundDataEquationType } from './compound-data-equation-type.type';
-import { CompoundDataEquations } from './compound-data-equations.interface';
-import { CompoundDataPhase } from './compound-data-phase.type';
-import { CompoundDataProperties } from './compound-data-properties.interface';
-import { CompoundDataTransport } from './compound-data-transport.interface';
+import { RefKey } from '../../../../enum/ref-key.enum';
+import { CompoundDataEquations } from '../equation/compound-data-equations.interface';
+import { CompoundDataPhase } from '../property/compound-data-phase.type';
+import { CompoundDataProperties } from '../property/compound-data-properties.interface';
+import { CompoundDataTransport } from '../transport/compound-data-transport.interface';
 
 /**
  * Summary of one record; the record is at `file` → `entries[entry]`.
@@ -18,6 +17,8 @@ export interface CompoundDataIndexEntry {
   displayFormula: string;
   /** Key in `CompoundDataCompoundFile.entries`: the CAS, or "noCas" */
   entry: string;
+  /** As in `CompoundDataRecord.cas` (records without CAS that a PubChem formula search identified) */
+  cas?: string;
   /** Source formula when it differs from `hill` */
   formula?: string;
   name?: string;
@@ -37,21 +38,4 @@ export interface CompoundDataIndexEntry {
   nasa9?: string[];
   /** As in `CompoundDataRecord.otherCas` */
   otherCas?: string[];
-}
-
-/** `index.json` */
-export interface CompoundDataIndexFile {
-  generatedAt: string;
-  count: number;
-  equationTypes: Partial<Record<CompoundDataEquationType, 'implemented' | 'planned'>>;
-  /** Keyed by record id: the CAS, or "formula:<formula>" without CAS */
-  compounds: Record<string, CompoundDataIndexEntry>;
-  /** Hill formula → record ids */
-  byFormula: Record<string, string[]>;
-  /** Element → record ids */
-  byElement: Record<string, string[]>;
-  /** Organic family → record ids */
-  byFamily: Record<string, string[]>;
-  /** Moved CAS (`otherCas`) → record id */
-  byOtherCas: Record<string, string>;
 }

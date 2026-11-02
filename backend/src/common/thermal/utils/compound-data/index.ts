@@ -1,33 +1,36 @@
-export type { CompoundDataRef, CompoundDataLineRef } from './compound-data-ref.type';
-export type { CompoundDataEquationType, CompoundDataPlannedEquationType } from './compound-data-equation-type.type';
-export type { CompoundDataPhase } from './compound-data-phase.type';
-export type { CompoundDataPropertyValue } from './compound-data-property-value.interface';
-export type { CompoundDataEquationValue } from './compound-data-equation-value.interface';
-export type { CompoundDataRawValue } from './compound-data-raw-value.interface';
-export type { CompoundDataProperties } from './compound-data-properties.interface';
-export type { CompoundDataEquationList } from './compound-data-equation-list.interface';
-export type { CompoundDataEquations } from './compound-data-equations.interface';
-export type { CompoundDataRecord } from './compound-data-record.interface';
-export type { CompoundDataCompoundFile } from './compound-data-compound-file.interface';
-export type { CompoundDataIndexEntry, CompoundDataIndexFile } from './compound-data-index-file.interface';
-export type { CompoundDataUnitsFile } from './compound-data-units-file.interface';
-export type {
-  CompoundDataTransport,
-  CompoundDataTransportMethod,
-  CompoundDataTransportMethodName,
-  CompoundDataTransportValue,
-} from './compound-data-transport.interface';
-export type { CompoundDataInteraction, CompoundDataInteractionsFile } from './compound-data-interactions-file.interface';
-export type {
-  CompoundDataJanafSource,
-  CompoundDataNasaDataset,
-  CompoundDataNasaSource,
-  CompoundDataPubchemSource,
-  CompoundDataSourceFile,
-  CompoundDataSourcesFile,
-} from './compound-data-sources-file.interface';
-export type {
-  CompoundDataUnresolvedEntry,
-  CompoundDataUnresolvedFile,
-  CompoundDataUnresolvedValue,
-} from './compound-data-unresolved-file.interface';
+export type { CompoundDataRef } from './interfaces/property/compound-data-ref.type';
+export type { CompoundDataLineRef } from './interfaces/property/compound-data-line-ref.type';
+export type { CompoundDataEquationType } from './interfaces/equation/compound-data-equation-type.type';
+export type { CompoundDataPlannedEquationType } from './interfaces/equation/compound-data-planned-equation-type.type';
+export type { CompoundDataPhase } from './interfaces/property/compound-data-phase.type';
+export type { CompoundDataPropertyValue } from './interfaces/property/compound-data-property-value.interface';
+export type { CompoundDataEquationValue } from './interfaces/equation/compound-data-equation-value.interface';
+export type { CompoundDataRawValue } from './interfaces/property/compound-data-raw-value.interface';
+export type { CompoundDataProperties } from './interfaces/property/compound-data-properties.interface';
+export type { CompoundDataEquationList } from './interfaces/equation/compound-data-equation-list.interface';
+export type { CompoundDataEquations } from './interfaces/equation/compound-data-equations.interface';
+export type { CompoundDataRecord } from './interfaces/record/compound-data-record.interface';
+export type { CompoundDataCompoundFile } from './interfaces/record/compound-data-compound-file.interface';
+export { compoundDataDir } from './compound-data-dir.util';
+export { loadCompoundDataIndex } from './load-compound-data-index.util';
+export { loadCompoundDataFile } from './load-compound-data-file.util';
+export { toEquationValue } from './to-equation-value.util';
+export { compoundValueForGas } from './compound-value-for-gas.util';
+export type { CompoundDataIndexEntry } from './interfaces/dataset/compound-data-index-entry.interface';
+export type { CompoundDataIndexFile } from './interfaces/dataset/compound-data-index-file.interface';
+export type { CompoundDataUnitsFile } from './interfaces/dataset/compound-data-units-file.interface';
+export type { CompoundDataTransport } from './interfaces/transport/compound-data-transport.interface';
+export type { CompoundDataTransportMethod } from './interfaces/transport/compound-data-transport-method.interface';
+export type { CompoundDataTransportMethodName } from './interfaces/transport/compound-data-transport-method-name.type';
+export type { CompoundDataTransportValue } from './interfaces/transport/compound-data-transport-value.interface';
+export type { CompoundDataInteraction } from './interfaces/transport/compound-data-interaction.interface';
+export type { CompoundDataInteractionsFile } from './interfaces/transport/compound-data-interactions-file.interface';
+export type { CompoundDataJanafSource } from './interfaces/sources/compound-data-janaf-source.interface';
+export type { CompoundDataNasaDataset } from './interfaces/sources/compound-data-nasa-dataset.interface';
+export type { CompoundDataNasaSource } from './interfaces/sources/compound-data-nasa-source.interface';
+export type { CompoundDataPubchemSource } from './interfaces/sources/compound-data-pubchem-source.interface';
+export type { CompoundDataSourceFile } from './interfaces/sources/compound-data-source-file.interface';
+export type { CompoundDataSourcesFile } from './interfaces/sources/compound-data-sources-file.interface';
+export type { CompoundDataUnresolvedEntry } from './interfaces/dataset/compound-data-unresolved-entry.interface';
+export type { CompoundDataUnresolvedFile } from './interfaces/dataset/compound-data-unresolved-file.interface';
+export type { CompoundDataUnresolvedValue } from './interfaces/dataset/compound-data-unresolved-value.type';
