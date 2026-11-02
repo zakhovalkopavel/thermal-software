@@ -390,7 +390,7 @@
             "def": 0,
             "values": [
               {
-                "type": "linearHyperbolic",
+                "type": "maierKelley",
                 "ref": [
                   "Perry8",
                   251,
@@ -478,6 +478,60 @@
                 },
                 "min": 298.0,
                 "max": 6000.0
+              },
+              {
+                "type": "quartic",
+                "ref": [
+                  "Yaws1999",
+                  53,
+                  "yaws1999Gas"
+                ],
+                "vars": {
+                  "a": 33.573,
+                  "b": -0.012581,
+                  "c": 8.8906e-05,
+                  "d": -7.1783e-08,
+                  "e": 1.8569e-11
+                },
+                "min": 100,
+                "max": 1500,
+                "page": 53
+              },
+              {
+                "type": "cubic",
+                "ref": [
+                  "Borgnakke",
+                  911,
+                  "borgnakkeGas"
+                ],
+                "vars": {
+                  "a": 27.568,
+                  "b": 0.02563,
+                  "c": 9.9072e-06,
+                  "d": -6.6909e-09
+                },
+                "min": 273,
+                "max": 1500,
+                "page": 911
+              },
+              {
+                "type": "dipprN107",
+                "ref": [
+                  "Perry7",
+                  223,
+                  "perry7Gas"
+                ],
+                "vars": {
+                  "c1": 33430.0,
+                  "c2": 48980.0,
+                  "c3": 2036.0,
+                  "c4": 22560.0,
+                  "c5": 882
+                },
+                "min": 100,
+                "max": 1500,
+                "k": 0.001,
+                "page": 223
               }
             ]
           },
@@ -643,6 +697,22 @@
                 },
                 "min": null,
                 "max": null
+              },
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Incropera",
+                  838,
+                  "incroperaGas"
+                ],
+                "vars": {
+                  "a": 0.00457,
+                  "b": 2.3239e-05,
+                  "c": 1.481e-07
+                },
+                "min": 200,
+                "max": 700,
+                "page": 838
               }
             ]
           },
@@ -765,6 +835,23 @@
                 },
                 "min": null,
                 "max": null
+              },
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  475,
+                  "yaws1999Gas"
+                ],
+                "vars": {
+                  "a": -7.874,
+                  "b": 0.367,
+                  "c": -4.47e-06
+                },
+                "min": 195,
+                "max": 1000,
+                "k": 1e-06,
+                "page": 475
               }
             ]
           },

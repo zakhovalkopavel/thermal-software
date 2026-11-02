@@ -388,7 +388,7 @@
             "def": 0,
             "values": [
               {
-                "type": "linearHyperbolic",
+                "type": "maierKelley",
                 "ref": [
                   "Perry8",
                   267,
@@ -485,6 +485,75 @@
                 },
                 "min": 100.0,
                 "max": 6000.0
+              },
+              {
+                "type": "quartic",
+                "ref": [
+                  "Yaws1999",
+                  53,
+                  "yaws1999Gas"
+                ],
+                "vars": {
+                  "a": 29.342,
+                  "b": -0.0035395,
+                  "c": 1.0076e-05,
+                  "d": -4.3116e-09,
+                  "e": 2.5935e-13
+                },
+                "min": 50,
+                "max": 1500,
+                "page": 53
+              },
+              {
+                "type": "cubic",
+                "ref": [
+                  "Borgnakke",
+                  911,
+                  "borgnakkeGas"
+                ],
+                "vars": {
+                  "a": 28.9,
+                  "b": -0.001571,
+                  "c": 8.081e-06,
+                  "d": -2.873e-09
+                },
+                "min": 273,
+                "max": 1800,
+                "page": 911
+              },
+              {
+                "type": "linear",
+                "ref": [
+                  "Szargut",
+                  268,
+                  "szargutGas"
+                ],
+                "vars": {
+                  "a": 27.88,
+                  "b": 0.00427
+                },
+                "min": 298,
+                "max": 2500,
+                "page": 268
+              },
+              {
+                "type": "dipprN107",
+                "ref": [
+                  "Perry7",
+                  223,
+                  "perry7Gas"
+                ],
+                "vars": {
+                  "c1": 29110.0,
+                  "c2": 8610.0,
+                  "c3": 1701.6,
+                  "c4": 100.0,
+                  "c5": 909.79
+                },
+                "min": 50,
+                "max": 1500,
+                "k": 0.001,
+                "page": 223
               }
             ]
           },
@@ -605,6 +674,22 @@
                 "min": 200,
                 "max": 1200,
                 "error": 2
+              },
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Incropera",
+                  839,
+                  "incroperaGas"
+                ],
+                "vars": {
+                  "a": 0.00309,
+                  "b": 7.593e-05,
+                  "c": -1.1014e-08
+                },
+                "min": 78,
+                "max": 1500,
+                "page": 839
               }
             ]
           },
@@ -731,6 +816,23 @@
                 "max": 1500,
                 "error": 2,
                 "originalRef": "NBS1955"
+              },
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  475,
+                  "yaws1999Gas"
+                ],
+                "vars": {
+                  "a": 42.606,
+                  "b": 0.475,
+                  "c": -9.88e-05
+                },
+                "min": 150,
+                "max": 1500,
+                "k": 1e-06,
+                "page": 475
               }
             ]
           },

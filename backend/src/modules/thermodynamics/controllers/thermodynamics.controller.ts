@@ -69,7 +69,7 @@ export class ThermodynamicsController {
   @ApiOperation({
     summary: 'Compare all Cp approximations for a species at given T',
     description:
-      'Returns one entry per registered equation type (polynomial, Aly-Lee, NASA-7, NASA-9, etc.) ' +
+      'Returns one entry per registered equation type (polynomial, DIPPR 107, NASA-7, NASA-9, etc.) ' +
       'so you can compare accuracy across approximation methods at the same temperature.',
   })
   @ApiQuery({

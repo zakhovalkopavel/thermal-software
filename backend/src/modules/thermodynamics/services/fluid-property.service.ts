@@ -47,7 +47,7 @@ export class FluidPropertyService {
 
     if (dto.fluid === 'air') {
       const M        = AIR_MR;
-      // Use Air compound's own polynomial correlation (Aly-Lee, Perry 7th) via
+      // Use Air compound's own polynomial correlation (DIPPR 107, Perry 7th) via
       // mixture rule over nominal mole fractions — consistent with all other species.
       const Cp_mol   = this.gasProps.cpMixture(
         AIR_MOLE_COMPOSITION as Partial<Record<Species, number>>,

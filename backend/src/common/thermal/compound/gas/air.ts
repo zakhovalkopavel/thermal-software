@@ -38,7 +38,7 @@ export const Air: CompoundValue = {
         min: 273, max: 1800,
       },
       {
-        type: EquationTypeDto.alyLee,
+        type: EquationTypeDto.dipprN107,
         ref: RefKey.Perry7, page: 223, k: 1e-3,
         vars: { c1: 0.2896e5, c2: 0.0939e5, c3: 3.012e3, c4: 0.0758e5, c5: 1484 },
         min: 50, max: 1500,

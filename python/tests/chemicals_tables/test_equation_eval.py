@@ -13,13 +13,13 @@ REL = 1e-12
 class TestExistingTypes:
     def test_perry_151_through_linear_hyperbolic(self):
         # chemicals Perry_151(300, 4.8, 0.00322, 0, 0)
-        assert evaluate_equation("linearHyperbolic", 300, {"a": 4.8, "b": 0.00322, "d": 0}, 273, 1000, 4.184) == \
+        assert evaluate_equation("maierKelley", 300, {"a": 4.8, "b": 0.00322, "d": 0}, 273, 1000, 4.184) == \
             pytest.approx(24.124944, rel=REL)
 
     def test_perry_151_al2o3_row(self):
         # chemicals Perry_151(500, 22.08, 0.008971, -522500, 0); Perry 2-151 line 459
         vars_ = {"a": 22.08, "b": 0.008971, "d": -522500}
-        assert evaluate_equation("linearHyperbolic", 500, vars_, 273, 1973, 4.184) == \
+        assert evaluate_equation("maierKelley", 500, vars_, 273, 1973, 4.184) == \
             pytest.approx(102.405492, rel=REL)
 
     def test_crc_molten_density_through_linear(self):

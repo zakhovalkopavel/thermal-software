@@ -48,7 +48,7 @@ class TestPerry151:
         al2o3 = entries[0][0]
         assert al2o3.cas == "39377-45-2" and al2o3.phase == "solid"
         eq = al2o3.value
-        assert eq.type is EquationType.linearHyperbolic
+        assert eq.type is EquationType.maierKelley
         assert eq.vars == {"a": 22.08, "b": 0.008971, "d": -522500}
         assert (eq.min, eq.max, eq.k) == (273, 1973, 4.184)
         assert eq.source.line == 2 and eq.source.extra["error"] == 3
@@ -58,7 +58,7 @@ class TestPerry151:
 
     def test_row_without_t2_terms_is_linear_hyperbolic_with_zero_d(self, entries):
         zn = entries[0][1].value
-        assert zn.type is EquationType.linearHyperbolic
+        assert zn.type is EquationType.maierKelley
         assert zn.vars == {"a": 5.25, "b": 0.0027, "d": 0}
 
     def test_t2_term_gives_quadratic_and_footnote_is_stripped(self, entries):

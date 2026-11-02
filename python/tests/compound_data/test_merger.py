@@ -138,7 +138,7 @@ class TestMerge:
     def test_wrong_cas_row_is_detached(self, identifier_source, chem, classifier):
         ids = load_identifiers(identifier_source, chem, {"79-24-3"})
         entries = [
-            _eq("79-24-3", RefKey.Perry8, EquationType.linearHyperbolic, chem, "Perry 2-151", formula="Ne",
+            _eq("79-24-3", RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="Ne",
                 phase="gas"),
             _prop("79-24-3", 183.6, RefKey.CRC95, chem),
         ]
@@ -150,7 +150,7 @@ class TestMerge:
 
     def test_proportional_formula_keeps_cas(self, identifier_source, chem, classifier):
         ids = load_identifiers(identifier_source, chem, {"1344-28-1"})
-        entry = _eq("1344-28-1", RefKey.Perry8, EquationType.linearHyperbolic, chem, "Perry 2-151",
+        entry = _eq("1344-28-1", RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151",
                     formula="Al4O6")
         result = merge_compounds([entry], ids, classifier)
         assert "heatCapacity" in result.records["1344-28-1"].equations
@@ -168,7 +168,7 @@ class TestMerge:
         ids = load_identifiers(identifier_source, chem, {"7440-37-1"})
         entries = [
             _prop("7440-37-1", 83.8, RefKey.CRC95, chem),
-            _eq("1111-11-1", RefKey.Perry8, EquationType.linearHyperbolic, chem, "Perry 2-151", formula="Ar",
+            _eq("1111-11-1", RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="Ar",
                 phase="gas"),
         ]
         result = merge_compounds(entries, ids, classifier)
@@ -194,7 +194,7 @@ class TestMerge:
         ]
 
     def test_unknown_cas_without_single_target_is_kept(self, chem, classifier):
-        entries = [_eq("2222-22-2", RefKey.Perry8, EquationType.linearHyperbolic, chem, "Perry 2-151", formula="Kr",
+        entries = [_eq("2222-22-2", RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="Kr",
                        phase="gas")]
         result = merge_compounds(entries, {}, classifier)
         assert "2222-22-2" in result.records
@@ -204,7 +204,7 @@ class TestMerge:
         ids = load_identifiers(identifier_source, chem, {"79-24-3", "7440-37-1"})
         entries = [
             _prop("7440-37-1", 83.8, RefKey.CRC95, chem),
-            _eq("79-24-3", RefKey.Perry8, EquationType.linearHyperbolic, chem, "Perry 2-151", formula="Ar",
+            _eq("79-24-3", RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="Ar",
                 phase="gas"),
         ]
         result = merge_compounds(entries, ids, classifier)
@@ -220,7 +220,7 @@ class TestMerge:
                                        chem.link(SOURCE_TABLES["pubchem small"], 4, "hydrogen"))}
         entries = [
             _prop("1333-74-0", 13.99, RefKey.CRC95, chem),
-            _eq(None, RefKey.Perry8, EquationType.linearHyperbolic, chem, "Perry 2-151", formula="D2", phase="gas"),
+            _eq(None, RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="D2", phase="gas"),
         ]
         result = merge_compounds(entries, ids, classifier)
         assert "formula:D2" in result.records
@@ -241,6 +241,6 @@ class TestMerge:
         assert records["formula:C10H25O5U"].pubchem_cid is None
 
     def test_no_cas_record_uses_formula_id(self, chem, classifier):
-        entry = _eq(None, RefKey.Perry8, EquationType.linearHyperbolic, chem, "Perry 2-151", formula="Ag2Al")
+        entry = _eq(None, RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="Ag2Al")
         record = merge_compounds([entry], {}, classifier).records["formula:Ag2Al"]
         assert (record.hill, record.group) == ("Ag2Al", "Al")

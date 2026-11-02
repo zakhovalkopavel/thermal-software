@@ -1,5 +1,5 @@
 """
-chemicals_tables.parsers.perry_151 — Perry Table 2-151 Cp rows → linearHyperbolic / quadratic equations.
+chemicals_tables.parsers.perry_151 — Perry Table 2-151 Cp rows → maierKelley / quadratic equations.
 
 Cp = 4.184·(a + b·T + c/T² + d·T²) in J/(mol K); no row has both the 1/T² and the T² term.
 Rows without Tmin/Tmax (monatomic gases, Cp = 4.97 cal/(mol K)) are kept as raw values only.
@@ -83,7 +83,7 @@ def parse_perry_151(source_dir: Path, chem: ChemicalsSource) -> tuple[list[Sourc
         if t2:
             eq_type, vars_ = EquationType.quadratic, {"a": a, "b": b, "c": t2}
         else:
-            eq_type, vars_ = EquationType.linearHyperbolic, {"a": a, "b": b, "d": inv_t2 or 0}
+            eq_type, vars_ = EquationType.maierKelley, {"a": a, "b": b, "d": inv_t2 or 0}
         entries.append(SourceEntry(
             cas=cas, formula=formula, label=formula, property="heatCapacity", phase=phase,
             value=EquationValue(

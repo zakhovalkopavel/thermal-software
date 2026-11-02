@@ -59,15 +59,11 @@ def _quartic(T: float, v: Vars) -> float:
     return _cubic(T, v) + v["e"] * T ** 4
 
 
-def _linear_hyperbolic(T: float, v: Vars) -> float:
+def _maier_kelley(T: float, v: Vars) -> float:
     return v["a"] + v["b"] * T + v["d"] / (T * T)
 
 
-def _linear_hyperbolic_logarithmic(T: float, v: Vars) -> float:
-    return v["c1"] + v["c2"] * math.log(T) + v["c3"] / T + v["c4"] * T
-
-
-def _aly_lee(T: float, v: Vars) -> float:
+def _dippr_n107(T: float, v: Vars) -> float:
     x = v["c3"] / T
     y = v["c5"] / T
     return v["c1"] + v["c2"] * (x / math.sinh(x)) ** 2 + v["c4"] * (y / math.cosh(y)) ** 2
@@ -177,9 +173,8 @@ _METHODS: dict[str, Callable[[float, Vars], float]] = {
     "quadratic": _quadratic,
     "cubic": _cubic,
     "quartic": _quartic,
-    "linearHyperbolic": _linear_hyperbolic,
-    "linearHyperbolicLogarithmic": _linear_hyperbolic_logarithmic,
-    "alyLee": _aly_lee,
+    "maierKelley": _maier_kelley,
+    "dipprN107": _dippr_n107,
     "dipprN102": _dippr_n102,
     "nasa7": _nasa7,
     "nasa9": _nasa9,

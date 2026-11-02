@@ -1,5 +1,5 @@
 /**
- * Unit tests for AlyLeeEquationMethod (DIPPR Equation 107).
+ * Unit tests for DipprEquation107Method (DIPPR Equation 107, proposed by Aly and Lee).
  *
  * Cp = c1 + c2·[c3/T / sinh(c3/T)]² + c4·[c5/T / cosh(c5/T)]²
  *
@@ -11,16 +11,16 @@
  *   - integral() matches the exact closed-form formula
  *   - calculateAverage() is consistent with integral difference
  *   - antiderivative derivative (FD) equals calculate
- *   - N2 Aly-Lee at 300 K ≈ 29 J/(mol·K) (Perry7, k=1e-3)
+ *   - N2 DIPPR 107 at 300 K ≈ 29 J/(mol·K) (Perry7, k=1e-3)
  *   - clamping behaviour
  */
 
-import { AlyLeeEquationMethod } from '../../../../src/common/thermal/utils/equation-methods/aly-lee-equation-method';
+import { DipprEquation107Method } from '../../../../src/common/thermal/utils/equation-methods/dippr-equation-107-method';
 
-describe('AlyLeeEquationMethod', () => {
-  const m = new AlyLeeEquationMethod();
+describe('DipprEquation107Method', () => {
+  const m = new DipprEquation107Method();
 
-  // CO2 Aly–Lee coefficients from Perry7 p.223 (k=1e-3 converts J/kmol·K → J/mol·K)
+  // CO2 DIPPR 107 coefficients from Perry7 p.223 (k=1e-3 converts J/kmol·K → J/mol·K)
   const co2 = { c1: 0.2937e5, c2: 0.3454e5, c3: 1.428e3, c4: 0.264e5, c5: 588 };
   const k = 1e-3;
 
@@ -58,7 +58,7 @@ describe('AlyLeeEquationMethod', () => {
     expect(avg).toBeCloseTo(manual, 10);
   });
 
-  // N2 Aly–Lee from Perry7 p.223
+  // N2 DIPPR 107 from Perry7 p.223
   const n2 = { c1: 0.2911e5, c2: 0.0861e5, c3: 1.7016e3, c4: 0.001e5, c5: 909.79 };
 
   it('N2 Cp at 300 K ≈ 29.1 J/(mol·K)', () => {
@@ -79,11 +79,10 @@ describe('AlyLeeEquationMethod', () => {
     expect(m.integral(1000, co2, 50, 5000, k)).toBeGreaterThan(m.integral(300, co2, 50, 5000, k));
   });
 
-  it('CH4 Aly–Lee at 500 K is physically reasonable (30–70 J/(mol·K))', () => {
+  it('CH4 DIPPR 107 at 500 K is physically reasonable (30–70 J/(mol·K))', () => {
     const ch4 = { c1: 0.1925e5, c2: 0.5176e5, c3: 1.7019e3, c4: 0.3189e5, c5: 757.87 };
     const cp = m.calculate(500, ch4, 50, 1500, 1e-3);
     expect(cp).toBeGreaterThan(30);
     expect(cp).toBeLessThan(70);
   });
 });
-

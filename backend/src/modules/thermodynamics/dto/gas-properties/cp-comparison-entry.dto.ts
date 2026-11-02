@@ -5,9 +5,9 @@ export class CpComparisonEntryDto {
   @ApiProperty({
     description:
       'Equation type used for this Cp approximation. ' +
-      'Possible values: "polynomial", "alyLee" (DIPPR-107), "shomate", ' +
+      'Possible values: "polynomial", "dipprN107", "shomate", ' +
       '"dipprN102", "linear", "quadratic", "cubic", "quartic", "nasa7", "nasa9".',
-    example: 'alyLee',
+    example: 'dipprN107',
   })
   type: string;
   @ApiProperty({ description: 'Literature reference key (see GET /thermodynamics/fluid/list)', example: 'Perry7' }) ref: string;

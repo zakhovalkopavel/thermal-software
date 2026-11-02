@@ -3,9 +3,8 @@ import { LinearEquationMethod } from './equation-methods/linear-equation-method'
 import { QuadraticEquationMethod } from './equation-methods/quadratic-equation-method';
 import { CubicEquationMethod } from './equation-methods/cubic-equation-method';
 import { QuarticEquationMethod } from './equation-methods/quartic-equation-method';
-import { LinearHyperbolicEquationMethod } from './equation-methods/linear-hyperbolic-equation-method';
-import { LinearHyperbolicLogarithmicEquationMethod } from './equation-methods/linear-hyperbolic-logarithmic-equation-method';
-import { AlyLeeEquationMethod } from './equation-methods/aly-lee-equation-method';
+import { MaierKelleyEquationMethod } from './equation-methods/maier-kelley-equation-method';
+import { DipprEquation107Method } from './equation-methods/dippr-equation-107-method';
 import { DipprEquation102Method } from './equation-methods/dippr-equation-102-method';
 import { Nasa7EquationMethod } from './equation-methods/nasa7-equation-method';
 import { Nasa9EquationMethod } from './equation-methods/nasa9-equation-method';
@@ -49,9 +48,8 @@ export class Common {
       case EquationTypeDto.quadratic:                   return new QuadraticEquationMethod();
       case EquationTypeDto.cubic:                       return new CubicEquationMethod();
       case EquationTypeDto.quartic:                     return new QuarticEquationMethod();
-      case EquationTypeDto.linearHyperbolic:            return new LinearHyperbolicEquationMethod();
-      case EquationTypeDto.linearHyperbolicLogarithmic: return new LinearHyperbolicLogarithmicEquationMethod();
-      case EquationTypeDto.alyLee:                      return new AlyLeeEquationMethod();
+      case EquationTypeDto.maierKelley:                 return new MaierKelleyEquationMethod();
+      case EquationTypeDto.dipprN107:                   return new DipprEquation107Method();
       case EquationTypeDto.dipprN102:                   return new DipprEquation102Method();
       case EquationTypeDto.nasa7:                       return new Nasa7EquationMethod();
       case EquationTypeDto.nasa9:                       return new Nasa9EquationMethod();

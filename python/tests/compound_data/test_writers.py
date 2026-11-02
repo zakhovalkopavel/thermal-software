@@ -69,7 +69,7 @@ def written(tmp_path, chem, classifier):
         SourceEntry("1344-28-1", None, "Aluminum oxide (α)", "meltingPoint",
                     PropertyValue(2327.15, RefKey.CRC95, chem.link(crc, 301, "Aluminum oxide (α)", variant="α"))),
         SourceEntry("1344-28-1", "Al2O3", "Al2O3", "heatCapacity",
-                    EquationValue(EquationType.linearHyperbolic, RefKey.Perry8, {"a": 22.08, "b": 0.008971,
+                    EquationValue(EquationType.maierKelley, RefKey.Perry8, {"a": 22.08, "b": 0.008971,
                                   "d": -522500}, 273, 1973, chem.link(perry, 459, "Al2O3", error=2), k=4.184),
                     "solid"),
         SourceEntry("13463-67-7", None, "Titanium dioxide", "meltingPoint",
@@ -156,7 +156,7 @@ class TestFiles:
         solid = al["equations"]["heatCapacity"]["solid"]
         assert solid["def"] == 0
         assert solid["values"][0] == {
-            "type": "linearHyperbolic", "ref": ["Perry8", 459, "perry151"],
+            "type": "maierKelley", "ref": ["Perry8", 459, "perry151"],
             "vars": {"a": 22.08, "b": 0.008971, "d": -522500}, "min": 273, "max": 1973, "k": 4.184, "error": 2,
         }
         assert al["properties"]["meltingPoint"] == [
@@ -205,7 +205,7 @@ class TestIndex:
         assert data["compounds"]["13463-67-7"]["group"] == "Ti"
         assert data["compounds"]["1344-28-1"]["equations"] == {"heatCapacity": ["solid"]}
         assert data["compounds"]["1344-28-1"]["refs"] == ["CRC95", "Perry8"]
-        assert data["equationTypes"] == {"linearHyperbolic": "implemented"}
+        assert data["equationTypes"] == {"maierKelley": "implemented"}
         assert data["byOtherCas"] == {}
 
     def test_entry_location(self, written):
@@ -226,7 +226,7 @@ class TestIndex:
             SourceEntry("7429-90-5", None, "Aluminum", "meltingPoint",
                         PropertyValue(933.47, RefKey.CRC95, chem.link(SOURCE_TABLES["CRC inorganic constants"], 3))),
             SourceEntry("3303-34-2", "Al", "Al", "heatCapacity",
-                        EquationValue(EquationType.linearHyperbolic, RefKey.Perry8, {"a": 4.8, "b": 0.00322, "d": 0},
+                        EquationValue(EquationType.maierKelley, RefKey.Perry8, {"a": 4.8, "b": 0.00322, "d": 0},
                                       273, 931, chem.link(perry, 160, "Al")), "solid"),
         ]
         records = list(merge_compounds(entries, ids, classifier).records.values())
