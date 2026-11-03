@@ -99,7 +99,10 @@ python/
         figure_indexer.py            ← caption OCR over a page range → figure index
         figure_index_merger.py       ← merge a re-indexed page range into the existing index
       nbs/
-        nbs_text_normalizer.py       ← fixes OCR noise in the NBS text layer
+        nbs_surya_ocr.py             ← Table I pages via Surya (HTML <sub> → dump lines)
+        nbs_page_ocr.py              ← dump_nbs_table_ocr + Tesseract fallback helpers
+        nbs_text_normalizer.py       ← formula cleanup after page OCR
+        nbs_formula_ocr.py           ← ELEMENTS walk; punctuation→digit fallback
         nbs_entry_index.py           ← parse the NBS dump into NbsEntry[]
         nbs_matcher.py               ← compare an invariant with NBS entries → NbsComparison[]
         status_resolver.py           ← extracted / confirmed / conflict

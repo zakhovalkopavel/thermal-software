@@ -10,7 +10,7 @@ import re
 from phase_diagrams.models.nbs_entry import NbsEntry
 from phase_diagrams.nbs.nbs_text_normalizer import NbsTextNormalizer
 
-_ENTRY_LINE = re.compile(r"^\s*[^\w\s]{0,2}\s*(\d{4})\s+(\S.*)$")
+_ENTRY_LINE = re.compile(r"^\s*[^\w\s]{0,2}\s*(\d{1,4})[.\s]+(\S.*)$")
 _APPROXIMATE = re.compile(r"\s*AP[PI]'?", re.IGNORECASE)
 
 

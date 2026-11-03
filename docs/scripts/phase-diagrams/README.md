@@ -110,7 +110,7 @@ tmp/reports/python/phase-diagrams/
   candidates/     mgo-sio2.json                          ← extract / trace-curves output, waiting for validation
   replaced/       mgo-sio2.20261006-211200.json          ← dataset file replaced by promote (backup)
   figure-index/   slag-atlas-1995.json                   ← caption OCR: figure → PDF page
-  nbs/            nsrds-nbs-61-1.txt                     ← pdftotext -layout dump (page breaks kept)
+  nbs/            nsrds-nbs-61-1.txt                     ← Surya OCR dump of Table I (page breaks kept)
                   nsrds-nbs-61-1.entries.json            ← parsed entries
                   nsrds-nbs-61-1.unparsed.txt            ← lines that did not parse
 ```

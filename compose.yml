@@ -137,6 +137,8 @@ services:
       DISPLAY: ${DISPLAY}
       QT_X11_NO_MITSHM: ${QT_X11_NO_MITSHM}
       XAUTHORITY: /root/.Xauthority
+      LLAMA_CPP_BINARY: /opt/llama-cpp/llama-server
+      LD_LIBRARY_PATH: /opt/llama-cpp
     volumes:
       - ./python/src:/app/src
       - ./python/tests:/app/tests

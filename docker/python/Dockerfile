@@ -72,6 +72,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=tesseract-build /opt/tesseract/usr/local/ /usr/local/
 RUN ldconfig && tesseract --version
 
+# Surya 0.23 drives recognition through llama.cpp's llama-server (CPU ubuntu x64 build).
+ARG LLAMA_CPP_RELEASE=b12061
+RUN curl -fsSL \
+      "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_CPP_RELEASE}/llama-${LLAMA_CPP_RELEASE}-bin-ubuntu-x64.tar.gz" \
+      | tar -xz -C /opt && \
+    mv /opt/llama-${LLAMA_CPP_RELEASE} /opt/llama-cpp && \
+    ln -sf /opt/llama-cpp/llama-server /usr/local/bin/llama-server && \
+    llama-server --version
+
 # Set working directory
 WORKDIR /app
 
@@ -106,6 +115,8 @@ RUN mkdir -p /app/shared/sources /app/shared/processed /app/reports
 ENV PYTHONPATH="/app/src:${PYTHONPATH}"
 ENV PYTHONUNBUFFERED=1
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
+ENV LLAMA_CPP_BINARY=/opt/llama-cpp/llama-server
+ENV LD_LIBRARY_PATH=/opt/llama-cpp
 
 # Default command
 CMD ["tail", "-f", "/dev/null"]

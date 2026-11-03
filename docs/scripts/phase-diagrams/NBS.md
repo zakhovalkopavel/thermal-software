@@ -8,9 +8,18 @@ Part of the [phase-diagram extraction specification](README.md).
 
 ### Text index
 
-- `pdftotext -layout` of the whole PDF into `nbs/nsrds-nbs-61-1.txt`; page breaks (`\f`)
-give the PDF page; printed page = PDF page − 8 (`sources.json` page mapping).
-- `nbs_text_normalizer` fixes recurrent OCR noise of the text layer before parsing:
+- Index source: Internet Archive scan in `sources.json` (`tablePages` pdf 11–119). The bw
+  PDF’s Adobe text layer is **not** used.
+- `make pd-nbs-index` renders each Table I page (`pdftoppm`) and OCRs with **Surya**
+  (`nbs_surya_ocr`). Surya returns an HTML table with real `<sub>` digits
+  (`BF<sub>3</sub>-N<sub>2</sub>O` → dump `BF3-N2O`). Page breaks (`\f`) keep PDF page
+  numbers; printed page = PDF page − 8. Optional `--first` / `--last` limit the range;
+  `--engine tesseract` keeps the old char-box path. Needs `llama-server` in the python
+  image (`LLAMA_CPP_BINARY`).
+- **Fallback / cleanup:** commas or periods left in a formula still go through
+  `nbs_formula_ocr` (element walk; no compound whitelist).
+- `nbs_text_normalizer` then cleans each component. Oxides keep dedicated patterns; other
+  formulas walk `ELEMENTS` (no compound whitelist):
 
   | Raw                                                       | Normalized |
   | --------------------------------------------------------- | ---------- |
@@ -20,12 +29,15 @@ give the PDF page; printed page = PDF page − 8 (`sources.json` page mapping).
   | `Ca0`                                                     | `CaO`      |
   | `K,0`, `K 2O`, `K,O`                                      | `K2O`      |
   | `Na,O`, `Na,0`                                            | `Na2O`     |
+  | `BCI 3`, `KC1`, `NaN°3`, `TI2C03`                          | `BCl3`, `KCl`, `NaNO3`, `Tl2CO3` |
+  | `GeCl.`, `VOCl,`, `SbCl s`, `WCl.`                         | `GeCl4`, `VOCl3`, `SbCl5`, `WCl6` |
+  | `BF,-N,O`, `BCl,-PCl,` (page OCR)                          | `BF3-N2O`, `BCl3-PCl3` |
   | `:t`, `±o`, `=` before a number in the uncertainty column | `±`        |
 
-- Entry line: entry number (4 digits), system (components joined by `-`), composition
-(one value for binaries, `a-b-c` for ternaries, optional `APP`), temperature with optional
-uncertainty or `APP`, reference numbers. Lines that look like entries but do not parse go
-to `nsrds-nbs-61-1.unparsed.txt`.
+- Entry line: entry number (1–4 digits), system (components joined by `-`), composition
+(one value for binaries, `a-b-c` for ternaries, optional `APP`), temperature (may be
+negative) with optional uncertainty or `APP`, reference numbers. Lines that look like
+entries but do not parse go to `nsrds-nbs-61-1.unparsed.txt`.
 
 
 

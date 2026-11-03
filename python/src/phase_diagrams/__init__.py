@@ -120,6 +120,9 @@ from phase_diagrams.figures.page_word_reader            import read_page_words
 from phase_diagrams.nbs.nbs_text_normalizer             import NbsTextNormalizer
 from phase_diagrams.nbs.nbs_entry_index                 import build_nbs_index
 from phase_diagrams.nbs.nbs_matcher                     import NbsMatcher
+from phase_diagrams.nbs.nbs_page_ocr                    import (
+    CharBox, assemble_line, assemble_word, dump_nbs_table_ocr, read_subscript_digit,
+)
 from phase_diagrams.nbs.status_resolver                 import resolve_status
 from phase_diagrams.nbs.composition_converter           import convert_composition
 
@@ -266,6 +269,11 @@ __all__ = [
     "NbsTextNormalizer",
     "build_nbs_index",
     "NbsMatcher",
+    "CharBox",
+    "assemble_line",
+    "assemble_word",
+    "dump_nbs_table_ocr",
+    "read_subscript_digit",
     "resolve_status",
     "convert_composition",
     # builders

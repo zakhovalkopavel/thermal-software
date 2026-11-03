@@ -43,7 +43,7 @@ commands:
                    (report compared with the semi-manual candidate or dataset file)
   compare SYSTEM   Candidate vs dataset file (exit 1 on differences)
   promote SYSTEM   Candidate → dataset if the dataset still validates (exit 1 if not)
-  nbs-index        Dump and parse NSRDS-NBS 61 → nbs/
+  nbs-index        OCR (Surya) and parse NSRDS-NBS 61 Table I → nbs/ [--first N --last N] [--engine surya|tesseract]
   nbs-suggest COMPONENT [COMPONENT ...]
                    Candidate NBS entries for exactly these components
   validate [--candidate SYSTEM]
@@ -99,7 +99,7 @@ The CLI runs in the `python` container only (principle 6).
 | `make pd-auto SYSTEM=na2o-al2o3-sio2 [FIGURE=3.196] [TRIANGLE=1] [CORNERS="SiO2 Na2O Al2O3"] [STEP=100]` | `auto` (page alone; no config, start or candidate used) |
 | `make pd-compare SYSTEM=mgo-sio2`                   | `compare`                                               |
 | `make pd-promote SYSTEM=mgo-sio2`                   | `promote` (after user validation)                       |
-| `make pd-nbs-index`                                 | `nbs-index`                                             |
+| `make pd-nbs-index` `[FIRST=11 LAST=11]`             | `nbs-index` (render+Surya; optional page range)         |
 | `make pd-nbs-suggest COMPONENTS="MgO SiO2"`         | `nbs-suggest`                                           |
 | `make pd-validate [SYSTEM=mgo-sio2]`                | `validate [--candidate mgo-sio2]`                       |
 | `make pd-test`                                      | `pytest /app/tests/phase_diagrams/ -v`                  |

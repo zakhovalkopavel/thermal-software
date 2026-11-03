@@ -181,7 +181,13 @@ def _build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("promote", help="Copy the candidate into the dataset if the dataset still validates")
     s.add_argument("system")
 
-    sub.add_parser("nbs-index", help="Dump and parse NSRDS-NBS 61 → nbs/")
+    s = sub.add_parser("nbs-index", help="OCR (Surya) and parse NSRDS-NBS 61 Table I → nbs/")
+    s.add_argument("--first", type=int, help="first PDF page (default: sources.json tablePages.first)")
+    s.add_argument("--last", type=int, help="last PDF page (default: sources.json tablePages.last)")
+    s.add_argument(
+        "--engine", choices=("surya", "tesseract"), default="surya",
+        help="page OCR engine (default: surya)",
+    )
 
     s = sub.add_parser("nbs-suggest", help="Candidate NBS entries for exactly these components")
     s.add_argument("components", nargs="+", metavar="COMPONENT")
@@ -1126,16 +1132,34 @@ def _cmd_promote(args, dataset: Path, work: Path) -> int:
 
 
 def _cmd_nbs_index(args, registry: SourceRegistry, work: Path) -> int:
+    from phase_diagrams.nbs.nbs_page_ocr import dump_nbs_table_ocr
+
     folder = work / "nbs"
     folder.mkdir(parents=True, exist_ok=True)
+    pages = registry.source(_NBS).get("tablePages") or {}
+    first = args.first if args.first is not None else int(pages.get("first", 11))
+    last = args.last if args.last is not None else int(pages.get("last", 119))
+    if last < first:
+        raise ValueError(f"last page {last} < first page {first}")
     dump = folder / f"{_NBS}.txt"
-    subprocess.run(["pdftotext", "-layout", str(registry.pdf_path(_NBS)), str(dump)], check=True)
-    entries, unparsed = build_nbs_index(dump.read_text(encoding="utf-8", errors="replace"), registry.page_offset(_NBS))
+    engine = getattr(args, "engine", "surya")
+    _say("nbs-index", f"OCR ({engine}) pdf pages {first}–{last} of {registry.pdf_path(_NBS).name}")
+
+    def progress(page: int, end: int) -> None:
+        if page == first or page == end or page % 10 == 0:
+            _say("nbs-index", f"page {page}/{end}")
+
+    text = dump_nbs_table_ocr(
+        registry.pdf_path(_NBS), first, last,
+        cache_dir=work / "nbs" / "renders", progress=progress, engine=engine,
+    )
+    dump.write_text(text, encoding="utf-8")
+    entries, unparsed = build_nbs_index(text, registry.page_offset(_NBS))
     (folder / f"{_NBS}.entries.json").write_text(
         json.dumps([e.to_dict() for e in entries], ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
     )
     (folder / f"{_NBS}.unparsed.txt").write_text("\n".join(unparsed) + "\n", encoding="utf-8")
-    _say("nbs-index", f"{len(entries)} entries, {len(unparsed)} unparsed lines → {folder}")
+    _say("nbs-index", f"{len(entries)} entries, {len(unparsed)} unparsed lines → {_host(folder)}")
     return 0
 
 
