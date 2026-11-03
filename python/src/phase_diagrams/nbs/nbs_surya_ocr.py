@@ -29,6 +29,11 @@ _FALLBACK_LLAMA_BINS = (
     Path("/app/reports/phase-diagrams/nbs/llama-cpp/llama-server"),
     Path("/app/reports/phase-diagrams/nbs/ocr-trial/llama-cpp/llama-b12061/llama-server"),
 )
+# Defaults match surya.settings; used to locate a warm Hugging Face cache without
+# importing Surya (and without phoning the Hub).
+_GGUF_REPO_DIR = "models--datalab-to--surya-ocr-2.5-gguf"
+_GGUF_MODEL_FILE = "surya-2.5.gguf"
+_GGUF_MMPROJ_FILE = "surya-2.5-mmproj.gguf"
 
 
 def dump_nbs_table_ocr(
@@ -41,6 +46,7 @@ def dump_nbs_table_ocr(
 ) -> str:
     """OCR Table I pages ``first_page``…``last_page`` (1-based); pages separated by ``\\f``."""
     ensure_llama_env()
+    predictor = _recognition_predictor()
     pages: list[str] = []
     for page in range(first_page, last_page + 1):
         if progress:
@@ -48,26 +54,38 @@ def dump_nbs_table_ocr(
         image = render_page(pdf_path, page, dpi=dpi, cache_dir=cache_dir, cache_stem="nbs-table")
         if page == first_page and first_page > 1:
             pages.extend([""] * (first_page - 1))
-        pages.append(ocr_page_text(image))
+        pages.append(ocr_page_text(image, predictor=predictor))
     return "\f".join(pages) + "\f"
 
 
-def ocr_page_text(image: np.ndarray) -> str:
+def ocr_pdf_page(
+    pdf_path: Path | str,
+    page: int,
+    cache_dir: Path | str | None = None,
+    dpi: int = _DPI,
+    predictor: object | None = None,
+) -> str:
+    """OCR one PDF page (1-based) to NBS dump text."""
+    ensure_llama_env()
+    image = render_page(pdf_path, page, dpi=dpi, cache_dir=cache_dir, cache_stem="nbs-table")
+    return ocr_page_text(image, predictor=predictor)
+
+
+def ocr_page_text(image: np.ndarray, predictor: object | None = None) -> str:
     """One rendered page → NBS dump lines (locator, system, mol%, T, refs)."""
-    html = ocr_page_table_html(image)
+    html = ocr_page_table_html(image, predictor=predictor)
     if not html:
         return ""
     return "\n".join(table_html_to_lines(html))
 
 
-def ocr_page_table_html(image: np.ndarray) -> str:
+def ocr_page_table_html(image: np.ndarray, predictor: object | None = None) -> str:
     """Run Surya full-page OCR and return the first ``<table>…</table>`` HTML block."""
-    from surya.recognition import RecognitionPredictor
-
     picture = Image.fromarray(image if image.ndim == 2 else np.asarray(Image.fromarray(image).convert("RGB")))
     if picture.mode != "RGB":
         picture = picture.convert("RGB")
-    prediction = RecognitionPredictor()([picture], full_page=True)[0]
+    recognizer = predictor or _recognition_predictor()
+    prediction = recognizer([picture], full_page=True)[0]
     tables = [
         block.html
         for block in prediction.blocks
@@ -81,6 +99,16 @@ def ocr_page_table_html(image: np.ndarray) -> str:
         if block.html and re.search(r"<td>\s*\d{1,4}\s*</td>", block.html, re.I):
             return block.html
     return ""
+
+
+def _recognition_predictor():
+    """One shared RecognitionPredictor (llama-server startup is expensive)."""
+    # Env first, then import so Settings() picks up SURYA_GGUF_LOCAL_* / HF_HUB_OFFLINE.
+    ensure_llama_env()
+    from surya.recognition import RecognitionPredictor
+
+    _prefer_cached_ggufs()  # patch singleton if Settings was already imported elsewhere
+    return RecognitionPredictor()
 
 
 def table_html_to_lines(html: str) -> list[str]:
@@ -107,7 +135,15 @@ def table_html_to_lines(html: str) -> list[str]:
 
 
 def ensure_llama_env() -> None:
-    """Point Surya at ``llama-server`` (image path, env, or reports fallback)."""
+    """Point Surya at ``llama-server`` and prefer a warm GGUF cache (no Hub calls).
+
+    Once both GGUFs exist under the Hugging Face cache (or
+    ``SURYA_GGUF_LOCAL_*`` are set), Surya is pointed at those files and
+    ``HF_HUB_OFFLINE=1`` is set so later runs never contact the Hub.
+
+    Opt out with ``SURYA_HF_ONLINE=1`` (allows Hub checks / first-time download
+    even when a cache is present). Explicit ``SURYA_GGUF_LOCAL_*`` always wins.
+    """
     candidates = [
         Path(os.environ["LLAMA_CPP_BINARY"]) if os.environ.get("LLAMA_CPP_BINARY") else None,
         _DEFAULT_LLAMA_BIN,
@@ -127,6 +163,74 @@ def ensure_llama_env() -> None:
     existing = os.environ.get("LD_LIBRARY_PATH", "")
     if lib_dir not in existing.split(":"):
         os.environ["LD_LIBRARY_PATH"] = f"{lib_dir}:{existing}" if existing else lib_dir
+    _prefer_cached_ggufs()
+
+
+def _hf_hub_root() -> Path:
+    if os.environ.get("HF_HUB_CACHE"):
+        return Path(os.environ["HF_HUB_CACHE"])
+    home = Path(os.environ["HF_HOME"]) if os.environ.get("HF_HOME") else Path.home() / ".cache" / "huggingface"
+    return home / "hub"
+
+
+def find_cached_gguf_paths(
+    hub_root: Path | None = None,
+    model_file: str = _GGUF_MODEL_FILE,
+    mmproj_file: str = _GGUF_MMPROJ_FILE,
+) -> tuple[Path, Path] | None:
+    """Return resolved ``(model, mmproj)`` paths if both GGUFs are present on disk."""
+    snapshots = (hub_root or _hf_hub_root()) / _GGUF_REPO_DIR / "snapshots"
+    if not snapshots.is_dir():
+        return None
+    # Newest snapshot first (HF ref tip is usually the latest revision dir).
+    for snap in sorted(snapshots.iterdir(), reverse=True):
+        if not snap.is_dir():
+            continue
+        model = snap / model_file
+        mmproj = snap / mmproj_file
+        if not (model.exists() and mmproj.exists()):
+            continue
+        try:
+            model_r, mmproj_r = model.resolve(), mmproj.resolve()
+        except OSError:
+            continue
+        if model_r.is_file() and mmproj_r.is_file() and model_r.stat().st_size > 0 and mmproj_r.stat().st_size > 0:
+            return model_r, mmproj_r
+    return None
+
+
+def _prefer_cached_ggufs() -> None:
+    """Point Surya at local GGUFs when available; skip ``hf_hub_download``."""
+    if os.environ.get("SURYA_HF_ONLINE", "").strip().lower() in {"1", "true", "yes"}:
+        return
+
+    model = os.environ.get("SURYA_GGUF_LOCAL_MODEL_PATH")
+    mmproj = os.environ.get("SURYA_GGUF_LOCAL_MMPROJ_PATH")
+    if model and mmproj:
+        paths = (Path(model), Path(mmproj))
+    else:
+        found = find_cached_gguf_paths(
+            model_file=os.environ.get("SURYA_GGUF_MODEL_FILE", _GGUF_MODEL_FILE),
+            mmproj_file=os.environ.get("SURYA_GGUF_MMPROJ_FILE", _GGUF_MMPROJ_FILE),
+        )
+        if found is None:
+            return
+        paths = found
+        os.environ["SURYA_GGUF_LOCAL_MODEL_PATH"] = str(paths[0])
+        os.environ["SURYA_GGUF_LOCAL_MMPROJ_PATH"] = str(paths[1])
+
+    # Only force offline when the caller did not already choose a value.
+    if "HF_HUB_OFFLINE" not in os.environ:
+        os.environ["HF_HUB_OFFLINE"] = "1"
+
+    # Surya loads Settings() at import time; patch the singleton if already live.
+    try:
+        from surya.settings import settings
+
+        settings.SURYA_GGUF_LOCAL_MODEL_PATH = str(paths[0])
+        settings.SURYA_GGUF_LOCAL_MMPROJ_PATH = str(paths[1])
+    except ImportError:
+        pass
 
 
 def _formula_cell(raw: str) -> str:

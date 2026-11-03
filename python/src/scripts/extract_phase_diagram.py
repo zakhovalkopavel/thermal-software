@@ -181,12 +181,16 @@ def _build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("promote", help="Copy the candidate into the dataset if the dataset still validates")
     s.add_argument("system")
 
-    s = sub.add_parser("nbs-index", help="OCR (Surya) and parse NSRDS-NBS 61 Table I → nbs/")
+    s = sub.add_parser("nbs-index", help="OCR and parse NSRDS-NBS 61 Table I → nbs/")
     s.add_argument("--first", type=int, help="first PDF page (default: sources.json tablePages.first)")
     s.add_argument("--last", type=int, help="last PDF page (default: sources.json tablePages.last)")
     s.add_argument(
-        "--engine", choices=("surya", "tesseract"), default="surya",
-        help="page OCR engine (default: surya)",
+        "--engine", choices=("surya", "hybrid", "tesseract"), default="surya",
+        help="page OCR: surya=full VLM (default); hybrid=Surya detect+Indra; tesseract=legacy",
+    )
+    s.add_argument(
+        "--force", action="store_true",
+        help="re-OCR pages even when the dump already has text for them",
     )
 
     s = sub.add_parser("nbs-suggest", help="Candidate NBS entries for exactly these components")
@@ -198,7 +202,7 @@ def _build_parser() -> argparse.ArgumentParser:
 
 
 def _say(command: str, message: str) -> None:
-    print(f"[{command}] {message}")
+    print(f"[{command}] {message}", flush=True)
 
 
 def _page_image(registry: SourceRegistry, work: Path, ref: str, page: int):
@@ -1132,35 +1136,186 @@ def _cmd_promote(args, dataset: Path, work: Path) -> int:
 
 
 def _cmd_nbs_index(args, registry: SourceRegistry, work: Path) -> int:
-    from phase_diagrams.nbs.nbs_page_ocr import dump_nbs_table_ocr
+    import time
+
+    from phase_diagrams.nbs.nbs_page_ocr import ocr_page_text_tesseract
+    from phase_diagrams.rendering.pdf_renderer import render_page
 
     folder = work / "nbs"
     folder.mkdir(parents=True, exist_ok=True)
-    pages = registry.source(_NBS).get("tablePages") or {}
-    first = args.first if args.first is not None else int(pages.get("first", 11))
-    last = args.last if args.last is not None else int(pages.get("last", 119))
+    pages_meta = registry.source(_NBS).get("tablePages") or {}
+    first = args.first if args.first is not None else int(pages_meta.get("first", 11))
+    last = args.last if args.last is not None else int(pages_meta.get("last", 119))
     if last < first:
         raise ValueError(f"last page {last} < first page {first}")
     dump = folder / f"{_NBS}.txt"
+    entries_path = folder / f"{_NBS}.entries.json"
+    unparsed_path = folder / f"{_NBS}.unparsed.txt"
     engine = getattr(args, "engine", "surya")
-    _say("nbs-index", f"OCR ({engine}) pdf pages {first}–{last} of {registry.pdf_path(_NBS).name}")
+    force = bool(getattr(args, "force", False))
+    pdf = registry.pdf_path(_NBS)
+    offset = registry.page_offset(_NBS)
+    cache_dir = folder / "renders"
+    total = last - first + 1
 
-    def progress(page: int, end: int) -> None:
-        if page == first or page == end or page % 10 == 0:
-            _say("nbs-index", f"page {page}/{end}")
+    predictor = None
+    hybrid_detector = None
+    hybrid_recognizer = None
+    if engine == "hybrid":
+        from phase_diagrams.nbs.nbs_hybrid_ocr import (
+            _detection_predictor,
+            _indra_recognizer,
+            ocr_pdf_page as ocr_pdf_page_hybrid,
+            select_onnx_providers,
+            select_torch_device,
+        )
 
-    text = dump_nbs_table_ocr(
-        registry.pdf_path(_NBS), first, last,
-        cache_dir=work / "nbs" / "renders", progress=progress, engine=engine,
+        _say(
+            "nbs-index",
+            f"starting hybrid (Surya detect on {select_torch_device()}, "
+            f"Indra on {','.join(select_onnx_providers())})…",
+        )
+        t_boot = time.perf_counter()
+        hybrid_detector = _detection_predictor()
+        hybrid_recognizer = _indra_recognizer()
+        _say("nbs-index", f"hybrid ready in {time.perf_counter() - t_boot:.0f}s")
+    elif engine == "surya":
+        from phase_diagrams.nbs.nbs_surya_ocr import _recognition_predictor, ensure_llama_env, ocr_pdf_page
+
+        ensure_llama_env()
+        _say("nbs-index", "starting Surya (llama-server)…")
+        t_boot = time.perf_counter()
+        predictor = _recognition_predictor()
+        _say("nbs-index", f"Surya ready in {time.perf_counter() - t_boot:.0f}s")
+    elif engine != "tesseract":
+        raise ValueError(f"unknown NBS OCR engine {engine!r}")
+
+    _say(
+        "nbs-index",
+        f"OCR ({engine}) pdf pages {first}–{last} of {pdf.name}"
+        + (" [force]" if force else " [resume skips non-empty pages]"),
     )
-    dump.write_text(text, encoding="utf-8")
-    entries, unparsed = build_nbs_index(text, registry.page_offset(_NBS))
-    (folder / f"{_NBS}.entries.json").write_text(
-        json.dumps([e.to_dict() for e in entries], ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
-    )
-    (folder / f"{_NBS}.unparsed.txt").write_text("\n".join(unparsed) + "\n", encoding="utf-8")
-    _say("nbs-index", f"{len(entries)} entries, {len(unparsed)} unparsed lines → {_host(folder)}")
+
+    for i, page in enumerate(range(first, last + 1), start=1):
+        existing = _nbs_dump_page_text(dump, page)
+        if existing.strip() and not force:
+            _say("nbs-index", f"page {page}/{last} ({i}/{total}) skip (already in dump)")
+            continue
+
+        _say("nbs-index", f"page {page}/{last} ({i}/{total}) OCR…")
+        t0 = time.perf_counter()
+        if engine == "hybrid":
+            text = ocr_pdf_page_hybrid(
+                pdf, page, cache_dir=cache_dir,
+                detector=hybrid_detector, recognizer=hybrid_recognizer,
+            )
+        elif engine == "surya":
+            text = ocr_pdf_page(pdf, page, cache_dir=cache_dir, predictor=predictor)
+        else:
+            image = render_page(pdf, page, dpi=400, cache_dir=cache_dir, cache_stem="nbs-table")
+            text = ocr_page_text_tesseract(image)
+        elapsed = time.perf_counter() - t0
+        n_entries, n_unparsed = _append_nbs_page(
+            dump, entries_path, unparsed_path, page, text, offset,
+        )
+        lines = len([ln for ln in text.splitlines() if ln.strip()])
+        _say(
+            "nbs-index",
+            f"page {page}/{last} done in {elapsed:.0f}s — {lines} lines on page, "
+            f"{n_entries} entries / {n_unparsed} unparsed total → {_host(folder)}",
+        )
+
+    n_entries, n_unparsed = _nbs_output_counts(entries_path, unparsed_path)
+    _say("nbs-index", f"finished: {n_entries} entries, {n_unparsed} unparsed → {_host(folder)}")
     return 0
+
+
+def _load_nbs_dump_slots(dump: Path, min_pages: int = 0) -> list[str]:
+    """Split an existing ``\\f`` dump into per-PDF-page strings (index 0 = page 1).
+
+    Never truncates pages past ``min_pages`` — later pages already in the dump are kept.
+    """
+    if not dump.is_file():
+        return [""] * min_pages
+    parts = dump.read_text(encoding="utf-8").split("\f")
+    if parts and parts[-1] == "":
+        parts = parts[:-1]
+    while len(parts) < min_pages:
+        parts.append("")
+    return parts
+
+
+def _nbs_dump_page_text(dump: Path, page: int) -> str:
+    slots = _load_nbs_dump_slots(dump, page)
+    return slots[page - 1] if page - 1 < len(slots) else ""
+
+
+def _normalize_nbs_page_slot(page_text: str) -> str:
+    """Non-empty page bodies end with ``\\n`` so ``\\f`` is not glued mid-line in editors."""
+    if not page_text or not page_text.strip():
+        return ""
+    return page_text.replace("\f", "\n").rstrip("\n") + "\n"
+
+
+def _append_nbs_page(
+    dump: Path,
+    entries_path: Path,
+    unparsed_path: Path,
+    page: int,
+    page_text: str,
+    page_offset: int,
+) -> tuple[int, int]:
+    """Merge one OCR'd page into dump + entries + unparsed (keeps all other pages)."""
+    slots = _load_nbs_dump_slots(dump, page)
+    while len(slots) < page:
+        slots.append("")
+    slots[page - 1] = _normalize_nbs_page_slot(page_text)
+    # Re-normalize peers so older slots also get a trailing newline before ``\\f``.
+    slots = [_normalize_nbs_page_slot(s) for s in slots]
+    dump.write_text("\f".join(slots) + "\f", encoding="utf-8")
+
+    # Parse only this page (leading empty slots → correct pdf_page in build_nbs_index).
+    page_dump = "\f".join([""] * (page - 1) + [slots[page - 1]]) + "\f"
+    new_entries, new_unparsed = build_nbs_index(page_dump, page_offset)
+
+    prior = []
+    if entries_path.is_file() and entries_path.stat().st_size:
+        try:
+            prior = json.loads(entries_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            prior = []
+    if not isinstance(prior, list):
+        prior = []
+    kept = [row for row in prior if int(row.get("pdfPage", -1)) != page]
+    # Drop superseded locator numbers from this page's new rows (re-OCR / corrections).
+    new_nums = {int(e.entry) for e in new_entries}
+    kept = [row for row in kept if int(row.get("entry", -1)) not in new_nums]
+    merged = kept + [e.to_dict() for e in new_entries]
+    merged.sort(key=lambda row: (int(row.get("entry", 0)), int(row.get("pdfPage", 0))))
+    entries_path.write_text(json.dumps(merged, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
+    prior_unparsed: list[str] = []
+    if unparsed_path.is_file() and unparsed_path.stat().st_size:
+        prior_unparsed = [ln for ln in unparsed_path.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    prefix = f"p{page}:"
+    kept_u = [ln for ln in prior_unparsed if not ln.startswith(prefix)]
+    merged_u = kept_u + list(new_unparsed)
+    unparsed_path.write_text("\n".join(merged_u) + ("\n" if merged_u else ""), encoding="utf-8")
+    return len(merged), len(merged_u)
+
+
+def _nbs_output_counts(entries_path: Path, unparsed_path: Path) -> tuple[int, int]:
+    n_entries = 0
+    if entries_path.is_file() and entries_path.stat().st_size:
+        try:
+            data = json.loads(entries_path.read_text(encoding="utf-8"))
+            n_entries = len(data) if isinstance(data, list) else 0
+        except json.JSONDecodeError:
+            n_entries = 0
+    n_unparsed = 0
+    if unparsed_path.is_file() and unparsed_path.stat().st_size:
+        n_unparsed = sum(1 for ln in unparsed_path.read_text(encoding="utf-8").splitlines() if ln.strip())
+    return n_entries, n_unparsed
 
 
 def _cmd_nbs_suggest(args, work: Path) -> int:

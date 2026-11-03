@@ -104,6 +104,21 @@ RUN poetry config virtualenvs.create false --local && \
     poetry install --no-root --no-interaction --no-ansi || \
     (echo "Retrying installation..." && poetry install --no-root --no-interaction --no-ansi)
 
+# NBS Table I OCR: Surya (detect / full VLM) + Indra (fast line recognition).
+# Poetry cannot resolve torch/triton for Python 3.14 — install via pip.
+# Full surya-ocr-2.5 recognition uses llama-server; hybrid uses Surya detect + indra-ocr.
+RUN pip install --no-cache-dir \
+      --timeout 600 \
+      --retries 5 \
+      "torch==2.15.0" \
+      --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir \
+      --timeout 600 \
+      --retries 5 \
+      "surya-ocr==0.23.0" \
+      "indra-ocr==1.1.2"
+    # surya-ocr pins pillow>=10.2,<11; leave that version (do not force Pillow 12).
+
 # Copy remaining source files
 COPY src/ /app/src/
 COPY tests/ /app/tests/

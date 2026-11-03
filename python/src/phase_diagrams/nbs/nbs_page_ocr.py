@@ -77,15 +77,19 @@ def dump_nbs_table_ocr(
 ) -> str:
     """OCR Table I pages ``first_page``…``last_page`` (1-based); pages separated by ``\\f``.
 
-    Default ``engine="surya"`` (layout HTML with real subscripts). ``engine="tesseract"``
-    keeps the char-box + subscript-crop path.
+    Default ``engine="surya"`` (full surya-ocr-2.5 HTML). ``engine="hybrid"`` is Surya
+    line detect + Indra recognize. ``engine="tesseract"`` keeps the char-box path.
     """
+    if engine == "hybrid":
+        from phase_diagrams.nbs.nbs_hybrid_ocr import dump_nbs_table_ocr as _hybrid_dump
+
+        return _hybrid_dump(pdf_path, first_page, last_page, cache_dir=cache_dir, dpi=dpi, progress=progress)
     if engine == "surya":
         from phase_diagrams.nbs.nbs_surya_ocr import dump_nbs_table_ocr as _surya_dump
 
         return _surya_dump(pdf_path, first_page, last_page, cache_dir=cache_dir, dpi=dpi, progress=progress)
     if engine != "tesseract":
-        raise ValueError(f"unknown NBS OCR engine {engine!r} (expected 'surya' or 'tesseract')")
+        raise ValueError(f"unknown NBS OCR engine {engine!r} (expected 'hybrid', 'surya', or 'tesseract')")
     pages: list[str] = []
     for page in range(first_page, last_page + 1):
         if progress:

@@ -301,3 +301,36 @@ def test_page1_parses_all_entries_and_systems():
     assert by_number[31].temperature_C == -50.8
     for number, components in _PAGE1_SYSTEMS.items():
         assert by_number[number].components == components, number
+
+
+def test_append_nbs_page_merges_without_overwriting_other_pages(tmp_path):
+    """Incremental OCR must keep earlier dump slots / entries when a later page is saved."""
+    import json
+    from scripts.extract_phase_diagram import _append_nbs_page, _nbs_dump_page_text
+
+    dump = tmp_path / "nbs.txt"
+    entries_path = tmp_path / "nbs.entries.json"
+    unparsed_path = tmp_path / "nbs.unparsed.txt"
+    p11 = "1  BF3-N2O  76.6  -138.0 +.25  575\n2  BF3-SO2  95.2  -128.6 +.25  575"
+    p12 = "60  Al2O3-SiO2  10.0  1500.0  1"
+
+    _append_nbs_page(dump, entries_path, unparsed_path, 11, p11, 8)
+    _append_nbs_page(dump, entries_path, unparsed_path, 12, p12, 8)
+
+    assert "BF3-N2O" in _nbs_dump_page_text(dump, 11)
+    assert "Al2O3-SiO2" in _nbs_dump_page_text(dump, 12)
+
+    data = json.loads(entries_path.read_text(encoding="utf-8"))
+    assert {row["pdfPage"] for row in data} == {11, 12}
+    assert len(data) == 3
+
+    # Re-OCR page 11 replaces that page only; page 12 stays.
+    _append_nbs_page(
+        dump, entries_path, unparsed_path, 11,
+        "1  BF3-N2O  76.6  -100.0 +.25  575", 8,
+    )
+    data = json.loads(entries_path.read_text(encoding="utf-8"))
+    assert {row["pdfPage"] for row in data} == {11, 12}
+    assert len(data) == 2
+    assert next(r for r in data if r["entry"] == 1)["temperature_C"] == -100.0
+    assert next(r for r in data if r["entry"] == 60)["pdfPage"] == 12

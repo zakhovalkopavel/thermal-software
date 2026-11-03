@@ -146,6 +146,9 @@ services:
       - ./shared:/app/shared
       - ./backend/src/common/thermal/dto:/app/backend-dto:ro  # equation type sync test (compound_data)
       - python_packages:/usr/local/lib/python${PYTHON_VERSION_NUMBER}/site-packages
+      # Surya GGUF + Hugging Face caches (survive docker compose run --rm)
+      - surya_model_cache:/root/.cache/datalab
+      - huggingface_cache:/root/.cache/huggingface
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY}:/root/.Xauthority:ro  # X11 authentication (host path from XAUTHORITY env var)
     devices:
@@ -199,3 +202,5 @@ volumes:
   frontend_node_modules:
   frontend_dist:  # Shared volume for built frontend files
   python_packages:
+  surya_model_cache:  # Surya GGUF models (~1.2GB); keeps nbs-index from re-downloading
+  huggingface_cache:

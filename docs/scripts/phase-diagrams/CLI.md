@@ -43,7 +43,9 @@ commands:
                    (report compared with the semi-manual candidate or dataset file)
   compare SYSTEM   Candidate vs dataset file (exit 1 on differences)
   promote SYSTEM   Candidate → dataset if the dataset still validates (exit 1 if not)
-  nbs-index        OCR (Surya) and parse NSRDS-NBS 61 Table I → nbs/ [--first N --last N] [--engine surya|tesseract]
+  nbs-index        OCR Table I page-by-page → nbs/ [--first N --last N]
+                   [--engine surya|hybrid|tesseract] [--force]
+                   (default surya = full VLM; hybrid = Surya detect + Indra)
   nbs-suggest COMPONENT [COMPONENT ...]
                    Candidate NBS entries for exactly these components
   validate [--candidate SYSTEM]

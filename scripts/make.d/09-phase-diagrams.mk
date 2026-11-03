@@ -59,8 +59,8 @@ pd-promote: ## Copy the validated candidate into the dataset (after review): SYS
 	@test -n "$(SYSTEM)" || (echo "usage: make pd-promote SYSTEM=mgo-sio2"; exit 2)
 	@$(PD_CLI) promote $(SYSTEM)
 
-pd-nbs-index: ## OCR (Surya) and parse NSRDS-NBS 61 Table I → nbs/ [FIRST= LAST=] [ENGINE=surya]
-	@$(PD_CLI) nbs-index $(if $(FIRST),--first $(FIRST)) $(if $(LAST),--last $(LAST)) $(if $(ENGINE),--engine $(ENGINE))
+pd-nbs-index: ## OCR page-by-page → nbs/ [FIRST= LAST=] [ENGINE=surya|hybrid|tesseract] [FORCE=1]
+	@$(PD_CLI) nbs-index $(if $(FIRST),--first $(FIRST)) $(if $(LAST),--last $(LAST)) $(if $(ENGINE),--engine $(ENGINE)) $(if $(FORCE),--force)
 
 pd-nbs-suggest: ## Candidate NBS entries: COMPONENTS="MgO SiO2"
 	@test -n "$(COMPONENTS)" || (echo "usage: make pd-nbs-suggest COMPONENTS=\"MgO SiO2\""; exit 2)
