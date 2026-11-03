@@ -39,16 +39,19 @@ class NbsComparison:
             reported["approximate"] = True
         reported["temperature_C"] = _number(entry.temperature_C)
         reported["uncertainty_C"] = _number(entry.uncertainty_C)
-        return {
+        out = {
             "ref": "nsrds-nbs-61-1",
             "entry": entry.entry,
-            "pdfPage": entry.pdf_page,
-            "printedPage": entry.printed_page,
             "reported": reported,
             "converted_wt": {c: self.converted_wt[c] for c in components if c in self.converted_wt},
             "originalReference": " ".join(entry.references),
             "comparison": self.comparison_text(),
         }
+        if entry.pdf_page:
+            out["pdfPage"] = entry.pdf_page
+        if entry.printed_page:
+            out["printedPage"] = entry.printed_page
+        return out
 
 
 def _number(value: float | None) -> float | int | None:

@@ -85,8 +85,9 @@ phase-diagram rework, see `docs/algorithms/phase-equilibrium/FULL_PHASE_EQUILIBR
 | Folder                                                                                 | Content                                                                | Git                                                      |
 | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------- |
 | `shared/sources/compound-data/`                                                        | Slag Atlas, NSRDS-NBS 61 (Parts I, II, IV) and JANAF PDFs; paths in `sources.json` | ignored by `shared/sources/.gitignore` (large files) |
-| `shared/processed/phase-diagrams/`                                                     | Dataset: `compounds.json`, `sources.json`, `OPEN_ITEMS.md`, `systems/` | ignored by `shared/.gitignore`; commit with `git add -f` |
+| `shared/processed/phase-diagrams/`                                                     | Dataset: `compounds.json`, `sources.json`, `OPEN_ITEMS.md`, `systems/`, `nbs/` | ignored by `shared/.gitignore`; commit with `git add -f` |
 | `shared/processed/phase-diagrams/configs/`                                             | Per-diagram configs                                                    | same as above                                            |
+| `shared/processed/phase-diagrams/nbs/`                                                 | Promoted NBS Table I `*.entries.json` + Bibliography `*.bibliography.json` | same as above                                            |
 | `shared/processed/phase-diagrams/overlays/`                                            | Review overlay of each promoted system (written by `promote`)          | same as above                                            |
 | `tmp/reports/python/phase-diagrams/` (`/app/reports/phase-diagrams/` in the container) | Working files                                                          | ignored (`tmp/*`)                                        |
 

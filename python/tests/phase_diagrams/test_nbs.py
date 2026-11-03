@@ -304,9 +304,9 @@ def test_page1_parses_all_entries_and_systems():
 
 
 def test_append_nbs_page_merges_without_overwriting_other_pages(tmp_path):
-    """Incremental OCR must keep earlier dump slots / entries when a later page is saved."""
+    """Incremental OCR keeps a continuous dump (no form-feeds) and merges entries by page."""
     import json
-    from scripts.extract_phase_diagram import _append_nbs_page, _nbs_dump_page_text
+    from scripts.extract_phase_diagram import _append_nbs_page, _nbs_page_already_done
 
     dump = tmp_path / "nbs.txt"
     entries_path = tmp_path / "nbs.entries.json"
@@ -317,14 +317,20 @@ def test_append_nbs_page_merges_without_overwriting_other_pages(tmp_path):
     _append_nbs_page(dump, entries_path, unparsed_path, 11, p11, 8)
     _append_nbs_page(dump, entries_path, unparsed_path, 12, p12, 8)
 
-    assert "BF3-N2O" in _nbs_dump_page_text(dump, 11)
-    assert "Al2O3-SiO2" in _nbs_dump_page_text(dump, 12)
+    raw = dump.read_text(encoding="utf-8")
+    assert "\f" not in raw
+    assert "BF3-N2O" in raw and "Al2O3-SiO2" in raw
+    # Continuous table: entry 2 then entry 60 with only a newline between.
+    assert "575\n60  Al2O3-SiO2" in raw
 
     data = json.loads(entries_path.read_text(encoding="utf-8"))
     assert {row["pdfPage"] for row in data} == {11, 12}
     assert len(data) == 3
+    assert _nbs_page_already_done(entries_path, 11)
+    assert _nbs_page_already_done(entries_path, 12)
+    assert not _nbs_page_already_done(entries_path, 13)
 
-    # Re-OCR page 11 replaces that page only; page 12 stays.
+    # Re-OCR page 11 replaces those rows only; page 12 stays; dump stays continuous.
     _append_nbs_page(
         dump, entries_path, unparsed_path, 11,
         "1  BF3-N2O  76.6  -100.0 +.25  575", 8,
@@ -334,3 +340,7 @@ def test_append_nbs_page_merges_without_overwriting_other_pages(tmp_path):
     assert len(data) == 2
     assert next(r for r in data if r["entry"] == 1)["temperature_C"] == -100.0
     assert next(r for r in data if r["entry"] == 60)["pdfPage"] == 12
+    raw = dump.read_text(encoding="utf-8")
+    assert "\f" not in raw
+    assert "BF3-SO2" not in raw
+    assert "Al2O3-SiO2" in raw

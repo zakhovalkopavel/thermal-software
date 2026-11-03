@@ -104,6 +104,8 @@ python/
         nbs_text_normalizer.py       ← formula cleanup after page OCR
         nbs_formula_ocr.py           ← ELEMENTS walk; punctuation→digit fallback
         nbs_entry_index.py           ← parse the NBS dump into NbsEntry[]
+        nbs_bibliography.py          ← pdftotext Bibliography → {id: citation} (+ missing ids)
+        nbs_ref_repair.py            ← repair Table I refs (pdftotext + rules; optional hybrid OCR)
         nbs_matcher.py               ← compare an invariant with NBS entries → NbsComparison[]
         status_resolver.py           ← extracted / confirmed / conflict
         composition_converter.py     ← mol% ↔ wt%
@@ -145,8 +147,19 @@ python/
         dataset_validator.py         ← validate the whole dataset → ValidationIssue[]
         candidate_validator.py       ← validate the dataset with a candidate in place (temporary copy)
         inferred_temperature_check.py ← inferred_temperature_problem(T, inferred): arithmetic of an inferred isotherm temperature
+      cli/                           ← extract_phase_diagram command handlers
+        __init__.py
+        common.py                    ← shared paths, logging, candidate helpers
+        parser.py                    ← argparse
+        figures.py                   ← index-figures, tile
+        binary.py                    ← calibrate, extract
+        ternary.py                   ← new, trace-curves, nodes
+        isotherms.py                 ← detect-isotherms, auto-overlay, auto
+        dataset.py                   ← compare, promote, validate
+        nbs.py                       ← nbs-index, nbs-suggest
+        main.py                      ← command dispatch
     scripts/
-      extract_phase_diagram.py       ← CLI entry point (thin wrapper)
+      extract_phase_diagram.py       ← CLI entry point (thin wrapper → phase_diagrams.cli)
   tests/
     phase_diagrams/                  ← no __init__.py (it would shadow src/phase_diagrams)
       conftest.py                    ← fixtures

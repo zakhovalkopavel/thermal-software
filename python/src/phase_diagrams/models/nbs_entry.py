@@ -32,8 +32,9 @@ class NbsEntry:
     def approximate(self) -> bool:
         return self.approximate_composition or self.approximate_temperature
 
-    def to_dict(self) -> dict:
-        return {
+    def to_dict(self, *, dataset: bool = False) -> dict:
+        """Serialize one entry. ``dataset=True`` omits working-only pdfPage/printedPage/raw."""
+        out = {
             "entry": self.entry,
             "system": self.system,
             "components": self.components,
@@ -43,11 +44,13 @@ class NbsEntry:
             "approximateComposition": self.approximate_composition,
             "approximateTemperature": self.approximate_temperature,
             "references": self.references,
-            "pdfPage": self.pdf_page,
-            "printedPage": self.printed_page,
-            "raw": self.raw,
             "notes": self.notes,
         }
+        if not dataset:
+            out["pdfPage"] = self.pdf_page
+            out["printedPage"] = self.printed_page
+            out["raw"] = self.raw
+        return out
 
     @classmethod
     def from_dict(cls, data: dict) -> "NbsEntry":
@@ -58,11 +61,11 @@ class NbsEntry:
             composition_mol=data["composition_mol"],
             temperature_C=data["temperature_C"],
             uncertainty_C=data["uncertainty_C"],
-            approximate_composition=data["approximateComposition"],
-            approximate_temperature=data["approximateTemperature"],
+            approximate_composition=bool(data.get("approximateComposition", False)),
+            approximate_temperature=bool(data.get("approximateTemperature", False)),
             references=list(data["references"]),
-            pdf_page=data["pdfPage"],
-            printed_page=data["printedPage"],
+            pdf_page=int(data.get("pdfPage", 0)),
+            printed_page=int(data.get("printedPage", 0)),
             raw=data.get("raw", ""),
             notes=list(data.get("notes", [])),
         )

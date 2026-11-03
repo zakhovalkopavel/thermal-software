@@ -10,7 +10,7 @@ PD_CLI   := docker-compose run --rm python python src/scripts/extract_phase_diag
 PD_PAGES ?= 40-200
 SCALE    ?= 1
 
-.PHONY: pd-index pd-tile pd-calibrate pd-extract pd-new pd-curves pd-nodes pd-isotherms pd-auto-overlay pd-auto pd-compare pd-promote pd-nbs-index pd-nbs-suggest pd-validate pd-test
+.PHONY: pd-index pd-tile pd-calibrate pd-extract pd-new pd-curves pd-nodes pd-isotherms pd-auto-overlay pd-auto pd-compare pd-promote pd-nbs-index pd-nbs-bibliography pd-nbs-refs pd-nbs-suggest pd-validate pd-test
 
 pd-index: ## Caption OCR over the atlas → figure-index/slag-atlas-1995.json [PD_PAGES=40-200]
 	@$(PD_CLI) index-figures --source slag-atlas-1995 --pages $(PD_PAGES)
@@ -61,6 +61,12 @@ pd-promote: ## Copy the validated candidate into the dataset (after review): SYS
 
 pd-nbs-index: ## OCR page-by-page → nbs/ [FIRST= LAST=] [ENGINE=surya|hybrid|tesseract] [FORCE=1]
 	@$(PD_CLI) nbs-index $(if $(FIRST),--first $(FIRST)) $(if $(LAST),--last $(LAST)) $(if $(ENGINE),--engine $(ENGINE)) $(if $(FORCE),--force)
+
+pd-nbs-bibliography: ## Parse Bibliography (pdftotext) → nbs/*.bibliography.json [FIRST= LAST=] [FORCE=1]
+	@$(PD_CLI) nbs-bibliography $(if $(FIRST),--first $(FIRST)) $(if $(LAST),--last $(LAST)) $(if $(FORCE),--force)
+
+pd-nbs-refs: ## Repair Table I refs in dump → txt then entries.json [FIRST= LAST=] [FORCE=1] [OCR=1]
+	@$(PD_CLI) nbs-refs $(if $(FIRST),--first $(FIRST)) $(if $(LAST),--last $(LAST)) $(if $(FORCE),--force) $(if $(OCR),--ocr)
 
 pd-nbs-suggest: ## Candidate NBS entries: COMPONENTS="MgO SiO2"
 	@test -n "$(COMPONENTS)" || (echo "usage: make pd-nbs-suggest COMPONENTS=\"MgO SiO2\""; exit 2)

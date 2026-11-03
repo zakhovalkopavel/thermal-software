@@ -15,10 +15,11 @@ Part of the [phase-diagram extraction specification](README.md).
   HTML `<sub>` digits (`BF<sub>3</sub>-N<sub>2</sub>O` → dump `BF3-N2O`). Optional
   **`--engine hybrid`** (`nbs_hybrid_ocr`): Surya line detection only, PIL crops, then
   `datalab-to/indra-ocr` — faster but splits table cells into separate lines on this scan.
-  `--engine tesseract` is the legacy char-box path. Page breaks (`\f`) keep PDF page
-  numbers; printed page = PDF page − 8. Progress is logged **per page**; each page is
-  **merged** into the dump / `entries.json` / `unparsed.txt` (safe to interrupt / resume).
-  Skip filled pages unless `FORCE=1`. Optional `--first` / `--last`. Packages: `surya-ocr`
+  `--engine tesseract` is the legacy char-box path. The dump is a **continuous table**
+  (newline-separated rows, no form-feeds); `pdfPage` / printed page (PDF − 8) live in
+  `entries.json`. Progress is logged **per page**; each page is **merged** into the dump /
+  `entries.json` / `unparsed.txt` (safe to interrupt / resume). Skip pages already in
+  `entries.json` unless `FORCE=1`. Optional `--first` / `--last`. Packages: `surya-ocr`
   + `indra-ocr` via pip in the Dockerfile (Poetry cannot resolve torch/triton for Python
   3.14); `LLAMA_CPP_BINARY` for `--engine surya`. GGUFs live in `huggingface_cache`; after
   the first download, `nbs_surya_ocr` sets local paths + `HF_HUB_OFFLINE=1`. Override with
@@ -43,10 +44,28 @@ Part of the [phase-diagram extraction specification](README.md).
 
 - Entry line: entry number (1–4 digits), system (components joined by `-`), composition
 (one value for binaries, `a-b-c` for ternaries, optional `APP`), temperature (may be
-negative) with optional uncertainty or `APP`, reference numbers. Lines that look like
-entries but do not parse go to `nsrds-nbs-61-1.unparsed.txt`.
+negative) with optional uncertainty or `APP`, reference numbers. Temperature may be `NA`
+when the table has no melting point (trailing block ~6190–6271). Melting notes such as
+`SER SOLID SOL` stay on the composition or temperature field, never as references. Lines
+that look like entries but do not parse go to `nsrds-nbs-61-1.unparsed.txt`.
+- `make pd-nbs-refs` repairs references in the dump then rebuilds `entries.json`: rule-based
+  note/T/ref fixes + `pdftotext` overlay (fill empty refs; extend truncated multi-line wraps).
+  Optional `OCR=1` runs hybrid OCR only for ids still missing refs. Writes
+  `nsrds-nbs-61-1.anomalies.txt` for T-order breaks and composition/T suspicions (no auto-fix
+  of systems or mol%). Promote the finished indexes into
+  `shared/processed/phase-diagrams/nbs/` (`*.entries.json`, `*.bibliography.json`); `extract` /
+  `nbs-suggest` prefer that dataset copy over the working `reports/.../nbs/` dump.
 
+### Bibliography
 
+- Separate section from Table I: PDF `bibliographyPages` (165–251), refs `[1]` … ~`[3270]`.
+- `make pd-nbs-bibliography` runs `pdftotext -layout` (no OCR), linearises each two-column
+  page (left column then right), and writes
+  `nbs/nsrds-nbs-61-1.bibliography.json` as `{ "1": "citation…", … }`. Raw dump:
+  `.bibliography.txt`. Ids absent from the text layer go to `.bibliography.missing.txt`
+  (~30 gaps on the Internet Archive scan). Re-runs merge by ref id (parsed keys update;
+  prior-only keys kept unless `FORCE=1`). Optional Surya/gap-fill is out of scope for the
+  first cut. The small hand `references` map in `sources.json` is unchanged.
 
 ### Conversion and comparison
 

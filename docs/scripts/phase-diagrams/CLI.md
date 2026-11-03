@@ -46,6 +46,10 @@ commands:
   nbs-index        OCR Table I page-by-page → nbs/ [--first N --last N]
                    [--engine surya|hybrid|tesseract] [--force]
                    (default surya = full VLM; hybrid = Surya detect + Indra)
+  nbs-bibliography pdftotext + parse Bibliography → nbs/*.bibliography.json
+                   [--first N --last N] [--force]
+  nbs-refs         Repair Table I refs in dump → txt then entries.json
+                   [--first N --last N] [--force] [--ocr]
   nbs-suggest COMPONENT [COMPONENT ...]
                    Candidate NBS entries for exactly these components
   validate [--candidate SYSTEM]
@@ -54,7 +58,8 @@ commands:
 
 `SYSTEM` is the file stem (`mgo-sio2`); configs are read from `<dataset>/configs/`.
 PDF paths come from `sources.json` → `sources.<ref>.file`. `extract` reads the NBS index from
-`nbs/nsrds-nbs-61-1.entries.json` (run `nbs-index` first when invariants list NBS entries).
+`dataset/nbs/nsrds-nbs-61-1.entries.json` (preferred) or the working `nbs/` copy
+(run `nbs-index` / promote into processed when invariants list NBS entries).
 `-v` adds per-step detail: pages during `index-figures` and the captions found; every detected
 invariant line (temperature, rows, x extent) during `extract`.
 Exit codes: 0 ok, 1 validation errors / differences / promotion refused, 2 config / input error.
@@ -102,6 +107,8 @@ The CLI runs in the `python` container only (principle 6).
 | `make pd-compare SYSTEM=mgo-sio2`                   | `compare`                                               |
 | `make pd-promote SYSTEM=mgo-sio2`                   | `promote` (after user validation)                       |
 | `make pd-nbs-index` `[FIRST=11 LAST=11]`             | `nbs-index` (render+Surya; optional page range)         |
+| `make pd-nbs-bibliography` `[FIRST=165 LAST=251]` `[FORCE=1]` | `nbs-bibliography` (pdftotext; merge by ref id) |
+| `make pd-nbs-refs` `[FIRST=11 LAST=119]` `[FORCE=1]` `[OCR=1]` | `nbs-refs` (repair dump refs → entries.json)   |
 | `make pd-nbs-suggest COMPONENTS="MgO SiO2"`         | `nbs-suggest`                                           |
 | `make pd-validate [SYSTEM=mgo-sio2]`                | `validate [--candidate mgo-sio2]`                       |
 | `make pd-test`                                      | `pytest /app/tests/phase_diagrams/ -v`                  |
