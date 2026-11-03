@@ -43,8 +43,14 @@ _TWO = tuple(sorted({e for e in ELEMENTS if len(e) == 2}, key=lambda e: (-len(e)
 _ONE = frozenset(e for e in ELEMENTS if len(e) == 1)
 
 
+_HYDRATE_DOT = "\uE000"  # placeholder so hydrate · / . survive middot stripping
+
+
 def normalize_formula(raw: str) -> str:
-    """``'NaN° 3'`` → ``'NaNO3'``, ``'BCI 3'`` → ``'BCl3'``, ``'TI2C03'`` → ``'Tl2CO3'``."""
+    """``'NaN° 3'`` → ``'NaNO3'``, ``'BCI 3'`` → ``'BCl3'``, ``'TI2C03'`` → ``'Tl2CO3'``.
+
+    Crystal-water links are kept: ``Ca(NO3)2·4H2O`` (not ``Ca(NO3)24H2O``).
+    """
     token = _compact(raw)
     if not token:
         return token
@@ -52,6 +58,10 @@ def normalize_formula(raw: str) -> str:
     pos = 0
     while pos < len(token):
         char = token[pos]
+        if char == "·":
+            out.append("·")
+            pos += 1
+            continue
         if char in "()":
             out.append(char)
             pos += 1
@@ -84,8 +94,13 @@ def normalize_formula(raw: str) -> str:
 def _compact(raw: str) -> str:
     token = re.sub(r"\s+", "", raw).strip("\"'`")
     token = token.replace("°", "O").replace("<", "(").replace(">", ")")
+    # Keep crystal-water separators (``2·4H2O``, ``2.4H2O``); strip other middots below.
+    token = re.sub(r"(?<=[\d)])[·•.](?=\d*H2O)", _HYDRATE_DOT, token)
     token = re.sub(r"(?<=[A-Za-z])[•·]", "4", token)  # ``N2H•`` → ``N2H4``
     token = token.replace("•", "").replace("·", "").replace("—", "-").replace("–", "-")
+    token = token.replace(_HYDRATE_DOT, "·")
+    # Already-glued hydrates from earlier OCR: ``Ca(NO3)24H2O`` → ``Ca(NO3)2·4H2O``.
+    token = re.sub(r"(\)\d)(\d+H2O)", r"\1·\2", token)
     token = re.sub(r"C[)}\]]", "Cl", token)  # ``PC)`` / ``VOC}`` → ``PCl`` / ``VOCl``
     token = re.sub(r"(?<![A-Za-z])eG(?=[A-Z(])", "Ge", token)  # ``eGCl`` → ``GeCl``
     token = re.sub(r"(?<![A-Za-z])(?:lA|IA|1A|LA|I6A)(?=[A-Z(]|$)", "Al", token)  # ``lABr`` / ``I6ABr``
