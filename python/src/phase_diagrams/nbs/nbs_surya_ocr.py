@@ -34,6 +34,11 @@ _FALLBACK_LLAMA_BINS = (
 _GGUF_REPO_DIR = "models--datalab-to--surya-ocr-2.5-gguf"
 _GGUF_MODEL_FILE = "surya-2.5.gguf"
 _GGUF_MMPROJ_FILE = "surya-2.5-mmproj.gguf"
+# Official datalab-to/surya-ocr-2.5-gguf weight files (mmproj is shared).
+SURYA_QUANT_FILES: dict[str, str] = {
+    "bf16": "surya-2.5.gguf",
+    "q8": "surya-2.5-Q8_0.gguf",
+}
 
 
 def dump_nbs_table_ocr(
@@ -134,6 +139,26 @@ def table_html_to_lines(html: str) -> list[str]:
     return lines
 
 
+def apply_surya_quant(quant: str = "bf16") -> str:
+    """Select the Surya GGUF weight file (``bf16`` or ``q8``).
+
+    Sets ``SURYA_GGUF_MODEL_FILE`` and clears ``SURYA_GGUF_LOCAL_*`` so
+    ``ensure_llama_env`` resolves the matching file from the HF cache (or
+    downloads it when ``SURYA_HF_ONLINE=1``). Returns the GGUF filename.
+    """
+    key = quant.strip().lower()
+    if key not in SURYA_QUANT_FILES:
+        raise ValueError(
+            f"unknown Surya quant {quant!r} (expected {tuple(SURYA_QUANT_FILES)})"
+        )
+    filename = SURYA_QUANT_FILES[key]
+    os.environ["SURYA_GGUF_MODEL_FILE"] = filename
+    # Drop sticky local paths from a previous quant so the cache lookup uses filename.
+    os.environ.pop("SURYA_GGUF_LOCAL_MODEL_PATH", None)
+    os.environ.pop("SURYA_GGUF_LOCAL_MMPROJ_PATH", None)
+    return filename
+
+
 def ensure_llama_env() -> None:
     """Point Surya at ``llama-server`` and prefer a warm GGUF cache (no Hub calls).
 
@@ -143,6 +168,7 @@ def ensure_llama_env() -> None:
 
     Opt out with ``SURYA_HF_ONLINE=1`` (allows Hub checks / first-time download
     even when a cache is present). Explicit ``SURYA_GGUF_LOCAL_*`` always wins.
+    Call ``apply_surya_quant("q8")`` first to prefer ``surya-2.5-Q8_0.gguf``.
     """
     candidates = [
         Path(os.environ["LLAMA_CPP_BINARY"]) if os.environ.get("LLAMA_CPP_BINARY") else None,

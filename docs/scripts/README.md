@@ -74,6 +74,21 @@ This directory contains documentation for Python processing scripts.
 
 ---
 
+## 🔬 Yaws 1999 Handbook
+
+### [YAWS1999_PARSER_SPEC.md](YAWS1999_PARSER_SPEC.md)
+**Parse Chemical Properties Handbook (Yaws 1999) DjVu → one JSON file per table**
+- **Surya only** (`ddjvu` + full-page OCR); no Indra / LightOn / Tesseract / row-strip splitting
+- `NO_REPLACE=1` keeps existing `table-<id>.json` and writes `table-<id>.<quant>.json` (e.g. `q8`)
+- Same dump → parse → write shape as the NSRDS-NBS 61 eutectic index; **each `Table X-Y` is its own file**
+- Package: `python/src/yaws1999/`
+- CLI: `python/src/scripts/parse_yaws1999.py`
+- Make commands: `make yaws1999-parse`, `make yaws1999-parse QUANT=q8 NO_REPLACE=1`, `make yaws1999-test`
+- Source: `shared/sources/compound-data/Chemical properties handbook (Yaws 1999).djvu`
+- Output: `shared/processed/yaws1999/table-*.json` + `index.json`; page dumps / renders in `tmp/reports/python/yaws1999/`
+
+---
+
 ## 📚 OCR Extraction
 
 ### [OCR_SCRIPTS_GUIDE.md](OCR_SCRIPTS_GUIDE.md)

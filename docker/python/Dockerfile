@@ -59,6 +59,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr-chi-sim \
     tesseract-ocr-chi-tra \
     poppler-utils \
+    djvulibre-bin \
     ghostscript \
     default-jre-headless \
     libjpeg-dev \
@@ -104,9 +105,10 @@ RUN poetry config virtualenvs.create false --local && \
     poetry install --no-root --no-interaction --no-ansi || \
     (echo "Retrying installation..." && poetry install --no-root --no-interaction --no-ansi)
 
-# NBS Table I OCR: Surya (detect / full VLM) + Indra (fast line recognition).
+# NBS OCR: Surya (detect / full VLM) + Indra (fast line recognition).
+# Yaws handbook parser uses Surya full-page OCR only (no Indra / LightOn / Tesseract).
 # Poetry cannot resolve torch/triton for Python 3.14 — install via pip.
-# Full surya-ocr-2.5 recognition uses llama-server; hybrid uses Surya detect + indra-ocr.
+# Full surya-ocr-2.5 recognition uses llama-server; NBS hybrid uses Surya detect + indra-ocr.
 RUN pip install --no-cache-dir \
       --timeout 600 \
       --retries 5 \

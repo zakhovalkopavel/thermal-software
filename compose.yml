@@ -139,6 +139,10 @@ services:
       XAUTHORITY: /root/.Xauthority
       LLAMA_CPP_BINARY: /opt/llama-cpp/llama-server
       LD_LIBRARY_PATH: /opt/llama-cpp
+      # Yaws/Surya: leave unset to auto-use all logical CPUs (SMT included).
+      # Example override: LLAMA_CPP_EXTRA_ARGS=--threads 12 --threads-batch 12
+      SURYA_INFERENCE_PARALLEL: ${SURYA_INFERENCE_PARALLEL:-}
+      LLAMA_CPP_EXTRA_ARGS: ${LLAMA_CPP_EXTRA_ARGS:-}
     volumes:
       - ./python/src:/app/src
       - ./python/tests:/app/tests

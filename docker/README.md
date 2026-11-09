@@ -11,6 +11,8 @@ docker/
 ├── frontend/                # React SPA
 │   ├── Dockerfile
 │   └── nginx.conf
+├── python/
+│   └── Dockerfile           # Full helper stack (Tesseract + Poetry + Surya/Indra)
 ├── nginx/                   # Reverse Proxy
     ├── Dockerfile
     ├── nginx.conf

@@ -69,6 +69,7 @@ python/
 │   │   ├── writers.py           # compound files, unresolved.json, index.json, units.json, sources.json, interactions.json, missing-cas.txt
 │   │   ├── constants/           # formula overrides, class overrides, source priority, PubChem table, transport tables, units
 │   │   └── parsers/             # JANAF CAS index, transport-parameters.json
+│   ├── yaws1999/         # Yaws Chemical Properties Handbook (1999) DjVu → one JSON per table
 │   ├── phase_diagrams/   # Slag Atlas / NSRDS-NBS 61 phase-diagram extraction (one export per file)
 │   │   ├── __init__.py       # Public API re-exports
 │   │   ├── constants/  models/  config/      # constants, dataclasses, configs + source registry
