@@ -53,6 +53,18 @@ class TestIdentifiers:
         assert found["7440-37-1"].source.table == "pubchem large"
         assert "79-24-3" not in found
 
+    def test_skips_cas_placeholder_common_name(self, make_source, chem):
+        """PubChem large often puts the CAS in the common-name column; use a synonym instead."""
+        source = make_source({
+            "pubchem large": tsv(
+                [166593, "12067-22-0", "S3Sm2", 396.915,
+                 "[S-2].[S-2].[S-2].[Sm+3].[Sm+3]", "", "KKZKWPQFAZAUSB-UHFFFAOYSA-N",
+                 "samarium(3+);trisulfide", "12067-22-0", "samarium sulfide", "samarium(iii) sulfide"],
+            ),
+        })
+        found = load_identifiers(source, chem, {"12067-22-0"})
+        assert found["12067-22-0"].name == "samarium sulfide"
+
 
 def _prop(cas, value, ref, chem, table="CRC inorganic constants", formula=None, label=None):
     return SourceEntry(
@@ -77,6 +89,80 @@ class TestMerge:
         assert record.Mr is None
         conflict = next(c for c in result.conflicts if c["cas"] == "12004-39-6")
         assert conflict["resolution"] == "override" and conflict["identifierFormula"] == "Al2O7Ti2"
+
+    def test_inorganic_display_prefers_conventional_hydrate(self, chem, classifier):
+        """When PubChem Hill matches the name, display keeps Sm(NO3)3·6H2O."""
+        link = chem.link(SOURCE_TABLES["pubchem large"], 1)
+        ids = {
+            "13759-83-6": Identifier(
+                "13759-83-6", "H12N3O15Sm", 444.47, None, None,
+                "samarium trinitrate hexahydrate", link,
+            ),
+        }
+        entries = [
+            _prop("13759-83-6", 351.15, RefKey.CRC95, chem, label="Samarium(III) nitrate hexahydrate"),
+        ]
+        result = merge_compounds(entries, ids, classifier)
+        record = result.records["13759-83-6"]
+        assert record.hill == "H12N3O15Sm"
+        assert record.display_formula == "Sm(NO3)3·6H2O"
+
+    def test_name_formula_overrides_truncated_pubchem_hill(self, chem, classifier):
+        """Aluminum nitrate nonahydrate must not keep PubChem's AlH3NO4."""
+        link = chem.link(SOURCE_TABLES["pubchem large"], 1)
+        ids = {
+            "7784-27-2": Identifier(
+                "7784-27-2", "AlH3NO4", 100.0, None, None,
+                "aluminum nitrate nonahydrate", link,
+            ),
+        }
+        entries = [
+            _prop("7784-27-2", 346.15, RefKey.CRC95, chem, label="aluminum nitrate nonahydrate"),
+        ]
+        result = merge_compounds(entries, ids, classifier)
+        record = result.records["7784-27-2"]
+        assert record.display_formula == "Al(NO3)3·9H2O"
+        assert record.hill == "AlH18N3O18"
+        assert any(c.get("resolution") == "name_formula" for c in result.conflicts)
+
+    def test_record_name_normalizes_pdf_mojibake(self, chem, classifier):
+        link = chem.link(SOURCE_TABLES["pubchem large"], 1)
+        ids = {
+            "95639-17-1": Identifier(
+                "95639-17-1", "C13H25NO3", 243.0, None, None,
+                "␣-关共Cyclohexyloxy兲methyl兴-4-morpholineethanol", link,
+            ),
+        }
+        entries = [_prop("95639-17-1", 300.0, RefKey.CRC95, chem)]
+        result = merge_compounds(entries, ids, classifier)
+        assert result.records["95639-17-1"].name == "α-[(Cyclohexyloxy)methyl]-4-morpholineethanol"
+
+    def test_kf_dimer_override_display(self, chem, classifier):
+        """Alkali halide dimers use (MX)2 display, not Hill F2K2."""
+        entries = [_prop("12285-62-0", 300.0, RefKey.NBS1982, chem, formula="F2K2")]
+        # Empty overrides: exercise merger dimer logic (accepted file may differ).
+        result = merge_compounds(entries, {}, classifier, overrides={})
+        record = result.records["12285-62-0"]
+        assert record.hill == "F2K2"
+        assert record.display_formula == "(KF)2"
+
+    def test_cabr_override_display_iupac(self, chem, classifier):
+        """Hill BrCa must display as IUPAC CaBr."""
+        entries = [_prop("10024-43-8", 300.0, RefKey.NBS1982, chem, formula="BrCa")]
+        result = merge_compounds(entries, {}, classifier, overrides={})
+        record = result.records["10024-43-8"]
+        assert record.hill == "BrCa"
+        assert record.display_formula == "CaBr"
+
+    def test_name_override_when_identifier_missing(self, chem, classifier, monkeypatch):
+        """Filled NAME_OVERRIDES supply a name when identifier/source labels are empty."""
+        import compound_data.merger as merger_mod
+        monkeypatch.setitem(merger_mod.NAME_OVERRIDES, "99999-99-9", "Testium bromide")
+        entries = [_prop("99999-99-9", 300.0, RefKey.CRC95, chem, formula="BrTe")]
+        result = merge_compounds(entries, {}, classifier)
+        record = result.records["99999-99-9"]
+        assert record.name == "Testium bromide"
+        assert record.display_formula == "TeBr"
 
     def test_class_override_and_formula_rule_are_reported(self, chem, classifier):
         link = chem.link(SOURCE_TABLES["pubchem small"], 1)

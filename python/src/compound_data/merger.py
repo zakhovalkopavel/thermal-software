@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from chemical_formula.compound_class import classify_compound
+from chemical_formula.constants.element_groups import HALOGENS
 from chemical_formula.formula_elements import ISOTOPES, formula_elements
 from chemical_formula.formula_family import formula_family
 from chemical_formula.hill_formula import hill_formula
@@ -36,11 +37,17 @@ from compound_data.class_override import ClassOverride
 from compound_data.compound_record import CompoundRecord
 from compound_data.constants.class_overrides import CLASS_OVERRIDES
 from compound_data.constants.formula_overrides import FORMULA_OVERRIDES
+from compound_data.constants.name_overrides import NAME_OVERRIDES
 from compound_data.constants.source_priority import SOURCE_PRIORITY, property_rank
 from compound_data.formula_override import FormulaOverride
+from compound_data.label_normalize import normalize_label
+from compound_data.name_to_formula import name_to_formula
 
 _CHARGE = re.compile(r"[+-]\d*$")
 _SYMBOL = re.compile(r"[A-Z][a-z]?")
+_CAS_NAME = re.compile(r"^\d{2,7}-\d{2}-\d$")
+# Gas-phase MX dimers in thermo tables (alkali / alkaline-earth / H + halogen).
+_DIMER_ELECTROPOS = frozenset({"Li", "Na", "K", "Rb", "Cs", "Fr", "Be", "Mg", "Ca", "Sr", "Ba", "H", "D", "T"})
 
 
 @dataclass
@@ -92,24 +99,45 @@ def merge_compounds(
         override = overrides.get(cas) if cas else None
         source_formulas = list(dict.fromkeys(e.formula for e in group if e.formula))
 
+        name_override = False
         if override is not None:
-            formula = override.formula
+            parse_formula = override.formula
             if identifier is not None and identifier.formula != override.formula:
                 result.conflicts.append({
-                    "cas": cas, "formula": formula, "identifierFormula": identifier.formula,
+                    "cas": cas, "formula": override.standard(), "identifierFormula": identifier.formula,
                     "identifierSource": identifier.source.to_dict(), "resolution": "override",
                     "reason": override.reason,
                 })
         elif identifier is not None and identifier.formula:
-            formula = identifier.formula
+            parse_formula = identifier.formula
         elif source_formulas:
-            formula = source_formulas[0]
+            parse_formula = source_formulas[0]
         else:
             result.unresolved.append(_unresolved(cas, group, "formula not found"))
             continue
 
+        # Prefer a structured name→formula when the identifier Hill is wrong/truncated
+        # (e.g. AlH3NO4 for aluminum nitrate nonahydrate → Al(NO3)3·9H2O).
+        if override is None:
+            named = _preferred_name_formula(cas, identifier, group)
+            if named is not None:
+                try:
+                    id_hill = hill_formula(formula_elements(parse_formula))
+                    name_hill = hill_formula(formula_elements(named))
+                except ValueError:
+                    id_hill = name_hill = None
+                if name_hill and id_hill and name_hill != id_hill:
+                    result.conflicts.append({
+                        "cas": cas, "formula": named, "identifierFormula": parse_formula,
+                        "identifierSource": identifier.source.to_dict() if identifier else None,
+                        "resolution": "name_formula",
+                        "reason": "name→formula differs from identifier (likely truncated hydrate/salt)",
+                    })
+                    parse_formula = named
+                    name_override = True
+
         try:
-            counts = formula_elements(formula)
+            counts = formula_elements(parse_formula)
         except ValueError as exc:
             result.unresolved.append(_unresolved(cas, group, f"formula not parsed: {exc}"))
             continue
@@ -117,18 +145,35 @@ def merge_compounds(
         _report_source_formulas(result, cas, hill, group)
 
         smiles = identifier.smiles if identifier else next((e.smiles for e in group if e.smiles), None)
-        name = (identifier.name if identifier else None) or next((e.label for e in group if e.label), None)
+        name = _record_name(cas, identifier, group)
         compound_class, group_name = _classify(result, cas, hill, name, counts, smiles, class_overrides)
         families = _families(result, classifier, cas, hill, name, counts, smiles) if compound_class == "organic" else []
         if compound_class == "organic":
             group_name = families[0] if families else UNCLASSIFIED
 
+        # Dual formulas for every compound: display_formula (conventional / IUPAC) + hill.
+        # Overrides supply the accepted standard form; otherwise inorganic prefers a name→formula
+        # reconstruction (Sm(NO3)3·6H2O) when it matches Hill, else IUPAC element order; organic
+        # uses Hill. record.formula keeps the parseable/identifier string (isotopes, charges).
+        if override is not None:
+            standard = override.standard()
+            stored_formula = standard
+        elif name_override:
+            standard = parse_formula
+            stored_formula = parse_formula
+        elif compound_class == "inorganic":
+            standard = _inorganic_display(hill, counts, cas, identifier, group)
+            stored_formula = parse_formula
+        else:
+            standard = hill
+            stored_formula = parse_formula
+
         record = CompoundRecord(
-            id=key, cas=cas, formula=formula, hill=hill,
-            display_formula=iupac_formula(counts) if compound_class == "inorganic" else hill,
+            id=key, cas=cas, formula=stored_formula, hill=hill,
+            display_formula=standard,
             elements=list(counts),
             compound_class=compound_class, group=group_name, name=name,
-            Mr=_molar_mass(identifier, override),
+            Mr=None if name_override else _molar_mass(identifier, override),
             smiles=smiles, inchikey=identifier.inchikey if identifier else None,
             pubchem_cid=identifier.cid if identifier else None, families=families,
             identifier_source=identifier.source if identifier else None,
@@ -307,6 +352,121 @@ def _sort_by_priority(record: CompoundRecord) -> None:
             phases[phase] = sorted(values, key=_equation_priority)
 
 
+def _record_name(cas: Optional[str], identifier: Optional[Identifier], group: list[SourceEntry]) -> Optional[str]:
+    """Identifier name when it is a real compound name; else the first source label.
+
+    PubChem identifier dumps often store the CAS in the common-name column; those are ignored.
+    PDF mojibake in labels is repaired via ``normalize_label``. When those sources have no usable
+    name, ``NAME_OVERRIDES`` (filled CAS→name map) is used.
+    """
+    if identifier is not None and _usable_name(identifier.name, cas):
+        return normalize_label(identifier.name)
+    for entry in group:
+        if entry.label and _usable_name(entry.label, cas):
+            return normalize_label(entry.label)
+    if cas and cas in NAME_OVERRIDES and _usable_name(NAME_OVERRIDES[cas], cas):
+        return normalize_label(NAME_OVERRIDES[cas])
+    return None
+
+
+def _usable_name(name: Optional[str], cas: Optional[str]) -> bool:
+    if not name:
+        return False
+    cleaned = normalize_label(name)
+    if cas and (name == cas or cleaned == cas):
+        return False
+    return _CAS_NAME.fullmatch(name) is None and _CAS_NAME.fullmatch(cleaned) is None
+
+
+def _preferred_name_formula(
+    cas: Optional[str], identifier: Optional[Identifier], group: list[SourceEntry],
+) -> Optional[str]:
+    """First parseable name→formula from a salt/hydrate-like label."""
+    for label in _formula_name_candidates(cas, identifier, group):
+        if not _salt_or_hydrate_label(label):
+            continue
+        proposed = name_to_formula(label).formula
+        if not proposed:
+            continue
+        try:
+            formula_elements(proposed)
+        except ValueError:
+            continue
+        return proposed
+    return None
+
+
+def _salt_or_hydrate_label(label: str) -> bool:
+    """True when the label looks like an inorganic salt / hydrate worth trusting over PubChem."""
+    low = label.casefold()
+    if any(h in low for h in (
+        "hydrate", "nitrate", "sulfate", "sulphate", "phosphate", "perchlorate",
+        "chloride", "bromide", "iodide", "fluoride", "alum", "ferrocyanide",
+    )):
+        return True
+    return bool(re.search(r"\([ivx]+\)", low))
+
+
+def _mx_dimer_display(counts: dict[str, float]) -> Optional[str]:
+    """``F2K2`` / ``K2F2`` → ``(KF)2`` for alkali/halogen gas-phase dimers."""
+    if len(counts) != 2:
+        return None
+    (a, na), (b, nb) = list(counts.items())
+    if na != 2 or nb != 2:
+        return None
+    if a in _DIMER_ELECTROPOS and b in HALOGENS:
+        return f"({a}{b})2"
+    if b in _DIMER_ELECTROPOS and a in HALOGENS:
+        return f"({b}{a})2"
+    return None
+
+
+def _inorganic_display(
+    hill: str,
+    counts: dict[str, float],
+    cas: Optional[str],
+    identifier: Optional[Identifier],
+    group: list[SourceEntry],
+) -> str:
+    """Conventional formula when name→formula matches Hill; else dimer or IUPAC order.
+
+    Element counts alone cannot rebuild hydrates or oxoanion salts (``H12N3O15Sm`` vs
+    ``Sm(NO3)3·6H2O``), so labels are tried first. Alkali/halogen ``M2X2`` species use
+    ``(MX)2``.
+    """
+    for label in _formula_name_candidates(cas, identifier, group):
+        proposed = name_to_formula(label).formula
+        if not proposed:
+            continue
+        try:
+            if hill_formula(formula_elements(proposed)) == hill:
+                return proposed
+        except ValueError:
+            continue
+    dimer = _mx_dimer_display(counts)
+    if dimer is not None:
+        return dimer
+    return iupac_formula(counts)
+
+
+def _formula_name_candidates(
+    cas: Optional[str], identifier: Optional[Identifier], group: list[SourceEntry],
+) -> list[str]:
+    """Source labels first (CRC often has Roman numerals), then the identifier name."""
+    seen: set[str] = set()
+    out: list[str] = []
+    for label in (*(e.label for e in group if e.label), identifier.name if identifier else None):
+        if not _usable_name(label, cas):
+            continue
+        cleaned = normalize_label(label)
+        key = cleaned.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(cleaned)
+    return out
+
+
 def _molar_mass(identifier: Optional[Identifier], override: Optional[FormulaOverride]) -> Optional[float]:
     """kg/mol from the identifier MW; None when the formula was overridden (the MW is of the wrong formula)."""
     if identifier is None or identifier.mw is None or override is not None:
@@ -349,7 +509,7 @@ def _report_shared_formulas(result: MergeResult) -> None:
 def _unresolved(cas: Optional[str], group: list[SourceEntry], reason: str) -> dict[str, Any]:
     return {
         "cas": cas,
-        "labels": sorted({e.label for e in group if e.label}),
+        "labels": sorted({normalize_label(e.label) for e in group if e.label}),
         "formulas": sorted({e.formula for e in group if e.formula}),
         "reason": reason,
         "values": [

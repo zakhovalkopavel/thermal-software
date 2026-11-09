@@ -5,10 +5,14 @@ The identifier files have no header. Columns: pubchem id, CAS, formula (Hill), M
 InChIKey, IUPAC name, common name, synonyms... Precedence: ``Inorganic db``, ``pubchem small``,
 ``pubchem large``; the first file that has a CAS wins. Only the requested CAS numbers are loaded.
 
+PubChem often puts the CAS itself in the common-name column; those are skipped so a synonym or
+IUPAC name is used instead of ``name: "12067-22-0"``.
+
 Spec: docs/scripts/COMPOUND_DATA_SPEC.md
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Iterable, Optional
 
@@ -16,6 +20,8 @@ from chemicals_tables.chemicals_source import ChemicalsSource
 from chemicals_tables.constants.source_tables import IDENTIFIER_TABLES, SOURCE_TABLES
 from chemicals_tables.identifier import Identifier
 from chemicals_tables.parsers.number import parse_number
+
+_CAS_NAME = re.compile(r"^\d{2,7}-\d{2}-\d$")
 
 
 def load_identifiers(source_dir: Path, chem: ChemicalsSource, wanted: Iterable[str]) -> dict[str, Identifier]:
@@ -35,18 +41,37 @@ def load_identifiers(source_dir: Path, chem: ChemicalsSource, wanted: Iterable[s
                 cells = [c.strip() for c in text.rstrip("\n").split("\t")]
                 cells += [""] * (9 - len(cells))
                 cas = cells[1]
+                compound_name = _compound_name(cells, cas)
                 found[cas] = Identifier(
                     cas=cas,
                     formula=cells[2],
                     mw=parse_number(cells[3]),
                     smiles=cells[4] or None,
                     inchikey=cells[6] or None,
-                    name=cells[8] or cells[7] or None,
-                    source=chem.link(table, line, cells[8] or cells[7] or None),
+                    name=compound_name,
+                    source=chem.link(table, line, compound_name),
                     cid=_cid(cells[0]),
                 )
                 remaining.discard(cas)
     return found
+
+
+def _compound_name(cells: list[str], cas: str) -> Optional[str]:
+    """Common name, then synonyms, then IUPAC — skipping CAS-number placeholders."""
+    iupac = cells[7]
+    common = cells[8]
+    synonyms = cells[9:]
+    for candidate in (common, *synonyms, iupac):
+        if _usable_name(candidate, cas):
+            return candidate
+    return None
+
+
+def _usable_name(name: Optional[str], cas: str) -> bool:
+    """False for empty strings and names that are only the CAS number."""
+    if not name:
+        return False
+    return name != cas and _CAS_NAME.fullmatch(name) is None
 
 
 def _cid(cell: str) -> Optional[int]:

@@ -160,7 +160,10 @@ def write_compound_index(files: Iterable[CompoundFile], out_dir: Path, generated
             "displayFormula": record.display_formula,
             "entry": key,
             "cas": record.pubchem_cas,
-            "formula": record.formula if record.formula != record.hill else None,
+            "formula": (
+                record.display_formula if record.display_formula != record.hill
+                else (record.formula if record.formula != record.hill else None)
+            ),
             "name": record.name,
             "class": record.compound_class,
             "group": record.group,

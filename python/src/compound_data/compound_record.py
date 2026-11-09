@@ -31,7 +31,9 @@ class CompoundRecord:
     ``other_cas`` are source CAS numbers whose rows were moved onto this record (unknown CAS, see merger).
     ``pubchem_cas`` is the CAS a PubChem formula search found for a record without CAS (it keeps its
     ``formula:`` key), with ``pubchem_cas_source`` (see pubchem_formula_links).
-    ``display_formula`` is the IUPAC element order for inorganic compounds (``iupac_formula``), else ``hill``.
+    ``display_formula`` is the conventional / standard formula people read (IUPAC element order for
+    inorganic compounds via ``iupac_formula``, an accepted name→formula standard when overridden,
+    else ``hill`` for organics). ``hill`` is the Hill-notation lookup key. Both are always set.
     """
 
     id: str
@@ -81,12 +83,17 @@ class CompoundRecord:
     def to_dict(self) -> dict:
         """Entry of the compound file: the CAS is its key, Hill formula and elements are file fields, so they are not repeated.
 
-        ``formula`` is written only when it differs from the Hill formula (isotopes, charges); ``cas`` /
-        ``casRef`` only on records without CAS that a PubChem formula search identified; null and empty
-        fields are left out.
+        ``formula`` is the conventional/standard form when it differs from ``hill`` (IUPAC order,
+        accepted structural formulas, isotopes, charges); the file also always carries
+        ``displayFormula`` + ``hill``. ``cas`` / ``casRef`` only on records without CAS that a PubChem
+        formula search identified; null and empty fields are left out.
         """
+        # Prefer display (standard) over the raw stored string when writing the entry formula.
+        written_formula = self.display_formula if self.display_formula != self.hill else (
+            self.formula if self.formula != self.hill else None
+        )
         out: dict[str, Any] = {
-            "formula": self.formula if self.formula != self.hill else None,
+            "formula": written_formula,
             "cas": self.pubchem_cas,
             "casRef": self.pubchem_cas_source.to_ref() if self.pubchem_cas_source else None,
             "name": self.name,
