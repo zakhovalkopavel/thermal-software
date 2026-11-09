@@ -10,8 +10,18 @@
   "entries": {
     "1070-75-3": {
       "formula": "Li2C2",
-      "name": "Lithium Carbide",
+      "name": "Lithium carbide",
       "properties": {
+        "density": [
+          {
+            "value": 1650,
+            "ref": [
+              "CRC95",
+              123,
+              "crcConstants"
+            ]
+          }
+        ],
         "enthalpyFormation298": [
           {
             "value": -59400.0,
@@ -22,7 +32,50 @@
               "nbsTables"
             ]
           }
+        ],
+        "molarVolume": [
+          {
+            "value": 2.29715151515151e-05,
+            "phase": "solid",
+            "ref": [
+              "CRC95",
+              81,
+              "crcSolidDensity"
+            ]
+          }
         ]
+      },
+      "equations": {
+        "heatCapacity": {
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "shomate",
+                "ref": [
+                  "NISTWebBook",
+                  1595,
+                  "shomate"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 2000.0,
+                      "a": 101.7758,
+                      "b": 0.01031753,
+                      "c": -9.5726e-08,
+                      "d": 2.7879999999999998e-11,
+                      "e": -2960218.0
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 2000.0
+              }
+            ]
+          }
+        }
       },
       "janaf": [
         "C-131"

@@ -14,48 +14,89 @@
       "properties": {
         "enthalpyFormation298": [
           {
-            "value": -619000.0,
+            "value": -619000,
             "phase": "gas",
             "ref": [
-              "NBS1982",
-              2954,
-              "nbsTables"
+              "CRC95",
+              2278,
+              "crcStdThermo"
             ]
           }
         ],
         "entropy298": [
           {
-            "value": 252.74,
+            "value": 252.7,
             "phase": "gas",
             "ref": [
-              "NBS1982",
-              2954,
-              "nbsTables"
+              "CRC95",
+              2278,
+              "crcStdThermo"
             ]
           }
         ],
         "gibbsEnergy298": [
           {
-            "value": -628000.0,
+            "value": -628000,
             "phase": "gas",
             "ref": [
-              "NBS1982",
-              2954,
-              "nbsTables"
+              "CRC95",
+              2278,
+              "crcStdThermo"
             ]
           }
         ],
         "heatCapacity298": [
           {
-            "value": 43.89,
+            "value": 43.9,
             "phase": "gas",
             "ref": [
-              "NBS1982",
-              2954,
-              "nbsTables"
+              "CRC95",
+              2278,
+              "crcStdThermo"
             ]
           }
         ]
+      },
+      "equations": {
+        "heatCapacity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "shomate",
+                "ref": [
+                  "NISTWebBook",
+                  9799,
+                  "shomate"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 1000.0,
+                      "a": 31.80677,
+                      "b": 0.06703354,
+                      "c": -6.539215e-05,
+                      "d": 2.279765e-08,
+                      "e": -185259.0
+                    },
+                    {
+                      "Tmin": 1000.0,
+                      "Tmax": 6000.0,
+                      "a": 57.64632,
+                      "b": 0.000580982,
+                      "c": -2.39494e-07,
+                      "d": 3.4826e-11,
+                      "e": -1985761.0
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 6000.0
+              }
+            ]
+          }
+        }
       },
       "janaf": [
         "F-101"

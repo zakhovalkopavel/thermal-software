@@ -1,0 +1,337 @@
+{
+  "class": "organic",
+  "group": "aromatics",
+  "displayFormula": "C7H9N",
+  "hill": "C7H9N",
+  "elements": [
+    "C",
+    "H",
+    "N"
+  ],
+  "entries": {
+    "583-61-9": {
+      "name": "2,3-Lutidine",
+      "Mr": 0.10715000000000001,
+      "smiles": "CC1=C(N=CC=C1)C",
+      "inchikey": "HPYNZHMRTTWQTB-UHFFFAOYSA-N",
+      "pubchemCid": 11420,
+      "families": [
+        "aromatics",
+        "alkanes"
+      ],
+      "identifierRef": [
+        1916,
+        "idPubchemRestUnclassified"
+      ],
+      "properties": {
+        "acentricFactor": [
+          {
+            "value": 0.358,
+            "ref": [
+              "Yaws2014",
+              1462,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "boilingPoint": [
+          {
+            "value": 434.35,
+            "ref": [
+              "Yaws2014",
+              3013,
+              "yawsTb"
+            ]
+          }
+        ],
+        "criticalPressure": [
+          {
+            "value": 4090000,
+            "ref": [
+              "Yaws2014",
+              1462,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "criticalTemperature": [
+          {
+            "value": 655.4,
+            "ref": [
+              "Yaws2014",
+              1462,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "criticalVolume": [
+          {
+            "value": 0.000367,
+            "ref": [
+              "Yaws2014",
+              1462,
+              "yawsCritical"
+            ]
+          }
+        ],
+        "enthalpyFormation298": [
+          {
+            "value": 19400,
+            "phase": "liquid",
+            "ref": [
+              "CRC95",
+              978,
+              "crcStdThermo"
+            ]
+          },
+          {
+            "value": 67100,
+            "phase": "gas",
+            "ref": [
+              "CRC95",
+              978,
+              "crcStdThermo"
+            ]
+          },
+          {
+            "value": 95100,
+            "phase": "gas",
+            "ref": [
+              "TRC1994",
+              649,
+              "trcGasCp"
+            ]
+          },
+          {
+            "value": 68300,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              1035,
+              "yawsHfS0g"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 243.7,
+            "phase": "liquid",
+            "ref": [
+              "CRC95",
+              978,
+              "crcStdThermo"
+            ]
+          },
+          {
+            "value": 357.45,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              1035,
+              "yawsHfS0g"
+            ]
+          }
+        ],
+        "heatCapacity298": [
+          {
+            "value": 120.97,
+            "phase": "gas",
+            "variant": "2,3 lutidine",
+            "ref": [
+              "Poling5",
+              121,
+              "poling"
+            ]
+          },
+          {
+            "value": 186,
+            "phase": "liquid",
+            "variant": "2,3 lutidine",
+            "ref": [
+              "Poling5",
+              121,
+              "poling"
+            ]
+          },
+          {
+            "value": 189.5,
+            "phase": "liquid",
+            "ref": [
+              "CRC95",
+              978,
+              "crcStdThermo"
+            ]
+          }
+        ]
+      },
+      "equations": {
+        "heatCapacity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quartic",
+                "ref": [
+                  "Poling5",
+                  121,
+                  "poling"
+                ],
+                "vars": {
+                  "a": 4.225,
+                  "b": 0.013393,
+                  "c": 0.00011364,
+                  "d": -1.6169e-07,
+                  "e": 6.585e-11
+                },
+                "min": 50,
+                "max": 1000,
+                "k": 8.31446261815324,
+                "variant": "2,3 lutidine"
+              },
+              {
+                "type": "trcCp",
+                "ref": [
+                  "TRC1994",
+                  649,
+                  "trcGasCp"
+                ],
+                "vars": {
+                  "a0": 4,
+                  "a1": 400000,
+                  "a2": 263,
+                  "a3": 46.999,
+                  "a4": 7.335,
+                  "a5": -27810000,
+                  "a6": 227,
+                  "a7": 68,
+                  "I": 2.9,
+                  "J": 11.38
+                },
+                "min": 50,
+                "max": 1500,
+                "k": 8.31446261815324
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "zabranskyQuasiPolynomial",
+                "ref": [
+                  "Zabransky1996",
+                  764,
+                  "zabransky"
+                ],
+                "vars": {
+                  "Tc": 655.4,
+                  "a1": -3.63159,
+                  "a2": 0.217054,
+                  "a3": 13.3285,
+                  "a4": 15.1903,
+                  "a5": 0,
+                  "a6": 0
+                },
+                "min": 266.7,
+                "max": 640,
+                "k": 8.31446261815324,
+                "dataType": "p",
+                "uncertainty": "V"
+              },
+              {
+                "type": "zabranskySpline",
+                "ref": [
+                  "Zabransky1996",
+                  761,
+                  "zabransky"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 266.7,
+                      "Tmax": 470,
+                      "a1": 21.3071,
+                      "a2": -3.28745,
+                      "a3": 1.61952,
+                      "a4": -0.11662
+                    },
+                    {
+                      "Tmin": 470,
+                      "Tmax": 590,
+                      "a1": -105.855,
+                      "a2": 77.8799,
+                      "a3": -15.6501,
+                      "a4": 1.10818
+                    },
+                    {
+                      "Tmin": 590,
+                      "Tmax": 640,
+                      "a1": -16400.2,
+                      "a2": 8363.12,
+                      "a3": -1419.93,
+                      "a4": 80.446
+                    }
+                  ]
+                },
+                "min": 266.7,
+                "max": 640,
+                "k": 8.31446261815324,
+                "dataType": "p",
+                "uncertainty": [
+                  "II",
+                  "IV",
+                  "IV"
+                ]
+              },
+              {
+                "type": "zabranskySpline",
+                "ref": [
+                  "Zabransky1996",
+                  765,
+                  "zabransky"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 266.7,
+                      "Tmax": 470,
+                      "a1": 21.829,
+                      "a2": -3.78952,
+                      "a3": 1.77943,
+                      "a4": -0.133479
+                    },
+                    {
+                      "Tmin": 470,
+                      "Tmax": 590,
+                      "a1": -72.1004,
+                      "a2": 56.1654,
+                      "a3": -10.9769,
+                      "a4": 0.771229
+                    },
+                    {
+                      "Tmin": 590,
+                      "Tmax": 640,
+                      "a1": -9640.91,
+                      "a2": 4921.66,
+                      "a3": -835.637,
+                      "a4": 47.3622
+                    }
+                  ]
+                },
+                "min": 266.7,
+                "max": 640,
+                "k": 8.31446261815324,
+                "dataType": "sat",
+                "uncertainty": [
+                  "II",
+                  "IV",
+                  "IV"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
