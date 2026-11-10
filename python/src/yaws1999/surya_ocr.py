@@ -1,11 +1,12 @@
 """
-yaws1999.surya_ocr — OCR one Yaws DjVu page with Surya (same stack as NBS ``nbs-index``).
+yaws1999.surya_ocr — OCR one Yaws DjVu page (local Surya or Modal).
 
-Renders the page with ``ddjvu``, runs Surya full-page recognition, prefers the largest
+Renders the page with ``ddjvu``, runs full-page recognition, prefers the largest
 ``<table>`` HTML block, and flattens each row to a single space-separated line for
 ``row_parser``. Non-table blocks (title, equation) are kept as plain lines above the table.
 
-Requires ``surya-ocr`` and ``llama-server`` (``LLAMA_CPP_BINARY``), as for NSRDS-NBS 61.
+Backend is selected by ``YAWS_OCR_BACKEND`` (``local`` | ``modal``); see
+``yaws1999.surya_backend`` and ``docs/scripts/YAWS1999_MODAL.md``.
 """
 from __future__ import annotations
 
@@ -14,9 +15,9 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
 
 from yaws1999.djvu_renderer import render_page
+from yaws1999.ocr_config import OcrConfig
 
 _DPI = 400
 
@@ -27,23 +28,22 @@ def ocr_djvu_page(
     cache_dir: Path | str | None = None,
     dpi: int = _DPI,
     predictor: object | None = None,
+    config: OcrConfig | None = None,
 ) -> list[str]:
     """Render + OCR one DjVu page; return reading-order text lines."""
     image = render_page(djvu_path, page, dpi=dpi, cache_dir=cache_dir, cache_stem="yaws")
-    return ocr_page_lines(image, predictor=predictor)
+    return ocr_page_lines(image, predictor=predictor, config=config)
 
 
-def ocr_page_lines(image: np.ndarray, predictor: object | None = None) -> list[str]:
-    """Surya full-page OCR → title/equation lines + flattened table rows."""
-    from phase_diagrams.nbs.nbs_surya_ocr import ensure_llama_env, _recognition_predictor
+def ocr_page_lines(
+    image: np.ndarray,
+    predictor: object | None = None,
+    config: OcrConfig | None = None,
+) -> list[str]:
+    """Full-page OCR → title/equation lines + flattened table rows (local or Modal)."""
+    from yaws1999.surya_backend import ocr_page_image
 
-    ensure_llama_env()
-    picture = Image.fromarray(image if image.ndim == 2 else np.asarray(Image.fromarray(image).convert("RGB")))
-    if picture.mode != "RGB":
-        picture = picture.convert("RGB")
-    recognizer = predictor or _recognition_predictor()
-    prediction = recognizer([picture], full_page=True)[0]
-    return lines_from_prediction(prediction)
+    return ocr_page_image(image, config=config, predictor=predictor)
 
 
 def lines_from_prediction(prediction: object) -> list[str]:

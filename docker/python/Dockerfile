@@ -118,8 +118,10 @@ RUN pip install --no-cache-dir \
       --timeout 600 \
       --retries 5 \
       "surya-ocr==0.23.0" \
-      "indra-ocr==1.1.2"
+      "indra-ocr==1.1.2" \
+      "modal>=1.6,<2"
     # surya-ocr pins pillow>=10.2,<11; leave that version (do not force Pillow 12).
+    # modal>=1.6: Python 3.14 client (0.x raises on 3.14); tokens via env only.
 
 # Copy remaining source files
 COPY src/ /app/src/

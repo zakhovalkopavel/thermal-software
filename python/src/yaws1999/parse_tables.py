@@ -89,35 +89,42 @@ def parse_yaws1999(
         missing = wanted - {span.id for span in catalog}
         if missing:
             raise ValueError(f"unknown table id(s): {', '.join(sorted(missing))}")
-    mode = "rebuild-from-dumps" if not ocr else f"ocr quant={quant} dpi={dpi}"
-    say(
-        f"catalog: {len(catalog)} table(s) in {source.name} "
-        f"[{mode}] ({time.perf_counter() - t_cat:.0f}s)"
-    )
+    ocr_cfg = None
+    if ocr:
+        from yaws1999.ocr_config import load_ocr_config
+
+        ocr_cfg = load_ocr_config(quant_override=quant)
+        say(
+            f"catalog: {len(catalog)} table(s) in {source.name} "
+            f"[dpi={dpi} {ocr_cfg.summary()}] ({time.perf_counter() - t_cat:.0f}s)"
+        )
+    else:
+        say(
+            f"catalog: {len(catalog)} table(s) in {source.name} "
+            f"[rebuild-from-dumps] ({time.perf_counter() - t_cat:.0f}s)"
+        )
 
     predictor = None
-    if ocr:
-        from yaws1999.surya_cpu import apply_yaws_cpu_defaults
+    if ocr and ocr_cfg is not None:
+        if ocr_cfg.backend == "local":
+            from yaws1999.surya_cpu import apply_yaws_cpu_defaults
+            from yaws1999.surya_backend import prepare_local_predictor
 
-        cpu = apply_yaws_cpu_defaults()
-        say(
-            f"CPU tune: logical={cpu.get('logical_cpus')} physical={cpu.get('physical_cpus')} "
-            f"parallel={cpu.get('SURYA_INFERENCE_PARALLEL')} "
-            f"llama_extra={cpu.get('LLAMA_CPP_EXTRA_ARGS')!r}"
-        )
-
-        from phase_diagrams.nbs.nbs_surya_ocr import (
-            _recognition_predictor,
-            apply_surya_quant,
-            ensure_llama_env,
-        )
-
-        gguf = apply_surya_quant(quant)
-        say(f"starting Surya (full-page, llama-server, quant={quant}, {gguf})…")
-        t_boot = time.perf_counter()
-        ensure_llama_env()
-        predictor = _recognition_predictor()
-        say(f"Surya ready in {time.perf_counter() - t_boot:.0f}s")
+            cpu = apply_yaws_cpu_defaults()
+            say(
+                f"CPU tune: logical={cpu.get('logical_cpus')} physical={cpu.get('physical_cpus')} "
+                f"parallel={cpu.get('SURYA_INFERENCE_PARALLEL')} "
+                f"llama_extra={cpu.get('LLAMA_CPP_EXTRA_ARGS')!r}"
+            )
+            say(f"starting local Surya ({ocr_cfg.model}, quant={ocr_cfg.quant})…")
+            t_boot = time.perf_counter()
+            predictor = prepare_local_predictor(ocr_cfg)
+            say(f"Surya ready in {time.perf_counter() - t_boot:.0f}s")
+        else:
+            say(
+                f"Modal OCR: app={ocr_cfg.modal_app} class={ocr_cfg.modal_class} "
+                f"gpu={ocr_cfg.modal_gpu} (one image per call)"
+            )
 
     result = ParseResult()
     n_tables = len(catalog)
@@ -144,6 +151,7 @@ def parse_yaws1999(
             quant=quant,
             dpi=dpi,
             ocr=ocr,
+            ocr_config=ocr_cfg,
             say=say,
         )
         dataset = to_dataset_table(intermediate)
@@ -213,6 +221,7 @@ def _parse_table(
     quant: str,
     dpi: int,
     ocr: bool,
+    ocr_config: object | None,
     say: Callable[[str], None],
 ) -> dict[str, Any]:
     rows_by_no: dict[int, dict[str, Any]] = {}
@@ -250,13 +259,19 @@ def _parse_table(
             )
         else:
             label = f"table {span.id} page {page}/{span.last_page} ({i}/{page_total})"
-            say(f"{label} full-page Surya…")
+            backend = getattr(ocr_config, "backend", "local") if ocr_config else "local"
+            say(f"{label} full-page OCR ({backend})…")
             from yaws1999.progress import heartbeat
             from yaws1999.surya_ocr import ocr_djvu_page
 
             with heartbeat(say, label, interval_s=30.0):
                 lines = ocr_djvu_page(
-                    source, page, cache_dir=render_cache, dpi=dpi, predictor=predictor,
+                    source,
+                    page,
+                    cache_dir=render_cache,
+                    dpi=dpi,
+                    predictor=predictor,
+                    config=ocr_config,  # type: ignore[arg-type]
                 )
             if page_dump is not None:
                 page_dump.parent.mkdir(parents=True, exist_ok=True)
@@ -281,6 +296,8 @@ def _parse_table(
         "title": title,
         "refKey": REF_KEY,
         "engine": _ENGINE,
+        "backend": getattr(ocr_config, "backend", None) if ocr_config else None,
+        "model": getattr(ocr_config, "model", None) if ocr_config else None,
         "quant": quant,
         "dpi": dpi,
         "equation": equation,

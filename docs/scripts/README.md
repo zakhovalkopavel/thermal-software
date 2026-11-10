@@ -78,12 +78,12 @@ This directory contains documentation for Python processing scripts.
 
 ### [YAWS1999_PARSER_SPEC.md](YAWS1999_PARSER_SPEC.md)
 **Parse Chemical Properties Handbook (Yaws 1999) DjVu → one JSON file per table**
-- **Surya only** (`ddjvu` + full-page OCR); page dumps under `tmp/reports/python/yaws1999/pages/`
-- Dataset JSON: slug name e.g. `Critical_…_(table_1-1).json`; debug copy under `…/debug/`
-- Rebuild from dumps without OCR: `make yaws1999-rebuild` / `TABLE=1-1`
+- Full-page OCR (`ddjvu`); backend `local` or `modal` via `YAWS_OCR_BACKEND`; model id `YAWS_OCR_MODEL`
+- Modal (T4): [YAWS1999_MODAL.md](YAWS1999_MODAL.md) — `make yaws1999-modal-deploy`
+- Dataset JSON: slug name e.g. `Critical_…_(table_1-1).json`; debug under `…/debug/`
+- Rebuild from dumps: `make yaws1999-rebuild` / `TABLE=1-1`
 - Package: `python/src/yaws1999/`
-- CLI: `parse_yaws1999.py`, `rebuild_yaws1999.py`
-- Make: `yaws1999-parse`, `yaws1999-rebuild`, `yaws1999-test`
+- Make: `yaws1999-parse`, `yaws1999-rebuild`, `yaws1999-modal-deploy`, `yaws1999-test`
 - Source: `shared/sources/compound-data/Chemical properties handbook (Yaws 1999).djvu`
 
 ---

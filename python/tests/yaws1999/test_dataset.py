@@ -71,6 +71,8 @@ def test_to_dataset_and_debug_table():
         "title": "CRITICAL PROPERTIES AND ACENTRIC FACTOR - ORGANIC COMPOUNDS",
         "refKey": "Yaws1999",
         "engine": "surya",
+        "backend": "modal",
+        "model": "test/ocr-model",
         "quant": "bf16",
         "dpi": 400,
         "equation": None,
@@ -100,6 +102,8 @@ def test_to_dataset_and_debug_table():
 
     debug = to_debug_table(parsed)
     assert debug["engine"] == "surya"
+    assert debug["backend"] == "modal"
+    assert debug["model"] == "test/ocr-model"
     assert debug["quant"] == "bf16"
     assert debug["rows"][0]["djvuPage"] == 10
     assert debug["rows"][0]["formulaRaw"] == "CbrCiF2"

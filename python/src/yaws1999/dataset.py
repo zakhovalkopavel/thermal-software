@@ -210,6 +210,8 @@ def to_debug_table(parsed: dict[str, Any]) -> dict[str, Any]:
         "title": parsed.get("title"),
         "refKey": parsed.get("refKey") or REF_KEY,
         "engine": parsed.get("engine"),
+        "backend": parsed.get("backend"),
+        "model": parsed.get("model"),
         "quant": parsed.get("quant"),
         "dpi": parsed.get("dpi"),
         "equation": parsed.get("equation"),

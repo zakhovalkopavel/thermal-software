@@ -10,16 +10,19 @@ Parse Carl L. Yaws, *Chemical Properties Handbook* (McGraw-Hill, 1999) from the 
 
 ## Engine
 
-**Surya only** — `ddjvu` render → full-page Surya OCR (`surya-ocr` + `llama-server`), same stack as `nbs-index`.
+Full-page OCR after `ddjvu` render. Backend and **full model id** are set only via env (see `.env.example`; never commit secrets):
 
-Surya GGUF weights (`QUANT`):
+| Variable | Notes |
+| --- | --- |
+| `YAWS_OCR_BACKEND` | `local` (llama-server in python image) or `modal` (remote GPU) |
+| `YAWS_OCR_MODEL` | Complete model id — change to swap models later |
+| `YAWS_OCR_QUANT` | `bf16` \| `q8` when the model supports it |
+| `YAWS_MODAL_APP` / `YAWS_MODAL_CLASS` / `YAWS_MODAL_GPU` | Required when backend=`modal` |
 
-| Quant | File | Notes |
-| --- | --- | --- |
-| **`bf16`** (default) | `surya-2.5.gguf` | Full precision GGUF from `datalab-to/surya-ocr-2.5-gguf` |
-| `q8` | `surya-2.5-Q8_0.gguf` | 8-bit; slightly smaller/faster, nearly same quality |
+**Local:** `surya-ocr` + `llama-server` (same stack as `nbs-index`).  
+**Modal:** one PNG per call — setup/deploy: [YAWS1999_MODAL.md](YAWS1999_MODAL.md).
 
-**CPU throughput:** Yaws applies `SURYA_INFERENCE_PARALLEL=1` and `LLAMA_CPP_EXTRA_ARGS=--threads <logical_cpus> --threads-batch <logical_cpus>` unless overridden via compose / `.env`.
+**CPU throughput (local):** `SURYA_INFERENCE_PARALLEL=1` and `LLAMA_CPP_EXTRA_ARGS=--threads <logical_cpus> --threads-batch <logical_cpus>` unless overridden.
 
 ## Flow
 
@@ -106,8 +109,12 @@ make yaws1999-parse TABLE=1-1
 make yaws1999-parse TABLE=2-2 FORCE=1
 make yaws1999-rebuild              # all tables from dumps
 make yaws1999-rebuild TABLE=1-1    # one table from dumps
+make yaws1999-modal-deploy         # deploy Surya app to Modal (T4)
+YAWS_OCR_BACKEND=modal make yaws1999-parse TABLE=2-2 FORCE=1
 make yaws1999-test
 ```
+
+Modal install steps: [YAWS1999_MODAL.md](YAWS1999_MODAL.md).
 
 ## Package layout
 
