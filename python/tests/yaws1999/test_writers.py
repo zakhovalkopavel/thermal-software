@@ -31,8 +31,12 @@ def test_write_dataset_debug_and_index(tmp_path: Path):
         "title": "HEAT CAPACITY OF GAS - INORGANIC COMPOUNDS",
         "refKey": "Yaws1999",
         "equation": None,
-        "header": {"id": "NO", "formula": "FORMULA", "name": "NAME", "A": "A"},
-        "columns": ["id", "formula", "name", "A"],
+        "columns": [
+            {"key": "id", "header": "NO", "unit": None},
+            {"key": "formula", "header": "FORMULA", "unit": None},
+            {"key": "name", "header": "NAME", "unit": None},
+            {"key": "A", "header": "A", "unit": None},
+        ],
         "pages": {"first": 45, "last": 49},
         "rows": [{"id": 12, "formula": "Ar", "name": "ARGON", "A": 20.786}],
     }

@@ -27,15 +27,15 @@ Full-page OCR after `ddjvu` render. Backend and **full model id** are set only v
 ## Flow
 
 1. **Catalog** — scan pages for `Table X-Y …` headers; build contiguous DjVu page spans (~49 tables).
-2. **Dump** — per page, Surya OCR → `reports/yaws1999/pages/page-NNNN.txt` (host: `tmp/reports/python/yaws1999/pages/`; resume unless `FORCE=1`). Legacy `pages/surya/page-NNNN.txt` dumps are still resumed. PNG renders under `renders/`.
-3. **Parse** — header / equation / numbered rows; name-gated OCR formula cleanup.
+2. **Dump** — per page, Surya OCR → `reports/yaws1999/pages/page-NNNN.txt` (host: `tmp/reports/python/yaws1999/pages/`; resume unless `FORCE=1`). With `YAWS_OCR_BACKEND=modal`, also write the raw Modal response as `page-NNNN.modal.json`. Legacy `pages/surya/page-NNNN.txt` dumps are still resumed. PNG renders under `renders/`.
+3. **Parse** — header / equation / numbered rows; name-gated OCR formula cleanup. Reference columns like `density @ 25 C` are kept as one column (OCR often splits them on `@`).
 4. **Write** — slug-named **dataset** JSON under `shared/processed/yaws1999/`, **debug** JSON under `reports/yaws1999/debug/`, plus `index.json`.
 
 ```
 DjVu page
     → ddjvu (grey PNG cache)
     → Surya full-page OCR
-    → pages/page-NNNN.txt
+    → pages/page-NNNN.txt (+ page-NNNN.modal.json when Modal)
     → parse_page_lines
     → dataset JSON + debug JSON + index.json
 ```
@@ -49,6 +49,7 @@ DjVu page
 | `shared/processed/yaws1999/<Slug>_(table_<id>).json` | Public dataset table |
 | `shared/processed/yaws1999/index.json` | Catalog of table files + source pointer |
 | `tmp/reports/python/yaws1999/pages/page-NNNN.txt` | OCR lines (resume / rebuild) |
+| `tmp/reports/python/yaws1999/pages/page-NNNN.modal.json` | Raw Modal `ocr_page` response (Modal backend only) |
 | `tmp/reports/python/yaws1999/debug/<Slug>_(table_<id>).json` | Debug copy with OCR provenance |
 | `tmp/reports/python/yaws1999/renders/` | rendered page PNG cache |
 
@@ -58,46 +59,45 @@ Example dataset filename:
 
 ### Dataset JSON shape
 
+`columns` is the single schema for field order, printed header text, and units (no parallel `header` / `units` maps). Row objects use each column’s `key`.
+
 ```json
 {
-  "id": "1-1",
-  "title": "CRITICAL PROPERTIES AND ACENTRIC FACTOR - ORGANIC COMPOUNDS",
+  "id": "8-1",
+  "title": "DENSITY OF LIQUID - ORGANIC COMPOUNDS",
   "refKey": "Yaws1999",
-  "equation": null,
-  "header": {
-    "id": "NO",
-    "formula": "FORMULA",
-    "name": "NAME",
-    "g_mol": "g/mol",
-    "K": "K",
-    "K_2": "K",
-    "K_3": "K",
-    "bar": "bar",
-    "cm3_mol": "cm3/mol",
-    "g_cm3": "g/cm3",
-    "ZC": "ZC",
-    "OMEGA": "OMEGA"
-  },
-  "columns": ["id", "formula", "name", "g_mol", "K", "K_2", "K_3", "bar", "cm3_mol", "g_cm3", "ZC", "OMEGA"],
-  "pages": { "first": 1, "last": 18 },
+  "equation": "density = A B-(1 - T/Tc)^n (density - g/ml, T - K)",
+  "columns": [
+    {"key": "id", "header": "NO", "unit": null},
+    {"key": "formula", "header": "FORMULA", "unit": null},
+    {"key": "name", "header": "NAME", "unit": null},
+    {"key": "A", "header": "A", "unit": null},
+    {"key": "B", "header": "B", "unit": null},
+    {"key": "n", "header": "n", "unit": null},
+    {"key": "Tc", "header": "Tc", "unit": "K"},
+    {"key": "TMIN", "header": "TMIN", "unit": "K"},
+    {"key": "TMAX", "header": "TMAX", "unit": "K"},
+    {"key": "density_at_25_C", "header": "density @ 25 C", "unit": "g/ml"}
+  ],
+  "pages": { "first": 183, "last": 200 },
   "rows": [
     {
       "id": 1,
       "formula": "CBrClF2",
       "name": "BROMOCHLORODIFLUOROMETHANE",
-      "g_mol": 165.365,
-      "K": 113.65,
-      "K_2": 269.14,
-      "K_3": 426.15,
-      "bar": 42.54,
-      "cm3_mol": 246.0,
-      "g_cm3": 0.6722,
-      "ZC": 0.295,
-      "OMEGA": 0.187
+      "A": 0.67201,
+      "B": 0.25624,
+      "n": 0.2644,
+      "Tc": 426.15,
+      "TMIN": 113.65,
+      "TMAX": 426.15,
+      "density_at_25_C": 1.81
     }
   ]
 }
 ```
+
+Units come from equation footnotes when present (e.g. `(density - g/ml, T - K)`), else from unit-like header labels (`g/mol`, `K`, …). Coefficients stay `unit: null`.
 
 Debug JSON adds `engine`, `quant`, `dpi`, `djvuPages`, `headerRaw`, `unparsed`, and per-row `djvuPage` / `raw` / `formulaRaw`.
 

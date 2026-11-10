@@ -63,6 +63,7 @@ This runs `modal deploy -m yaws1999.modal_surya_app` in the python container. GP
 
 ```bash
 YAWS_OCR_BACKEND=modal make yaws1999-parse TABLE=2-2 FORCE=1
+# writes pages/page-NNNN.txt and pages/page-NNNN.modal.json (raw Modal response)
 ```
 
 Pages are still rendered locally (`ddjvu`); **one PNG per Modal call** (no multi-page batch). Dumps resume as usual under `tmp/reports/python/yaws1999/pages/`.

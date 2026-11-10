@@ -7,6 +7,8 @@ Modal: one PNG per ``SuryaOcr.ocr_page.remote`` call (no page batching).
 from __future__ import annotations
 
 import io
+import json
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
@@ -21,11 +23,12 @@ def ocr_page_image(
     *,
     config: OcrConfig | None = None,
     predictor: object | None = None,
+    modal_dump_path: Path | str | None = None,
 ) -> list[str]:
     """OCR one page image with the configured backend; return reading-order lines."""
     cfg = config or load_ocr_config()
     if cfg.backend == "modal":
-        return _ocr_page_modal(image, cfg)
+        return _ocr_page_modal(image, cfg, modal_dump_path=modal_dump_path)
     return _ocr_page_local(image, cfg, predictor=predictor)
 
 
@@ -79,7 +82,12 @@ def _ocr_page_local(
     return lines_from_prediction(prediction)
 
 
-def _ocr_page_modal(image: np.ndarray, cfg: OcrConfig) -> list[str]:
+def _ocr_page_modal(
+    image: np.ndarray,
+    cfg: OcrConfig,
+    *,
+    modal_dump_path: Path | str | None = None,
+) -> list[str]:
     if not modal_tokens_present():
         raise RuntimeError(
             "YAWS_OCR_BACKEND=modal requires MODAL_TOKEN_ID and MODAL_TOKEN_SECRET "
@@ -106,6 +114,13 @@ def _ocr_page_modal(image: np.ndarray, cfg: OcrConfig) -> list[str]:
     png = _image_to_png_bytes(image)
     SuryaOcr = modal.Cls.from_name(cfg.modal_app, cfg.modal_class)
     result: dict[str, Any] = SuryaOcr().ocr_page.remote(png)
+    if modal_dump_path is not None:
+        path = Path(modal_dump_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps(result, ensure_ascii=False, indent=1) + "\n",
+            encoding="utf-8",
+        )
     elapsed = result.get("elapsed_ms")
     if elapsed is not None:
         print(

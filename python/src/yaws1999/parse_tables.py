@@ -264,6 +264,11 @@ def _parse_table(
             from yaws1999.progress import heartbeat
             from yaws1999.surya_ocr import ocr_djvu_page
 
+            modal_dump = (
+                page_dump.with_suffix(".modal.json")
+                if page_dump is not None and backend == "modal"
+                else None
+            )
             with heartbeat(say, label, interval_s=30.0):
                 lines = ocr_djvu_page(
                     source,
@@ -272,6 +277,7 @@ def _parse_table(
                     dpi=dpi,
                     predictor=predictor,
                     config=ocr_config,  # type: ignore[arg-type]
+                    modal_dump_path=modal_dump,
                 )
             if page_dump is not None:
                 page_dump.parent.mkdir(parents=True, exist_ok=True)

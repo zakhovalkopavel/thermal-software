@@ -29,21 +29,33 @@ def ocr_djvu_page(
     dpi: int = _DPI,
     predictor: object | None = None,
     config: OcrConfig | None = None,
+    modal_dump_path: Path | str | None = None,
 ) -> list[str]:
     """Render + OCR one DjVu page; return reading-order text lines."""
     image = render_page(djvu_path, page, dpi=dpi, cache_dir=cache_dir, cache_stem="yaws")
-    return ocr_page_lines(image, predictor=predictor, config=config)
+    return ocr_page_lines(
+        image,
+        predictor=predictor,
+        config=config,
+        modal_dump_path=modal_dump_path,
+    )
 
 
 def ocr_page_lines(
     image: np.ndarray,
     predictor: object | None = None,
     config: OcrConfig | None = None,
+    modal_dump_path: Path | str | None = None,
 ) -> list[str]:
     """Full-page OCR → title/equation lines + flattened table rows (local or Modal)."""
     from yaws1999.surya_backend import ocr_page_image
 
-    return ocr_page_image(image, config=config, predictor=predictor)
+    return ocr_page_image(
+        image,
+        config=config,
+        predictor=predictor,
+        modal_dump_path=modal_dump_path,
+    )
 
 
 def lines_from_prediction(prediction: object) -> list[str]:
