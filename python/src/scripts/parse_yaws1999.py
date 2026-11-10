@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
 """
-parse_yaws1999.py — CLI: Yaws Chemical Properties Handbook (1999) DjVu → one JSON per table.
+parse_yaws1999.py — CLI: Yaws Chemical Properties Handbook (1999) DjVu → dataset JSON.
 
-Same overall flow as the NSRDS-NBS 61 eutectic index (``nbs-index``): render each page,
-OCR with **Surya** (full-page), parse rows, write structured JSON.
+OCR each page with Surya, parse rows, write slug-named dataset JSON plus a debug copy.
 
 Output
 ------
-  shared/processed/yaws1999/table-<id>.json
-  shared/processed/yaws1999/table-<id>.<quant>.json  (with ``--no-replace`` when primary exists)
+  shared/processed/yaws1999/<Slug>_(table_<id>).json
   shared/processed/yaws1999/index.json
-  reports/yaws1999/pages/surya/page-NNNN.txt
+  reports/yaws1999/pages/page-NNNN.txt
+  reports/yaws1999/debug/<Slug>_(table_<id>).json
   reports/yaws1999/renders/
+
+To rebuild JSON from dumps without OCR, use ``rebuild_yaws1999.py`` /
+``make yaws1999-rebuild``.
 
 Usage
 -----
+  make yaws1999-parse TABLE=1-1
+  make yaws1999-parse TABLE=2-2 FORCE=1
   docker compose run --rm python python src/scripts/parse_yaws1999.py --table 2-2
-  make yaws1999-parse TABLE=2-1
-  make yaws1999-parse QUANT=q8 DPI=200 FORCE=1
 """
 from __future__ import annotations
 
@@ -65,11 +67,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[yaws1999] error: {exc}", file=sys.stderr)
         return 2
     n_rows = sum(len(t.get("rows") or []) for t in result.tables)
-    n_unparsed = sum(len(t.get("unparsed") or []) for t in result.tables)
     skipped = f", {len(result.skipped)} skipped" if result.skipped else ""
     print(
-        f"[yaws1999] done: {len(result.tables)} table file(s), {n_rows} rows, "
-        f"{n_unparsed} unparsed{skipped} in {result.elapsed_s:.0f}s → {args.out_dir}",
+        f"[yaws1999] done: {len(result.tables)} table file(s), {n_rows} rows"
+        f"{skipped} in {result.elapsed_s:.0f}s → {args.out_dir}",
         flush=True,
     )
     return 0
@@ -77,54 +78,23 @@ def main(argv: list[str] | None = None) -> int:
 
 def _parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Parse Yaws 1999 Chemical Properties Handbook DjVu (full-page Surya OCR).",
+        description="Parse Yaws 1999 DjVu with full-page Surya → dataset JSON.",
     )
-    p.add_argument(
-        "--djvu",
-        type=Path,
-        default=SOURCE_DJVU,
-        help=f"source DjVu (default: {SOURCE_DJVU})",
-    )
-    p.add_argument(
-        "--out-dir",
-        type=Path,
-        default=PROCESSED_DIR,
-        help=f"directory for table-*.json + index.json (default: {PROCESSED_DIR})",
-    )
-    p.add_argument(
-        "--report-dir",
-        type=Path,
-        default=REPORT_DIR,
-        help=f"page line dumps + renders for resume/debug (default: {REPORT_DIR})",
-    )
-    p.add_argument("--no-report", action="store_true", help="do not write page line dumps")
-    p.add_argument(
-        "--table",
-        action="append",
-        metavar="ID",
-        help="parse only this table id (repeatable), e.g. --table 2-1",
-    )
+    p.add_argument("--djvu", type=Path, default=SOURCE_DJVU, help=f"source DjVu (default: {SOURCE_DJVU})")
+    p.add_argument("--out-dir", type=Path, default=PROCESSED_DIR, help=f"dataset output (default: {PROCESSED_DIR})")
+    p.add_argument("--report-dir", type=Path, default=REPORT_DIR, help=f"page dumps + debug (default: {REPORT_DIR})")
+    p.add_argument("--no-report", action="store_true", help="do not write page dumps / debug JSON")
+    p.add_argument("--table", action="append", metavar="ID", help="parse only this table id (repeatable)")
     p.add_argument("--first", type=int, default=None, metavar="N", help="first DjVu page to scan for headers")
     p.add_argument("--last", type=int, default=None, metavar="N", help="last DjVu page to scan for headers")
-    p.add_argument(
-        "--quant",
-        choices=("bf16", "q8"),
-        default="bf16",
-        help="Surya GGUF weights: bf16 (default) or q8 (faster on CPU)",
-    )
-    p.add_argument(
-        "--dpi",
-        type=int,
-        default=400,
-        metavar="N",
-        help="ddjvu render DPI before Surya (default 400; lower e.g. 200 is faster)",
-    )
+    p.add_argument("--quant", choices=("bf16", "q8"), default="bf16", help="Surya GGUF: bf16 (default) or q8")
+    p.add_argument("--dpi", type=int, default=400, metavar="N", help="ddjvu render DPI (default 400)")
     p.add_argument(
         "--no-replace",
         action="store_true",
-        help="keep existing table-<id>.json; write table-<id>.<quant>.json instead (skip if both exist)",
+        help="keep existing dataset file; write .<quant>.json variant instead",
     )
-    p.add_argument("--force", action="store_true", help="re-extract pages even when a dump exists")
+    p.add_argument("--force", action="store_true", help="re-OCR pages even when a dump exists")
     return p
 
 
