@@ -1,11 +1,12 @@
 """
-phase_diagrams.nbs.nbs_surya_ocr — OCR NSRDS-NBS 61 Table I pages with Surya.
+phase_diagrams.nbs.nbs_vlm_ocr — OCR NSRDS-NBS 61 Table I pages via page-ocr VLM.
 
-Surya returns layout blocks; the Table block’s HTML keeps real subscripts
+The VLM returns layout blocks; the Table block’s HTML keeps real subscripts
 (``BF<sub>3</sub>-N<sub>2</sub>O``). That HTML is flattened to the double-spaced
 line dump ``build_nbs_index`` already parses.
 
-Requires ``surya-ocr`` and a ``llama-server`` binary (``LLAMA_CPP_BINARY``).
+Recognition/llama bootstrap via ``page-ocr``; NBS table flattening stays here.
+Requires page-ocr local engine deps and ``llama-server`` (``LLAMA_CPP_BINARY``).
 
 Spec: docs/scripts/phase-diagrams/NBS.md § Text index
 """
@@ -20,7 +21,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from phase_diagrams.rendering.pdf_renderer import render_page
+from page_ocr.render import render_page
 
 _DPI = 400
 _DEFAULT_LLAMA_BIN = Path("/opt/llama-cpp/llama-server")
@@ -35,7 +36,7 @@ _GGUF_REPO_DIR = "models--datalab-to--surya-ocr-2.5-gguf"
 _GGUF_MODEL_FILE = "surya-2.5.gguf"
 _GGUF_MMPROJ_FILE = "surya-2.5-mmproj.gguf"
 # Official datalab-to/surya-ocr-2.5-gguf weight files (mmproj is shared).
-SURYA_QUANT_FILES: dict[str, str] = {
+VLM_QUANT_FILES: dict[str, str] = {
     "bf16": "surya-2.5.gguf",
     "q8": "surya-2.5-Q8_0.gguf",
 }
@@ -85,7 +86,7 @@ def ocr_page_text(image: np.ndarray, predictor: object | None = None) -> str:
 
 
 def ocr_page_table_html(image: np.ndarray, predictor: object | None = None) -> str:
-    """Run Surya full-page OCR and return the first ``<table>…</table>`` HTML block."""
+    """Run full-page VLM OCR and return the first ``<table>…</table>`` HTML block."""
     picture = Image.fromarray(image if image.ndim == 2 else np.asarray(Image.fromarray(image).convert("RGB")))
     if picture.mode != "RGB":
         picture = picture.convert("RGB")
@@ -107,17 +108,14 @@ def ocr_page_table_html(image: np.ndarray, predictor: object | None = None) -> s
 
 
 def _recognition_predictor():
-    """One shared RecognitionPredictor (llama-server startup is expensive)."""
-    # Env first, then import so Settings() picks up SURYA_GGUF_LOCAL_* / HF_HUB_OFFLINE.
-    ensure_llama_env()
-    from surya.recognition import RecognitionPredictor
+    """One shared RecognitionPredictor via page-ocr (llama-server startup is expensive)."""
+    from page_ocr.engines.surya_local import recognition_predictor
 
-    _prefer_cached_ggufs()  # patch singleton if Settings was already imported elsewhere
-    return RecognitionPredictor()
+    return recognition_predictor()
 
 
 def table_html_to_lines(html: str) -> list[str]:
-    """Flatten Surya table HTML to ``build_nbs_index`` lines (fields separated by two spaces)."""
+    """Flatten VLM table HTML to ``build_nbs_index`` lines (fields separated by two spaces)."""
     rows = _parse_table_rows(html)
     lines: list[str] = []
     for cells in rows:
@@ -139,57 +137,18 @@ def table_html_to_lines(html: str) -> list[str]:
     return lines
 
 
-def apply_surya_quant(quant: str = "bf16") -> str:
-    """Select the Surya GGUF weight file (``bf16`` or ``q8``).
+def apply_vlm_quant(quant: str = "bf16") -> str:
+    """Select the VLM GGUF weight file via page-ocr (``bf16`` or ``q8``)."""
+    from page_ocr.engines.surya_local import apply_surya_quant as _apply
 
-    Sets ``SURYA_GGUF_MODEL_FILE`` and clears ``SURYA_GGUF_LOCAL_*`` so
-    ``ensure_llama_env`` resolves the matching file from the HF cache (or
-    downloads it when ``SURYA_HF_ONLINE=1``). Returns the GGUF filename.
-    """
-    key = quant.strip().lower()
-    if key not in SURYA_QUANT_FILES:
-        raise ValueError(
-            f"unknown Surya quant {quant!r} (expected {tuple(SURYA_QUANT_FILES)})"
-        )
-    filename = SURYA_QUANT_FILES[key]
-    os.environ["SURYA_GGUF_MODEL_FILE"] = filename
-    # Drop sticky local paths from a previous quant so the cache lookup uses filename.
-    os.environ.pop("SURYA_GGUF_LOCAL_MODEL_PATH", None)
-    os.environ.pop("SURYA_GGUF_LOCAL_MMPROJ_PATH", None)
-    return filename
+    return _apply(quant)
 
 
 def ensure_llama_env() -> None:
-    """Point Surya at ``llama-server`` and prefer a warm GGUF cache (no Hub calls).
+    """Point the VLM at ``llama-server`` via page-ocr (warm GGUF cache when present)."""
+    from page_ocr.engines.surya_local import ensure_llama_env as _ensure
 
-    Once both GGUFs exist under the Hugging Face cache (or
-    ``SURYA_GGUF_LOCAL_*`` are set), Surya is pointed at those files and
-    ``HF_HUB_OFFLINE=1`` is set so later runs never contact the Hub.
-
-    Opt out with ``SURYA_HF_ONLINE=1`` (allows Hub checks / first-time download
-    even when a cache is present). Explicit ``SURYA_GGUF_LOCAL_*`` always wins.
-    Call ``apply_surya_quant("q8")`` first to prefer ``surya-2.5-Q8_0.gguf``.
-    """
-    candidates = [
-        Path(os.environ["LLAMA_CPP_BINARY"]) if os.environ.get("LLAMA_CPP_BINARY") else None,
-        _DEFAULT_LLAMA_BIN,
-        *_FALLBACK_LLAMA_BINS,
-    ]
-    binary: Path | None = next((p for p in candidates if p is not None and p.is_file()), None)
-    if binary is None:
-        tried = [str(p) for p in candidates if p is not None]
-        raise FileNotFoundError(
-            "llama-server not found. Tried: "
-            + ", ".join(tried)
-            + ". Rebuild the python image (Dockerfile installs /opt/llama-cpp) "
-            "or set LLAMA_CPP_BINARY."
-        )
-    os.environ["LLAMA_CPP_BINARY"] = str(binary)
-    lib_dir = str(binary.resolve().parent)
-    existing = os.environ.get("LD_LIBRARY_PATH", "")
-    if lib_dir not in existing.split(":"):
-        os.environ["LD_LIBRARY_PATH"] = f"{lib_dir}:{existing}" if existing else lib_dir
-    _prefer_cached_ggufs()
+    _ensure()
 
 
 def _hf_hub_root() -> Path:

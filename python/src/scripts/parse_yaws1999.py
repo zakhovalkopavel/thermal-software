@@ -2,7 +2,7 @@
 """
 parse_yaws1999.py — CLI: Yaws Chemical Properties Handbook (1999) DjVu → dataset JSON.
 
-OCR each page with Surya, parse rows, write slug-named dataset JSON plus a debug copy.
+OCR each page via page-ocr, parse rows, write slug-named dataset JSON plus a debug copy.
 
 Output
 ------
@@ -78,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def _parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        description="Parse Yaws 1999 DjVu with full-page Surya → dataset JSON.",
+        description="Parse Yaws 1999 handbook pages via page-ocr → dataset JSON.",
     )
     p.add_argument("--djvu", type=Path, default=SOURCE_DJVU, help=f"source DjVu (default: {SOURCE_DJVU})")
     p.add_argument("--out-dir", type=Path, default=PROCESSED_DIR, help=f"dataset output (default: {PROCESSED_DIR})")
@@ -87,7 +87,7 @@ def _parser() -> argparse.ArgumentParser:
     p.add_argument("--table", action="append", metavar="ID", help="parse only this table id (repeatable)")
     p.add_argument("--first", type=int, default=None, metavar="N", help="first DjVu page to scan for headers")
     p.add_argument("--last", type=int, default=None, metavar="N", help="last DjVu page to scan for headers")
-    p.add_argument("--quant", choices=("bf16", "q8"), default="bf16", help="Surya GGUF: bf16 (default) or q8")
+    p.add_argument("--quant", choices=("bf16", "q8"), default="bf16", help="OCR quant: bf16 (default) or q8")
     p.add_argument("--dpi", type=int, default=400, metavar="N", help="ddjvu render DPI (default 400)")
     p.add_argument(
         "--no-replace",

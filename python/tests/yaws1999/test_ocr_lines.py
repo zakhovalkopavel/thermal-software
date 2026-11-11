@@ -1,9 +1,9 @@
-"""Flatten Surya table HTML into Yaws row lines (no llama-server required)."""
+"""Flatten OCR table HTML into Yaws row lines (page-ocr; no llama-server)."""
 from __future__ import annotations
 
 from types import SimpleNamespace
 
-from yaws1999.surya_ocr import lines_from_prediction, table_html_to_lines
+from page_ocr.lines import lines_from_prediction, table_html_to_lines
 
 
 _SAMPLE = """

@@ -44,8 +44,8 @@ commands:
   compare SYSTEM   Candidate vs dataset file (exit 1 on differences)
   promote SYSTEM   Candidate → dataset if the dataset still validates (exit 1 if not)
   nbs-index        OCR Table I page-by-page → nbs/ [--first N --last N]
-                   [--engine surya|hybrid|tesseract] [--force]
-                   (default surya = full VLM; hybrid = Surya detect + Indra)
+                   [--engine vlm|hybrid|tesseract] [--force]
+                   (default vlm = full VLM via page-ocr; hybrid = Surya detect + Indra)
   nbs-bibliography pdftotext + parse Bibliography → nbs/*.bibliography.json
                    [--first N --last N] [--force]
   nbs-refs         Repair Table I refs in dump → txt then entries.json

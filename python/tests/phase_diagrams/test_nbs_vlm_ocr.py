@@ -1,8 +1,8 @@
-"""Unit tests for Surya HTML → NBS dump lines (no model download)."""
+"""Unit tests for VLM HTML → NBS dump lines (no model download)."""
 from __future__ import annotations
 
 from phase_diagrams.nbs.nbs_entry_index import build_nbs_index
-from phase_diagrams.nbs.nbs_surya_ocr import table_html_to_lines
+from phase_diagrams.nbs.nbs_vlm_ocr import table_html_to_lines
 
 
 _SAMPLE = """
@@ -29,7 +29,7 @@ def test_table_html_flattens_subscripts_and_columns():
     assert by[23] == "23  FeCl3-GeCl4-TeCl4  NA  -59.0 APP  2849"
 
 
-def test_surya_html_lines_parse_through_entry_index():
+def test_vlm_html_lines_parse_through_entry_index():
     text = "\n".join(table_html_to_lines(_SAMPLE))
     entries, unparsed = build_nbs_index(text + "\f", page_offset=8)
     assert unparsed == []

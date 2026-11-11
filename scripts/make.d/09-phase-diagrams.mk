@@ -59,7 +59,7 @@ pd-promote: ## Copy the validated candidate into the dataset (after review): SYS
 	@test -n "$(SYSTEM)" || (echo "usage: make pd-promote SYSTEM=mgo-sio2"; exit 2)
 	@$(PD_CLI) promote $(SYSTEM)
 
-pd-nbs-index: ## OCR page-by-page → nbs/ [FIRST= LAST=] [ENGINE=surya|hybrid|tesseract] [FORCE=1]
+pd-nbs-index: ## OCR page-by-page → nbs/ [FIRST= LAST=] [ENGINE=vlm|hybrid|tesseract] [FORCE=1]
 	@$(PD_CLI) nbs-index $(if $(FIRST),--first $(FIRST)) $(if $(LAST),--last $(LAST)) $(if $(ENGINE),--engine $(ENGINE)) $(if $(FORCE),--force)
 
 pd-nbs-bibliography: ## Parse Bibliography (pdftotext) → nbs/*.bibliography.json [FIRST= LAST=] [FORCE=1]

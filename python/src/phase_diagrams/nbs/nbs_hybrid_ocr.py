@@ -6,7 +6,7 @@ phase_diagrams.nbs.nbs_hybrid_ocr — Fast NBS Table I OCR (Surya detect + Indra
 ``datalab-to/indra-ocr`` (``OrtOCR.recognize``) for CTC recognition. Reading order
 is geometric (top→bottom, left→right), refined with Indra's order model when present.
 
-Full-page ``surya-ocr-2.5`` remains available as ``engine="surya"``.
+Full-page VLM remains available as ``engine="vlm"`` (via page-ocr).
 
 Spec: docs/scripts/phase-diagrams/NBS.md § Text index
 """

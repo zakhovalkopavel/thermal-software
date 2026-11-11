@@ -11,7 +11,7 @@ Part of the [phase-diagram extraction specification](README.md).
 - Index source: Internet Archive scan in `sources.json` (`tablePages` pdf 11–119). The bw
   PDF’s Adobe text layer is **not** used.
 - `make pd-nbs-index` renders each Table I page (`pdftoppm`) and OCRs page-by-page.
-  Default **`--engine surya`** (`nbs_surya_ocr`): full surya-ocr-2.5 via llama-server with
+  Default **`--engine vlm`** (`nbs_vlm_ocr`): full surya-ocr-2.5 via llama-server with
   HTML `<sub>` digits (`BF<sub>3</sub>-N<sub>2</sub>O` → dump `BF3-N2O`). Optional
   **`--engine hybrid`** (`nbs_hybrid_ocr`): Surya line detection only, PIL crops, then
   `datalab-to/indra-ocr` — faster but splits table cells into separate lines on this scan.
@@ -21,8 +21,8 @@ Part of the [phase-diagram extraction specification](README.md).
   `entries.json` / `unparsed.txt` (safe to interrupt / resume). Skip pages already in
   `entries.json` unless `FORCE=1`. Optional `--first` / `--last`. Packages: `surya-ocr`
   + `indra-ocr` via pip in the Dockerfile (Poetry cannot resolve torch/triton for Python
-  3.14); `LLAMA_CPP_BINARY` for `--engine surya`. GGUFs live in `huggingface_cache`; after
-  the first download, `nbs_surya_ocr` sets local paths + `HF_HUB_OFFLINE=1`. Override with
+  3.14); `LLAMA_CPP_BINARY` for `--engine vlm`. GGUFs live in `huggingface_cache`; after
+  the first download, `nbs_vlm_ocr` sets local paths + `HF_HUB_OFFLINE=1`. Override with
   `SURYA_HF_ONLINE=1`.
 - **Fallback / cleanup:** commas or periods left in a formula still go through
   `nbs_formula_ocr` (element walk; no compound whitelist).

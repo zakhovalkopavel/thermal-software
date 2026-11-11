@@ -116,7 +116,7 @@ def _cmd_nbs_index(args, registry: SourceRegistry, work: Path) -> int:
     dump = folder / f"{_NBS}.txt"
     entries_path = folder / f"{_NBS}.entries.json"
     unparsed_path = folder / f"{_NBS}.unparsed.txt"
-    engine = getattr(args, "engine", "surya")
+    engine = getattr(args, "engine", "vlm")
     force = bool(getattr(args, "force", False))
     pdf = registry.pdf_path(_NBS)
     offset = registry.page_offset(_NBS)
@@ -137,21 +137,21 @@ def _cmd_nbs_index(args, registry: SourceRegistry, work: Path) -> int:
 
         _say(
             "nbs-index",
-            f"starting hybrid (Surya detect on {select_torch_device()}, "
+            f"starting hybrid (detect on {select_torch_device()}, "
             f"Indra on {','.join(select_onnx_providers())})…",
         )
         t_boot = time.perf_counter()
         hybrid_detector = _detection_predictor()
         hybrid_recognizer = _indra_recognizer()
         _say("nbs-index", f"hybrid ready in {time.perf_counter() - t_boot:.0f}s")
-    elif engine == "surya":
-        from phase_diagrams.nbs.nbs_surya_ocr import _recognition_predictor, ensure_llama_env, ocr_pdf_page
+    elif engine == "vlm":
+        from phase_diagrams.nbs.nbs_vlm_ocr import _recognition_predictor, ensure_llama_env, ocr_pdf_page
 
         ensure_llama_env()
-        _say("nbs-index", "starting Surya (llama-server)…")
+        _say("nbs-index", "starting VLM OCR (llama-server)…")
         t_boot = time.perf_counter()
         predictor = _recognition_predictor()
-        _say("nbs-index", f"Surya ready in {time.perf_counter() - t_boot:.0f}s")
+        _say("nbs-index", f"VLM OCR ready in {time.perf_counter() - t_boot:.0f}s")
     elif engine != "tesseract":
         raise ValueError(f"unknown NBS OCR engine {engine!r}")
 
@@ -173,7 +173,7 @@ def _cmd_nbs_index(args, registry: SourceRegistry, work: Path) -> int:
                 pdf, page, cache_dir=cache_dir,
                 detector=hybrid_detector, recognizer=hybrid_recognizer,
             )
-        elif engine == "surya":
+        elif engine == "vlm":
             text = ocr_pdf_page(pdf, page, cache_dir=cache_dir, predictor=predictor)
         else:
             image = render_page(pdf, page, dpi=400, cache_dir=cache_dir, cache_stem="nbs-table")

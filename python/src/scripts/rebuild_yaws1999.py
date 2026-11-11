@@ -2,7 +2,7 @@
 """
 rebuild_yaws1999.py — Rebuild dataset/debug JSON from page text dumps (no OCR).
 
-Reads ``reports/yaws1999/pages/page-NNNN.txt`` (or legacy ``pages/surya/``),
+Reads ``reports/yaws1999/pages/page-NNNN.txt`` (or legacy ``pages/``),
 parses rows, writes slug-named dataset JSON under ``shared/processed/yaws1999/``
 and a debug copy under ``reports/yaws1999/debug/``.
 

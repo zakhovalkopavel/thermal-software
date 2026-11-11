@@ -1,4 +1,4 @@
-"""Warm Hugging Face GGUF cache → local Surya paths, no Hub calls."""
+"""Warm Hugging Face GGUF cache → local VLM paths, no Hub calls."""
 from __future__ import annotations
 
 import os
@@ -6,12 +6,12 @@ from pathlib import Path
 
 import pytest
 
-from phase_diagrams.nbs.nbs_surya_ocr import (
-    SURYA_QUANT_FILES,
+from phase_diagrams.nbs.nbs_vlm_ocr import (
+    VLM_QUANT_FILES,
     _GGUF_MODEL_FILE,
     _GGUF_MMPROJ_FILE,
     _GGUF_REPO_DIR,
-    apply_surya_quant,
+    apply_vlm_quant,
     _prefer_cached_ggufs,
     find_cached_gguf_paths,
 )
@@ -27,18 +27,18 @@ def _fake_hub(tmp_path: Path, *, size: int = 32) -> tuple[Path, Path, Path]:
     return tmp_path / "hub", model.resolve(), mmproj.resolve()
 
 
-def test_apply_surya_quant_sets_model_file(monkeypatch: pytest.MonkeyPatch):
+def test_apply_vlm_quant_sets_model_file(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("SURYA_GGUF_LOCAL_MODEL_PATH", "/old/bf16.gguf")
     monkeypatch.setenv("SURYA_GGUF_LOCAL_MMPROJ_PATH", "/old/mmproj.gguf")
-    assert apply_surya_quant("q8") == SURYA_QUANT_FILES["q8"]
+    assert apply_vlm_quant("q8") == VLM_QUANT_FILES["q8"]
     assert os.environ["SURYA_GGUF_MODEL_FILE"] == "surya-2.5-Q8_0.gguf"
     assert "SURYA_GGUF_LOCAL_MODEL_PATH" not in os.environ
-    assert apply_surya_quant("bf16") == _GGUF_MODEL_FILE
+    assert apply_vlm_quant("bf16") == _GGUF_MODEL_FILE
 
 
-def test_apply_surya_quant_rejects_unknown():
-    with pytest.raises(ValueError, match="unknown Surya quant"):
-        apply_surya_quant("q4")
+def test_apply_vlm_quant_rejects_unknown():
+    with pytest.raises(ValueError, match="unknown"):
+        apply_vlm_quant("q4")
 
 
 def test_find_cached_gguf_paths_resolves_snapshot(tmp_path: Path):

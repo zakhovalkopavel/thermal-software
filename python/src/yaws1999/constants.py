@@ -4,7 +4,7 @@ yaws1999.constants — Source path and output layout for Yaws Chemical Propertie
 The DjVu lives under ``shared/sources/compound-data/`` (visible in the python
 container). Parsed tables go to ``shared/processed/yaws1999/`` as one slug-named
 JSON per handbook table plus ``index.json``. Page dumps / debug JSON live under
-``reports/yaws1999/``. Default engine is Surya; see ``parse_tables.parse_yaws1999``.
+``reports/yaws1999/``. OCR engine is chosen by page-ocr (``PAGE_OCR_*``); see ``parse_tables.parse_yaws1999``.
 
 Printed page ≈ DjVu page − ``PAGE_OFFSET`` (Table 1-1 starts on DjVu page 10 = printed 1).
 """

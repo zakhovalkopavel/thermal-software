@@ -1,65 +1,48 @@
 """
-yaws1999.writers — Dataset + debug JSON files and index.
+yaws1999.writers — Thin adapter over ``source_extract.tables.export``.
+
+Injects Yaws ``REF_KEY`` / ``SOURCE_NAME`` / ``SOURCE_YEAR`` into the index.
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 
+from source_extract.tables.export import (
+    load_table,
+    resolve_dataset_path,
+    write_dataset_table as _write_dataset_table,
+    write_debug_table as _write_debug_table,
+    write_index as _write_index,
+    write_json,
+)
+from source_extract.tables.naming import dataset_file_name, debug_file_name
+
 from yaws1999.constants import REF_KEY, SOURCE_NAME, SOURCE_YEAR
-from yaws1999.dataset import dataset_file_name, debug_file_name
 
-
-def write_json(path: Path, document: dict[str, Any]) -> Path:
-    """Write ``document`` as pretty JSON; returns ``path``."""
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(document, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    return path
-
-
-def resolve_dataset_path(
-    directory: Path,
-    title: str | None,
-    table_id: str,
-    tag: str | None = None,
-    *,
-    no_replace: bool = False,
-) -> Path | None:
-    """Pick the public dataset path for a table.
-
-    Default: ``<Slug>_(table_<id>).json`` (may overwrite).
-    With ``no_replace``: if primary exists, write ``…_(table_<id>).<tag>.json``;
-    return ``None`` if that also exists.
-    """
-    directory = Path(directory)
-    primary = directory / dataset_file_name(title, table_id)
-    if not no_replace:
-        return primary
-    if not primary.is_file():
-        return primary
-    if not tag:
-        return None
-    stem = primary.name[: -len(".json")]
-    alt = directory / f"{stem}.{tag}.json"
-    if alt.is_file():
-        return None
-    return alt
+__all__ = [
+    "dataset_file_name",
+    "debug_file_name",
+    "load_table",
+    "resolve_dataset_path",
+    "resolve_table_path",
+    "table_file_name",
+    "write_dataset_table",
+    "write_debug_table",
+    "write_index",
+    "write_json",
+    "write_table",
+]
 
 
 def write_dataset_table(directory: Path, table: dict[str, Any], path: Path | None = None) -> Path:
     """Write the public dataset JSON; returns the path written."""
-    directory = Path(directory)
-    target = path or (directory / dataset_file_name(table.get("title"), str(table["id"])))
-    return write_json(target, table)
+    return _write_dataset_table(directory, table, path=path)
 
 
 def write_debug_table(directory: Path, table: dict[str, Any], path: Path | None = None) -> Path:
     """Write the debug JSON (OCR provenance); returns the path written."""
-    directory = Path(directory)
-    target = path or (directory / debug_file_name(table.get("title"), str(table["id"])))
-    return write_json(target, table)
+    return _write_debug_table(directory, table, path=path)
 
 
 def write_index(
@@ -69,41 +52,16 @@ def write_index(
     *,
     merge_existing: bool = False,
 ) -> Path:
-    """Write ``index.json`` listing every parsed table file."""
-    directory.mkdir(parents=True, exist_ok=True)
-    entries = [
-        {
-            "id": t["id"],
-            "title": t.get("title"),
-            "file": t.get("_file") or dataset_file_name(t.get("title"), str(t["id"])),
-            "pages": t.get("pages"),
-            "rowCount": len(t.get("rows") or []),
-        }
-        for t in tables
-    ]
-    if merge_existing:
-        index_path = directory / "index.json"
-        if index_path.is_file():
-            try:
-                prior = json.loads(index_path.read_text(encoding="utf-8"))
-            except json.JSONDecodeError:
-                prior = {}
-            written = {e["file"] for e in entries}
-            for old in prior.get("tables") or []:
-                name = old.get("file")
-                if name and name not in written:
-                    entries.append(old)
-            entries.sort(key=lambda e: (str(e.get("id") or ""), str(e.get("file") or "")))
-    index = {
-        "source": {
-            "refKey": REF_KEY,
-            "name": SOURCE_NAME,
-            "year": SOURCE_YEAR,
-            "path": source_path,
-        },
-        "tables": entries,
-    }
-    return write_json(directory / "index.json", index)
+    """Write ``index.json`` listing every parsed table file (Yaws source metadata)."""
+    return _write_index(
+        directory,
+        tables,
+        source_path,
+        ref_key=REF_KEY,
+        source_name=SOURCE_NAME,
+        source_year=SOURCE_YEAR,
+        merge_existing=merge_existing,
+    )
 
 
 # Back-compat aliases used by older tests / imports.

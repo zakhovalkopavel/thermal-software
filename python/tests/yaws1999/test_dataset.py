@@ -54,6 +54,85 @@ def test_columns_coalesce_at_25_c():
     assert columns[-1]["header"] == "density @ 25 C"
 
 
+def test_columns_coalesce_q_at_ppmv():
+    columns = columns_from_header(
+        "NO FORMULA NAME A B C ymin ymax Q @10 ppmv Q @100 ppmv Q @1000 ppmv"
+    )
+    keys = column_keys(columns)
+    assert keys == [
+        "id",
+        "formula",
+        "name",
+        "A",
+        "B",
+        "C",
+        "ymin",
+        "ymax",
+        "Q_at_10_ppmv",
+        "Q_at_100_ppmv",
+        "Q_at_1000_ppmv",
+    ]
+
+
+def test_schema_table_15_1_groups():
+    parsed = {
+        "id": "15-1",
+        "title": "SOLUBILITY IN WATER AND OCTANOL-WATER PARTITION COEFFICIENT",
+        "header": "NO FORMULA NAME Solubility in Water Octanol-Water Partition Coefficient",
+        "printedPages": {"first": 353, "last": 370},
+        "rows": [
+            {
+                "no": 1,
+                "formula": "CBrClF2",
+                "name": "BROMOCHLORODIFLUOROMETHANE",
+                "values": [1, 2.0, 991.0, 108.06, 2, 1.9],
+            }
+        ],
+    }
+    dataset = to_dataset_table(parsed)
+    keys = column_keys(dataset["columns"])
+    assert keys == [
+        "id",
+        "formula",
+        "name",
+        "solubility_code",
+        "solubility_T",
+        "S_at_T_ppm_wt",
+        "S_at_T_ppm_mol",
+        "kow_code",
+        "log10_Kow",
+    ]
+    row = dataset["rows"][0]
+    assert row["solubility_code"] == 1
+    assert row["solubility_T"] == 2.0
+    assert row["S_at_T_ppm_wt"] == 991.0
+    assert row["S_at_T_ppm_mol"] == 108.06
+    assert row["kow_code"] == 2
+    assert row["log10_Kow"] == 1.9
+
+
+def test_schema_table_19_1():
+    parsed = {
+        "id": "19-1",
+        "title": "ADSORPTION CAPACITY OF ACTIVATED CARBON",
+        "header": "NO FORMULA NAME A B C ymin ymax Q @10 ppmv Q @100 ppmv Q @1000 ppmv",
+        "printedPages": {"first": 414, "last": 424},
+        "rows": [
+            {
+                "no": 1,
+                "formula": "CBrCl3",
+                "name": "BROMOTRICHLOROMETHANE",
+                "values": [1.3984, 0.23228, -0.02184, 10, 10000, 40.63, 59.65, 79.2],
+            }
+        ],
+    }
+    dataset = to_dataset_table(parsed)
+    row = dataset["rows"][0]
+    assert row["Q_at_10_ppmv"] == 40.63
+    assert row["Q_at_100_ppmv"] == 59.65
+    assert row["Q_at_1000_ppmv"] == 79.2
+
+
 def test_columns_coalesce_latex_and_glued_at():
     columns = columns_from_header(
         r"NO FORMULA NAME A B C TMIN TMAX C_p @ 25^\circ C C_p @ TMIN CP @TMAX"

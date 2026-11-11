@@ -130,8 +130,8 @@ COPY tests/ /app/tests/
 # Create necessary directories
 RUN mkdir -p /app/shared/sources /app/shared/processed /app/reports
 
-# Add src to Python path
-ENV PYTHONPATH="/app/src:${PYTHONPATH}"
+# App adapters + vendor libraries (page-ocr, source-extract)
+ENV PYTHONPATH="/app/src:/app/vendor/page-ocr/src:/app/vendor/source-extract/src:${PYTHONPATH}"
 ENV PYTHONUNBUFFERED=1
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
 ENV LLAMA_CPP_BINARY=/opt/llama-cpp/llama-server

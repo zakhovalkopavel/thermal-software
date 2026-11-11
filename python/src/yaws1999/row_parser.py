@@ -48,8 +48,24 @@ _NAME_HAS_AL = re.compile(r"(?i)ALUMIN")
 _NAME_HAS_O = re.compile(
     r"(?i)OXID|OXYGEN|\bOXY|HYDROXY|PERCHLOR|PHOSGENE|\bWATER\b|MONOXIDE|DIOXIDE|TRIOXIDE|TETROXIDE|PENTOXIDE",
 )
-# CI/Ci → Cl; OCR digit-one Cl (C1F); bare cl before digit/end/element.
-_CL_OCR = re.compile(r"C[Ii1]|cl(?=\d|$|[A-Z])")
+# Name-gated element-symbol OCR: (name hint, wrong symbol(s), correct symbol).
+# Wrong match is an element token boundary so TiO2 / TIBr / TII / Yt stay well-formed.
+_NAME_ELEMENT_OCR: tuple[tuple[re.Pattern[str], re.Pattern[str], str], ...] = (
+    # Thallium: OCR often emits Ti / TI instead of Tl (TITANIUM names do not match THALL).
+    (
+        re.compile(r"(?i)THALL"),
+        re.compile(r"(?<![A-Za-z])(?:TI|Ti)(?=\d|$|[A-Z])"),
+        "Tl",
+    ),
+    # Yttrium: OCR often emits Yt; ytterbium (YTTERB…) keeps Yb and does not match.
+    (
+        re.compile(r"(?i)YTTRIUM"),
+        re.compile(r"(?<![A-Za-z])Yt(?=\d|$|[A-Z])"),
+        "Y",
+    ),
+)
+# CI/Ci → Cl; OCR digit-one Cl (C1F); bare cl before digit/end/element; all-caps CL.
+_CL_OCR = re.compile(r"CL|C[Ii1]|cl(?=\d|$|[A-Z])")
 _BR_OCR = re.compile(r"br|BR(?![a-z])")
 _F_OCR = re.compile(r"(?<![A-Za-z])(?:fl|FL|f)(?=\d|$|[A-Z])")
 # Digits OCR'd as oxygen: letter+0 (S02→SO2, ClF03→ClFO3, Os04→OsO4, ^02→O2).
@@ -162,11 +178,12 @@ def parse_data_line(line: str, djvu_page: int) -> Optional[ParsedRow]:
 
 
 def clean_formula(text: str, name: str | None = None) -> str:
-    """OCR cleanup on a Yaws formula; halogen/oxygen fixes are verified against ``name``.
+    """OCR cleanup on a Yaws formula; element/halogen/oxygen fixes use ``name``.
 
     Examples when the name mentions the halogen: ``CI``/``Ci``/``C1`` → ``Cl``,
     ``br`` → ``Br``, ``CIF`` + chlorine → ``ClF``. Oxide names: ``0`` → ``O``
     (``C02`` → ``CO2``, ``Cl20`` → ``Cl2O``). ``CI4`` with an iodide name is left alone.
+    Thallium names: ``Ti``/``TI``/``TIBr``/``TII`` → ``Tl``/``TlBr``/``TlI``.
     """
     out = text.strip()
     for pattern, repl in _FORMULA_OCR:
@@ -181,8 +198,12 @@ def clean_formula(text: str, name: str | None = None) -> str:
 
 
 def reconcile_formula_with_name(formula: str, name: str) -> str:
-    """Fix halogen / oxygen OCR using tokens in the English compound name."""
+    """Fix element-symbol / halogen / oxygen OCR using tokens in the English name."""
     out = formula
+    for name_re, wrong_re, correct in _NAME_ELEMENT_OCR:
+        if name_re.search(name):
+            out = wrong_re.sub(correct, out)
+
     has_cl = bool(_NAME_HAS_CL.search(name))
     has_br = bool(_NAME_HAS_BR.search(name))
     has_i = bool(_NAME_HAS_I.search(name))
@@ -191,6 +212,8 @@ def reconcile_formula_with_name(formula: str, name: str) -> str:
 
     if _NAME_HAS_AL.search(name):
         out = re.sub(r"AI(?=[A-Z0-9]|$)", "Al", out)
+        # Digit one misread for lowercase L (A1 → Al).
+        out = re.sub(r"A1(?=[A-Z0-9]|$)", "Al", out)
     if has_cl:
         out = _CL_OCR.sub("Cl", out)
     if has_br:

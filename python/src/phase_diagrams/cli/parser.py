@@ -76,8 +76,8 @@ def _build_parser() -> argparse.ArgumentParser:
     s.add_argument("--first", type=int, help="first PDF page (default: sources.json tablePages.first)")
     s.add_argument("--last", type=int, help="last PDF page (default: sources.json tablePages.last)")
     s.add_argument(
-        "--engine", choices=("surya", "hybrid", "tesseract"), default="surya",
-        help="page OCR: surya=full VLM (default); hybrid=Surya detect+Indra; tesseract=legacy",
+        "--engine", choices=("vlm", "hybrid", "tesseract"), default="vlm",
+        help="page OCR: vlm=full VLM via page-ocr (default); hybrid=detect+Indra; tesseract=legacy",
     )
     s.add_argument(
         "--force", action="store_true",
