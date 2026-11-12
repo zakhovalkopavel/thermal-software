@@ -105,10 +105,8 @@ RUN poetry config virtualenvs.create false --local && \
     poetry install --no-root --no-interaction --no-ansi || \
     (echo "Retrying installation..." && poetry install --no-root --no-interaction --no-ansi)
 
-# NBS OCR: Surya (detect / full VLM) + Indra (fast line recognition).
-# Yaws handbook parser uses Surya full-page OCR only (no Indra / LightOn / Tesseract).
-# Poetry cannot resolve torch/triton for Python 3.14 — install via pip.
-# Full surya-ocr-2.5 recognition uses llama-server; NBS hybrid uses Surya detect + indra-ocr.
+# page-ocr local engine (Surya VLM via llama-server). Poetry cannot resolve
+# torch/triton for Python 3.14 — install via pip.
 RUN pip install --no-cache-dir \
       --timeout 600 \
       --retries 5 \
@@ -118,7 +116,6 @@ RUN pip install --no-cache-dir \
       --timeout 600 \
       --retries 5 \
       "surya-ocr==0.23.0" \
-      "indra-ocr==1.1.2" \
       "modal>=1.6,<2"
     # surya-ocr pins pillow>=10.2,<11; leave that version (do not force Pillow 12).
     # modal>=1.6: Python 3.14 client (0.x raises on 3.14); tokens via env only.
@@ -130,8 +127,8 @@ COPY tests/ /app/tests/
 # Create necessary directories
 RUN mkdir -p /app/shared/sources /app/shared/processed /app/reports
 
-# Add src to Python path
-ENV PYTHONPATH="/app/src:${PYTHONPATH}"
+# App adapters + vendor libraries (page-ocr, source-extract)
+ENV PYTHONPATH="/app/src:/app/vendor/page-ocr/src:/app/vendor/source-extract/src:${PYTHONPATH}"
 ENV PYTHONUNBUFFERED=1
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
 ENV LLAMA_CPP_BINARY=/opt/llama-cpp/llama-server

@@ -1,8 +1,6 @@
-"""
-phase_diagrams.constants.boundary_arrows — Allowed values of a boundary-curve ``arrows`` entry (one per path segment).
-
-Spec: docs/scripts/phase-diagrams/CONFIG.md § Ternary curves config
-"""
+"""phase_diagrams.constants.boundary_arrows — thin adapter over ``source_extract.diagrams.constants.boundary_arrows``."""
 from __future__ import annotations
 
-BOUNDARY_ARROWS: tuple[str, ...] = (">", "<", "<>", "?")
+from source_extract.diagrams.constants import boundary_arrows as _src
+
+globals().update({k: v for k, v in vars(_src).items() if not k.startswith("__")})

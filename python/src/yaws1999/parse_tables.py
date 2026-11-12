@@ -1,13 +1,13 @@
 """
-yaws1999.parse_tables — OCR DjVu table pages and parse each handbook table to JSON.
+yaws1999.parse_tables — OCR handbook table pages and parse each table to JSON.
 
 Flow:
 1. Catalog ``Table X-Y`` page spans (fast ``djvutxt`` header scan).
-2. Per page: ``ddjvu`` render → full-page Surya OCR (or resume page dumps).
+2. Per page: render + OCR via ``page-ocr`` (or resume page dumps).
 3. Write public dataset JSON under ``shared/processed/yaws1999/`` and a debug
    copy under ``reports/yaws1999/debug/``, plus ``index.json``.
 
-Page dumps: ``report_dir/pages/page-NNNN.txt`` (legacy ``pages/surya/`` still resumed).
+Page dumps: ``report_dir/pages/page-NNNN.txt``.
 """
 from __future__ import annotations
 
@@ -32,7 +32,6 @@ from yaws1999.writers import (
 logger = logging.getLogger(__name__)
 
 Progress = Optional[Callable[[str], None]]
-_ENGINE = "surya"
 
 
 @dataclass
@@ -61,7 +60,7 @@ def parse_yaws1999(
 ) -> ParseResult:
     """Parse selected (or all) handbook tables into dataset + debug JSON.
 
-    With ``ocr=False``, only rebuild from existing page dumps (no Surya).
+    With ``ocr=False``, only rebuild from existing page dumps (no OCR).
     """
     if dpi < 72 or dpi > 600:
         raise ValueError(f"dpi must be in 72..600, got {dpi}")
@@ -91,7 +90,7 @@ def parse_yaws1999(
             raise ValueError(f"unknown table id(s): {', '.join(sorted(missing))}")
     ocr_cfg = None
     if ocr:
-        from yaws1999.ocr_config import load_ocr_config
+        from yaws1999.ocr import load_ocr_config
 
         ocr_cfg = load_ocr_config(quant_override=quant)
         say(
@@ -107,19 +106,18 @@ def parse_yaws1999(
     predictor = None
     if ocr and ocr_cfg is not None:
         if ocr_cfg.backend == "local":
-            from yaws1999.surya_cpu import apply_yaws_cpu_defaults
-            from yaws1999.surya_backend import prepare_local_predictor
+            from yaws1999.ocr import apply_cpu_defaults, prepare_local_predictor
 
-            cpu = apply_yaws_cpu_defaults()
+            cpu = apply_cpu_defaults()
             say(
                 f"CPU tune: logical={cpu.get('logical_cpus')} physical={cpu.get('physical_cpus')} "
-                f"parallel={cpu.get('SURYA_INFERENCE_PARALLEL')} "
+                f"parallel={cpu.get('SURYA_INFERENCE_PARALLEL') or cpu.get('parallel')} "
                 f"llama_extra={cpu.get('LLAMA_CPP_EXTRA_ARGS')!r}"
             )
-            say(f"starting local Surya ({ocr_cfg.model}, quant={ocr_cfg.quant})…")
+            say(f"starting local OCR ({ocr_cfg.summary()})…")
             t_boot = time.perf_counter()
             predictor = prepare_local_predictor(ocr_cfg)
-            say(f"Surya ready in {time.perf_counter() - t_boot:.0f}s")
+            say(f"OCR ready in {time.perf_counter() - t_boot:.0f}s")
         else:
             say(
                 f"Modal OCR: app={ocr_cfg.modal_app} class={ocr_cfg.modal_class} "
@@ -234,18 +232,10 @@ def _parse_table(
 
     for i, page in enumerate(range(span.first_page, span.last_page + 1), start=1):
         page_dump = _page_dump_path(reports, page)
-        legacy_surya = (
-            reports / "pages" / "surya" / f"page-{page:04d}.txt"
-            if reports is not None
-            else None
-        )
         t_page = time.perf_counter()
         resume_from = None
-        if not force:
-            for candidate in (page_dump, legacy_surya):
-                if candidate is not None and candidate.is_file():
-                    resume_from = candidate
-                    break
+        if not force and page_dump is not None and page_dump.is_file():
+            resume_from = page_dump
         if resume_from is not None:
             lines = [ln.rstrip("\n") for ln in resume_from.read_text(encoding="utf-8").splitlines()]
             say(
@@ -261,8 +251,8 @@ def _parse_table(
             label = f"table {span.id} page {page}/{span.last_page} ({i}/{page_total})"
             backend = getattr(ocr_config, "backend", "local") if ocr_config else "local"
             say(f"{label} full-page OCR ({backend})…")
+            from yaws1999.ocr import ocr_source_page
             from yaws1999.progress import heartbeat
-            from yaws1999.surya_ocr import ocr_djvu_page
 
             modal_dump = (
                 page_dump.with_suffix(".modal.json")
@@ -270,7 +260,7 @@ def _parse_table(
                 else None
             )
             with heartbeat(say, label, interval_s=30.0):
-                lines = ocr_djvu_page(
+                lines = ocr_source_page(
                     source,
                     page,
                     cache_dir=render_cache,
@@ -301,7 +291,7 @@ def _parse_table(
         "id": span.id,
         "title": title,
         "refKey": REF_KEY,
-        "engine": _ENGINE,
+        "engine": getattr(ocr_config, "engine", None) if ocr_config else None,
         "backend": getattr(ocr_config, "backend", None) if ocr_config else None,
         "model": getattr(ocr_config, "model", None) if ocr_config else None,
         "quant": quant,

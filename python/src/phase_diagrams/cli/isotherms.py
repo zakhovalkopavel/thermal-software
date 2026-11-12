@@ -126,8 +126,10 @@ def _detect(command: str, args, dataset: Path, registry: SourceRegistry, work: P
     invariants.update({point["id"]: point for point in system.get("invariantPoints", [])})
     width = json.loads(path.read_text(encoding="utf-8")).get("isothermStrokeWidth_px") or _ISOTHERM_WIDTH_PX
     calibration = TernaryCalibration.from_system(system, config.pixel_origin)
-    detection = detect_isotherms(system, mask, calibration, invariants, (float(width[0]), float(width[1])),
-                                 args.step, read_rotated_number, scale)
+    detection = detect_isotherms(
+        system, mask, calibration, invariants, (float(width[0]), float(width[1])),
+        args.step, read_rotated_number, scale, source_ref=_ATLAS,
+    )
     for line in detection.log:
         _say(command, line)
     return {"config": config, "system": system, "image": image, "mask": mask, "scale": scale,
@@ -170,7 +172,8 @@ def _cmd_auto_overlay(args, dataset: Path, registry: SourceRegistry, work: Path)
     for line in approximation.log:
         _say("auto-overlay", f"approximation: {line}")
     compounds = json.loads((dataset / "compounds.json").read_text(encoding="utf-8")).get("compounds", [])
-    compound_points = build_compound_points(auto, build_node_map(auto, mask, config.pixel_origin, scale), compounds,
+    compound_points = build_compound_points(
+        auto, build_node_map(auto, mask, config.pixel_origin, scale, source_ref=_ATLAS), compounds,
                                             config.pixel_origin, scale)
     rendered, _ = render_ternary_overlay(image, box, auto_overlay_curves(auto, detection, calibration), [], corners,
                                          scale=scale, approximation=approximation, compound_points=compound_points)
@@ -277,14 +280,18 @@ def _cmd_auto(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
     invariants = {p["id"]: p for p in points}
     width = tuple(round(f * scale.line_px * 2) / 2 for f in (0.5, 1.55))
     point_words = [w for _, w in temperatures.values()] + [t.word for t in saddles]
-    detection = detect_isotherms(system, mask, calibration, invariants, width, args.step, read_rotated_number, scale,
-                                 side_labels=[w for w in words if not any(w is p for p in point_words)],
-                                 skip_boxes=[w.box for w in point_words], text_words=words)
+    detection = detect_isotherms(
+        system, mask, calibration, invariants, width, args.step, read_rotated_number, scale,
+        side_labels=[w for w in words if not any(w is p for p in point_words)],
+        skip_boxes=[w.box for w in point_words], text_words=words, source_ref=_ATLAS,
+    )
     auto = build_auto_system(system, detection, calibration)
     known = sum(1 for p in detection.isotherms if p.temperature_C is not None)
     _say("auto", f"isotherms: {len(detection.isotherms)} pieces, {known} with a temperature")
     approximation = build_field_approximation(auto, calibration, invariants, scale)
-    compound_points = build_compound_points(auto, build_node_map(auto, mask, (0.0, 0.0), scale), compounds, (0.0, 0.0), scale)
+    compound_points = build_compound_points(
+        auto, build_node_map(auto, mask, (0.0, 0.0), scale, source_ref=_ATLAS), compounds, (0.0, 0.0), scale,
+    )
     page_corners = [calibration.stored_to_page(*calibration.corners[c]) for c in calibration.components]
     box = (min(p[0] for p in page_corners), min(p[1] for p in page_corners),
            max(p[0] for p in page_corners), max(p[1] for p in page_corners))

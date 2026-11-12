@@ -11,19 +11,16 @@ Part of the [phase-diagram extraction specification](README.md).
 - Index source: Internet Archive scan in `sources.json` (`tablePages` pdf 11–119). The bw
   PDF’s Adobe text layer is **not** used.
 - `make pd-nbs-index` renders each Table I page (`pdftoppm`) and OCRs page-by-page.
-  Default **`--engine surya`** (`nbs_surya_ocr`): full surya-ocr-2.5 via llama-server with
-  HTML `<sub>` digits (`BF<sub>3</sub>-N<sub>2</sub>O` → dump `BF3-N2O`). Optional
-  **`--engine hybrid`** (`nbs_hybrid_ocr`): Surya line detection only, PIL crops, then
-  `datalab-to/indra-ocr` — faster but splits table cells into separate lines on this scan.
+  Default **`--engine vlm`** (`nbs_vlm_ocr`): full-page VLM via page-ocr / llama-server with
+  HTML `<sub>` digits (`BF<sub>3</sub>-N<sub>2</sub>O` → dump `BF3-N2O`).
   `--engine tesseract` is the legacy char-box path. The dump is a **continuous table**
   (newline-separated rows, no form-feeds); `pdfPage` / printed page (PDF − 8) live in
   `entries.json`. Progress is logged **per page**; each page is **merged** into the dump /
   `entries.json` / `unparsed.txt` (safe to interrupt / resume). Skip pages already in
-  `entries.json` unless `FORCE=1`. Optional `--first` / `--last`. Packages: `surya-ocr`
-  + `indra-ocr` via pip in the Dockerfile (Poetry cannot resolve torch/triton for Python
-  3.14); `LLAMA_CPP_BINARY` for `--engine surya`. GGUFs live in `huggingface_cache`; after
-  the first download, `nbs_surya_ocr` sets local paths + `HF_HUB_OFFLINE=1`. Override with
-  `SURYA_HF_ONLINE=1`.
+  `entries.json` unless `FORCE=1`. Optional `--first` / `--last`. Local engine deps
+  (`surya-ocr`) via pip in the Dockerfile; `LLAMA_CPP_BINARY` for `--engine vlm`. GGUFs
+  live in `huggingface_cache`; after the first download, page-ocr sets local paths +
+  `HF_HUB_OFFLINE=1`. Override with `SURYA_HF_ONLINE=1`.
 - **Fallback / cleanup:** commas or periods left in a formula still go through
   `nbs_formula_ocr` (element walk; no compound whitelist).
 - `nbs_text_normalizer` then cleans each component. Oxides keep dedicated patterns; other
@@ -50,9 +47,8 @@ when the table has no melting point (trailing block ~6190–6271). Melting notes
 that look like entries but do not parse go to `nsrds-nbs-61-1.unparsed.txt`.
 - `make pd-nbs-refs` repairs references in the dump then rebuilds `entries.json`: rule-based
   note/T/ref fixes + `pdftotext` overlay (fill empty refs; extend truncated multi-line wraps).
-  Optional `OCR=1` runs hybrid OCR only for ids still missing refs. Writes
-  `nsrds-nbs-61-1.anomalies.txt` for T-order breaks and composition/T suspicions (no auto-fix
-  of systems or mol%). Promote the finished indexes into
+  Writes `nsrds-nbs-61-1.anomalies.txt` for T-order breaks and composition/T suspicions
+  (no auto-fix of systems or mol%). Promote the finished indexes into
   `shared/processed/phase-diagrams/nbs/` (`*.entries.json`, `*.bibliography.json`); `extract` /
   `nbs-suggest` prefer that dataset copy over the working `reports/.../nbs/` dump.
 

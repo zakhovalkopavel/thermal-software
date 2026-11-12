@@ -127,11 +127,12 @@ services:
         TESSERACT_VERSION: ${TESSERACT_VERSION}
     container_name: thermal-python
     working_dir: /app
-    # Yaws/Surya/Modal OCR vars come from .env (no compose ${…} defaults/warnings).
+    # PAGE_OCR_* / Modal OCR vars come from .env (no compose ${…} defaults/warnings).
     env_file:
       - .env
     environment:
       PYTHONUNBUFFERED: 1
+      PYTHONPATH: /app/src:/app/vendor/page-ocr/src:/app/vendor/source-extract/src
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_USERNAME: ${DB_USERNAME}
@@ -145,12 +146,14 @@ services:
     volumes:
       - ./python/src:/app/src
       - ./python/tests:/app/tests
+      - ./vendor/page-ocr:/app/vendor/page-ocr:ro
+      - ./vendor/source-extract:/app/vendor/source-extract:ro
       - ./tmp/reports/python:/app/reports
       - ./shared:/app/shared
       - ./legacy:/app/legacy:ro  # compound_names.csv for name_to_formula exact dict
       - ./backend/src/common/thermal/dto:/app/backend-dto:ro  # equation type sync test (compound_data)
       - python_packages:/usr/local/lib/python${PYTHON_VERSION_NUMBER}/site-packages
-      # Surya GGUF + Hugging Face caches (survive docker compose run --rm)
+      # page-ocr GGUF + Hugging Face caches (survive docker compose run --rm)
       - surya_model_cache:/root/.cache/datalab
       - huggingface_cache:/root/.cache/huggingface
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
@@ -206,5 +209,5 @@ volumes:
   frontend_node_modules:
   frontend_dist:  # Shared volume for built frontend files
   python_packages:
-  surya_model_cache:  # Surya GGUF models (~1.2GB); keeps nbs-index from re-downloading
+  surya_model_cache:  # VLM GGUF models (~1.2GB); keeps nbs-index from re-downloading
   huggingface_cache:

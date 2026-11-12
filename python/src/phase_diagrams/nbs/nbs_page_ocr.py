@@ -1,7 +1,7 @@
 """
 phase_diagrams.nbs.nbs_page_ocr — NSRDS-NBS 61 Table I page OCR helpers.
 
-``dump_nbs_table_ocr`` uses Surya (``nbs_surya_ocr``). The Tesseract char-box path
+``dump_nbs_table_ocr`` uses page-ocr VLM (``nbs_vlm_ocr``). The Tesseract char-box path
 below remains for tests and as ``engine="tesseract"`` fallback.
 
 Spec: docs/scripts/phase-diagrams/NBS.md § Text index
@@ -73,23 +73,19 @@ def dump_nbs_table_ocr(
     cache_dir: Path | str | None = None,
     dpi: int = _DPI,
     progress: Callable[[int, int], None] | None = None,
-    engine: str = "surya",
+    engine: str = "vlm",
 ) -> str:
     """OCR Table I pages ``first_page``…``last_page`` (1-based); pages separated by ``\\f``.
 
-    Default ``engine="surya"`` (full surya-ocr-2.5 HTML). ``engine="hybrid"`` is Surya
-    line detect + Indra recognize. ``engine="tesseract"`` keeps the char-box path.
+    Default ``engine="vlm"`` (full-page VLM HTML via page-ocr). ``engine="tesseract"``
+    keeps the char-box path.
     """
-    if engine == "hybrid":
-        from phase_diagrams.nbs.nbs_hybrid_ocr import dump_nbs_table_ocr as _hybrid_dump
+    if engine == "vlm":
+        from phase_diagrams.nbs.nbs_vlm_ocr import dump_nbs_table_ocr as _vlm_dump
 
-        return _hybrid_dump(pdf_path, first_page, last_page, cache_dir=cache_dir, dpi=dpi, progress=progress)
-    if engine == "surya":
-        from phase_diagrams.nbs.nbs_surya_ocr import dump_nbs_table_ocr as _surya_dump
-
-        return _surya_dump(pdf_path, first_page, last_page, cache_dir=cache_dir, dpi=dpi, progress=progress)
+        return _vlm_dump(pdf_path, first_page, last_page, cache_dir=cache_dir, dpi=dpi, progress=progress)
     if engine != "tesseract":
-        raise ValueError(f"unknown NBS OCR engine {engine!r} (expected 'hybrid', 'surya', or 'tesseract')")
+        raise ValueError(f"unknown NBS OCR engine {engine!r} (expected 'vlm' or 'tesseract')")
     pages: list[str] = []
     for page in range(first_page, last_page + 1):
         if progress:
@@ -103,11 +99,11 @@ def dump_nbs_table_ocr(
 
 
 def ocr_page_text(image: np.ndarray) -> str:
-    """Full page text via Surya (preferred) with Tesseract fallback if Surya is unavailable."""
+    """Full page text via page-ocr VLM (preferred) with Tesseract fallback if unavailable."""
     try:
-        from phase_diagrams.nbs.nbs_surya_ocr import ocr_page_text as _surya_page
+        from phase_diagrams.nbs.nbs_vlm_ocr import ocr_page_text as _vlm_page
 
-        return _surya_page(image)
+        return _vlm_page(image)
     except Exception:
         return ocr_page_text_tesseract(image)
 

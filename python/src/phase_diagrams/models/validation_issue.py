@@ -1,17 +1,6 @@
-"""
-phase_diagrams.models.validation_issue — One finding of the dataset validator.
-"""
+"""phase_diagrams.models.validation_issue — thin adapter over ``source_extract.diagrams.models.validation_issue``."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from source_extract.diagrams.models import validation_issue as _src
 
-
-@dataclass
-class ValidationIssue:
-    code: str
-    level: str
-    file: str
-    message: str
-
-    def __str__(self) -> str:
-        return f"{self.level.upper():7} {self.code} {self.file}: {self.message}"
+globals().update({k: v for k, v in vars(_src).items() if not k.startswith("__")})

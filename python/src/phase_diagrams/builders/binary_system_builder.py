@@ -274,16 +274,22 @@ def build_binary_system(
     for spec in config.invariants:
         liquid = _liquid(config, compositions[spec.id])
         comparisons = []
-        if spec.nbs:
+        if spec.external_ids:
             if nbs is None:
                 raise ValueError(f"{spec.id}: NBS entries chosen but no NBS index loaded (run nbs-index)")
-            comparisons = [nbs.compare(n, liquid, temperatures[spec.id]) for n in spec.nbs]
+            comparisons = [nbs.compare(n, liquid, temperatures[spec.id]) for n in spec.external_ids]
         status = resolve_status(comparisons)
         if status == "conflict":
-            review.append(ReviewItem("nbs-conflict", spec.id, "; ".join(f"entry {c.entry.entry}: {c.comparison_text()}" for c in comparisons)))
+            review.append(ReviewItem(
+                "cross-check-conflict", spec.id,
+                "; ".join(f"entry {c.entry.entry}: {c.comparison_text()}" for c in comparisons),
+            ))
         for comparison in comparisons:
             if comparison.entry.approximate:
-                review.append(ReviewItem("nbs-approximate", spec.id, f"entry {comparison.entry.entry} is approximate"))
+                review.append(ReviewItem(
+                    "cross-check-approximate", spec.id,
+                    f"entry {comparison.entry.entry} is approximate",
+                ))
         temperature_text = _temperature_text(spec, measured_t.get(spec.id), traced_data.get(spec.id))
         if spec.label_temperature is not None and spec.id in measured_t and abs(measured_t[spec.id] - spec.label_temperature) > _LABEL_DRAWING_T:
             review.append(ReviewItem("label-drawing", spec.id, f"line reads {_half(measured_t[spec.id])} °C, label {spec.label_temperature}"))
@@ -358,7 +364,7 @@ def build_binary_system(
     statuses = [p["status"] for p in invariant_points]
     log.append(
         f"{len(invariant_points)} invariants ({', '.join(f'{statuses.count(s)} {s}' for s in sorted(set(statuses)))}), "
-        f"{len(liquidus)} liquidus branches, {sum(len(s.nbs) for s in config.invariants)} NBS comparisons"
+        f"{len(liquidus)} liquidus branches, {sum(len(s.external_ids) for s in config.invariants)} NBS comparisons"
     )
     return BinaryExtraction(
         system=ordered,

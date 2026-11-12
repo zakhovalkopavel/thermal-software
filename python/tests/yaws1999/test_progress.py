@@ -1,4 +1,4 @@
-"""Heartbeat helper for long Surya page OCR."""
+"""Heartbeat helper for long page OCR."""
 from __future__ import annotations
 
 import time

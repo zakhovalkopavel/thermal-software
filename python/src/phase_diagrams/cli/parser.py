@@ -76,8 +76,8 @@ def _build_parser() -> argparse.ArgumentParser:
     s.add_argument("--first", type=int, help="first PDF page (default: sources.json tablePages.first)")
     s.add_argument("--last", type=int, help="last PDF page (default: sources.json tablePages.last)")
     s.add_argument(
-        "--engine", choices=("surya", "hybrid", "tesseract"), default="surya",
-        help="page OCR: surya=full VLM (default); hybrid=Surya detect+Indra; tesseract=legacy",
+        "--engine", choices=("vlm", "tesseract"), default="vlm",
+        help="page OCR: vlm=full VLM via page-ocr (default); tesseract=legacy",
     )
     s.add_argument(
         "--force", action="store_true",
@@ -111,11 +111,6 @@ def _build_parser() -> argparse.ArgumentParser:
         "--force", action="store_true",
         help="prefer pdftotext refs even when the dump already has digits",
     )
-    s.add_argument(
-        "--ocr", action="store_true",
-        help="hybrid OCR gap-fill for entries still missing refs after pdftotext",
-    )
-
     s = sub.add_parser("nbs-suggest", help="Candidate NBS entries for exactly these components")
     s.add_argument("components", nargs="+", metavar="COMPONENT")
 

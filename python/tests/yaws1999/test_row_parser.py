@@ -71,6 +71,25 @@ def test_reconcile_preserves_cl_when_fixing_iodide_l():
     assert reconcile_formula_with_name("AgCl", "SILVER CHLORIDE IODIDE") == "AgCl"
 
 
+def test_clean_formula_thallium_from_name():
+    assert clean_formula("Ti", "THALLIUM") == "Tl"
+    assert clean_formula("TI", "THALLIUM") == "Tl"
+    assert clean_formula("TIBr", "THALLOUS BROMIDE") == "TlBr"
+    assert clean_formula("TiBr", "THALLOUS BROMIDE") == "TlBr"
+    assert clean_formula("TiI", "THALLOUS IODIDE") == "TlI"
+    assert clean_formula("TII", "THALLOUS IODIDE") == "TlI"
+    # Titanium must keep Ti.
+    assert clean_formula("Ti", "TITANIUM") == "Ti"
+    assert clean_formula("TiCl4", "TITANIUM TETRACHLORIDE") == "TiCl4"
+
+
+def test_clean_formula_yttrium_and_caps_cl_from_name():
+    assert clean_formula("Yt", "YTTRIUM") == "Y"
+    assert clean_formula("Yb", "YTTERBIUM") == "Yb"
+    assert clean_formula("CCL4", "TETRACHLOROMETHANE") == "CCl4"
+    assert clean_formula("C6H15A1", "TRIETHYLALUMINUM") == "C6H15Al"
+
+
 def test_missing_values_become_none():
     row = parse_data_line("5 AIB3H12 ALUMINUM BOROHYDRIDE —", djvu_page=54)
     assert row is not None

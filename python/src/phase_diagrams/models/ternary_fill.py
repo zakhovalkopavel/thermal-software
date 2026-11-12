@@ -1,21 +1,6 @@
-"""
-phase_diagrams.models.ternary_fill — Result of filling the polylines of one ternary file.
-"""
+"""phase_diagrams.models.ternary_fill — thin adapter over ``source_extract.diagrams.models.ternary_fill``."""
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from source_extract.diagrams.models import ternary_fill as _src
 
-from phase_diagrams.models.review_item import ReviewItem
-from phase_diagrams.models.traced_curve import TracedCurve
-
-
-@dataclass
-class TernaryFill:
-    """New file text (only ``polyline_wt`` values changed) plus traces, review and log."""
-
-    text: str
-    curves: list[TracedCurve]
-    filled: int
-    units_missing: bool
-    review: list[ReviewItem] = field(default_factory=list)
-    log: list[str] = field(default_factory=list)
+globals().update({k: v for k, v in vars(_src).items() if not k.startswith("__")})

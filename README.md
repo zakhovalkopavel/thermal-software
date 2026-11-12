@@ -36,7 +36,8 @@ thermal-software/
 ### First time
 
 ```bash
-# 1. Create your .env
+# 1. Clone the main repo, then setup (inits submodules + .env + vendor envs)
+git clone <this-repo> thermal-software && cd thermal-software
 make setup
 
 # 2. Generate secure secrets (JWT + DB password)
@@ -48,6 +49,10 @@ make up
 # 4. Verify
 docker compose ps
 ```
+
+After changing OCR/Modal keys in `.env`, run `make sync-vendor-env`. To pull newer
+vendor libs: `make update-submodules`. Full notes: [SETUP.md](SETUP.md),
+[docs/SHARED_LIBRARIES_SUBMODULES.md](docs/SHARED_LIBRARIES_SUBMODULES.md).
 
 ### Every other time
 

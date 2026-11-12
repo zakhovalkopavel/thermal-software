@@ -3,20 +3,18 @@ from __future__ import annotations
 
 import pytest
 
-from yaws1999.ocr_config import load_ocr_config, modal_tokens_present
+from yaws1999.ocr import load_ocr_config, modal_tokens_present
 
 
 def _set_local_env(monkeypatch) -> None:
-    monkeypatch.setenv("YAWS_OCR_BACKEND", "local")
-    monkeypatch.setenv("YAWS_OCR_MODEL", "test/local-model")
-    monkeypatch.setenv("YAWS_OCR_QUANT", "bf16")
+    monkeypatch.setenv("PAGE_OCR_BACKEND", "local")
+    monkeypatch.setenv("PAGE_OCR_MODEL", "test/local-model")
+    monkeypatch.setenv("PAGE_OCR_QUANT", "bf16")
 
 
 def test_load_ocr_config_from_env(monkeypatch):
     _set_local_env(monkeypatch)
-    monkeypatch.delenv("YAWS_MODAL_APP", raising=False)
-    monkeypatch.delenv("YAWS_MODAL_CLASS", raising=False)
-    monkeypatch.delenv("YAWS_MODAL_GPU", raising=False)
+    monkeypatch.delenv("PAGE_OCR_MODAL_APP", raising=False)
 
     cfg = load_ocr_config()
     assert cfg.backend == "local"
@@ -28,12 +26,12 @@ def test_load_ocr_config_from_env(monkeypatch):
 
 
 def test_load_ocr_config_modal_and_model(monkeypatch):
-    monkeypatch.setenv("YAWS_OCR_BACKEND", "modal")
-    monkeypatch.setenv("YAWS_OCR_MODEL", "org/other-ocr-model")
-    monkeypatch.setenv("YAWS_OCR_QUANT", "q8")
-    monkeypatch.setenv("YAWS_MODAL_APP", "test-app")
-    monkeypatch.setenv("YAWS_MODAL_CLASS", "TestOcr")
-    monkeypatch.setenv("YAWS_MODAL_GPU", "A10G")
+    monkeypatch.setenv("PAGE_OCR_BACKEND", "modal")
+    monkeypatch.setenv("PAGE_OCR_MODEL", "org/other-ocr-model")
+    monkeypatch.setenv("PAGE_OCR_QUANT", "q8")
+    monkeypatch.setenv("PAGE_OCR_MODAL_APP", "test-app")
+    monkeypatch.setenv("PAGE_OCR_MODAL_CLASS", "TestOcr")
+    monkeypatch.setenv("PAGE_OCR_MODAL_GPU", "A10G")
 
     cfg = load_ocr_config()
     assert cfg.backend == "modal"
@@ -44,31 +42,32 @@ def test_load_ocr_config_modal_and_model(monkeypatch):
 
 
 def test_missing_env_raises(monkeypatch):
-    monkeypatch.delenv("YAWS_OCR_BACKEND", raising=False)
-    with pytest.raises(ValueError, match="YAWS_OCR_BACKEND"):
+    for name in ("PAGE_OCR_BACKEND", "PAGE_OCR_MODEL", "PAGE_OCR_QUANT"):
+        monkeypatch.delenv(name, raising=False)
+    with pytest.raises(ValueError, match="PAGE_OCR_BACKEND"):
         load_ocr_config()
 
 
 def test_quant_override_wins(monkeypatch):
     _set_local_env(monkeypatch)
-    monkeypatch.setenv("YAWS_OCR_QUANT", "q8")
+    monkeypatch.setenv("PAGE_OCR_QUANT", "q8")
     cfg = load_ocr_config(quant_override="bf16")
     assert cfg.quant == "bf16"
 
 
 def test_invalid_backend(monkeypatch):
     _set_local_env(monkeypatch)
-    monkeypatch.setenv("YAWS_OCR_BACKEND", "hybrid")
-    with pytest.raises(ValueError, match="YAWS_OCR_BACKEND"):
+    monkeypatch.setenv("PAGE_OCR_BACKEND", "hybrid")
+    with pytest.raises(ValueError, match="PAGE_OCR_BACKEND"):
         load_ocr_config()
 
 
 def test_modal_requires_modal_env(monkeypatch):
-    monkeypatch.setenv("YAWS_OCR_BACKEND", "modal")
-    monkeypatch.setenv("YAWS_OCR_MODEL", "test/model")
-    monkeypatch.setenv("YAWS_OCR_QUANT", "bf16")
-    monkeypatch.delenv("YAWS_MODAL_APP", raising=False)
-    with pytest.raises(ValueError, match="YAWS_MODAL_APP"):
+    monkeypatch.delenv("PAGE_OCR_MODAL_APP", raising=False)
+    monkeypatch.setenv("PAGE_OCR_BACKEND", "modal")
+    monkeypatch.setenv("PAGE_OCR_MODEL", "test/model")
+    monkeypatch.setenv("PAGE_OCR_QUANT", "bf16")
+    with pytest.raises(ValueError, match="PAGE_OCR_MODAL_APP"):
         load_ocr_config()
 
 
