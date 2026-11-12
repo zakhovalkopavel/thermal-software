@@ -37,6 +37,7 @@ def ocr_source_page(
     cache_stem: str = "yaws",
     predictor: object | None = None,
     config: OcrConfig | None = None,
+    raw_dump_path: Path | str | None = None,
     modal_dump_path: Path | str | None = None,
 ) -> list[str]:
     """Render one source page (PDF / DjVu / image) and OCR it via page-ocr."""
@@ -51,5 +52,6 @@ def ocr_source_page(
         image,
         config=config,
         predictor=predictor,
-        modal_dump_path=modal_dump_path,
+        raw_dump_path=raw_dump_path if raw_dump_path is not None else modal_dump_path,
+        dpi=dpi,
     )

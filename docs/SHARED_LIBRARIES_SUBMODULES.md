@@ -41,6 +41,7 @@ flowchart TB
 
 - `ocr_page(image_bytes) → {blocks, …}`
 - `PAGE_OCR_BACKEND=local|modal`, `PAGE_OCR_ENGINE=surya`, …
+- Modal `PageOcr(quant=bf16|q8)` — one deploy, pick quant per call
 - No handbook/diagram product logic
 
 ## 2 — `source-extract`

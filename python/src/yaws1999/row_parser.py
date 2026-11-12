@@ -278,6 +278,19 @@ def _coerce_value(token: str) -> Any:
             return t
 
 
+def collect_equations(lines: list[str]) -> list[str]:
+    """Return distinct equation-like lines (intros often have more than one)."""
+    out: list[str] = []
+    for raw in lines:
+        line = raw.strip()
+        if not line or not _looks_like_equation(line):
+            continue
+        cleaned = _clean_equation(line)
+        if cleaned and cleaned not in out:
+            out.append(cleaned)
+    return out
+
+
 def _looks_like_equation(line: str) -> bool:
     if _HEADER_MARKERS.search(line):
         return False
