@@ -1,7 +1,13 @@
 """Parse reconstructed Yaws table lines into structured rows."""
 from __future__ import annotations
 
-from yaws1999.row_parser import clean_formula, parse_data_line, parse_page_lines, reconcile_formula_with_name
+from yaws1999.row_parser import (
+    clean_formula,
+    clean_name,
+    parse_data_line,
+    parse_page_lines,
+    reconcile_formula_with_name,
+)
 
 
 _PAGE_2_2 = """\
@@ -88,6 +94,25 @@ def test_clean_formula_yttrium_and_caps_cl_from_name():
     assert clean_formula("Yb", "YTTERBIUM") == "Yb"
     assert clean_formula("CCL4", "TETRACHLOROMETHANE") == "CCl4"
     assert clean_formula("C6H15A1", "TRIETHYLALUMINUM") == "C6H15Al"
+
+
+def test_clean_name_restores_missing_i_in_iodide():
+    assert clean_name("ARSENIC TRIODIDE") == "ARSENIC TRIIODIDE"
+    assert clean_name("ARSENIC TRIIODIDE") == "ARSENIC TRIIODIDE"
+    assert clean_name("CARBON DIODIDE") == "CARBON DIIODIDE"
+    # Oxide / other TRI* must stay.
+    assert clean_name("SULFUR TRIOXIDE") == "SULFUR TRIOXIDE"
+    assert clean_name("CARBON DIOXIDE") == "CARBON DIOXIDE"
+
+
+def test_parse_data_line_fixes_triodide_name():
+    row = parse_data_line(
+        "19 AsI3 ARSENIC TRIODIDE --- --- --- --- --- --- ---",
+        djvu_page=81,
+    )
+    assert row is not None
+    assert row.name == "ARSENIC TRIIODIDE"
+    assert row.formula == "AsI3"
 
 
 def test_missing_values_become_none():

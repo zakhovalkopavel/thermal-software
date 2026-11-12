@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Optional
 
+from yaws1999.cas_index import looks_like_cas_index, parse_cas_index_lines
 from yaws1999.constants import PAGE_OFFSET, PROCESSED_DIR, REF_KEY, REPORT_DIR, SOURCE_DJVU
 from yaws1999.dataset import to_dataset_table, to_debug_table
 from yaws1999.row_parser import collect_equations, parse_page_lines
@@ -55,7 +56,7 @@ def parse_yaws1999(
     first_page: int | None = None,
     last_page: int | None = None,
     force: bool = False,
-    quant: str = "bf16",
+    quant: str = "q8",
     dpi: int = 400,
     no_replace: bool = False,
     ocr: bool = True,
@@ -444,6 +445,32 @@ def _parse_freeform_page(
         dump_tag=dump_tag,
         say=say,
     )
+    if looks_like_cas_index(lines):
+        cas = parse_cas_index_lines(lines, page)
+        say(
+            f"{label} CAS index: {len(cas.entries)} entries "
+            f"({cas.dual_lines} dual-col lines, {len(cas.unparsed)} unparsed)"
+        )
+        return {
+            "kind": "casIndex",
+            "layout": "twoColumnCas",
+            "djvuPage": page,
+            "printedPage": page - PAGE_OFFSET,
+            "refKey": REF_KEY,
+            "engine": getattr(ocr_config, "engine", None) if ocr_config else None,
+            "backend": getattr(ocr_config, "backend", None) if ocr_config else None,
+            "model": getattr(ocr_config, "model", None) if ocr_config else None,
+            "quant": quant,
+            "dpi": dpi,
+            "title": None,
+            "equation": None,
+            "equations": [],
+            "header": None,
+            "lines": lines,
+            "rows": [e.to_dict() for e in cas.entries],
+            "unparsed": cas.unparsed,
+        }
+
     parsed = parse_page_lines(lines, page)
     equations = collect_equations(lines)
     if parsed.equation and parsed.equation not in equations:

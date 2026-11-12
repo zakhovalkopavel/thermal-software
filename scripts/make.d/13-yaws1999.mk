@@ -8,7 +8,7 @@
 
 # BACKEND=local|modal overrides PAGE_OCR_BACKEND for this run only (leave .env unchanged).
 # PAGE=37 (or PAGE="37 38") limits OCR to those DjVu pages; other span pages resume dumps.
-yaws1999-parse: ## OCR+parse Yaws 1999 [TABLE=] [PAGE=] [BACKEND=local|modal] [QUANT=bf16|q8] [DPI=400] [FORCE=1] [NO_REPLACE=1]
+yaws1999-parse: ## OCR+parse Yaws 1999 [TABLE=] [PAGE=] [BACKEND=local|modal] [QUANT=q8|bf16] [DPI=400] [FORCE=1] [NO_REPLACE=1]
 	@docker compose run --rm \
 		$(if $(BACKEND),-e PAGE_OCR_BACKEND=$(BACKEND)) \
 		python python src/scripts/parse_yaws1999.py \

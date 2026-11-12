@@ -101,7 +101,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--first", type=int, default=None, metavar="N", help="first DjVu page to scan for headers")
     p.add_argument("--last", type=int, default=None, metavar="N", help="last DjVu page to scan for headers")
-    p.add_argument("--quant", choices=("bf16", "q8"), default="bf16", help="OCR quant: bf16 (default) or q8")
+    p.add_argument("--quant", choices=("bf16", "q8"), default="q8", help="OCR quant: q8 (default) or bf16")
     p.add_argument("--dpi", type=int, default=400, metavar="N", help="ddjvu render DPI (default 400)")
     p.add_argument(
         "--no-replace",

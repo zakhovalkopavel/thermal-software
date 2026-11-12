@@ -75,6 +75,8 @@ _ZERO_AFTER_COUNT = re.compile(r"(?<=[A-NP-Za-np-z]\d)0(?=$|[A-Z])")
 # Iodide I misread as lowercase L after a two-letter element (Agl → AgI).
 # Do not match the L of Cl.
 _IODIDE_L = re.compile(r"([A-Z][a-z])l(?=\d|$|[A-Z])")
+# Name OCR drops one I in tri-/di-iodide (TRIODIDE → TRIIODIDE). Not TRIOXIDE.
+_MISSING_I_IODIDE = re.compile(r"\b(TRI|DI)(?=ODIDE\b)", re.I)
 _VALUE_JUNK = re.compile(r"^[|IljJ!\"'`]+$")
 
 
@@ -164,7 +166,7 @@ def parse_data_line(line: str, djvu_page: int) -> Optional[ParsedRow]:
     if not name:
         return None
     values, tail = _parse_values(value_text)
-    name_clean = re.sub(r"\s+", " ", name).strip(" -")
+    name_clean = clean_name(name)
     return ParsedRow(
         no=number,
         formula=clean_formula(formula_raw, name_clean),
@@ -175,6 +177,21 @@ def parse_data_line(line: str, djvu_page: int) -> Optional[ParsedRow]:
         raw=line,
         djvu_page=djvu_page,
     )
+
+
+def clean_name(name: str) -> str:
+    """OCR cleanup on a compound name (spacing + iodide spelling).
+
+    ``TRIODIDE`` / ``DIODIDE`` → ``TRIIODIDE`` / ``DIIODIDE`` (tri-/di-iodide).
+    Does not touch ``TRIOXIDE`` / ``DIOXIDE``.
+    """
+    out = re.sub(r"\s+", " ", name).strip(" -")
+    return _MISSING_I_IODIDE.sub(_restore_iodide_i, out)
+
+
+def _restore_iodide_i(match: re.Match[str]) -> str:
+    prefix = match.group(1)
+    return prefix + ("I" if prefix[-1].isupper() else "i")
 
 
 def clean_formula(text: str, name: str | None = None) -> str:

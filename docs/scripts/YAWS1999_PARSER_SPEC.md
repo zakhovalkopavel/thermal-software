@@ -17,7 +17,7 @@ OCR is delegated entirely to the **`page-ocr`** submodule (`vendor/page-ocr`). Y
 | `PAGE_OCR_BACKEND` | `local` (llama-server in python image) or `modal` (remote GPU) |
 | `PAGE_OCR_ENGINE` | Engine id inside page-ocr (default `surya`) |
 | `PAGE_OCR_MODEL` | Complete model id — change to swap models later |
-| `PAGE_OCR_QUANT` | `bf16` \| `q8` (Modal: choose at call time after one dual-quant deploy) |
+| `PAGE_OCR_QUANT` | `q8` (default) \| `bf16` (Modal: choose at call time after one dual-quant deploy) |
 | `PAGE_OCR_MODAL_APP` / `PAGE_OCR_MODAL_CLASS` / `PAGE_OCR_MODAL_GPU` | Required when backend=`modal` |
 
 Deploy Modal: `make page-ocr-deploy` (alias `make yaws1999-modal-deploy`). See [YAWS1999_MODAL.md](YAWS1999_MODAL.md) and `vendor/page-ocr/README.md`.
@@ -26,7 +26,7 @@ Deploy Modal: `make page-ocr-deploy` (alias `make yaws1999-modal-deploy`). See [
 
 1. **Catalog** — scan pages for `Table X-Y …` headers; build contiguous DjVu page spans (~49 tables).
 2. **Dump** — per page, render + OCR via page-ocr → `reports/yaws1999/pages/page-NNNN.txt` (host: `tmp/reports/python/yaws1999/pages/`; resume unless `FORCE=1`). Also write the raw OCR payload as `page-NNNN.ocr.json` (local or Modal). PNG renders under `renders/`.
-3. **Parse** — header / equation / numbered rows; name-gated OCR formula cleanup. Reference columns like `density @ 25 C` are kept as one column (OCR often splits them on `@`).
+3. **Parse** — header / equation / numbered rows; name-gated OCR formula cleanup. Reference columns like `density @ 25 C` are kept as one column (OCR often splits them on `@`). Freeform **CAS index** pages (two side-by-side `CAS · NAME · FORMULA` columns, e.g. DjVu 650) are auto-detected and split into `kind: casIndex` rows (left column top-to-bottom, then right).
 4. **Write** — slug-named **dataset** JSON under `shared/processed/yaws1999/`, **debug** JSON under `reports/yaws1999/debug/`, plus `index.json`.
 
 ```
@@ -80,6 +80,7 @@ python/src/yaws1999/
   ocr.py             # thin adapter → page_ocr (no engine choice)
   table_catalog.py   # Table X-Y page spans
   row_parser.py      # lines → rows + unparsed
+  cas_index.py       # two-column CAS · NAME · FORMULA appendix pages
   dataset.py         # slug names, header columns, dataset/debug shape
   parse_tables.py    # catalog → dump → parse → write / rebuild
   writers.py         # dataset + debug JSON + index.json
