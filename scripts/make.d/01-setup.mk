@@ -39,8 +39,9 @@ init-submodules: _require-gitmodules ## Clone vendor/* at the commits pinned by 
 
 update-submodules: _require-gitmodules ## Fetch latest remote commits for vendor/*
 	@echo "⬆️  Updating git submodules from remotes (vendor/page-ocr, vendor/source-extract)…"
+	@git submodule sync --recursive
 	@git submodule update --init --remote --recursive
-	@echo "✅ Submodules updated to remote tracking tips"
+	@echo "✅ Submodules updated to remote tracking tips (branch from .gitmodules)"
 	@echo "   Parent repo now points at new SHAs — commit when ready:"
 	@echo "     git add vendor/page-ocr vendor/source-extract && git commit"
 
