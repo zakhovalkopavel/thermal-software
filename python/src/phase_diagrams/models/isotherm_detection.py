@@ -1,22 +1,6 @@
-"""
-phase_diagrams.models.isotherm_detection — Result of the isotherm detector on one ternary page.
-
-Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Isotherm detection
-"""
+"""phase_diagrams.models.isotherm_detection — thin adapter over ``source_extract.diagrams.models.isotherm_detection``."""
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from source_extract.diagrams.models import isotherm_detection as _src
 
-from phase_diagrams.models.detected_isotherm import DetectedIsotherm
-from phase_diagrams.models.review_item import ReviewItem
-
-
-@dataclass
-class IsothermDetection:
-    """``isotherms`` found (one per field piece), ``dropped`` thin lines that are not isotherms as
-    ``(page pixels, reason)``, the ``log`` and the ``review`` items."""
-
-    isotherms: list[DetectedIsotherm] = field(default_factory=list)
-    dropped: list[tuple[list[tuple[float, float]], str]] = field(default_factory=list)
-    log: list[str] = field(default_factory=list)
-    review: list[ReviewItem] = field(default_factory=list)
+globals().update({k: v for k, v in vars(_src).items() if not k.startswith("__")})

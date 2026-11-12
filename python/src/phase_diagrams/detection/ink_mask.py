@@ -1,13 +1,6 @@
-"""
-phase_diagrams.detection.ink_mask — Binary ink mask of a grey page image.
-"""
+"""phase_diagrams.detection.ink_mask — thin adapter over ``source_extract.diagrams.detection.ink_mask``."""
 from __future__ import annotations
 
-import numpy as np
+from source_extract.diagrams.detection import ink_mask as _src
 
-
-def ink_mask(image: np.ndarray, threshold: int = 128) -> np.ndarray:
-    """True where the grey value is below ``threshold``."""
-    if image.ndim == 3:
-        image = image.mean(axis=2)
-    return image < threshold
+globals().update({k: v for k, v in vars(_src).items() if not k.startswith("__")})

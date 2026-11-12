@@ -1,8 +1,8 @@
 # Shared libraries as separate repos (plan)
 
-Status: **scaffold ready** under [`vendor/`](../vendor/). `yaws1999` tables/writers delegate to `source_extract.tables` (DjVu quirks + column schemas stay in the adapter). `phase_diagrams` still runs in-tree; source-specific NBS / Slag Atlas / `compounds.json` logic was removed from `source_extract.diagrams` and remains under `python/src/phase_diagrams/`.
+Status: **wired**. `yaws1999` tables/writers delegate to `source_extract.tables` (DjVu quirks + column schemas stay in the adapter). `phase_diagrams` diagram CV / figures / tracing / models / rendering re-export `source_extract.diagrams`; Atlas/NBS-specific builders, compounds, matcher, and entry parsing stay under `python/src/phase_diagrams/`. NBS Table I OCR uses `page-ocr` VLM (tesseract remains as a legacy engine option).
 
-Two **separate git repositories** (submodules later):
+Two **separate git repositories**, registered as submodules under `vendor/`:
 
 | # | Repo → submodule path | Responsibility |
 | --- | --- | --- |
@@ -81,10 +81,30 @@ thermal-software/
 | `vendor/page-ocr/` | OCR client + Modal app + Surya engine + PDF render |
 | `vendor/source-extract/` | tables + diagrams + papers + `extract_and_save` (depends on page-ocr) |
 
-Each has a local `.git`. Remotes / `.gitmodules` TBD.
+Tracked via `.gitmodules`.
 
-## Later execution
+| Make target | Purpose |
+| --- | --- |
+| `make init-submodules` | Clone / checkout the SHAs pinned by this repo (`git submodule update --init --recursive`). Also the first step of `make setup`. |
+| `make update-submodules` | Fetch latest remote tips for `vendor/*` (`git submodule update --init --remote --recursive`). Commit the new pointers in the parent when you want to pin them. |
 
-1. Push remotes; `git submodule add` for the two repos.
-2. Wire adapters to `source-extract` only (OCR stays behind it); leave live parsers alone until Yaws batch is done.
-3. Env: `PAGE_OCR_*`.
+## Install (host project)
+
+Also summarized in [SETUP.md](../SETUP.md):
+
+```bash
+git clone <thermal-software> && cd thermal-software
+make setup                                 # init-submodules + .env + sync-vendor-env
+make setup-secrets
+make up
+# later, pull newer vendor libs:
+#   make update-submodules
+# page-ocr code is always mounted; install.sh only to provision/refresh llama + GGUFs:
+#   cd vendor/page-ocr && ./install.sh --all
+# Modal cloud OCR:
+#   make page-ocr-deploy
+```
+
+`make sync-vendor-env` copies `PAGE_OCR_*` / `MODAL_TOKEN_*` from the main `.env`
+into each `vendor/*/.env` that has a `.env.example`. `page-ocr install` / `deploy`
+do the same when they detect a parent host `.env`.

@@ -1,34 +1,6 @@
-"""
-phase_diagrams.models.review_item — One item of the review list.
-
-Spec: docs/scripts/phase-diagrams/OUTPUT.md § Review outputs
-"""
+"""phase_diagrams.models.review_item — thin adapter over ``source_extract.diagrams.models.review_item``."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import ClassVar
+from source_extract.diagrams.models import review_item as _src
 
-
-@dataclass
-class ReviewItem:
-    KINDS: ClassVar[tuple[str, ...]] = (
-        "label-drawing",
-        "unlabelled",
-        "nbs-conflict",
-        "nbs-approximate",
-        "trace-gap",
-        "tick-residual",
-        "ocr-differs",
-        "dropped-points",
-        "track-point-off-curve",
-        "isotherm-temperature",
-        "isotherm-conflict",
-    )
-
-    kind: str
-    subject: str
-    message: str
-
-    def __post_init__(self) -> None:
-        if self.kind not in self.KINDS:
-            raise ValueError(f"unknown review kind '{self.kind}'")
+globals().update({k: v for k, v in vars(_src).items() if not k.startswith("__")})

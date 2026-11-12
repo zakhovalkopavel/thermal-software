@@ -1,10 +1,6 @@
-"""
-phase_diagrams.rendering.pdf_renderer — Thin adapter over ``page_ocr.render``.
-
-PDF / DjVu / raster → grey page image.
-"""
+"""phase_diagrams.rendering.pdf_renderer — thin adapter over ``source_extract.diagrams.rendering.pdf_renderer``."""
 from __future__ import annotations
 
-from page_ocr.render import render_page
+from source_extract.diagrams.rendering import pdf_renderer as _src
 
-__all__ = ["render_page"]
+globals().update({k: v for k, v in vars(_src).items() if not k.startswith("__")})

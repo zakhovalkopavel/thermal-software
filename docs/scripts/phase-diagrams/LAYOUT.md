@@ -105,7 +105,7 @@ python/
         nbs_formula_ocr.py           ← ELEMENTS walk; punctuation→digit fallback
         nbs_entry_index.py           ← parse the NBS dump into NbsEntry[]
         nbs_bibliography.py          ← pdftotext Bibliography → {id: citation} (+ missing ids)
-        nbs_ref_repair.py            ← repair Table I refs (pdftotext + rules; optional hybrid OCR)
+        nbs_ref_repair.py            ← repair Table I refs (pdftotext + rules)
         nbs_matcher.py               ← compare an invariant with NBS entries → NbsComparison[]
         status_resolver.py           ← extracted / confirmed / conflict
         composition_converter.py     ← mol% ↔ wt%

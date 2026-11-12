@@ -483,8 +483,10 @@ def _cmd_trace_curves(args, dataset: Path, registry: SourceRegistry, work: Path)
         _say("trace-curves", f"approximation: {line}")
     filled = json.loads(fill.text)
     compounds = json.loads((dataset / "compounds.json").read_text(encoding="utf-8")).get("compounds", [])
-    compound_points = build_compound_points(filled, build_node_map(filled, mask, config.pixel_origin, scale), compounds,
-                                            config.pixel_origin, scale)
+    compound_points = build_compound_points(
+        filled, build_node_map(filled, mask, config.pixel_origin, scale, source_ref=_ATLAS), compounds,
+        config.pixel_origin, scale,
+    )
     for point in compound_points:
         _say("trace-curves", f"compound point {point.legend()}")
     rendered, field_log = render_ternary_overlay(image, box, fill.curves, fields, corners, scale=scale,
@@ -526,7 +528,7 @@ def _cmd_nodes(args, dataset: Path, registry: SourceRegistry, work: Path) -> int
     image = _page_image(registry, work, _ATLAS, int(system["source"]["pdfPage"]))
     mask = ink_mask(image)
     scale = _line_scale("nodes", mask, config.line_width_px if config else None)
-    nodes = build_node_map(system, mask, origin, scale)
+    nodes = build_node_map(system, mask, origin, scale, source_ref=_ATLAS)
     folder = work / "nodes"
     folder.mkdir(parents=True, exist_ok=True)
     for old in folder.glob(f"{args.system}-r*c*.png"):

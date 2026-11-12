@@ -52,10 +52,22 @@ def _compare_invariants(old: list[dict], new: list[dict], result: SystemComparis
         for key in _INVARIANT_KEYS:
             if a.get(key) != b.get(key):
                 result.differences.append(f"{a['id']}.{key}: {json.dumps(a.get(key))} → {json.dumps(b.get(key))}")
-        if a.get("sources", [])[1:] != b.get("sources", [])[1:]:
+        if _nbs_sources(a.get("sources", [])) != _nbs_sources(b.get("sources", [])):
             result.differences.append(f"{a['id']}: NBS sources differ")
         if a.get("sources", [])[:1] != b.get("sources", [])[:1]:
             result.notes.append(f"{a['id']}: atlas source text or pixel changed")
+
+
+def _nbs_sources(sources: list[dict]) -> list[dict]:
+    """NBS cross-check sources without dump-volatile stamps (pages / OCR uncertainty)."""
+    out: list[dict] = []
+    for source in sources[1:]:
+        item = {k: v for k, v in source.items() if k not in {"pdfPage", "printedPage"}}
+        reported = item.get("reported")
+        if isinstance(reported, dict):
+            item["reported"] = {k: v for k, v in reported.items() if k != "uncertainty_C"}
+        out.append(item)
+    return out
 
 
 def _compare_liquidus(old: list[dict], new: list[dict], result: SystemComparison) -> None:

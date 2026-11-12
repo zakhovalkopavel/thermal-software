@@ -1,25 +1,6 @@
-"""
-phase_diagrams.models.binary_extraction — Everything measured for one binary diagram.
-"""
+"""phase_diagrams.models.binary_extraction — thin adapter over ``source_extract.diagrams.models.binary_extraction``."""
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from source_extract.diagrams.models import binary_extraction as _src
 
-from phase_diagrams.models.calibration_result import CalibrationResult
-from phase_diagrams.models.measured_line import MeasuredLine
-from phase_diagrams.models.review_item import ReviewItem
-from phase_diagrams.models.traced_curve import TracedCurve
-
-
-@dataclass
-class BinaryExtraction:
-    """System dict ready to write plus the measurements behind it (overlay, review, log)."""
-
-    system: dict
-    calibration: CalibrationResult
-    lines: list[MeasuredLine]
-    junctions: dict[str, tuple[float, float]]
-    curves: list[TracedCurve]
-    sampled: list[tuple[float, float]]
-    review: list[ReviewItem] = field(default_factory=list)
-    log: list[str] = field(default_factory=list)
+globals().update({k: v for k, v in vars(_src).items() if not k.startswith("__")})

@@ -124,27 +124,7 @@ def _cmd_nbs_index(args, registry: SourceRegistry, work: Path) -> int:
     total = last - first + 1
 
     predictor = None
-    hybrid_detector = None
-    hybrid_recognizer = None
-    if engine == "hybrid":
-        from phase_diagrams.nbs.nbs_hybrid_ocr import (
-            _detection_predictor,
-            _indra_recognizer,
-            ocr_pdf_page as ocr_pdf_page_hybrid,
-            select_onnx_providers,
-            select_torch_device,
-        )
-
-        _say(
-            "nbs-index",
-            f"starting hybrid (detect on {select_torch_device()}, "
-            f"Indra on {','.join(select_onnx_providers())})…",
-        )
-        t_boot = time.perf_counter()
-        hybrid_detector = _detection_predictor()
-        hybrid_recognizer = _indra_recognizer()
-        _say("nbs-index", f"hybrid ready in {time.perf_counter() - t_boot:.0f}s")
-    elif engine == "vlm":
+    if engine == "vlm":
         from phase_diagrams.nbs.nbs_vlm_ocr import _recognition_predictor, ensure_llama_env, ocr_pdf_page
 
         ensure_llama_env()
@@ -153,7 +133,7 @@ def _cmd_nbs_index(args, registry: SourceRegistry, work: Path) -> int:
         predictor = _recognition_predictor()
         _say("nbs-index", f"VLM OCR ready in {time.perf_counter() - t_boot:.0f}s")
     elif engine != "tesseract":
-        raise ValueError(f"unknown NBS OCR engine {engine!r}")
+        raise ValueError(f"unknown NBS OCR engine {engine!r} (expected 'vlm' or 'tesseract')")
 
     _say(
         "nbs-index",
@@ -168,12 +148,7 @@ def _cmd_nbs_index(args, registry: SourceRegistry, work: Path) -> int:
 
         _say("nbs-index", f"page {page}/{last} ({i}/{total}) OCR…")
         t0 = time.perf_counter()
-        if engine == "hybrid":
-            text = ocr_pdf_page_hybrid(
-                pdf, page, cache_dir=cache_dir,
-                detector=hybrid_detector, recognizer=hybrid_recognizer,
-            )
-        elif engine == "vlm":
+        if engine == "vlm":
             text = ocr_pdf_page(pdf, page, cache_dir=cache_dir, predictor=predictor)
         else:
             image = render_page(pdf, page, dpi=400, cache_dir=cache_dir, cache_stem="nbs-table")
@@ -374,9 +349,6 @@ def _cmd_nbs_refs(args, registry: SourceRegistry, work: Path) -> int:
     """Repair Table I references in the dump (pdftotext + rules), then rebuild entries.json."""
     from phase_diagrams.nbs.nbs_ref_repair import (
         extract_table_refs,
-        fill_refs_hybrid_ocr,
-        format_dump_line,
-        parse_dump_line,
         rebuild_entries_json,
         repair_dump_lines,
     )
@@ -395,7 +367,6 @@ def _cmd_nbs_refs(args, registry: SourceRegistry, work: Path) -> int:
     if last < first:
         raise ValueError(f"last page {last} < first page {first}")
     force = bool(getattr(args, "force", False))
-    use_ocr = bool(getattr(args, "ocr", False))
     pdf = registry.pdf_path(_NBS)
     page_offset = registry.page_offset(_NBS)
 
@@ -404,39 +375,6 @@ def _cmd_nbs_refs(args, registry: SourceRegistry, work: Path) -> int:
     pdf_refs = extract_table_refs(pdf, first, last)
     lines = dump.read_text(encoding="utf-8").splitlines()
     new_lines, anomalies, missing = repair_dump_lines(lines, pdf_refs, force=force)
-
-    if use_ocr and missing:
-        entry_pages: dict[int, int] = {}
-        if entries_path.is_file() and entries_path.stat().st_size:
-            try:
-                prior = json.loads(entries_path.read_text(encoding="utf-8"))
-                if isinstance(prior, list):
-                    for row in prior:
-                        entry_pages[int(row["entry"])] = int(row.get("pdfPage", first))
-            except (json.JSONDecodeError, KeyError, TypeError, ValueError):
-                entry_pages = {}
-        _say("nbs-refs", f"hybrid OCR gap-fill for {len(missing)} entries…")
-        found = fill_refs_hybrid_ocr(
-            missing, entry_pages, pdf, cache_dir=folder / "renders",
-        )
-        if found:
-            filled: list[str] = []
-            still_missing: list[int] = []
-            for line in new_lines:
-                fields = parse_dump_line(line)
-                if fields is None:
-                    filled.append(line)
-                    continue
-                if not fields.refs and fields.entry in found:
-                    fields.refs = found[fields.entry]
-                    anomalies.append(
-                        f"{fields.entry}: refs filled by hybrid OCR: {fields.refs}"
-                    )
-                filled.append(format_dump_line(fields))
-                if not fields.refs:
-                    still_missing.append(fields.entry)
-            new_lines = filled
-            missing = still_missing
 
     dump.write_text("\n".join(new_lines) + ("\n" if new_lines else ""), encoding="utf-8")
     anomalies_path.write_text(

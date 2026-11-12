@@ -77,19 +77,15 @@ def dump_nbs_table_ocr(
 ) -> str:
     """OCR Table I pages ``first_page``…``last_page`` (1-based); pages separated by ``\\f``.
 
-    Default ``engine="vlm"`` (full-page VLM HTML via page-ocr). ``engine="hybrid"`` is
-    line detect + Indra recognize. ``engine="tesseract"`` keeps the char-box path.
+    Default ``engine="vlm"`` (full-page VLM HTML via page-ocr). ``engine="tesseract"``
+    keeps the char-box path.
     """
-    if engine == "hybrid":
-        from phase_diagrams.nbs.nbs_hybrid_ocr import dump_nbs_table_ocr as _hybrid_dump
-
-        return _hybrid_dump(pdf_path, first_page, last_page, cache_dir=cache_dir, dpi=dpi, progress=progress)
     if engine == "vlm":
         from phase_diagrams.nbs.nbs_vlm_ocr import dump_nbs_table_ocr as _vlm_dump
 
         return _vlm_dump(pdf_path, first_page, last_page, cache_dir=cache_dir, dpi=dpi, progress=progress)
     if engine != "tesseract":
-        raise ValueError(f"unknown NBS OCR engine {engine!r} (expected 'hybrid', 'vlm', or 'tesseract')")
+        raise ValueError(f"unknown NBS OCR engine {engine!r} (expected 'vlm' or 'tesseract')")
     pages: list[str] = []
     for page in range(first_page, last_page + 1):
         if progress:

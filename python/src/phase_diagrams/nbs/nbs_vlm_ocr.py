@@ -208,14 +208,6 @@ def _prefer_cached_ggufs() -> None:
     if "HF_HUB_OFFLINE" not in os.environ:
         os.environ["HF_HUB_OFFLINE"] = "1"
 
-    # Surya loads Settings() at import time; patch the singleton if already live.
-    try:
-        from surya.settings import settings
-
-        settings.SURYA_GGUF_LOCAL_MODEL_PATH = str(paths[0])
-        settings.SURYA_GGUF_LOCAL_MMPROJ_PATH = str(paths[1])
-    except ImportError:
-        pass
 
 
 def _formula_cell(raw: str) -> str:

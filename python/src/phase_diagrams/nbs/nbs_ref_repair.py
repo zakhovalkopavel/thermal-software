@@ -1,9 +1,8 @@
 """
 phase_diagrams.nbs.nbs_ref_repair — Fill missed Table I references (txt then json).
 
-Hybrid pipeline: rule-based field fixes + ``pdftotext -layout`` ref overlay (primary),
-optional hybrid OCR only for remaining gaps. Flags composition/T anomalies; does not
-auto-rewrite systems or mol%.
+Rule-based field fixes + ``pdftotext -layout`` ref overlay. Flags composition/T
+anomalies; does not auto-rewrite systems or mol%.
 
 Spec: docs/scripts/phase-diagrams/NBS.md
 """
@@ -224,35 +223,6 @@ def repair_dump_lines(
         repaired.append(format_dump_line(fields))
 
     return repaired, anomalies, missing
-
-
-def fill_refs_hybrid_ocr(
-    missing_ids: list[int],
-    entry_pages: dict[int, int],
-    pdf_path: Path | str,
-    cache_dir: Path | str | None = None,
-) -> dict[int, list[str]]:
-    """Hybrid-OCR pages that still lack refs; return ``entry → refs`` for hits only."""
-    if not missing_ids:
-        return {}
-    from phase_diagrams.nbs.nbs_hybrid_ocr import ocr_pdf_page
-
-    pages: dict[int, list[int]] = {}
-    for entry in missing_ids:
-        page = entry_pages.get(entry)
-        if page is None:
-            continue
-        pages.setdefault(page, []).append(entry)
-
-    found: dict[int, list[str]] = {}
-    for page, entries in sorted(pages.items()):
-        text = ocr_pdf_page(pdf_path, page, cache_dir=cache_dir)
-        parsed = _parse_pdf_page_refs(text, printed_page=page - 8)
-        for entry in entries:
-            row = parsed.get(entry)
-            if row and row.refs:
-                found[entry] = row.refs
-    return found
 
 
 def rebuild_entries_json(

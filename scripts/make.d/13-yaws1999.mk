@@ -22,7 +22,7 @@ yaws1999-rebuild: ## Rebuild dataset JSON from page dumps (no OCR) [TABLE=]
 		$(if $(FIRST),--first $(FIRST)) \
 		$(if $(LAST),--last $(LAST))
 
-page-ocr-deploy yaws1999-modal-deploy: ## Deploy page-ocr Modal app (PAGE_OCR_* + MODAL_TOKEN_* in .env)
+page-ocr-deploy yaws1999-modal-deploy: sync-vendor-env ## Deploy page-ocr Modal app (PAGE_OCR_* + MODAL_TOKEN_* in .env)
 	@docker compose run --rm python sh -c '\
 		if [ -z "$$MODAL_TOKEN_ID" ] || [ -z "$$MODAL_TOKEN_SECRET" ]; then \
 			echo "Set MODAL_TOKEN_ID and MODAL_TOKEN_SECRET in .env (https://modal.com/settings), then retry." >&2; \
