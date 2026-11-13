@@ -10,6 +10,10 @@
   "entries": {
     "493-01-6": {
       "name": "decalin",
+      "synonyms": [
+        "cis-DECAHYDRONAPHTALENE",
+        "cis-DECAHYDRONANPHTALENE"
+      ],
       "Mr": 0.13824992,
       "smiles": "C1CCC2CCCCC2C1",
       "inchikey": "NNBZCPXTIHJBJL-UHFFFAOYSA-N",
@@ -29,6 +33,16 @@
               "Yaws2014",
               1230,
               "yawsCritical"
+            ]
+          }
+        ],
+        "autoignitionTemperature": [
+          {
+            "value": 523.15,
+            "ref": [
+              "Yaws1999",
+              1008,
+              "yaws1999Table25_1"
             ]
           }
         ],
@@ -150,6 +164,16 @@
             ]
           }
         ],
+        "flashPoint": [
+          {
+            "value": 330.92777777777775,
+            "ref": [
+              "Yaws1999",
+              1008,
+              "yaws1999Table25_1"
+            ]
+          }
+        ],
         "heatCapacity298": [
           {
             "value": 168.1,
@@ -179,6 +203,15 @@
               848,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": 280.31,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              1008,
+              "yaws1999Table3_1"
+            ]
           }
         ],
         "heatOfFusion": [
@@ -188,6 +221,17 @@
               "CRC95",
               391,
               "crcHfus"
+            ]
+          }
+        ],
+        "lowerExplosionLimit": [
+          {
+            "value": 0.006999999999999999,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              1008,
+              "yaws1999Table25_1"
             ]
           }
         ],
@@ -207,10 +251,55 @@
           {
             "value": 230.15,
             "ref": "pubchem1402"
+          },
+          {
+            "value": 230.2,
+            "ref": [
+              "Yaws1999",
+              1008,
+              "yaws1999Table18_1"
+            ]
+          }
+        ],
+        "upperExplosionLimit": [
+          {
+            "value": 0.049,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              1008,
+              "yaws1999Table25_1"
+            ]
           }
         ]
       },
       "equations": {
+        "enthalpyVaporization": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN106",
+                "ref": [
+                  "Yaws1999",
+                  1008,
+                  "yaws1999Table5_1"
+                ],
+                "vars": {
+                  "Tc": 702.25,
+                  "c1": 64.211,
+                  "c2": 0.434,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 230.2,
+                "max": 702.25,
+                "k": 1000.0
+              }
+            ]
+          }
+        },
         "heatCapacity": {
           "gas": {
             "def": 0,
@@ -258,9 +347,55 @@
                 "k": 8.31446261815324
               }
             ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "cubic",
+                "ref": [
+                  "Yaws1999",
+                  1008,
+                  "yaws1999Table3_1"
+                ],
+                "vars": {
+                  "a": 140.152,
+                  "b": 0.92529,
+                  "c": -0.0022387,
+                  "d": 2.3877e-06
+                },
+                "min": 231.0,
+                "max": 632.0,
+                "k": 1.0
+              }
+            ]
           }
         }
-      }
+      },
+      "raw": [
+        {
+          "property": "adsorptionCapacity",
+          "phase": "gas",
+          "values": {
+            "a": 1.5213,
+            "b": 0.07179,
+            "c": -0.00842,
+            "equation": "log10(Q) = A + B log10(y) + C [log10(y)]^2",
+            "Q_unit": "g/100g carbon",
+            "y_unit": "ppmv",
+            "ymin": 10.0,
+            "ymax": 1034.0,
+            "Q_at_10_ppmv": 38.43,
+            "Q_at_100_ppmv": 42.77,
+            "Q_at_1000_ppmv": 45.8
+          },
+          "ref": [
+            "Yaws1999",
+            702,
+            "yaws1999Table19_1"
+          ]
+        }
+      ]
     }
   }
 }

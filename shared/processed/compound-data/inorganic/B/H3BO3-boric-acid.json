@@ -12,6 +12,14 @@
     "10043-35-3": {
       "formula": "H3BO3",
       "name": "boric acid",
+      "synonyms": [
+        "boracic acid",
+        "borofax",
+        "borsaeeure",
+        "nci-c56417",
+        "orthoboric acid",
+        "three elephant"
+      ],
       "Mr": 0.061833019999999995,
       "smiles": "B(O)(O)O",
       "inchikey": "KGBXLFKZBHKPEV-UHFFFAOYSA-N",
@@ -101,12 +109,12 @@
             ]
           },
           {
-            "value": -992230,
-            "phase": "gas",
+            "value": -1094300.0,
+            "phase": "solid",
             "ref": [
-              "Yaws2014",
-              2656,
-              "yawsHfS0g"
+              "Yaws1999",
+              28,
+              "yaws1999Table12_2"
             ]
           }
         ],
@@ -121,12 +129,12 @@
             ]
           },
           {
-            "value": 295.48,
-            "phase": "gas",
+            "value": 88.8,
+            "phase": "solid",
             "ref": [
-              "Yaws2014",
-              2656,
-              "yawsHfS0g"
+              "Yaws1999",
+              28,
+              "yaws1999Table12_2"
             ]
           }
         ],
@@ -138,6 +146,15 @@
               "CRC95",
               1951,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": -968900.0,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              28,
+              "yaws1999Table13_2"
             ]
           }
         ],
@@ -188,6 +205,14 @@
             "ref": "pubchem1402"
           },
           {
+            "value": 458.15,
+            "ref": [
+              "Yaws1999",
+              28,
+              "yaws1999Table1_2"
+            ]
+          },
+          {
             "value": 444.05,
             "ref": [
               "CRC95",
@@ -204,6 +229,26 @@
               "CRC95",
               773,
               "crcSolidDensity"
+            ]
+          }
+        ],
+        "vdwArea": [
+          {
+            "value": 665000.0,
+            "ref": [
+              "Yaws1999",
+              28,
+              "yaws1999Table14_2"
+            ]
+          }
+        ],
+        "vdwVolume": [
+          {
+            "value": 4.552e-05,
+            "ref": [
+              "Yaws1999",
+              28,
+              "yaws1999Table14_2"
             ]
           }
         ]
@@ -244,6 +289,24 @@
                 },
                 "min": 298.0,
                 "max": 6000.0
+              },
+              {
+                "type": "quartic",
+                "ref": [
+                  "Yaws1999",
+                  28,
+                  "yaws1999Table2_2"
+                ],
+                "vars": {
+                  "a": 33.718,
+                  "b": 0.11026,
+                  "c": 1.1706e-05,
+                  "d": -6.4763e-08,
+                  "e": 2.367e-11
+                },
+                "min": 100.0,
+                "max": 1500.0,
+                "k": 1.0
               }
             ]
           },
@@ -272,6 +335,47 @@
                 },
                 "min": 298.0,
                 "max": 1500.0
+              },
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  28,
+                  "yaws1999Table4_2"
+                ],
+                "vars": {
+                  "a": 75.571,
+                  "b": 0.086396,
+                  "c": -0.00011746
+                },
+                "min": 283.0,
+                "max": 293.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "vaporPressure": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsVaporPressure",
+                "ref": [
+                  "Yaws1999",
+                  28,
+                  "yaws1999Table7_2"
+                ],
+                "vars": {
+                  "a": -81.1257,
+                  "b": 2181.5,
+                  "c": 29.986,
+                  "d": -2.2693e-05,
+                  "e": 1.0956e-08
+                },
+                "min": 293.15,
+                "max": 401.15,
+                "k": 133.322387415
               }
             ]
           }

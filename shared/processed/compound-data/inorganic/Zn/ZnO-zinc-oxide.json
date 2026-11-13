@@ -11,6 +11,19 @@
     "1314-13-2": {
       "formula": "ZnO",
       "name": "zinc oxide",
+      "synonyms": [
+        "amalox",
+        "calamine",
+        "cynku tlenek",
+        "emanay zinc oxide",
+        "emar",
+        "ozide",
+        "ozlo",
+        "philosophers wool",
+        "zinc",
+        "zincite",
+        "zincoid"
+      ],
       "Mr": 0.0813794,
       "smiles": "O=[Zn]",
       "inchikey": "XLOMVQKBTHCTTD-UHFFFAOYSA-N",
@@ -43,6 +56,15 @@
               1335,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": -350500.0,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              338,
+              "yaws1999Table12_2"
+            ]
           }
         ],
         "entropy298": [
@@ -53,6 +75,15 @@
               "CRC95",
               1335,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": 43.7,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              338,
+              "yaws1999Table12_2"
             ]
           }
         ],
@@ -65,6 +96,15 @@
               1335,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": -320500.0,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              338,
+              "yaws1999Table13_2"
+            ]
           }
         ],
         "heatCapacity298": [
@@ -75,6 +115,15 @@
               "CRC95",
               1335,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": 37.725,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              338,
+              "yaws1999Table4_2"
             ]
           }
         ],
@@ -118,6 +167,14 @@
             "ref": "pubchem1261"
           },
           {
+            "value": 2248.0,
+            "ref": [
+              "Yaws1999",
+              338,
+              "yaws1999Table6_2"
+            ]
+          },
+          {
             "value": 2247.15,
             "ref": [
               "CRC95",
@@ -139,7 +196,56 @@
         ]
       },
       "equations": {
+        "enthalpyVaporization": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN106",
+                "ref": [
+                  "Yaws1999",
+                  338,
+                  "yaws1999Table5_2"
+                ],
+                "vars": {
+                  "Tc": 8000.0,
+                  "c1": 539.74,
+                  "c2": 0.38,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 2223.0,
+                "max": 8000.0,
+                "k": 1000.0
+              }
+            ]
+          }
+        },
         "heatCapacity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quartic",
+                "ref": [
+                  "Yaws1999",
+                  338,
+                  "yaws1999Table2_2"
+                ],
+                "vars": {
+                  "a": 24.456,
+                  "b": 0.034987,
+                  "c": -3.9761e-05,
+                  "d": 2.0374e-08,
+                  "e": -3.7848e-12
+                },
+                "min": 298.0,
+                "max": 2000.0,
+                "k": 1.0
+              }
+            ]
+          },
           "solid": {
             "def": 0,
             "values": [
@@ -159,6 +265,70 @@
                 "max": 1573,
                 "k": 4.184,
                 "error": 1
+              },
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  338,
+                  "yaws1999Table4_2"
+                ],
+                "vars": {
+                  "a": 11.19,
+                  "b": 0.11882,
+                  "c": -0.00010002
+                },
+                "min": 150.0,
+                "max": 473.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "thermalConductivity": {
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  338,
+                  "yaws1999Table24_2"
+                ],
+                "vars": {
+                  "a": 71.455,
+                  "b": -0.18504,
+                  "c": 0.00016306
+                },
+                "min": 319.0,
+                "max": 418.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "vaporPressure": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsVaporPressure",
+                "ref": [
+                  "Yaws1999",
+                  338,
+                  "yaws1999Table7_2"
+                ],
+                "vars": {
+                  "a": 10.0724,
+                  "b": -15790.0,
+                  "c": -0.030065,
+                  "d": 6.5659e-06,
+                  "e": -5.4927e-10
+                },
+                "min": 1773.1,
+                "max": 2223.1,
+                "k": 133.322387415
               }
             ]
           }

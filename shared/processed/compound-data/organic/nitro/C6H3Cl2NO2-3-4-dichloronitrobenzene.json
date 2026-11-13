@@ -13,6 +13,11 @@
   "entries": {
     "99-54-7": {
       "name": "3,4-dichloronitrobenzene",
+      "synonyms": [
+        "1,2-dichloro-4-nitrobenzene",
+        "dcnb",
+        "3,4-dichlornitrobenzen"
+      ],
       "Mr": 0.19199951999999998,
       "smiles": "C1=CC(=C(C=C1[N+](=O)[O-])Cl)Cl",
       "inchikey": "NTBYINQTYWZXLH-UHFFFAOYSA-N",
@@ -99,6 +104,27 @@
             "ref": "pubchem931"
           }
         ],
+        "dipoleMoment": [
+          {
+            "value": 7.2383388e-30,
+            "ref": [
+              "Yaws1999",
+              468,
+              "yaws1999Table10_1"
+            ]
+          }
+        ],
+        "enthalpyCombustion": [
+          {
+            "value": 2740000.0,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              468,
+              "yaws1999Table26_1"
+            ]
+          }
+        ],
         "enthalpyFormation298": [
           {
             "value": 14600,
@@ -112,12 +138,44 @@
         ],
         "entropy298": [
           {
-            "value": 404.34,
+            "value": 405.0,
             "phase": "gas",
             "ref": [
-              "Yaws2014",
-              305,
-              "yawsHfS0g"
+              "Yaws1999",
+              468,
+              "yaws1999Table11_1"
+            ]
+          }
+        ],
+        "flashPoint": [
+          {
+            "value": 409.8166666666666,
+            "ref": [
+              "Yaws1999",
+              468,
+              "yaws1999Table25_1"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": 119000.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              468,
+              "yaws1999Table13_1"
+            ]
+          }
+        ],
+        "lowerExplosionLimit": [
+          {
+            "value": 0.021,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              468,
+              "yaws1999Table25_1"
             ]
           }
         ],
@@ -149,8 +207,130 @@
           {
             "value": 314.15,
             "ref": "pubchem931"
+          },
+          {
+            "value": 316.15,
+            "ref": [
+              "Yaws1999",
+              48,
+              "yaws1999Table20_1"
+            ]
+          }
+        ],
+        "upperExplosionLimit": [
+          {
+            "value": 0.084,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              468,
+              "yaws1999Table25_1"
+            ]
           }
         ]
+      },
+      "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsLiquidDensity",
+                "ref": [
+                  "Yaws1999",
+                  468,
+                  "yaws1999Table8_1"
+                ],
+                "vars": {
+                  "a": 0.44041,
+                  "b": 0.24309,
+                  "n": 0.27433,
+                  "Tc": 758.0
+                },
+                "min": 315.65,
+                "max": 758.0,
+                "k": 1000.0
+              }
+            ]
+          }
+        },
+        "enthalpyVaporization": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN106",
+                "ref": [
+                  "Yaws1999",
+                  468,
+                  "yaws1999Table5_1"
+                ],
+                "vars": {
+                  "Tc": 758.0,
+                  "c1": 83.778,
+                  "c2": 0.386,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 315.65,
+                "max": 758.0,
+                "k": 1000.0
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN106",
+                "ref": [
+                  "Yaws1999",
+                  468,
+                  "yaws1999Table9_1"
+                ],
+                "vars": {
+                  "Tc": 758.0,
+                  "c1": 70.96,
+                  "c2": 1.024,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 315.65,
+                "max": 758.0,
+                "k": 0.001
+              }
+            ]
+          }
+        },
+        "vaporPressure": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsVaporPressure",
+                "ref": [
+                  "Yaws1999",
+                  468,
+                  "yaws1999Table7_1"
+                ],
+                "vars": {
+                  "a": -7.203,
+                  "b": -3653.2,
+                  "c": 8.9786,
+                  "d": -0.01807,
+                  "e": 7.4738e-06
+                },
+                "min": 315.65,
+                "max": 758.0,
+                "k": 133.322387415
+              }
+            ]
+          }
+        }
       }
     }
   }

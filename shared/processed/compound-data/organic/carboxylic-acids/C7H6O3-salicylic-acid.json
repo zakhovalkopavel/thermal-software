@@ -11,6 +11,17 @@
   "entries": {
     "69-72-7": {
       "name": "salicylic acid",
+      "synonyms": [
+        "acido",
+        "o-HYDROXYBENZOIC ACID",
+        "2-hydroxybenzoic acid",
+        "keralyt",
+        "orthohydroxybenzoic acid",
+        "retarder",
+        "sa",
+        "sax",
+        "c7h6o3 salicylic acid"
+      ],
       "Mr": 0.13812074000000002,
       "smiles": "C1=CC=C(C(=C1)C(=O)O)O",
       "inchikey": "YGSDEFSMJLZEOE-UHFFFAOYSA-N",
@@ -32,6 +43,16 @@
               "Yaws2014",
               50,
               "yawsCritical"
+            ]
+          }
+        ],
+        "autoignitionTemperature": [
+          {
+            "value": 818.15,
+            "ref": [
+              "Yaws1999",
+              669,
+              "yaws1999Table25_1"
             ]
           }
         ],
@@ -102,6 +123,17 @@
             ]
           }
         ],
+        "enthalpyCombustion": [
+          {
+            "value": 2894700.0,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              669,
+              "yaws1999Table26_1"
+            ]
+          }
+        ],
         "enthalpyFormation298": [
           {
             "value": -589900,
@@ -133,12 +165,12 @@
         ],
         "entropy298": [
           {
-            "value": 400.72,
+            "value": 399.82,
             "phase": "gas",
             "ref": [
-              "Yaws2014",
-              37,
-              "yawsHfS0g"
+              "Yaws1999",
+              669,
+              "yaws1999Table11_1"
             ]
           }
         ],
@@ -153,6 +185,27 @@
             ]
           }
         ],
+        "flashPoint": [
+          {
+            "value": 430.3722222222222,
+            "ref": [
+              "Yaws1999",
+              669,
+              "yaws1999Table25_1"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": -365210.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              669,
+              "yaws1999Table13_1"
+            ]
+          }
+        ],
         "heatOfFusion": [
           {
             "value": 14200,
@@ -160,6 +213,35 @@
               "CRC95",
               42,
               "crcHfus"
+            ]
+          },
+          {
+            "value": 19585.0,
+            "ref": [
+              "Yaws1999",
+              669,
+              "yaws1999Table6_1"
+            ]
+          }
+        ],
+        "logKow": [
+          {
+            "value": 2.26,
+            "ref": [
+              "Yaws1999",
+              669,
+              "yaws1999Table15_1"
+            ]
+          }
+        ],
+        "lowerExplosionLimit": [
+          {
+            "value": 0.015,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              669,
+              "yaws1999Table25_1"
             ]
           }
         ],
@@ -187,8 +269,134 @@
           {
             "value": 432.15,
             "ref": "pubchem931"
+          },
+          {
+            "value": 431.75,
+            "ref": [
+              "Yaws1999",
+              669,
+              "yaws1999Table1_1"
+            ]
+          }
+        ],
+        "upperExplosionLimit": [
+          {
+            "value": 0.086,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              669,
+              "yaws1999Table25_1"
+            ]
+          }
+        ],
+        "waterSolubility": [
+          {
+            "value": 0.002228,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              669,
+              "yaws1999Table15_1"
+            ]
           }
         ]
+      },
+      "equations": {
+        "heatCapacity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quartic",
+                "ref": [
+                  "Yaws1999",
+                  669,
+                  "yaws1999Table2_1"
+                ],
+                "vars": {
+                  "a": -4.23,
+                  "b": 0.42572,
+                  "c": 0.00014885,
+                  "d": -5.4965e-07,
+                  "e": 2.6161e-10
+                },
+                "min": 298.0,
+                "max": 1000.0,
+                "k": 1.0
+              }
+            ]
+          },
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  669,
+                  "yaws1999Table4_1"
+                ],
+                "vars": {
+                  "a": 36.78,
+                  "b": 0.3199,
+                  "c": 0.0003793
+                },
+                "min": 93.0,
+                "max": 295.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "vaporPressure": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsVaporPressure",
+                "ref": [
+                  "Yaws1999",
+                  669,
+                  "yaws1999Table7_1"
+                ],
+                "vars": {
+                  "a": 177.3858,
+                  "b": -12871.0,
+                  "c": -56.301,
+                  "d": -1.6667e-07,
+                  "e": 1.1353e-05
+                },
+                "min": 431.75,
+                "max": 739.0,
+                "k": 133.322387415
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  669,
+                  "yaws1999Table21_1"
+                ],
+                "vars": {
+                  "a": -5.473,
+                  "b": 0.2323,
+                  "c": -2.7265e-05
+                },
+                "min": 432.0,
+                "max": 1000.0,
+                "k": 1e-07
+              }
+            ]
+          }
+        }
       },
       "nasa9": [
         "C7H6O3"

@@ -12,6 +12,21 @@
     "3982-91-0": {
       "formula": "PSCl3",
       "name": "thiophosphoryl chloride",
+      "synonyms": [
+        "phosphorus thiochloride",
+        "fosforthiochlorid",
+        "phosphorothioic trichloride",
+        "phosphorothionic trichloride",
+        "phosphorous sulfochloride",
+        "phosphorous thiochloride",
+        "phosphorous trichloride sulfide",
+        "sulfidotrichlorid",
+        "thiochlorid",
+        "thiophosphoric trichloride",
+        "thiophosphoryl trichloride",
+        "tl 262",
+        "trichlorophosphine sulfide"
+      ],
       "Mr": 0.169397762,
       "smiles": "P(=S)(Cl)(Cl)Cl",
       "inchikey": "WQYSXVGEZYESBR-UHFFFAOYSA-N",
@@ -83,15 +98,24 @@
         ],
         "criticalVolume": [
           {
-            "value": 0.00029958,
+            "value": 0.0002996,
             "ref": [
-              "Yaws2014",
-              3250,
-              "yawsCritical"
+              "Yaws1999",
+              223,
+              "yaws1999Table1_2"
             ]
           }
         ],
         "density": [
+          {
+            "value": 1643.0,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              223,
+              "yaws1999Table8_2"
+            ]
+          },
           {
             "value": 1635,
             "ref": [
@@ -103,23 +127,34 @@
         ],
         "enthalpyFormation298": [
           {
-            "value": -380740,
+            "value": -363170.0,
             "phase": "gas",
             "ref": [
-              "Yaws2014",
-              2086,
-              "yawsHfS0g"
+              "Yaws1999",
+              223,
+              "yaws1999Table12_2"
             ]
           }
         ],
         "entropy298": [
           {
-            "value": 337.36,
+            "value": 337.23,
             "phase": "gas",
             "ref": [
-              "Yaws2014",
-              2086,
-              "yawsHfS0g"
+              "Yaws1999",
+              223,
+              "yaws1999Table11_2"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": -347690.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              223,
+              "yaws1999Table13_2"
             ]
           }
         ],
@@ -131,6 +166,26 @@
               "NBS1982",
               1403,
               "nbsTables"
+            ]
+          },
+          {
+            "value": 130.52,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              223,
+              "yaws1999Table3_2"
+            ]
+          }
+        ],
+        "liquidMolarVolume": [
+          {
+            "value": 0.00010312,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              223,
+              "yaws1999Table14_2"
             ]
           }
         ],
@@ -146,14 +201,83 @@
           {
             "value": 236.95,
             "ref": [
+              "Yaws1999",
+              223,
+              "yaws1999Table1_2"
+            ]
+          },
+          {
+            "value": 236.95,
+            "ref": [
               "CRC95",
               350,
               "crcConstants"
             ]
           }
+        ],
+        "viscosity": [
+          {
+            "value": 0.001202,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              223,
+              "yaws1999Table22_2"
+            ]
+          }
         ]
       },
       "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsLiquidDensity",
+                "ref": [
+                  "Yaws1999",
+                  223,
+                  "yaws1999Table8_2"
+                ],
+                "vars": {
+                  "a": 0.55688,
+                  "b": 0.274,
+                  "n": 0.28571,
+                  "Tc": 638.82
+                },
+                "min": 242.75,
+                "max": 371.65,
+                "k": 1000.0
+              }
+            ]
+          }
+        },
+        "enthalpyVaporization": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN106",
+                "ref": [
+                  "Yaws1999",
+                  223,
+                  "yaws1999Table5_2"
+                ],
+                "vars": {
+                  "Tc": 638.82,
+                  "c1": 49.012,
+                  "c2": 0.38,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 236.95,
+                "max": 638.82,
+                "k": 1000.0
+              }
+            ]
+          }
+        },
         "heatCapacity": {
           "gas": {
             "def": 0,
@@ -180,6 +304,207 @@
                 },
                 "min": 298.0,
                 "max": 6000.0
+              },
+              {
+                "type": "quartic",
+                "ref": [
+                  "Yaws1999",
+                  223,
+                  "yaws1999Table2_2"
+                ],
+                "vars": {
+                  "a": 27.454,
+                  "b": 0.33554,
+                  "c": -0.00054132,
+                  "d": 3.7986e-07,
+                  "e": -9.6538e-11
+                },
+                "min": 100.0,
+                "max": 1500.0,
+                "k": 1.0
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "cubic",
+                "ref": [
+                  "Yaws1999",
+                  223,
+                  "yaws1999Table3_2"
+                ],
+                "vars": {
+                  "a": 170.596,
+                  "b": -0.1869,
+                  "c": -3.1267e-05,
+                  "d": 6.9512e-07
+                },
+                "min": 237.0,
+                "max": 607.0,
+                "k": 1.0
+              }
+            ]
+          },
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  223,
+                  "yaws1999Table4_2"
+                ],
+                "vars": {
+                  "a": 109.985,
+                  "b": 0.094402,
+                  "c": -0.00014869
+                },
+                "min": 226.0,
+                "max": 237.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN106",
+                "ref": [
+                  "Yaws1999",
+                  223,
+                  "yaws1999Table9_2"
+                ],
+                "vars": {
+                  "Tc": 638.82,
+                  "c1": 69.574,
+                  "c2": 1.2222,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 236.95,
+                "max": 638.82,
+                "k": 0.001
+              }
+            ]
+          }
+        },
+        "thermalConductivity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  223,
+                  "yaws1999Table23_2"
+                ],
+                "vars": {
+                  "a": -0.00371,
+                  "b": 3.8145e-05,
+                  "c": -7.8275e-09
+                },
+                "min": 250.0,
+                "max": 1000.0,
+                "k": 1.0
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  223,
+                  "yaws1999Table24_2"
+                ],
+                "vars": {
+                  "a": 0.1853,
+                  "b": -8.8258e-05,
+                  "c": -2.128e-07
+                },
+                "min": 237.0,
+                "max": 575.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "vaporPressure": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsVaporPressure",
+                "ref": [
+                  "Yaws1999",
+                  223,
+                  "yaws1999Table7_2"
+                ],
+                "vars": {
+                  "a": 30.9267,
+                  "b": -2933.7,
+                  "c": -8.3323,
+                  "d": 0.0024967,
+                  "e": -3.2735e-11
+                },
+                "min": 236.95,
+                "max": 398.15,
+                "k": 133.322387415
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  223,
+                  "yaws1999Table21_2"
+                ],
+                "vars": {
+                  "a": -11.901,
+                  "b": 0.381,
+                  "c": -5.1e-05
+                },
+                "min": 250.0,
+                "max": 1000.0,
+                "k": 1e-07
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsLiquidViscosity",
+                "ref": [
+                  "Yaws1999",
+                  223,
+                  "yaws1999Table22_2"
+                ],
+                "vars": {
+                  "a": 1.1948,
+                  "b": 88.775,
+                  "c": -0.0051347,
+                  "d": 1.3311e-06
+                },
+                "min": 242.0,
+                "max": 607.0,
+                "k": 0.001
               }
             ]
           }

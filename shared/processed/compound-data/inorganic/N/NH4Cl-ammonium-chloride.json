@@ -12,6 +12,18 @@
     "12125-02-9": {
       "formula": "NH4Cl",
       "name": "ammonium chloride",
+      "synonyms": [
+        "amchlor",
+        "ammoneric",
+        "ammonium muriate",
+        "ammoniumchlorid",
+        "chlorid amonny",
+        "darammon",
+        "sal ammonia",
+        "sal ammoniac",
+        "salammonite",
+        "salmiac"
+      ],
       "Mr": 0.05349146,
       "smiles": "[NH4+].[Cl-]",
       "inchikey": "NLXLAEXVIDQMFP-UHFFFAOYSA-N",
@@ -102,6 +114,15 @@
               2096,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": -314400.0,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              174,
+              "yaws1999Table12_2"
+            ]
           }
         ],
         "entropy298": [
@@ -113,6 +134,15 @@
               2096,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": 94.6,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              174,
+              "yaws1999Table12_2"
+            ]
           }
         ],
         "gibbsEnergy298": [
@@ -123,6 +153,15 @@
               "CRC95",
               2096,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": -202900.0,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              174,
+              "yaws1999Table13_2"
             ]
           }
         ],
@@ -147,6 +186,17 @@
             ]
           }
         ],
+        "liquidMolarVolume": [
+          {
+            "value": 3.7953e-05,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              174,
+              "yaws1999Table14_2"
+            ]
+          }
+        ],
         "meltingPoint": [
           {
             "value": 623.15,
@@ -163,6 +213,14 @@
           {
             "value": 623.15,
             "ref": "pubchem1261"
+          },
+          {
+            "value": 793.2,
+            "ref": [
+              "Yaws1999",
+              174,
+              "yaws1999Table1_2"
+            ]
           }
         ],
         "molarVolume": [
@@ -178,6 +236,56 @@
         ]
       },
       "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsLiquidDensity",
+                "ref": [
+                  "Yaws1999",
+                  174,
+                  "yaws1999Table8_2"
+                ],
+                "vars": {
+                  "a": 0.75456,
+                  "b": 0.3,
+                  "n": 0.28571,
+                  "Tc": 882.0
+                },
+                "min": 793.2,
+                "max": 883.2,
+                "k": 1000.0
+              }
+            ]
+          }
+        },
+        "enthalpyVaporization": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN106",
+                "ref": [
+                  "Yaws1999",
+                  174,
+                  "yaws1999Table5_2"
+                ],
+                "vars": {
+                  "Tc": 882.0,
+                  "c1": 65.837,
+                  "c2": 0.38,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 793.2,
+                "max": 882.0,
+                "k": 1000.0
+              }
+            ]
+          }
+        },
         "heatCapacity": {
           "solid": {
             "def": 0,
@@ -249,6 +357,92 @@
                 },
                 "min": 298.0,
                 "max": 1500.0
+              },
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  174,
+                  "yaws1999Table4_2"
+                ],
+                "vars": {
+                  "a": 23.118,
+                  "b": 0.15,
+                  "c": -3.0267e-05
+                },
+                "min": 458.0,
+                "max": 700.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "vaporPressure": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsVaporPressure",
+                "ref": [
+                  "Yaws1999",
+                  174,
+                  "yaws1999Table7_2"
+                ],
+                "vars": {
+                  "a": -893.543,
+                  "b": 19484.0,
+                  "c": 367.16,
+                  "d": -0.32056,
+                  "e": 0.00010034
+                },
+                "min": 553.15,
+                "max": 793.15,
+                "k": 133.322387415
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  174,
+                  "yaws1999Table21_2"
+                ],
+                "vars": {
+                  "a": -4.344,
+                  "b": 0.0697,
+                  "c": -7.58e-06
+                },
+                "min": 612.0,
+                "max": 1012.0,
+                "k": 1e-07
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsLiquidViscosity",
+                "ref": [
+                  "Yaws1999",
+                  174,
+                  "yaws1999Table22_2"
+                ],
+                "vars": {
+                  "a": -0.8508,
+                  "b": 930.43,
+                  "c": -4.7565e-12,
+                  "d": 1.7769e-15
+                },
+                "min": 793.0,
+                "max": 993.0,
+                "k": 0.001
               }
             ]
           }

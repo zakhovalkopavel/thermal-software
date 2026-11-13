@@ -11,6 +11,11 @@
   "entries": {
     "132-64-9": {
       "name": "dibenzofuran",
+      "synonyms": [
+        "2,2'-biphenylene oxide",
+        "DIBENZO(b,d)FURAN",
+        "diphenylene oxide"
+      ],
       "Mr": 0.16819131999999998,
       "smiles": "C1=CC=C2C(=C1)C3=CC=CC=C3O2",
       "inchikey": "TXCDCPKCNAJMEE-UHFFFAOYSA-N",
@@ -47,11 +52,11 @@
             "ref": "pubchem1402"
           },
           {
-            "value": 560.15,
+            "value": 557.86,
             "ref": [
-              "Yaws2014",
-              1685,
-              "yawsTb"
+              "Yaws1999",
+              1123,
+              "yaws1999Table5_1"
             ]
           }
         ],
@@ -116,12 +121,23 @@
         ],
         "entropy298": [
           {
-            "value": 306.45,
+            "value": 305.6,
             "phase": "gas",
             "ref": [
-              "Yaws2014",
-              728,
-              "yawsHfS0g"
+              "Yaws1999",
+              1123,
+              "yaws1999Table11_1"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": 199000.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              1123,
+              "yaws1999Table13_1"
             ]
           }
         ],
@@ -139,6 +155,80 @@
             "ref": "pubchem1402"
           }
         ]
+      },
+      "equations": {
+        "enthalpyVaporization": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN106",
+                "ref": [
+                  "Yaws1999",
+                  1123,
+                  "yaws1999Table5_1"
+                ],
+                "vars": {
+                  "Tc": 837.8,
+                  "c1": 63.346,
+                  "c2": 0.302,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 355.65,
+                "max": 837.8,
+                "k": 1000.0
+              }
+            ]
+          }
+        },
+        "heatCapacity": {
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  1123,
+                  "yaws1999Table4_1"
+                ],
+                "vars": {
+                  "a": -40.633,
+                  "b": 0.76667,
+                  "c": 0.0
+                },
+                "min": 263.0,
+                "max": 293.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "thermalConductivity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsLiquidConductivity",
+                "ref": [
+                  "Yaws1999",
+                  1123,
+                  "yaws1999Table24_1"
+                ],
+                "vars": {
+                  "a": -1.7205,
+                  "b": 0.9746,
+                  "c": 837.8
+                },
+                "min": 356.0,
+                "max": 796.0,
+                "k": 1.0
+              }
+            ]
+          }
+        }
       }
     }
   }

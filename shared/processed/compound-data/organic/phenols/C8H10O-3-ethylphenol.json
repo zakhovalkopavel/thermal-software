@@ -11,6 +11,9 @@
   "entries": {
     "620-17-7": {
       "name": "3-ethylphenol",
+      "synonyms": [
+        "m-ETHYLPHENOL"
+      ],
       "Mr": 0.1221644,
       "smiles": "CCC1=CC(=CC=C1)O",
       "inchikey": "HMNKTRSOROOSPP-UHFFFAOYSA-N",
@@ -128,6 +131,16 @@
             ]
           }
         ],
+        "flashPoint": [
+          {
+            "value": 298.15,
+            "ref": [
+              "Yaws1999",
+              782,
+              "yaws1999Table25_1"
+            ]
+          }
+        ],
         "heatCapacity298": [
           {
             "value": 148.54,
@@ -139,10 +152,32 @@
             ]
           }
         ],
+        "lowerExplosionLimit": [
+          {
+            "value": 0.011000000000000001,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              782,
+              "yaws1999Table25_1"
+            ]
+          }
+        ],
         "meltingPoint": [
           {
             "value": 269.15,
             "ref": "pubchem351"
+          }
+        ],
+        "upperExplosionLimit": [
+          {
+            "value": 0.067,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              782,
+              "yaws1999Table25_1"
+            ]
           }
         ]
       },
@@ -191,6 +226,49 @@
                 "min": 298,
                 "max": 1500,
                 "k": 8.31446261815324
+              },
+              {
+                "type": "quartic",
+                "ref": [
+                  "Yaws1999",
+                  782,
+                  "yaws1999Table2_1"
+                ],
+                "vars": {
+                  "a": 17.179,
+                  "b": 0.51321,
+                  "c": -0.00015178,
+                  "d": -9.7687e-08,
+                  "e": 5.1382e-11
+                },
+                "min": 200.0,
+                "max": 1500.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "vaporPressure": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsVaporPressure",
+                "ref": [
+                  "Yaws1999",
+                  782,
+                  "yaws1999Table7_1"
+                ],
+                "vars": {
+                  "a": 211.089,
+                  "b": -9512.0,
+                  "c": -79.105,
+                  "d": 0.057745,
+                  "e": -1.7291e-05
+                },
+                "min": 423.57,
+                "max": 503.3,
+                "k": 133.322387415
               }
             ]
           }

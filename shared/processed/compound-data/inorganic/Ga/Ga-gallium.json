@@ -9,6 +9,9 @@
   "entries": {
     "7440-55-3": {
       "name": "gallium",
+      "synonyms": [
+        "BORINE CARBONYL ----- Ga GALLIUM"
+      ],
       "Mr": 0.069723,
       "smiles": "[Ga]",
       "inchikey": "GYHNNYVSQQEPJS-UHFFFAOYSA-N",
@@ -18,6 +21,16 @@
         "idPubchemLarge"
       ],
       "properties": {
+        "acentricFactor": [
+          {
+            "value": -0.22,
+            "ref": [
+              "Yaws1999",
+              110,
+              "yaws1999Table1_2"
+            ]
+          }
+        ],
         "boilingPoint": [
           {
             "value": 2673.15,
@@ -28,11 +41,11 @@
             "ref": "pubchem1402"
           },
           {
-            "value": 2477.15,
+            "value": 2517.0,
             "ref": [
-              "Yaws2014",
-              8361,
-              "yawsTb"
+              "Yaws1999",
+              110,
+              "yaws1999Table1_2"
             ]
           },
           {
@@ -113,12 +126,12 @@
             ]
           },
           {
-            "value": 272000,
-            "phase": "gas",
+            "value": 0.0,
+            "phase": "solid",
             "ref": [
-              "Yaws2014",
-              2440,
-              "yawsHfS0g"
+              "Yaws1999",
+              110,
+              "yaws1999Table12_2"
             ]
           }
         ],
@@ -142,12 +155,12 @@
             ]
           },
           {
-            "value": 169.36,
-            "phase": "gas",
+            "value": 40.9,
+            "phase": "solid",
             "ref": [
-              "Yaws2014",
-              2440,
-              "yawsHfS0g"
+              "Yaws1999",
+              110,
+              "yaws1999Table12_2"
             ]
           }
         ],
@@ -168,6 +181,15 @@
               "CRC95",
               1636,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": 0.0,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              110,
+              "yaws1999Table13_2"
             ]
           }
         ],
@@ -198,6 +220,14 @@
               "CRC95",
               668,
               "crcHfus"
+            ]
+          },
+          {
+            "value": 5590.0,
+            "ref": [
+              "Yaws1999",
+              110,
+              "yaws1999Table6_2"
             ]
           }
         ],
@@ -241,6 +271,14 @@
           {
             "value": 302.93,
             "ref": "pubchem1402"
+          },
+          {
+            "value": 302.93,
+            "ref": [
+              "Yaws1999",
+              110,
+              "yaws1999Table6_2"
+            ]
           },
           {
             "value": 302.9146,
@@ -287,6 +325,49 @@
                   "Tm": 302.916,
                   "Tmax": 673.15
                 }
+              },
+              {
+                "type": "yawsLiquidDensity",
+                "ref": [
+                  "Yaws1999",
+                  110,
+                  "yaws1999Table8_2"
+                ],
+                "vars": {
+                  "a": 0.4774,
+                  "b": 0.07625,
+                  "n": 0.28571,
+                  "Tc": 7620.0
+                },
+                "min": 302.91,
+                "max": 1373.15,
+                "k": 1000.0
+              }
+            ]
+          }
+        },
+        "enthalpyVaporization": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN106",
+                "ref": [
+                  "Yaws1999",
+                  110,
+                  "yaws1999Table5_2"
+                ],
+                "vars": {
+                  "Tc": 7620.0,
+                  "c1": 301.858,
+                  "c2": 0.38,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 302.91,
+                "max": 7620.0,
+                "k": 1000.0
               }
             ]
           }
@@ -317,6 +398,24 @@
                 },
                 "min": 2476.57,
                 "max": 6000.0
+              },
+              {
+                "type": "quartic",
+                "ref": [
+                  "Yaws1999",
+                  110,
+                  "yaws1999Table2_2"
+                ],
+                "vars": {
+                  "a": 15.486,
+                  "b": 0.056271,
+                  "c": -9.3476e-05,
+                  "d": 5.6763e-08,
+                  "e": -1.1669e-11
+                },
+                "min": 100.0,
+                "max": 2000.0,
+                "k": 1.0
               }
             ]
           },
@@ -345,6 +444,23 @@
                 },
                 "min": 302.92,
                 "max": 2476.57
+              },
+              {
+                "type": "cubic",
+                "ref": [
+                  "Yaws1999",
+                  110,
+                  "yaws1999Table3_2"
+                ],
+                "vars": {
+                  "a": 29.054,
+                  "b": -0.0039678,
+                  "c": 1.4912e-06,
+                  "d": -3.3666e-11
+                },
+                "min": 303.0,
+                "max": 6096.0,
+                "k": 1.0
               }
             ]
           },
@@ -373,6 +489,162 @@
                 },
                 "min": 298.0,
                 "max": 302.92
+              },
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  110,
+                  "yaws1999Table4_2"
+                ],
+                "vars": {
+                  "a": -2.609,
+                  "b": 0.30069,
+                  "c": -0.00084389
+                },
+                "min": 30.0,
+                "max": 200.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "surfaceTension": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "dipprN106",
+                "ref": [
+                  "Yaws1999",
+                  110,
+                  "yaws1999Table9_2"
+                ],
+                "vars": {
+                  "Tc": 7620.0,
+                  "c1": 747.168,
+                  "c2": 1.2222,
+                  "c3": 0.0,
+                  "c4": 0.0,
+                  "c5": 0.0
+                },
+                "min": 302.91,
+                "max": 7620.0,
+                "k": 0.001
+              }
+            ]
+          }
+        },
+        "thermalConductivity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  110,
+                  "yaws1999Table23_2"
+                ],
+                "vars": {
+                  "a": 0.0024,
+                  "b": 8.0397e-06,
+                  "c": -1.2371e-09
+                },
+                "min": 2517.0,
+                "max": 2917.0,
+                "k": 1.0
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  110,
+                  "yaws1999Table24_2"
+                ],
+                "vars": {
+                  "a": 6.6484,
+                  "b": 0.07593,
+                  "c": -1.6369e-05
+                },
+                "min": 303.0,
+                "max": 700.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "vaporPressure": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsVaporPressure",
+                "ref": [
+                  "Yaws1999",
+                  110,
+                  "yaws1999Table7_2"
+                ],
+                "vars": {
+                  "a": -4.4968,
+                  "b": -12924.0,
+                  "c": 4.3403,
+                  "d": -0.00095226,
+                  "e": 2.3443e-08
+                },
+                "min": 954.0,
+                "max": 2517.0,
+                "k": 133.322387415
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  110,
+                  "yaws1999Table21_2"
+                ],
+                "vars": {
+                  "a": 50.609,
+                  "b": 0.121,
+                  "c": 4.84e-06
+                },
+                "min": 2517.0,
+                "max": 2917.0,
+                "k": 1e-07
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsLiquidViscosity",
+                "ref": [
+                  "Yaws1999",
+                  110,
+                  "yaws1999Table22_2"
+                ],
+                "vars": {
+                  "a": -0.2008,
+                  "b": 174.63,
+                  "c": -0.00017838,
+                  "d": 4.1968e-08
+                },
+                "min": 326.0,
+                "max": 1373.0,
+                "k": 0.001
               }
             ]
           }

@@ -38,6 +38,50 @@
             ]
           }
         ],
+        "enthalpyFormation298": [
+          {
+            "value": 0.0,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              205,
+              "yaws1999Table12_2"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 50.63,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              205,
+              "yaws1999Table12_2"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": 0.0,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              205,
+              "yaws1999Table13_2"
+            ]
+          }
+        ],
+        "heatCapacity298": [
+          {
+            "value": 32.922,
+            "phase": "solid",
+            "ref": [
+              "Yaws1999",
+              205,
+              "yaws1999Table4_2"
+            ]
+          }
+        ],
         "heatOfFusion": [
           {
             "value": 3200,
@@ -46,9 +90,25 @@
               617,
               "crcHfus"
             ]
+          },
+          {
+            "value": 9460.0,
+            "ref": [
+              "Yaws1999",
+              205,
+              "yaws1999Table6_2"
+            ]
           }
         ],
         "meltingPoint": [
+          {
+            "value": 913.0,
+            "ref": [
+              "Yaws1999",
+              205,
+              "yaws1999Table6_2"
+            ]
+          },
           {
             "value": 917.15,
             "ref": [
@@ -69,6 +129,103 @@
             ]
           }
         ]
+      },
+      "equations": {
+        "heatCapacity": {
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  205,
+                  "yaws1999Table4_2"
+                ],
+                "vars": {
+                  "a": 40.611,
+                  "b": -0.12992,
+                  "c": 0.00034926
+                },
+                "min": 240.0,
+                "max": 320.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "thermalConductivity": {
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  205,
+                  "yaws1999Table24_2"
+                ],
+                "vars": {
+                  "a": -4.0579,
+                  "b": 0.065794,
+                  "c": -0.00010425
+                },
+                "min": 298.0,
+                "max": 310.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "vaporPressure": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsVaporPressure",
+                "ref": [
+                  "Yaws1999",
+                  205,
+                  "yaws1999Table7_2"
+                ],
+                "vars": {
+                  "a": 88.3172,
+                  "b": -31522.0,
+                  "c": -25.083,
+                  "d": 0.0041165,
+                  "e": -2.8679e-07
+                },
+                "min": 1617.99,
+                "max": 2073.99,
+                "k": 133.322387415
+              }
+            ]
+          }
+        },
+        "viscosity": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsLiquidViscosity",
+                "ref": [
+                  "Yaws1999",
+                  205,
+                  "yaws1999Table22_2"
+                ],
+                "vars": {
+                  "a": -0.0479,
+                  "b": 693.26,
+                  "c": 3.8094e-17,
+                  "d": -5.2755e-21
+                },
+                "min": 913.0,
+                "max": 4175.0,
+                "k": 0.001
+              }
+            ]
+          }
+        }
       },
       "nasa9": [
         "Np"

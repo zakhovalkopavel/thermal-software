@@ -40,6 +40,15 @@
               1373,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": -361200.0,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              176,
+              "yaws1999Table12_2"
+            ]
           }
         ],
         "entropy298": [
@@ -51,6 +60,15 @@
               1373,
               "crcStdThermo"
             ]
+          },
+          {
+            "value": 165.6,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              176,
+              "yaws1999Table12_2"
+            ]
           }
         ],
         "gibbsEnergy298": [
@@ -61,6 +79,15 @@
               "CRC95",
               1373,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": -254000.0,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              176,
+              "yaws1999Table13_2"
             ]
           }
         ],
@@ -75,6 +102,17 @@
             ]
           }
         ],
+        "liquidMolarVolume": [
+          {
+            "value": 4.2122999999999996e-05,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              176,
+              "yaws1999Table14_2"
+            ]
+          }
+        ],
         "meltingPoint": [
           {
             "value": 215.15,
@@ -83,8 +121,43 @@
           {
             "value": 196.15,
             "ref": "pubchem1402"
+          },
+          {
+            "value": 194.15,
+            "ref": [
+              "Yaws1999",
+              176,
+              "yaws1999Table1_2"
+            ]
           }
         ]
+      },
+      "equations": {
+        "vaporPressure": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsVaporPressure",
+                "ref": [
+                  "Yaws1999",
+                  176,
+                  "yaws1999Table7_2"
+                ],
+                "vars": {
+                  "a": 42.3381,
+                  "b": -2357.7,
+                  "c": -13.597,
+                  "d": 0.0085486,
+                  "e": 4.7298e-11
+                },
+                "min": 203.15,
+                "max": 353.15,
+                "k": 133.322387415
+              }
+            ]
+          }
+        }
       }
     }
   }

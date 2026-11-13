@@ -12,6 +12,9 @@
   "entries": {
     "75-75-2": {
       "name": "methanesulfonic acid",
+      "synonyms": [
+        "kyselina methansulfonova"
+      ],
       "Mr": 0.09610566,
       "smiles": "CS(=O)(=O)O",
       "inchikey": "AFVFQIVMOAPDHO-UHFFFAOYSA-N",
@@ -49,6 +52,28 @@
             ]
           }
         ],
+        "density": [
+          {
+            "value": 1477.0,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              41,
+              "yaws1999Table28_1"
+            ]
+          }
+        ],
+        "enthalpyCombustion": [
+          {
+            "value": 591000.0,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              41,
+              "yaws1999Table26_1"
+            ]
+          }
+        ],
         "enthalpyFormation298": [
           {
             "value": -583000,
@@ -62,12 +87,33 @@
         ],
         "entropy298": [
           {
-            "value": 190.98,
+            "value": 189.0,
             "phase": "gas",
             "ref": [
-              "Yaws2014",
-              109,
-              "yawsHfS0g"
+              "Yaws1999",
+              41,
+              "yaws1999Table11_1"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": -459000.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              41,
+              "yaws1999Table13_1"
+            ]
+          }
+        ],
+        "logKow": [
+          {
+            "value": -2.38,
+            "ref": [
+              "Yaws1999",
+              41,
+              "yaws1999Table15_1"
             ]
           }
         ],
@@ -79,8 +125,89 @@
           {
             "value": 293.15,
             "ref": "pubchem1402"
+          },
+          {
+            "value": 292.81,
+            "ref": [
+              "Yaws1999",
+              41,
+              "yaws1999Table1_1"
+            ]
           }
         ]
+      },
+      "equations": {
+        "heatCapacity": {
+          "gas": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quartic",
+                "ref": [
+                  "Yaws1999",
+                  41,
+                  "yaws1999Table2_1"
+                ],
+                "vars": {
+                  "a": 65.45,
+                  "b": -0.10363,
+                  "c": 0.00062784,
+                  "d": -6.7194e-07,
+                  "e": 2.3114e-10
+                },
+                "min": 298.0,
+                "max": 1000.0,
+                "k": 1.0
+              }
+            ]
+          },
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  41,
+                  "yaws1999Table4_1"
+                ],
+                "vars": {
+                  "a": -26.405,
+                  "b": 0.5,
+                  "c": 0.0
+                },
+                "min": 263.0,
+                "max": 293.0,
+                "k": 1.0
+              }
+            ]
+          }
+        },
+        "vaporPressure": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsVaporPressure",
+                "ref": [
+                  "Yaws1999",
+                  41,
+                  "yaws1999Table7_1"
+                ],
+                "vars": {
+                  "a": -58.6166,
+                  "b": -3358.0,
+                  "c": 32.32,
+                  "d": -0.053174,
+                  "e": 2.6886e-05
+                },
+                "min": 292.81,
+                "max": 561.0,
+                "k": 133.322387415
+              }
+            ]
+          }
+        }
       }
     }
   }
