@@ -4,7 +4,7 @@ import math
 import numpy as np
 import pytest
 
-from phase_diagrams.tracing.quadratic_segment_fitter import fit_quadratic_segment
+from source_extract.diagrams.tracing.quadratic_segment_fitter import fit_quadratic_segment
 
 
 def _parabola(control, start=(0.0, 0.0), end=(200.0, 0.0), count=120):

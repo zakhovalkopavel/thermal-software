@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import numpy as np
 
-from phase_diagrams.builders.isotherm_detector import _cornered, _stretch_bounds
-from phase_diagrams.builders.isotherm_field_order import field_order_chains
-from phase_diagrams.builders.isotherm_side_labels import side_label_pieces
-from phase_diagrams.figures.rotated_label_reader import _long_axis
-from phase_diagrams.models.detected_isotherm import DetectedIsotherm
-from phase_diagrams.models.isotherm_detection import IsothermDetection
-from phase_diagrams.models.line_scale import LineScale
-from phase_diagrams.models.page_word import PageWord
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.builders.isotherm_detector import _cornered, _stretch_bounds
+from source_extract.diagrams.builders.isotherm_field_order import field_order_chains
+from source_extract.diagrams.builders.isotherm_side_labels import side_label_pieces
+from source_extract.diagrams.figures.rotated_label_reader import _long_axis
+from source_extract.diagrams.models.detected_isotherm import DetectedIsotherm
+from source_extract.diagrams.models.isotherm_detection import IsothermDetection
+from source_extract.diagrams.models.line_scale import LineScale
+from source_extract.diagrams.models.page_word import PageWord
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
 from phase_diagrams.output.auto_extraction_report import compare_auto_system
 
 CALIBRATION = TernaryCalibration(["A", "B", "C"], {"C": (300.0, 40.0), "A": (40.0, 490.0), "B": (560.0, 490.0)})

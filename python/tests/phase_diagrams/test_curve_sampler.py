@@ -8,12 +8,12 @@ import pytest
 from PIL import Image, ImageDraw
 
 import pd_helpers
-from phase_diagrams.builders.binary_calibrator import calibrate_binary
+from source_extract.diagrams.builders.binary_calibrator import calibrate_binary
 from phase_diagrams.builders.binary_system_builder import build_binary_system
-from phase_diagrams.tracing.curve_sampler import sample_curve
-from phase_diagrams.config.diagram_config import DiagramConfig
-from phase_diagrams.detection.ink_mask import ink_mask
-from phase_diagrams.tracing.polyline_simplifier import simplify_polyline
+from source_extract.diagrams.tracing.curve_sampler import sample_curve
+from source_extract.diagrams.config.diagram_config import DiagramConfig
+from source_extract.diagrams.detection.ink_mask import ink_mask
+from source_extract.diagrams.tracing.polyline_simplifier import simplify_polyline
 
 LINE = [(0.0, 2000.0), (10.0, 1900.0), (20.0, 1800.0), (30.0, 1700.0), (40.0, 1600.0)]
 

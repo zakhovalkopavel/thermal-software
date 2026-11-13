@@ -6,16 +6,16 @@ from __future__ import annotations
 import numpy as np
 from PIL import Image, ImageDraw
 
-from phase_diagrams.builders.auto_overlay_curves import auto_overlay_curves
+from source_extract.diagrams.builders.auto_overlay_curves import auto_overlay_curves
 from phase_diagrams.builders.auto_system_builder import build_auto_system
-from phase_diagrams.builders.isotherm_detector import detect_isotherms
-from phase_diagrams.builders.isotherm_temperature_solver import solve_isotherm_temperatures
-from phase_diagrams.detection.skeleton_branches import skeleton_branches
-from phase_diagrams.models.detected_isotherm import DetectedIsotherm
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.builders.isotherm_detector import detect_isotherms
+from source_extract.diagrams.builders.isotherm_temperature_solver import solve_isotherm_temperatures
+from source_extract.diagrams.detection.skeleton_branches import skeleton_branches
+from source_extract.diagrams.models.detected_isotherm import DetectedIsotherm
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
 from phase_diagrams.output.isotherm_draft_comparison import compare_isotherm_draft
-from phase_diagrams.tracing.branch_chainer import chain_branches
-from phase_diagrams.validation.inferred_temperature_check import inferred_temperature_problem
+from source_extract.diagrams.tracing.branch_chainer import chain_branches
+from source_extract.diagrams.validation.inferred_temperature_check import inferred_temperature_problem
 
 CALIBRATION = TernaryCalibration(["A", "B", "C"], {"C": (300.0, 40.0), "A": (40.0, 490.0), "B": (560.0, 490.0)})
 

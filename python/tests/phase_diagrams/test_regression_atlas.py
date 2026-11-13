@@ -15,16 +15,16 @@ from pathlib import Path
 
 import pytest
 
-from phase_diagrams.builders.binary_calibrator import calibrate_binary
+from source_extract.diagrams.builders.binary_calibrator import calibrate_binary
 from phase_diagrams.builders.binary_system_builder import build_binary_system
-from phase_diagrams.config.config_loader import load_config
-from phase_diagrams.config.source_registry import SourceRegistry
-from phase_diagrams.detection.ink_mask import ink_mask
+from source_extract.diagrams.config.config_loader import load_config
+from source_extract.diagrams.config.source_registry import SourceRegistry
+from source_extract.diagrams.detection.ink_mask import ink_mask
 from phase_diagrams.models.nbs_entry import NbsEntry
 from phase_diagrams.nbs.nbs_entry_index import build_nbs_index
 from phase_diagrams.nbs.nbs_matcher import NbsMatcher
 from phase_diagrams.output.system_comparer import compare_systems
-from phase_diagrams.rendering.pdf_renderer import render_page
+from source_extract.diagrams.rendering.pdf_renderer import render_page
 
 _HERE = Path(__file__).resolve()
 _DATASETS = [Path("/app/shared/processed/phase-diagrams"), _HERE.parents[3] / "shared/processed/phase-diagrams"]

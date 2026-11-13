@@ -9,8 +9,8 @@ import json
 
 import numpy as np
 
-from phase_diagrams.constants.comparison_tolerance import COMPARISON_TOLERANCE
-from phase_diagrams.models.system_comparison import SystemComparison
+from source_extract.diagrams.constants.comparison_tolerance import COMPARISON_TOLERANCE
+from source_extract.diagrams.models.system_comparison import SystemComparison
 
 _INVARIANT_KEYS = ("type", "reaction", "phases", "temperature_C", "liquid_wt", "secondLiquid_wt", "status")
 

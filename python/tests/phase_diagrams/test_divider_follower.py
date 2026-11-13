@@ -1,7 +1,7 @@
 """Tests for phase_diagrams.tracing.divider_follower."""
 import numpy as np
 
-from phase_diagrams.tracing.divider_follower import follow_divider
+from source_extract.diagrams.tracing.divider_follower import follow_divider
 
 _LINE = [(float(x), 0.0) for x in np.linspace(0.0, 100.0, 34)]
 

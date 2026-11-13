@@ -7,23 +7,23 @@ from __future__ import annotations
 
 import numpy as np
 
-from phase_diagrams.models.binary_extraction import BinaryExtraction
-from phase_diagrams.models.calibration_result import CalibrationResult
+from source_extract.diagrams.models.binary_extraction import BinaryExtraction
+from source_extract.diagrams.models.calibration_result import CalibrationResult
 from phase_diagrams.nbs.composition_converter import convert_composition
-from phase_diagrams.tracing.curve_sampler import sample_curve
-from phase_diagrams.tracing.curve_tracer import trace_path
-from phase_diagrams.config.diagram_config import DiagramConfig
-from phase_diagrams.detection.horizontal_line_detector import detect_horizontal_lines
-from phase_diagrams.config.invariant_spec import InvariantSpec
-from phase_diagrams.detection.junction_locator import locate_junction
-from phase_diagrams.figures.label_reader import read_label
-from phase_diagrams.models.measured_line import MeasuredLine
+from source_extract.diagrams.tracing.curve_sampler import sample_curve
+from source_extract.diagrams.tracing.curve_tracer import trace_path
+from source_extract.diagrams.config.diagram_config import DiagramConfig
+from source_extract.diagrams.detection.horizontal_line_detector import detect_horizontal_lines
+from source_extract.diagrams.config.invariant_spec import InvariantSpec
+from source_extract.diagrams.detection.junction_locator import locate_junction
+from source_extract.diagrams.figures.label_reader import read_label
+from source_extract.diagrams.models.measured_line import MeasuredLine
 from phase_diagrams.nbs.nbs_matcher import NbsMatcher
-from phase_diagrams.models.review_item import ReviewItem
+from source_extract.diagrams.models.review_item import ReviewItem
 from phase_diagrams.nbs.status_resolver import resolve_status
-from phase_diagrams.detection.stroke_width_filter import stroke_width_filter
-from phase_diagrams.models.traced_curve import TracedCurve
-from phase_diagrams.detection.vertical_line_detector import detect_vertical_lines
+from source_extract.diagrams.detection.stroke_width_filter import stroke_width_filter
+from source_extract.diagrams.models.traced_curve import TracedCurve
+from source_extract.diagrams.detection.vertical_line_detector import detect_vertical_lines
 
 _KEY_ORDER = (
     "system", "components", "units", "source", "variantChoice", "nbsCrossCheck", "digitization",

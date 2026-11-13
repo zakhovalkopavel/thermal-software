@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 from PIL import Image, ImageDraw
 
-from phase_diagrams.tracing.curve_tracer import trace_path
-from phase_diagrams.detection.ink_mask import ink_mask
+from source_extract.diagrams.tracing.curve_tracer import trace_path
+from source_extract.diagrams.detection.ink_mask import ink_mask
 
 
 def _mask(draw_fn, size=(220, 160)) -> np.ndarray:

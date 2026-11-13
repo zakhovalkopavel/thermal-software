@@ -104,7 +104,7 @@ def _cmd_nbs_index(args, registry: SourceRegistry, work: Path) -> int:
     import time
 
     from phase_diagrams.nbs.nbs_page_ocr import ocr_page_text_tesseract
-    from phase_diagrams.rendering.pdf_renderer import render_page
+    from source_extract.diagrams.rendering.pdf_renderer import render_page
 
     folder = work / "nbs"
     folder.mkdir(parents=True, exist_ok=True)

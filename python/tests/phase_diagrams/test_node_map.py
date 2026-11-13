@@ -10,15 +10,15 @@ import numpy as np
 import pytest
 from PIL import Image, ImageDraw, ImageFont
 
-from phase_diagrams.builders.node_map_builder import build_node_map
-from phase_diagrams.config.config_loader import load_config
-from phase_diagrams.config.curves_config import CurvesConfig
-from phase_diagrams.detection.dash_end_detector import detect_dash_ends
-from phase_diagrams.detection.ink_mask import ink_mask
-from phase_diagrams.detection.junction_detector import detect_junctions
-from phase_diagrams.detection.ring_detector import detect_rings
-from phase_diagrams.detection.skeletonizer import skeletonize
-from phase_diagrams.detection.text_detector import detect_text_boxes
+from source_extract.diagrams.builders.node_map_builder import build_node_map
+from source_extract.diagrams.config.config_loader import load_config
+from source_extract.diagrams.config.curves_config import CurvesConfig
+from source_extract.diagrams.detection.dash_end_detector import detect_dash_ends
+from source_extract.diagrams.detection.ink_mask import ink_mask
+from source_extract.diagrams.detection.junction_detector import detect_junctions
+from source_extract.diagrams.detection.ring_detector import detect_rings
+from source_extract.diagrams.detection.skeletonizer import skeletonize
+from source_extract.diagrams.detection.text_detector import detect_text_boxes
 
 
 def _mask(draw_fn, size=(400, 400)) -> np.ndarray:

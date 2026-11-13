@@ -7,18 +7,18 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from phase_diagrams.builders.auto_ternary_builder import build_auto_ternary
-from phase_diagrams.builders.boundary_graph_builder import detect_boundary_graph
+from source_extract.diagrams.builders.boundary_graph_builder import detect_boundary_graph
 from phase_diagrams.builders.field_namer import FieldNaming, match_phase_name, name_fields
-from phase_diagrams.builders.node_temperature_reader import (
+from source_extract.diagrams.builders.node_temperature_reader import (
     CurveTemperature,
     printed_temperature,
     read_curve_temperatures,
     read_node_temperatures,
 )
-from phase_diagrams.figures.page_word_reader import read_page_words
-from phase_diagrams.models.boundary_graph import BoundaryEdge, BoundaryGraph, BoundaryNode
-from phase_diagrams.models.page_word import PageWord
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.figures.page_word_reader import read_page_words
+from source_extract.diagrams.models.boundary_graph import BoundaryEdge, BoundaryGraph, BoundaryNode
+from source_extract.diagrams.models.page_word import PageWord
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
 from phase_diagrams.output.auto_extraction_report import compare_auto_system
 
 TOP, LEFT, RIGHT = (400.0, 60.0), (60.0, 650.0), (740.0, 650.0)

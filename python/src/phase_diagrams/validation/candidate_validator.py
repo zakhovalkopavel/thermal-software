@@ -9,7 +9,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from phase_diagrams.models.validation_issue import ValidationIssue
+from source_extract.diagrams.models.validation_issue import ValidationIssue
 from phase_diagrams.validation.dataset_validator import validate_dataset
 
 

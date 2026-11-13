@@ -9,9 +9,9 @@ import copy
 import json
 import re
 
-from phase_diagrams.builders.node_label_resolver import resolve_node_labels
-from phase_diagrams.config.curves_config import CurvesConfig
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.builders.node_label_resolver import resolve_node_labels
+from source_extract.diagrams.config.curves_config import CurvesConfig
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
 
 _ATLAS_REF = "slag-atlas-1995"
 _NUMBER = re.compile(r'[^,\]\}\s]+')

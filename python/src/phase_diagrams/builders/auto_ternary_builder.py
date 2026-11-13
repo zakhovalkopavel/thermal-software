@@ -10,11 +10,11 @@ import copy
 import numpy as np
 
 from phase_diagrams.builders.field_namer import FieldNaming
-from phase_diagrams.builders.node_temperature_reader import CurveTemperature
-from phase_diagrams.models.boundary_graph import BoundaryGraph
-from phase_diagrams.models.page_word import PageWord
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
-from phase_diagrams.tracing.polyline_simplifier import simplify_polyline
+from source_extract.diagrams.builders.node_temperature_reader import CurveTemperature
+from source_extract.diagrams.models.boundary_graph import BoundaryGraph
+from source_extract.diagrams.models.page_word import PageWord
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.tracing.polyline_simplifier import simplify_polyline
 
 _ATLAS_REF = "slag-atlas-1995"
 _SMOOTH_PX = 7

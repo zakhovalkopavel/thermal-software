@@ -8,8 +8,8 @@ from __future__ import annotations
 import copy
 import math
 
-from phase_diagrams.models.isotherm_detection import IsothermDetection
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.models.isotherm_detection import IsothermDetection
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
 
 _SAMPLE_PX = 10.0
 

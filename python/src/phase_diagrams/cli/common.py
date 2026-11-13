@@ -15,7 +15,7 @@ from phase_diagrams import (
     measure_line_scale,
     render_page,
 )
-from phase_diagrams.config.source_registry import SourceRegistry
+from source_extract.diagrams.config.source_registry import SourceRegistry
 
 _ATLAS = "slag-atlas-1995"
 _NBS = "nsrds-nbs-61-1"

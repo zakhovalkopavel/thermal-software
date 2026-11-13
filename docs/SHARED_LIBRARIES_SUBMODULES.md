@@ -1,6 +1,6 @@
 # Shared libraries as separate repos (plan)
 
-Status: **wired**. `yaws1999` tables/writers delegate to `source_extract.tables` (DjVu quirks + column schemas stay in the adapter). `phase_diagrams` diagram CV / figures / tracing / models / rendering re-export `source_extract.diagrams`; Atlas/NBS-specific builders, compounds, matcher, and entry parsing stay under `python/src/phase_diagrams/`. NBS Table I OCR uses `page-ocr` VLM (tesseract remains as a legacy engine option).
+Status: **wired**. `yaws1999` tables/writers/progress delegate to `source_extract.tables` (DjVu quirks + column schemas stay in the adapter). Generic diagram CV lives in `source_extract.diagrams`; Atlas/NBS adapters under `python/src/phase_diagrams/` import it directly (CLI, NBS, compounds, host builders/output). NBS Table I OCR uses `page-ocr` VLM (tesseract remains as a legacy engine option).
 
 Two **separate git repositories**, registered as submodules under `vendor/`:
 
@@ -9,7 +9,7 @@ Two **separate git repositories**, registered as submodules under `vendor/`:
 | 1 | **`page-ocr`** → `vendor/page-ocr` | Page image → text/blocks; local container or Modal; engine-pluggable (Surya now) |
 | 2 | **`source-extract`** → `vendor/source-extract` | **Source file in → structured result out**: tables, diagrams, and mixed papers |
 
-**thermal-software** = thin **source adapters** only (paths, catalogs, quirks, CLI). Adapters call **`source-extract`** only; that library uses **`page-ocr`** for recognition and writes structured results.
+**thermal-software** = thin **source adapters** only (paths, catalogs, quirks, CLI). Adapters import **`source_extract.tables`** / **`source_extract.diagrams`** (and may use `pipeline` later). That library uses **`page-ocr`** for recognition.
 
 ```mermaid
 flowchart TB
@@ -28,11 +28,8 @@ flowchart TB
     Pipeline --> Papers
   end
   OCR[page-ocr]
-  Yaws --> Pipeline
   Yaws --> Tables
-  Atlas --> Pipeline
   Atlas --> Diagrams
-  PapersAd --> Pipeline
   PapersAd --> Papers
   extract --> OCR
 ```
@@ -61,9 +58,11 @@ OCR stays in `page-ocr`; only `source-extract` depends on it. Diagram/table/pape
 
 | Adapter | Uses |
 | --- | --- |
-| `yaws1999/` | source-extract.tables / pipeline |
-| `phase_diagrams/` | source-extract.diagrams / pipeline |
-| future paper package | source-extract.papers / pipeline |
+| `yaws1999/` | `source_extract.tables` (dataset, export, naming, progress, columns) |
+| `phase_diagrams/` | `source_extract.diagrams` directly for generic CV; host code for Atlas/NBS/CLI/compounds |
+| future paper package | `source_extract.papers` / optionally `pipeline` |
+
+Production and image builds copy `vendor/*/src` into `/app/vendor/*/src` and set `PYTHONPATH` accordingly (`docker/python/Dockerfile`, `compose.production.yml`). Dev Compose still bind-mounts the vendor trees for live edits.
 
 ## Layout
 

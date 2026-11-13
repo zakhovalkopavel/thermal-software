@@ -2,8 +2,8 @@
 import numpy as np
 import pytest
 
-from phase_diagrams.models.traced_curve import TracedCurve
-from phase_diagrams.rendering.ternary_overlay_renderer import render_ternary_overlay
+from source_extract.diagrams.models.traced_curve import TracedCurve
+from source_extract.diagrams.rendering.ternary_overlay_renderer import render_ternary_overlay
 
 _CORNERS = [(300.0, 100.0), (100.0, 450.0), (500.0, 450.0)]
 
@@ -112,7 +112,7 @@ def test_legend_shows_the_legend_text_and_the_field_its_name():
 
 
 def test_compound_points_get_a_green_ring_and_a_legend_strip_below_the_crop():
-    from phase_diagrams.models.compound_point import CompoundPoint
+    from source_extract.diagrams.models.compound_point import CompoundPoint
     points = [CompoundPoint("NS", (300.0, 300.0), [50.7, 0.0, 49.3], "sodium-metasilicate", "Na2O·SiO2", 1088, "congruent"),
               CompoundPoint("C2", (250.0, 400.0), [37.2, 62.8, 0.0])]
     image = np.full((600, 600), 255, np.uint8)

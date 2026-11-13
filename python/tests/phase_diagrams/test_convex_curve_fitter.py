@@ -3,7 +3,7 @@ import math
 
 import numpy as np
 
-from phase_diagrams.tracing.convex_curve_fitter import fit_convex_curve
+from source_extract.diagrams.tracing.convex_curve_fitter import fit_convex_curve
 
 
 def _turns(points) -> np.ndarray:

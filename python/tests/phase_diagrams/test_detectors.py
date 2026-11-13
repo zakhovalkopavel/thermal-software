@@ -8,15 +8,15 @@ import pytest
 from PIL import Image, ImageDraw
 
 import pd_helpers
-from phase_diagrams.builders.binary_calibrator import calibrate_binary
-from phase_diagrams.config.diagram_config import DiagramConfig
-from phase_diagrams.detection.frame_detector import detect_frame
-from phase_diagrams.detection.horizontal_line_detector import detect_horizontal_lines
-from phase_diagrams.detection.ink_mask import ink_mask
-from phase_diagrams.detection.junction_locator import locate_junction
-from phase_diagrams.detection.stroke_width_filter import stroke_width_filter
-from phase_diagrams.detection.tick_detector import detect_ticks
-from phase_diagrams.detection.tick_matcher import match_ticks
+from source_extract.diagrams.builders.binary_calibrator import calibrate_binary
+from source_extract.diagrams.config.diagram_config import DiagramConfig
+from source_extract.diagrams.detection.frame_detector import detect_frame
+from source_extract.diagrams.detection.horizontal_line_detector import detect_horizontal_lines
+from source_extract.diagrams.detection.ink_mask import ink_mask
+from source_extract.diagrams.detection.junction_locator import locate_junction
+from source_extract.diagrams.detection.stroke_width_filter import stroke_width_filter
+from source_extract.diagrams.detection.tick_detector import detect_ticks
+from source_extract.diagrams.detection.tick_matcher import match_ticks
 
 
 @pytest.fixture

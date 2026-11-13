@@ -6,12 +6,12 @@ from __future__ import annotations
 import pytest
 
 import pd_helpers
-from phase_diagrams.models.axis_calibration import AxisCalibration
-from phase_diagrams.models.binary_calibration import BinaryCalibration
-from phase_diagrams.builders.binary_calibrator import calibrate_binary
-from phase_diagrams.config.diagram_config import DiagramConfig
-from phase_diagrams.detection.ink_mask import ink_mask
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.models.axis_calibration import AxisCalibration
+from source_extract.diagrams.models.binary_calibration import BinaryCalibration
+from source_extract.diagrams.builders.binary_calibrator import calibrate_binary
+from source_extract.diagrams.config.diagram_config import DiagramConfig
+from source_extract.diagrams.detection.ink_mask import ink_mask
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
 
 
 class TestAxisCalibration:

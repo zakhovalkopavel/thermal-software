@@ -19,7 +19,7 @@ from statistics import median
 import numpy as np
 from PIL import Image, ImageOps
 
-from phase_diagrams.rendering.pdf_renderer import render_page
+from source_extract.diagrams.rendering.pdf_renderer import render_page
 
 _DPI = 400
 _PSM = "--psm 6"

@@ -3,8 +3,8 @@ Unit tests for the caption parser and the figure-index merge (real Tesseract out
 """
 from __future__ import annotations
 
-from phase_diagrams.figures.caption_parser import parse_figure_captions
-from phase_diagrams.figures.figure_index_merger import merge_figure_index
+from source_extract.diagrams.figures.caption_parser import parse_figure_captions
+from source_extract.diagrams.figures.figure_index_merger import merge_figure_index
 
 PAGE_80 = (
     "Fig. 3.64.\n\n(Cad)\n\na: CagFe90 13\n\nb: CaFeqOg\n\nc: CagFe704,\n\n"

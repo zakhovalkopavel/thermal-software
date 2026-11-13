@@ -5,7 +5,7 @@ Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Topology report
 """
 from __future__ import annotations
 
-from phase_diagrams.figures.formula_molar_mass import formula_molar_mass
+from source_extract.diagrams.figures.formula_molar_mass import formula_molar_mass
 
 COMPOUND_WT = 1.5
 

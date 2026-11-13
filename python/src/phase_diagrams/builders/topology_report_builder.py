@@ -8,9 +8,9 @@ from __future__ import annotations
 import math
 
 from phase_diagrams.builders.nearest_compound import COMPOUND_WT, nearest_compound
-from phase_diagrams.models.diagram_node import DiagramNode
-from phase_diagrams.models.line_scale import LineScale
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.models.diagram_node import DiagramNode
+from source_extract.diagrams.models.line_scale import LineScale
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
 
 _LABEL_PX = 10.0
 _ON_LINE_PX = 5.0

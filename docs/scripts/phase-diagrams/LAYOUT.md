@@ -2,13 +2,18 @@
 
 Part of the [phase-diagram extraction specification](README.md).
 
+Generic diagram CV (config, detection, tracing, rendering, most models/builders/figures)
+lives in `vendor/source-extract` (`source_extract.diagrams`). The host package under
+`python/src/phase_diagrams/` keeps Atlas/NBS adapters (CLI, compounds, NBS matching,
+host builders/output) and re-exports a public API from `__init__.py` for convenience.
+Callers should prefer `source_extract.diagrams.*` for generic symbols.
+
 ## Implementation layout
 
-One export per file, dataclasses for models, files grouped in subpackages by
-responsibility (empty `__init__.py` in each), public API re-exported from the top-level
-`__init__.py` (same conventions as `python/src/nasa_thermo/`). No dependencies beyond
-`python/pyproject.toml` (numpy, scipy, Pillow, opencv-python, pytesseract) and the
-container's `poppler-utils` and `tesseract-ocr`.
+Host adapters keep one export per file and empty `__init__.py` in each subpackage.
+Dependencies: `python/pyproject.toml` (numpy, scipy, Pillow, opencv-python, pytesseract),
+`source_extract` / `page_ocr` on `PYTHONPATH`, and the container's `poppler-utils` /
+`tesseract-ocr`.
 
 ```
 python/

@@ -9,10 +9,10 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 from phase_diagrams.builders.field_namer import FieldNaming
-from phase_diagrams.models.boundary_graph import BoundaryGraph
-from phase_diagrams.models.isotherm_detection import IsothermDetection
-from phase_diagrams.models.line_scale import LineScale
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.models.boundary_graph import BoundaryGraph
+from source_extract.diagrams.models.isotherm_detection import IsothermDetection
+from source_extract.diagrams.models.line_scale import LineScale
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
 
 SAME_POINT_WT = 1.5
 ON_CURVE_PX = 8.0

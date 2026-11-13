@@ -6,8 +6,8 @@ from __future__ import annotations
 import pytest
 
 from phase_diagrams.builders.topology_report_builder import build_topology_report
-from phase_diagrams.models.diagram_node import DiagramNode
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.models.diagram_node import DiagramNode
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
 
 CORNERS = {"SiO2": [500, 100], "CaO": [100, 800], "MgO": [900, 800]}
 CALIBRATION = TernaryCalibration(["CaO", "MgO", "SiO2"], {k: (float(v[0]), float(v[1])) for k, v in CORNERS.items()})

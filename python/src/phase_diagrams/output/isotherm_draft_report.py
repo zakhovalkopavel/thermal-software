@@ -5,7 +5,7 @@ Spec: docs/scripts/phase-diagrams/ALGORITHMS.md § Isotherm detection
 """
 from __future__ import annotations
 
-from phase_diagrams.models.isotherm_detection import IsothermDetection
+from source_extract.diagrams.models.isotherm_detection import IsothermDetection
 
 
 def isotherm_draft_report(

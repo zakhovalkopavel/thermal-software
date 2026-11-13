@@ -5,7 +5,7 @@ Spec: docs/scripts/phase-diagrams/OUTPUT.md § Review outputs
 """
 from __future__ import annotations
 
-from phase_diagrams.models.review_item import ReviewItem
+from source_extract.diagrams.models.review_item import ReviewItem
 
 
 def review_report(name: str, review: list[ReviewItem], log: list[str]) -> str:

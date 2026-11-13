@@ -9,12 +9,12 @@ import json
 import re
 from pathlib import Path
 
-from phase_diagrams.config.source_registry import SourceRegistry
-from phase_diagrams.constants.boundary_arrows import BOUNDARY_ARROWS
-from phase_diagrams.figures.formula_molar_mass import formula_molar_mass
+from source_extract.diagrams.config.source_registry import SourceRegistry
+from source_extract.diagrams.constants.boundary_arrows import BOUNDARY_ARROWS
+from source_extract.diagrams.figures.formula_molar_mass import formula_molar_mass
 from phase_diagrams.constants.status_tolerance import STATUS_TOLERANCE
-from phase_diagrams.models.validation_issue import ValidationIssue
-from phase_diagrams.validation.inferred_temperature_check import inferred_temperature_problem
+from source_extract.diagrams.models.validation_issue import ValidationIssue
+from source_extract.diagrams.validation.inferred_temperature_check import inferred_temperature_problem
 
 _ATLAS = "slag-atlas-1995"
 _NBS = "nsrds-nbs-61-1"

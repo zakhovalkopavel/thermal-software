@@ -5,8 +5,8 @@ Spec: docs/scripts/phase-diagrams/WORKFLOW.md § New ternary system
 """
 from __future__ import annotations
 
-from phase_diagrams.figures.formula_letters import formula_letters
-from phase_diagrams.figures.formula_molar_mass import formula_molar_mass
+from source_extract.diagrams.figures.formula_letters import formula_letters
+from source_extract.diagrams.figures.formula_molar_mass import formula_molar_mass
 
 
 def new_system_checklist(components: list[str], compounds: list[dict]) -> list[str]:

@@ -1,6 +1,8 @@
 ARG PYTHON_VERSION
 ARG TESSERACT_VERSION
 
+# Build context: repository root (so vendor/page-ocr and vendor/source-extract can be copied).
+
 # Debian ships Tesseract 5.5.0 only; build the upstream release on the same base image
 FROM python:${PYTHON_VERSION} AS tesseract-build
 ARG TESSERACT_VERSION
@@ -85,8 +87,8 @@ RUN curl -fsSL \
 # Set working directory
 WORKDIR /app
 
-# Copy pyproject and requirements
-COPY pyproject.toml poetry.lock* ./
+# Copy pyproject and requirements (from python/ in the repo root context)
+COPY python/pyproject.toml python/poetry.lock* ./
 
 # Install Poetry
 ENV POETRY_HOME="/opt/poetry"
@@ -120,9 +122,11 @@ RUN pip install --no-cache-dir \
     # surya-ocr pins pillow>=10.2,<11; leave that version (do not force Pillow 12).
     # modal>=1.6: Python 3.14 client (0.x raises on 3.14); tokens via env only.
 
-# Copy remaining source files
-COPY src/ /app/src/
-COPY tests/ /app/tests/
+# App adapters + vendor libraries (baked into the image for production; still overridable by compose mounts in dev)
+COPY python/src/ /app/src/
+COPY python/tests/ /app/tests/
+COPY vendor/page-ocr/src/ /app/vendor/page-ocr/src/
+COPY vendor/source-extract/src/ /app/vendor/source-extract/src/
 
 # Create necessary directories
 RUN mkdir -p /app/shared/sources /app/shared/processed /app/reports

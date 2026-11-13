@@ -4,8 +4,8 @@ Unit tests for build_compound_points and CompoundPoint.legend: compound of the s
 from __future__ import annotations
 
 from phase_diagrams.builders.compound_points_builder import build_compound_points
-from phase_diagrams.models.compound_point import CompoundPoint
-from phase_diagrams.models.diagram_node import DiagramNode
+from source_extract.diagrams.models.compound_point import CompoundPoint
+from source_extract.diagrams.models.diagram_node import DiagramNode
 
 COMPOUNDS = [
     {"id": "silica", "notation": "S", "formula": "SiO2", "oxideMoles": {"SiO2": 1},

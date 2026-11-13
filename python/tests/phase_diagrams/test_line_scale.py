@@ -9,10 +9,10 @@ import numpy as np
 import pytest
 from PIL import Image, ImageDraw
 
-from phase_diagrams.config.config_loader import load_config
-from phase_diagrams.detection.dash_mask import dash_mask
-from phase_diagrams.detection.line_width_meter import measure_line_scale
-from phase_diagrams.models.line_scale import LineScale
+from source_extract.diagrams.config.config_loader import load_config
+from source_extract.diagrams.detection.dash_mask import dash_mask
+from source_extract.diagrams.detection.line_width_meter import measure_line_scale
+from source_extract.diagrams.models.line_scale import LineScale
 
 
 def _lines(width: int, size: int = 600) -> np.ndarray:

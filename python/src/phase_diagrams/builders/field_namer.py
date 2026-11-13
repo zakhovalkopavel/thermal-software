@@ -16,11 +16,11 @@ import numpy as np
 from PIL import Image, ImageDraw
 from scipy import ndimage
 
-from phase_diagrams.figures.formula_molar_mass import formula_molar_mass
-from phase_diagrams.models.boundary_graph import BoundaryGraph
-from phase_diagrams.models.line_scale import LineScale
-from phase_diagrams.models.page_word import PageWord
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.figures.formula_molar_mass import formula_molar_mass
+from source_extract.diagrams.models.boundary_graph import BoundaryGraph
+from source_extract.diagrams.models.line_scale import LineScale
+from source_extract.diagrams.models.page_word import PageWord
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
 
 _MARGIN_PX = 4
 _BARRIER_PX = 3

@@ -6,9 +6,9 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from phase_diagrams.builders.boundary_arrow_segments import boundary_arrow_segments
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
-from phase_diagrams.rendering.node_map_renderer import render_node_map
+from source_extract.diagrams.builders.boundary_arrow_segments import boundary_arrow_segments
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.rendering.node_map_renderer import render_node_map
 
 CORNERS = {"SiO2": [500, 100], "CaO": [100, 800], "MgO": [900, 800]}
 CALIBRATION = TernaryCalibration(["CaO", "MgO", "SiO2"], {k: (float(v[0]), float(v[1])) for k, v in CORNERS.items()})

@@ -3,7 +3,7 @@ phase_diagrams.nbs.composition_converter — mol% ↔ wt% with molar masses from
 """
 from __future__ import annotations
 
-from phase_diagrams.figures.formula_molar_mass import formula_molar_mass
+from source_extract.diagrams.figures.formula_molar_mass import formula_molar_mass
 
 
 def convert_composition(values: dict[str, float], to: str, digits: int | None = 1) -> dict[str, float]:

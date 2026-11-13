@@ -5,17 +5,17 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from phase_diagrams.builders.isotherm_detector import (
+from source_extract.diagrams.builders.isotherm_detector import (
     _join_prolongations,
     _meeting_angle,
     _prolong_through_text,
     _real_words,
     _without_hooks,
 )
-from phase_diagrams.models.branch_chain import BranchChain
-from phase_diagrams.models.detected_isotherm import DetectedIsotherm
-from phase_diagrams.models.line_scale import LineScale
-from phase_diagrams.models.page_word import PageWord
+from source_extract.diagrams.models.branch_chain import BranchChain
+from source_extract.diagrams.models.detected_isotherm import DetectedIsotherm
+from source_extract.diagrams.models.line_scale import LineScale
+from source_extract.diagrams.models.page_word import PageWord
 
 SYSTEM = {"boundaryCurves": [{"fields": ["alpha", "beta"]}]}
 

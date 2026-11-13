@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from phase_diagrams.models.detected_isotherm import DetectedIsotherm
+from source_extract.diagrams.models.detected_isotherm import DetectedIsotherm
 
 _SAMPLE_PX = 5.0
 _ON_PX = 8.0

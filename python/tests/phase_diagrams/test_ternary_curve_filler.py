@@ -9,9 +9,9 @@ import numpy as np
 import pytest
 from PIL import Image, ImageDraw
 
-from phase_diagrams.config.config_loader import load_config
-from phase_diagrams.config.curves_config import CurvesConfig
-from phase_diagrams.detection.ink_mask import ink_mask
+from source_extract.diagrams.config.config_loader import load_config
+from source_extract.diagrams.config.curves_config import CurvesConfig
+from source_extract.diagrams.detection.ink_mask import ink_mask
 from phase_diagrams.builders.ternary_curve_filler import fill_ternary_curves
 
 SYSTEM_TEXT = """\

@@ -13,20 +13,20 @@ import re
 import numpy as np
 from PIL import Image, ImageDraw
 
-from phase_diagrams.tracing.curve_tracer import trace_path
-from phase_diagrams.config.curves_config import CurvesConfig
-from phase_diagrams.detection.dash_mask import dash_mask
-from phase_diagrams.detection.stroke_width_filter import stroke_width_filter
-from phase_diagrams.tracing.polyline_simplifier import simplify_polyline
-from phase_diagrams.tracing.quadratic_segment_fitter import fit_quadratic_segment
-from phase_diagrams.tracing.convex_curve_fitter import fit_convex_curve
-from phase_diagrams.tracing.divider_follower import follow_divider
-from phase_diagrams.detection.text_detector import detect_text_boxes
-from phase_diagrams.models.line_scale import LineScale
-from phase_diagrams.models.review_item import ReviewItem
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
-from phase_diagrams.models.ternary_fill import TernaryFill
-from phase_diagrams.models.traced_curve import TracedCurve
+from source_extract.diagrams.tracing.curve_tracer import trace_path
+from source_extract.diagrams.config.curves_config import CurvesConfig
+from source_extract.diagrams.detection.dash_mask import dash_mask
+from source_extract.diagrams.detection.stroke_width_filter import stroke_width_filter
+from source_extract.diagrams.tracing.polyline_simplifier import simplify_polyline
+from source_extract.diagrams.tracing.quadratic_segment_fitter import fit_quadratic_segment
+from source_extract.diagrams.tracing.convex_curve_fitter import fit_convex_curve
+from source_extract.diagrams.tracing.divider_follower import follow_divider
+from source_extract.diagrams.detection.text_detector import detect_text_boxes
+from source_extract.diagrams.models.line_scale import LineScale
+from source_extract.diagrams.models.review_item import ReviewItem
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.models.ternary_fill import TernaryFill
+from source_extract.diagrams.models.traced_curve import TracedCurve
 
 _TRACE_GAP_PX = 15.0
 _SAME_PIXEL_PX = 2.0

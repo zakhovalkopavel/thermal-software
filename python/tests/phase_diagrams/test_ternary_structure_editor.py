@@ -8,8 +8,8 @@ import json
 import pytest
 
 from phase_diagrams.builders.ternary_structure_editor import edit_ternary_structure
-from phase_diagrams.config.config_loader import load_config
-from phase_diagrams.config.curves_config import CurvesConfig
+from source_extract.diagrams.config.config_loader import load_config
+from source_extract.diagrams.config.curves_config import CurvesConfig
 
 SYSTEM_TEXT = """\
 {

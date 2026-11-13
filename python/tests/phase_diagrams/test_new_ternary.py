@@ -12,14 +12,14 @@ import pytest
 from phase_diagrams.builders.new_system_checklist import new_system_checklist
 from phase_diagrams.builders.ternary_start_builder import build_ternary_start
 from phase_diagrams.builders.ternary_structure_editor import edit_ternary_structure
-from phase_diagrams.config.curves_config import CurvesConfig
-from phase_diagrams.detection.triangle_detector import detect_triangles
-from phase_diagrams.detection.triangle_reading_order import triangle_reading_order
+from source_extract.diagrams.config.curves_config import CurvesConfig
+from source_extract.diagrams.detection.triangle_detector import detect_triangles
+from source_extract.diagrams.detection.triangle_reading_order import triangle_reading_order
 from phase_diagrams.figures.caption_display import display_caption
-from phase_diagrams.figures.corner_components import corner_components
-from phase_diagrams.figures.figure_finder import find_system_figures
-from phase_diagrams.figures.formula_display import display_formula
-from phase_diagrams.figures.system_components import system_components
+from source_extract.diagrams.figures.corner_components import corner_components
+from source_extract.diagrams.figures.figure_finder import find_system_figures
+from source_extract.diagrams.figures.formula_display import display_formula
+from source_extract.diagrams.figures.system_components import system_components
 
 INDEX = [
     {"figure": "Fig. 3.223", "pdfPage": 146, "printedPage": 126,

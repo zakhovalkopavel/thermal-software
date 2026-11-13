@@ -8,9 +8,9 @@ from __future__ import annotations
 import math
 
 from phase_diagrams.builders.nearest_compound import nearest_compound
-from phase_diagrams.models.compound_point import CompoundPoint
-from phase_diagrams.models.diagram_node import DiagramNode
-from phase_diagrams.models.line_scale import LineScale
+from source_extract.diagrams.models.compound_point import CompoundPoint
+from source_extract.diagrams.models.diagram_node import DiagramNode
+from source_extract.diagrams.models.line_scale import LineScale
 
 _ON_RING_PX = 10.0
 _ATLAS = "slag-atlas-1995"

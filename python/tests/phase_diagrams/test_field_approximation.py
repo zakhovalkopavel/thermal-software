@@ -8,9 +8,9 @@ import math
 import numpy as np
 import pytest
 
-from phase_diagrams.builders.field_temperature_builder import build_field_approximation
-from phase_diagrams.models.ternary_calibration import TernaryCalibration
-from phase_diagrams.tracing.contour_segments import contour_segments
+from source_extract.diagrams.builders.field_temperature_builder import build_field_approximation
+from source_extract.diagrams.models.ternary_calibration import TernaryCalibration
+from source_extract.diagrams.tracing.contour_segments import contour_segments
 
 CALIBRATION = TernaryCalibration(["A", "B", "C"], {"C": (300.0, 40.0), "A": (40.0, 490.0), "B": (560.0, 490.0)})
 

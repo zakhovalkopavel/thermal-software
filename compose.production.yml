@@ -107,12 +107,13 @@ services:
   # ==========================================
 
   python:
-    image: python:${PYTHON_VERSION}
+    image: ${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${IMAGE_PREFIX}-python:${VERSION}
     container_name: thermal-python
     working_dir: /app
     environment:
       PYTHONUNBUFFERED: 1
-      PYTHONPATH: /app/src
+      # Vendor libs are baked into the image (see docker/python/Dockerfile)
+      PYTHONPATH: /app/src:/app/vendor/page-ocr/src:/app/vendor/source-extract/src
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_USERNAME: ${DB_USERNAME}
