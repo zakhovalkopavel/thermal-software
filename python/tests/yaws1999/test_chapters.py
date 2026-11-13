@@ -41,6 +41,44 @@ def test_chapter_placement_uses_pages_subdir():
     assert directory.endswith("/pages")
 
 
+def test_chapter_spans_are_intro_only_not_table_pages():
+    spans = {s.number: s for s in default_chapters()}
+    # Chapter 1 intro = DjVu 4–9 ⇒ printed −5…0 (before Table 1-1 on printed 1).
+    assert spans[1].printed_first == -5 and spans[1].printed_last == 0
+    assert spans[2].printed_first == 24 and spans[2].printed_last == 26
+    assert spans[3].printed_first == 50 and spans[3].printed_last == 53
+    assert spans[8].printed_first == 179 and spans[8].printed_last == 182
+    assert spans[9].printed_first == 206 and spans[9].printed_last == 209
+    assert spans[18].printed_first == 385 and spans[18].printed_last == 388
+    assert placement_for_page(
+        kind="page", printed_page=-5, chapters=default_chapters()
+    )[0] == "chapter"
+    assert placement_for_page(
+        kind="page", printed_page=-8, chapters=default_chapters()
+    )[0] == "front-matter"
+    # Table pages must not fall inside chapter intro spans.
+    assert placement_for_page(
+        kind="page", printed_page=27, chapters=default_chapters()
+    )[0] != "chapter"
+    assert placement_for_page(
+        kind="page", printed_page=183, chapters=default_chapters()
+    )[0] != "chapter"
+    assert placement_for_page(
+        kind="page", printed_page=1, chapters=default_chapters()
+    )[0] != "chapter"
+
+
+def test_looks_like_table_page():
+    from yaws1999.chapters import looks_like_table_page
+
+    assert looks_like_table_page(
+        ["Table 2-1 HEAT CAPACITY OF GAS - ORGANIC COMPOUNDS", "NO FORMULA NAME"]
+    )
+    assert not looks_like_table_page(
+        ["Chapter 2 HEAT CAPACITY OF GAS", "ABSTRACT", "Results for heat capacity"]
+    )
+
+
 def test_build_chapter_document_joins_lines_and_equations():
     span = next(s for s in default_chapters() if s.number == 2)
     doc = build_chapter_document(
@@ -128,7 +166,7 @@ def test_migrate_nested_chapter_json_flattens(tmp_path: Path):
 def test_front_matter_placement_uses_pages_subdir():
     bucket, directory = placement_for_page(
         kind="page",
-        printed_page=-1,
+        printed_page=-8,  # DjVu 1 — title page (ch1 intro starts at printed −5)
         chapters=default_chapters(),
     )
     assert bucket == "front-matter"

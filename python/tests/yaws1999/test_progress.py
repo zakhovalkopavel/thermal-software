@@ -1,9 +1,10 @@
 """Heartbeat helper for long page OCR."""
 from __future__ import annotations
 
+import re
 import time
 
-from yaws1999.progress import heartbeat
+from source_extract.tables.progress import heartbeat
 
 
 def test_heartbeat_emits_while_blocking():
@@ -14,3 +15,4 @@ def test_heartbeat_emits_while_blocking():
 
     assert any("still running" in m for m in messages)
     assert any("page 1" in m for m in messages)
+    assert any(re.search(r"\(\d+s\)", m) for m in messages)

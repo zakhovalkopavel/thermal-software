@@ -111,3 +111,92 @@ def test_looks_like_cas_index_on_sample():
     ]
     assert looks_like_cas_index(lines) is True
     assert looks_like_cas_index(["Table 1-1 Heat Capacity", "1 H2 HYDROGEN 1 2 3"]) is False
+
+
+def test_formula_first_single_and_dual_lines():
+    """Appendix C layout: FORMULA NAME CAS (page 648 leftovers, dual cols)."""
+    single = parse_cas_index_entry(
+        "SiCl4 SILICON TETRACHLORIDE 10026-04-7",
+        648,
+        column=0,
+        line=1,
+        raw="x",
+    )
+    assert single is not None
+    assert single.cas == "10026-04-7"
+    assert single.formula == "SiCl4"
+    assert single.name == "SILICON TETRACHLORIDE"
+
+    dual = split_cas_index_line(
+        "Ge GERMANIUM 7440-56-4 NaI SODIUM IODIDE 7681-82-5"
+    )
+    assert dual == [
+        "Ge GERMANIUM 7440-56-4",
+        "NaI SODIUM IODIDE 7681-82-5",
+    ]
+    parsed = parse_cas_index_lines(
+        [
+            "657",
+            "SiCl4 SILICON TETRACHLORIDE 10026-04-7",
+            "SiF4 SILICON TETRAFLUORIDE 7783-61-1",
+            "Sm SAMARIUM 7440-19-9",
+            "Sn TIN 7440-31-5",
+            "Sr STRONTIUM 7440-24-6",
+        ],
+        648,
+    )
+    assert looks_like_cas_index(parsed and [
+        "657",
+        "SiCl4 SILICON TETRACHLORIDE 10026-04-7",
+        "SiF4 SILICON TETRAFLUORIDE 7783-61-1",
+        "Sm SAMARIUM 7440-19-9",
+        "Sn TIN 7440-31-5",
+        "Sr STRONTIUM 7440-24-6",
+    ])
+    assert [e.cas for e in parsed.entries] == [
+        "10026-04-7",
+        "7783-61-1",
+        "7440-19-9",
+        "7440-31-5",
+        "7440-24-6",
+    ]
+
+
+def test_missing_cas_left_column_splits_inorganic_right():
+    """Page 657 transition: ----- organics | CAS inorganics."""
+    line = "----- DECYL-PROPYL-SULFIDE C13H28S 1317-98-2 ANTIMONY TRIOXIDE Sb203"
+    parts = split_cas_index_line(line)
+    assert parts[0].startswith("-----")
+    assert parts[1].startswith("1317-98-2")
+    parsed = parse_cas_index_lines(
+        [
+            "INORGANICS The following compilation for inorganics provides the compound list by CAS registry number, name, and chemical formula.",
+            "666",
+            line,
+            "----- DODECYL-METHYL-SULFIDE C13H28S 1327-53-3 ARSENIC TRIOXIDE As203",
+            "----- ETHYL-UNDECYL-SULFIDE C13H28S 1333-74-0 HYDROGEN H2",
+            "----- 1- TRIDECANETHIOL C13H28S 1336-21-6 AMMONIUM HYDROXIDE NH50",
+            "----- 2- BUTYLNAPHTHALENE C14H16 1344-28-1 ALUMINUM OXIDE Al203",
+        ],
+        657,
+    )
+    assert looks_like_cas_index(
+        [
+            "INORGANICS The following compilation for inorganics provides the compound list by CAS registry number, name, and chemical formula.",
+            "666",
+            line,
+            "----- DODECYL-METHYL-SULFIDE C13H28S 1327-53-3 ARSENIC TRIOXIDE As203",
+            "----- ETHYL-UNDECYL-SULFIDE C13H28S 1333-74-0 HYDROGEN H2",
+            "----- 1- TRIDECANETHIOL C13H28S 1336-21-6 AMMONIUM HYDROXIDE NH50",
+            "----- 2- BUTYLNAPHTHALENE C14H16 1344-28-1 ALUMINUM OXIDE Al203",
+        ]
+    )
+    assert [e.cas for e in parsed.entries] == [
+        "1317-98-2",
+        "1327-53-3",
+        "1333-74-0",
+        "1336-21-6",
+        "1344-28-1",
+    ]
+    assert parsed.entries[0].name == "ANTIMONY TRIOXIDE"
+    assert parsed.entries[0].formula == "Sb2O3"

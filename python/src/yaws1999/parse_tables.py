@@ -35,8 +35,11 @@ from yaws1999.chapters import (
     migrate_front_matter_pages,
     migrate_nested_appendix_json,
     migrate_nested_chapter_json,
+    migrate_cas_pages,
     migrate_synonym_pages,
     purge_appendix_scratch,
+    purge_misplaced_chapter_table_pages,
+    rehome_misplaced_front_matter_pages,
     retire_all_consolidated_pages,
     rewrite_appendix_index_page_rows,
     write_chapter_datasets,
@@ -122,8 +125,15 @@ def parse_yaws1999(
     migrated_nested_appendix = migrate_nested_appendix_json(output)
     purged_scratch = purge_appendix_scratch(output, reports)
     migrated_front_matter = migrate_front_matter_pages(output)
+    migrated_cas = migrate_cas_pages(output)
     migrated_synonyms = migrate_synonym_pages(output)
     materialized = materialize_pages_from_intermediates(output, reports)
+    rehomed_front_matter = rehome_misplaced_front_matter_pages(
+        output, chapters=chapter_spans,
+    )
+    purged_chapter_tables = purge_misplaced_chapter_table_pages(
+        output, chapters=chapter_spans, report_dir=reports,
+    )
     rewritten_appendix = rewrite_appendix_index_page_rows(output)
     if reports is not None:
         (reports / "pages").mkdir(parents=True, exist_ok=True)
@@ -302,6 +312,16 @@ def parse_yaws1999(
             f"migrated {len(migrated_front_matter)} front-matter page(s) into "
             "front-matter/pages"
         )
+    if rehomed_front_matter:
+        say(
+            f"rehomed {len(rehomed_front_matter)} chapter intro page(s) out of "
+            "front-matter"
+        )
+    if migrated_cas:
+        say(
+            f"migrated {len(migrated_cas)} CAS index page(s) into "
+            "appendix/cas-index/pages"
+        )
     if migrated_synonyms:
         say(
             f"migrated {len(migrated_synonyms)} synonym page(s) into "
@@ -309,6 +329,11 @@ def parse_yaws1999(
         )
     if rewritten_appendix:
         say(f"rewrote rows on {rewritten_appendix} appendix index page(s)")
+    if purged_chapter_tables:
+        say(
+            f"purged {purged_chapter_tables} misplaced table page(s) from "
+            "chapter intros"
+        )
     if materialized:
         say(
             f"materialized {materialized} intermediate page(s) from "
@@ -365,7 +390,9 @@ def parse_yaws1999(
     )
     if chapter_paths:
         say(f"chapters (final): {len(chapter_paths)} chapter file(s)")
-    front_matter_path = write_front_matter_dataset(output, ref_key=REF_KEY)
+    front_matter_path = write_front_matter_dataset(
+        output, ref_key=REF_KEY, chapters=chapter_spans,
+    )
     if front_matter_path is not None:
         say(f"front matter (final) → {front_matter_path.relative_to(output)}")
     cas_path = _write_cas_index_dataset(output, say=say)
@@ -815,6 +842,25 @@ def _write_cas_index_dataset(
         if out.is_file():
             return out
         return legacy if legacy.is_file() else None
+    # Appendix C (formula order) and D (CAS order) both land in cas-index;
+    # keep first occurrence of each CAS RN, then sort by registry number.
+    deduped: list[dict[str, Any]] = []
+    seen_cas: set[str] = set()
+    for row in raw_rows:
+        cas = str(row.get("cas") or "").strip()
+        if not cas or cas in seen_cas:
+            continue
+        seen_cas.add(cas)
+        deduped.append(row)
+
+    def _cas_key(row: dict[str, Any]) -> tuple[int, ...]:
+        parts = str(row.get("cas") or "").split("-")
+        try:
+            return tuple(int(p) for p in parts)
+        except ValueError:
+            return (0,)
+
+    deduped.sort(key=_cas_key)
     dataset = _appendix_dataset(
         table_id="CAS",
         title="CAS COMPOUND INDEX",
@@ -827,7 +873,7 @@ def _write_cas_index_dataset(
         ],
         row_keys=_CAS_ROW_KEYS,
         source_pages=source_pages,
-        raw_rows=raw_rows,
+        raw_rows=deduped,
     )
     write_json(out, dataset)
     if legacy.is_file() and legacy.resolve() != out.resolve():
@@ -905,7 +951,7 @@ def _ocr_or_resume_lines(
     backend = getattr(ocr_config, "backend", "local") if ocr_config else "local"
     say(f"{label} full-page OCR ({backend})…")
     from yaws1999.ocr import ocr_source_page
-    from yaws1999.progress import heartbeat
+    from source_extract.tables.progress import heartbeat
 
     render_cache = reports / "renders" if reports is not None else None
     raw_dump = (

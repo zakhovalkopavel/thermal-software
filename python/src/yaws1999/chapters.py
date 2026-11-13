@@ -45,7 +45,7 @@ _ORG_INORG = re.compile(
 
 @dataclass(frozen=True)
 class ChapterSpan:
-    """One handbook chapter (printed-page span covering intro + tables)."""
+    """One handbook chapter **intro** span (printed pages before its tables)."""
 
     number: int
     slug: str
@@ -118,7 +118,12 @@ def title_slug(title: str, *, max_len: int = 48) -> str:
 
 
 def chapters_from_table_docs(tables: Iterable[dict[str, Any]]) -> list[ChapterSpan]:
-    """Build chapter spans from processed table docs (``pages.first/last`` printed)."""
+    """Build chapter **intro** spans from processed table docs.
+
+    Intro pages sit between the previous chapter's last table page and this
+    chapter's first table page. Table pages themselves are never part of the
+    chapter span (they belong only to table datasets).
+    """
     by_ch: dict[int, dict[str, int | str]] = {}
     for table in tables:
         tid = str(table.get("id") or "")
@@ -138,12 +143,15 @@ def chapters_from_table_docs(tables: Iterable[dict[str, Any]]) -> list[ChapterSp
     numbers = sorted(by_ch)
     for i, ch in enumerate(numbers):
         table_first = int(by_ch[ch]["first"])
-        table_last = int(by_ch[ch]["last"])
         prev_last = int(by_ch[numbers[i - 1]]["last"]) if i else 0
-        # Intro pages sit between previous chapter's last table and this chapter's tables.
-        printed_first = prev_last + 1 if prev_last else min(1, table_first)
+        printed_first = prev_last + 1 if prev_last else 1
         if printed_first < 1:
             printed_first = 1
+        # Stop before the first table page of this chapter.
+        printed_last = table_first - 1
+        if printed_last < printed_first:
+            # No intro pages (e.g. chapter 1 tables start on printed page 1).
+            continue
         title = CHAPTER_TITLES.get(ch) or f"Chapter {ch}"
         spans.append(
             ChapterSpan(
@@ -151,50 +159,83 @@ def chapters_from_table_docs(tables: Iterable[dict[str, Any]]) -> list[ChapterSp
                 slug=title_slug(title),
                 title=title,
                 printed_first=printed_first,
-                printed_last=table_last,
+                printed_last=printed_last,
             )
         )
     return spans
 
 
+def looks_like_table_page(lines: list[str]) -> bool:
+    """True when freeform OCR lines are a handbook **table** page, not intro prose."""
+    for raw in lines[:12]:
+        line = str(raw).strip()
+        if not line:
+            continue
+        if line.startswith("Table ") or line.upper().startswith("TABLE "):
+            return True
+        if re.search(r"\bNO\s+FORMULA\b", line, re.I):
+            return True
+    return False
+
+
+# Pipeline printed page = DjVu − PAGE_OFFSET (Table 1-1 on DjVu 10 ⇒ printed 1).
+# Each chapter: optional intro span, then contiguous table span. Apparent "gaps"
+# between table blocks are the intros (not missing pages).
+# Format: ch → (intro_first, intro_last) | None, (table_first, table_last)
+CHAPTER_PAGE_MAP: dict[int, tuple[tuple[int, int] | None, tuple[int, int]]] = {
+    # Ch1 intro is DjVu 4–9 (book pp. 1–6) ⇒ printed −5…0; tables start printed 1.
+    1: ((4 - PAGE_OFFSET, 9 - PAGE_OFFSET), (1, 23)),
+    2: ((24, 26), (27, 49)),
+    3: ((50, 53), (54, 76)),
+    4: ((77, 79), (80, 102)),
+    5: ((103, 105), (106, 128)),
+    6: ((129, 129), (130, 152)),
+    7: ((153, 155), (156, 178)),
+    8: ((179, 182), (183, 205)),
+    9: ((206, 209), (210, 232)),
+    10: ((233, 234), (235, 257)),
+    11: ((258, 258), (259, 281)),
+    12: ((282, 284), (285, 307)),
+    13: ((308, 310), (311, 333)),
+    14: (None, (334, 345)),  # no captured intro; tables abut ch13
+    15: ((346, 352), (353, 370)),
+    16: ((371, 374), (375, 377)),
+    17: ((378, 381), (382, 384)),
+    18: ((385, 388), (389, 406)),
+    19: ((407, 413), (414, 424)),
+    20: ((425, 428), (429, 433)),
+    21: ((434, 436), (437, 459)),
+    22: ((460, 463), (464, 486)),
+    23: ((487, 489), (490, 512)),
+    24: ((513, 515), (516, 538)),
+    25: ((539, 544), (545, 563)),
+    26: ((564, 566), (567, 584)),
+    27: ((585, 586), (587, 597)),
+    28: ((598, 601), (602, 624)),
+}
+
+
 def default_chapters() -> list[ChapterSpan]:
-    """Static chapter spans from known table printed-page ranges (Yaws 1999)."""
-    # (printed_first_table, printed_last_table) per chapter — intros fill gaps.
-    table_ranges = {
-        1: (1, 23),
-        2: (27, 49),
-        3: (54, 76),
-        4: (80, 102),
-        5: (106, 128),
-        6: (130, 152),
-        7: (156, 178),
-        8: (183, 205),
-        9: (210, 232),
-        10: (235, 257),
-        11: (259, 281),
-        12: (285, 307),
-        13: (311, 333),
-        14: (334, 345),
-        15: (353, 370),
-        16: (375, 377),
-        17: (382, 384),
-        18: (389, 406),
-        19: (414, 424),
-        20: (429, 433),
-        21: (437, 459),
-        22: (464, 486),
-        23: (490, 512),
-        24: (516, 538),
-        25: (545, 563),
-        26: (567, 584),
-        27: (587, 597),
-        28: (602, 624),
-    }
-    fake_tables = [
-        {"id": f"{ch}-1", "pages": {"first": first, "last": last}}
-        for ch, (first, last) in table_ranges.items()
-    ]
-    return chapters_from_table_docs(fake_tables)
+    """Chapter **intro** spans from ``CHAPTER_PAGE_MAP`` (tables stay on table datasets)."""
+    spans: list[ChapterSpan] = []
+    for ch in sorted(CHAPTER_PAGE_MAP):
+        intro, _tables = CHAPTER_PAGE_MAP[ch]
+        if intro is None:
+            continue
+        first, last = intro
+        if last < first:
+            continue
+        title = CHAPTER_TITLES.get(ch) or f"Chapter {ch}"
+        spans.append(
+            ChapterSpan(
+                number=ch,
+                slug=title_slug(title),
+                title=title,
+                printed_first=first,
+                printed_last=last,
+            )
+        )
+    return spans
 
 
 def placement_for_page(
@@ -218,13 +259,15 @@ def placement_for_page(
     if printed is None and djvu_page is not None:
         printed = int(djvu_page) - PAGE_OFFSET
 
+    spans = chapters if chapters is not None else default_chapters()
+    if printed is not None:
+        for span in spans:
+            if span.printed_first <= printed <= span.printed_last:
+                return "chapter", f"chapters/{span.dirname}/pages"
+
+    # Title / LoC / TOC (DjVu 1–3 ⇒ printed < ch1 intro) and any other pre-body pages.
     if printed is None or printed < 1:
         return "front-matter", "front-matter/pages"
-
-    spans = chapters if chapters is not None else default_chapters()
-    for span in spans:
-        if span.printed_first <= printed <= span.printed_last:
-            return "chapter", f"chapters/{span.dirname}/pages"
 
     return "appendix", "appendix/other"
 
@@ -372,6 +415,51 @@ def purge_appendix_scratch(
     return moved
 
 
+def migrate_cas_pages(
+    processed_root: Path,
+) -> list[tuple[Path, Path]]:
+    """Re-parse Appendix C/D pages under ``appendix/other`` into ``cas-index/pages``.
+
+    Existing freeform dumps keep OCR ``lines``; rows are rebuilt as
+    ``kind: casIndex``. Returns ``(src, dest)`` moves performed.
+    """
+    import json
+
+    from yaws1999.cas_index import looks_like_cas_index, parse_cas_index_lines
+
+    other = processed_root / "appendix" / "other"
+    if not other.is_dir():
+        return []
+
+    moves: list[tuple[Path, Path]] = []
+    for src in sorted(other.glob("page-*.json")):
+        if src.name.count(".") != 1:
+            continue
+        try:
+            doc = json.loads(src.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        lines = [str(x) for x in (doc.get("lines") or [])]
+        if doc.get("kind") != "casIndex" and not looks_like_cas_index(lines):
+            continue
+        page = int(doc.get("djvuPage") or int(src.stem.split("-")[1]))
+        parsed = parse_cas_index_lines(lines, page)
+        doc["kind"] = "casIndex"
+        doc["layout"] = "twoColumnCas"
+        doc["rows"] = [e.to_dict() for e in parsed.entries]
+        doc["unparsed"] = parsed.unparsed
+        for key in ("equation", "equations"):
+            doc.pop(key, None)
+        dest = processed_root / CAS_INDEX_PAGES_REL / src.name
+        if dest.resolve() == src.resolve():
+            continue
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(json.dumps(doc, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        src.unlink(missing_ok=True)
+        moves.append((src, dest))
+    return moves
+
+
 def migrate_synonym_pages(
     processed_root: Path,
 ) -> list[tuple[Path, Path]]:
@@ -405,6 +493,8 @@ def migrate_synonym_pages(
         doc["layout"] = "nameSynonym"
         doc["rows"] = [e.to_dict() for e in parsed.entries]
         doc["unparsed"] = parsed.unparsed
+        for key in ("equation", "equations"):
+            doc.pop(key, None)
         if not doc.get("title"):
             doc["title"] = "COMPOUND LIST BY NAME AND SYNONYM"
         dest = processed_root / "appendix" / "synonyms" / "pages" / src.name
@@ -493,6 +583,47 @@ def migrate_front_matter_pages(processed_root: Path) -> list[tuple[Path, Path]]:
         processed_root / "front-matter",
         processed_root / "front-matter" / "pages",
     )
+
+
+def rehome_misplaced_front_matter_pages(
+    processed_root: Path,
+    *,
+    chapters: list[ChapterSpan] | None = None,
+) -> list[tuple[Path, Path]]:
+    """Move chapter-intro pages that landed under ``front-matter/pages`` (e.g. ch1).
+
+    DjVu 4–9 are Chapter 1 prose but map to printed −5…0, so older runs filed
+    them with the title/TOC. Returns ``(src, dest)`` moves.
+    """
+    pages_dir = processed_root / "front-matter" / "pages"
+    if not pages_dir.is_dir():
+        return []
+    spans = chapters if chapters is not None else default_chapters()
+    moves: list[tuple[Path, Path]] = []
+    for src in list(_primary_page_jsons(pages_dir)):
+        try:
+            doc = json.loads(src.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        bucket, directory = placement_for_page(
+            kind=doc.get("kind"),
+            printed_page=doc.get("printedPage"),
+            djvu_page=doc.get("djvuPage"),
+            chapters=spans,
+        )
+        if bucket != "chapter":
+            continue
+        dest = processed_root / directory / src.name
+        if dest.resolve() == src.resolve():
+            continue
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if dest.is_file():
+            src.unlink(missing_ok=True)
+            moves.append((src, dest))
+            continue
+        src.replace(dest)
+        moves.append((src, dest))
+    return moves
 
 
 def _join_freeform_page_docs(
@@ -594,13 +725,64 @@ def _span_from_dirname(
     )
 
 
+def purge_misplaced_chapter_table_pages(
+    processed_root: Path,
+    *,
+    chapters: list[ChapterSpan] | None = None,
+    report_dir: Path | None = None,
+) -> int:
+    """Remove handbook table-page dumps that landed under ``chapters/*/pages``.
+
+    Returns the number of page files removed (or moved to report intermediates).
+    """
+    spans = chapters if chapters is not None else default_chapters()
+    by_dirname = {span.dirname: span for span in spans}
+    chapters_root = processed_root / "chapters"
+    if not chapters_root.is_dir():
+        return 0
+    removed = 0
+    for entry in sorted(chapters_root.iterdir()):
+        if not entry.is_dir() or not _CHAPTER_DIR_RE.match(entry.name):
+            continue
+        span = _span_from_dirname(entry.name, by_dirname)
+        pages_dir = entry / "pages"
+        for path in list(_primary_page_jsons(pages_dir)):
+            try:
+                doc = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            lines = [str(x) for x in (doc.get("lines") or [])]
+            printed = doc.get("printedPage")
+            outside = (
+                span is not None
+                and isinstance(printed, int)
+                and not (span.printed_first <= printed <= span.printed_last)
+            )
+            if not (looks_like_table_page(lines) or outside):
+                continue
+            if report_dir is not None:
+                rel = f"chapters/{entry.name}/pages"
+                # Quarantine so rebuild materialize does not re-inject table pages.
+                quarantine = (
+                    report_dir / "intermediates" / "_misplaced-table-pages" / rel
+                )
+                quarantine.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(path, quarantine / path.name)
+                inter = report_dir / "intermediates" / rel / path.name
+                inter.unlink(missing_ok=True)
+            path.unlink(missing_ok=True)
+            removed += 1
+        _rm_empty_dir(pages_dir)
+    return removed
+
+
 def write_chapter_datasets(
     processed_root: Path,
     *,
     chapters: list[ChapterSpan] | None = None,
     ref_key: str,
 ) -> list[Path]:
-    """Build flat ``chapters/chNN-slug.json`` from per-page dumps."""
+    """Build flat ``chapters/chNN-slug.json`` from per-page **intro** dumps."""
     spans = chapters if chapters is not None else default_chapters()
     by_dirname = {span.dirname: span for span in spans}
     written: list[Path] = []
@@ -616,17 +798,30 @@ def write_chapter_datasets(
             dirnames.add(entry.stem)
 
     for dirname in sorted(dirnames):
-        span = _span_from_dirname(dirname, by_dirname)
+        span = by_dirname.get(dirname)
         if span is None:
+            # No intro span for this chapter (e.g. ch01) — remove stale final.
+            stale = chapter_final_path(processed_root, dirname)
+            stale.unlink(missing_ok=True)
             continue
         pages_dir = chapters_root / dirname / "pages"
         page_docs: list[dict[str, Any]] = []
         for path in _primary_page_jsons(pages_dir):
             try:
-                page_docs.append(json.loads(path.read_text(encoding="utf-8")))
+                doc = json.loads(path.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError):
                 continue
+            lines = [str(x) for x in (doc.get("lines") or [])]
+            if looks_like_table_page(lines):
+                continue
+            printed = doc.get("printedPage")
+            if isinstance(printed, int) and not (
+                span.printed_first <= printed <= span.printed_last
+            ):
+                continue
+            page_docs.append(doc)
         if not page_docs:
+            chapter_final_path(processed_root, dirname).unlink(missing_ok=True)
             continue
         doc = build_chapter_document(span, page_docs, ref_key=ref_key)
         out = chapter_final_path(processed_root, dirname)
@@ -647,19 +842,30 @@ def write_front_matter_dataset(
     processed_root: Path,
     *,
     ref_key: str,
+    chapters: list[ChapterSpan] | None = None,
 ) -> Path | None:
     """Build ``front-matter/front-matter.json`` from per-page dumps."""
     pages_dir = processed_root / "front-matter" / "pages"
     if not pages_dir.is_dir():
         return None
+    spans = chapters if chapters is not None else default_chapters()
     page_docs: list[dict[str, Any]] = []
     for path in sorted(pages_dir.glob("page-*.json")):
         if path.name.count(".") != 1:
             continue
         try:
-            page_docs.append(json.loads(path.read_text(encoding="utf-8")))
+            doc = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             continue
+        bucket, _directory = placement_for_page(
+            kind=doc.get("kind"),
+            printed_page=doc.get("printedPage"),
+            djvu_page=doc.get("djvuPage"),
+            chapters=spans,
+        )
+        if bucket != "front-matter":
+            continue
+        page_docs.append(doc)
     if not page_docs:
         return None
     doc = build_front_matter_document(page_docs, ref_key=ref_key)
@@ -736,12 +942,15 @@ def materialize_pages_from_intermediates(
     copied = 0
     for rel in consolidated_page_rels(processed_root, report_dir):
         dest = processed_root / rel
-        if _primary_page_jsons(dest):
-            continue
         src = report_intermediates_dir(report_dir, rel)
         if src is None:
             continue
+        # Copy any missing page files (do not skip the whole dir when a
+        # partial migrate already dropped 1–2 pages into dest).
+        existing = {p.name for p in _primary_page_jsons(dest)}
         for path in _primary_page_jsons(src):
+            if path.name in existing:
+                continue
             dest.mkdir(parents=True, exist_ok=True)
             shutil.copy2(path, dest / path.name)
             copied += 1
