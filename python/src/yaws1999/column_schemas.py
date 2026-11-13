@@ -5,6 +5,9 @@ stacked / OCR-ambiguous headers (approved from OCR HTML review).
 When a table id is listed here, ``dataset._shape_columns`` uses this schema
 instead of tokenizing ``headerRaw``. Value order must match the OCR value
 cells after NO / FORMULA / NAME.
+
+Naming: short symbols without underscore (Tc, Zc, Tf, Hf); spot keys keep
+``*_at_*`` intact (Sf_at_298_K, Cp_at_Tmax, Koc_at_20_C).
 """
 from __future__ import annotations
 
@@ -21,15 +24,125 @@ _ID = [
     _col("name", "NAME"),
 ]
 
-# Tables 12–25 (HTML review). 10–11 omitted (no Modal HTML in this run).
 TABLE_COLUMN_SCHEMAS: dict[str, list[dict[str, str | None]]] = {
+    # Stacked header: MW TF TB TC PC VC RHOC over g/mol K K K bar cm3/mol g/cm3.
+    "1-1": _ID
+    + [
+        _col("MW", "MW, g/mol", "g/mol"),
+        _col("Tf", "Tf", "K"),
+        _col("Tb", "Tb", "K"),
+        _col("Tc", "Tc", "K"),
+        _col("Pc", "Pc", "bar"),
+        _col("Vc", "Vc", "cm3/mol"),
+        _col("rhoc", "rhoc", "g/cm3"),
+        _col("Zc", "Zc"),
+        _col("omega", "omega"),
+    ],
+    "1-2": _ID
+    + [
+        _col("MW", "MW, g/mol", "g/mol"),
+        _col("Tf", "Tf", "K"),
+        _col("Tb", "Tb", "K"),
+        _col("Tc", "Tc", "K"),
+        _col("Pc", "Pc", "bar"),
+        _col("Vc", "Vc", "cm3/mol"),
+        _col("rhoc", "rhoc", "g/cm3"),
+        _col("Zc", "Zc"),
+        _col("omega", "omega"),
+    ],
+    "4-1": _ID
+    + [
+        _col("A", "A"),
+        _col("B", "B"),
+        _col("C", "C"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
+        _col("Cp_at_25_C", "Cp @ 25 C"),
+        _col("Cp_at_Tmin", "Cp @ Tmin"),
+        _col("Cp_at_Tmax", "Cp @ Tmax"),
+    ],
+    "4-2": _ID
+    + [
+        _col("A", "A"),
+        _col("B", "B"),
+        _col("C", "C"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
+        _col("Cp_at_25_C", "Cp @ 25 C"),
+        _col("Cp_at_Tmin", "Cp @ Tmin"),
+        _col("Cp_at_Tmax", "Cp @ Tmax"),
+    ],
+    "5-1": _ID
+    + [
+        _col("A", "A"),
+        _col("Tc", "Tc", "K"),
+        _col("n", "n"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
+        _col("Tb", "Tb", "K"),
+        _col("HVAP_at_Tb", "HVAP @ Tb"),
+    ],
+    "5-2": _ID
+    + [
+        _col("A", "A"),
+        _col("Tc", "Tc", "K"),
+        _col("n", "n"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
+        _col("Tb", "Tb", "K"),
+        _col("HVAP_at_Tb", "HVAP @ Tb"),
+    ],
+    "6-1": _ID
+    + [
+        _col("MW", "MW, g/mol", "g/mol"),
+        _col("Tf", "Tf", "K"),
+        _col("Hfus_kjoule_mol", "Hfus @ Tf, kjoule/mol", "kjoule/mol"),
+        _col("Hfus_kjoule_kg", "Hfus, kjoule/kg", "kjoule/kg"),
+        _col("Hfus_BTU_lb", "Hfus, BTU/lb", "BTU/lb"),
+    ],
+    "6-2": _ID
+    + [
+        _col("MW", "MW, g/mol", "g/mol"),
+        _col("Tf", "Tf", "K"),
+        _col("Hfus_kjoule_mol", "Hfus @ Tf, kjoule/mol", "kjoule/mol"),
+        _col("Hfus_kjoule_kg", "Hfus, kjoule/kg", "kjoule/kg"),
+        _col("Hfus_BTU_lb", "Hfus, BTU/lb", "BTU/lb"),
+    ],
+    "10-1": _ID
+    + [
+        _col("T", "T", "C"),
+        _col("refractive_index", "Value @ T"),
+        _col("State", "State"),
+        _col("dipole_moment", "Dipole Moment, Debye", "Debye"),
+        _col("radius_of_gyration", "Radius of Gyration, Angstrom", "Angstrom"),
+    ],
+    "10-2": _ID
+    + [
+        _col("T", "T", "C"),
+        _col("refractive_index", "Value @ T"),
+        _col("State", "State"),
+        _col("dipole_moment", "Dipole Moment, Debye", "Debye"),
+        _col("radius_of_gyration", "Radius of Gyration, Angstrom", "Angstrom"),
+    ],
+    "11-1": _ID
+    + [
+        _col("MW", "MW, g/mol", "g/mol"),
+        _col("S_at_298_K", "S @ 298 K, joule/(mol K)", "joule/(mol K)"),
+        _col("Sf_at_298_K", "Sf @ 298 K, joule/(mol K)", "joule/(mol K)"),
+    ],
+    "11-2": _ID
+    + [
+        _col("MW", "MW, g/mol", "g/mol"),
+        _col("S_at_298_K", "S @ 298 K, joule/(mol K)", "joule/(mol K)"),
+        _col("Sf_at_298_K", "Sf @ 298 K, joule/(mol K)", "joule/(mol K)"),
+    ],
     "12-1": _ID
     + [
         _col("A", "A"),
         _col("B", "B"),
         _col("C", "C"),
-        _col("TMIN", "TMIN", "K"),
-        _col("TMAX", "TMAX", "K"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
         _col("Hf_at_298_K", "Hf @ 298 K"),
         _col("Hf_at_500_K", "Hf @ 500 K"),
     ],
@@ -46,8 +159,8 @@ TABLE_COLUMN_SCHEMAS: dict[str, list[dict[str, str | None]]] = {
         _col("A", "A"),
         _col("B", "B"),
         _col("C", "C"),
-        _col("TMIN", "TMIN", "K"),
-        _col("TMAX", "TMAX", "K"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
         _col("Gf_at_298_K", "Gf @ 298 K"),
         _col("Gf_at_500_K", "Gf @ 500 K"),
     ],
@@ -88,7 +201,7 @@ TABLE_COLUMN_SCHEMAS: dict[str, list[dict[str, str | None]]] = {
     "16-1": _ID
     + [
         _col("MW", "MW, g/mol", "g/mol"),
-        _col("TB", "TB, K", "K"),
+        _col("Tb", "Tb, K", "K"),
         _col("A", "A"),
         _col("B", "B"),
         _col("C", "C"),
@@ -98,7 +211,7 @@ TABLE_COLUMN_SCHEMAS: dict[str, list[dict[str, str | None]]] = {
     "17-1": _ID
     + [
         _col("MW", "MW, g/mol", "g/mol"),
-        _col("TB", "T_B, K", "K"),
+        _col("Tb", "Tb, K", "K"),
         _col("A", "A"),
         _col("B", "B"),
         _col("C", "C"),
@@ -108,8 +221,8 @@ TABLE_COLUMN_SCHEMAS: dict[str, list[dict[str, str | None]]] = {
     "18-1": _ID
     + [
         _col("MW", "MW, g/mol", "g/mol"),
-        _col("TF", "TF, K", "K"),
-        _col("TB", "TB, K", "K"),
+        _col("Tf", "Tf, K", "K"),
+        _col("Tb", "Tb, K", "K"),
         _col("T", "T, C", "C"),
         _col("H_at_T_atm_mol_frac", "H @ T, atm/mol frac", "atm/mol frac"),
         _col("H_at_T_atm_mol_m3", "H @ T, atm/mol/m3", "atm/mol/m3"),
@@ -137,22 +250,22 @@ TABLE_COLUMN_SCHEMAS: dict[str, list[dict[str, str | None]]] = {
         _col("A", "A"),
         _col("B", "B"),
         _col("C", "C"),
-        _col("TMIN", "TMIN", "K"),
-        _col("TMAX", "TMAX", "K"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
         _col("n_gas_at_25_C", "n_gas @ 25 C"),
-        _col("n_gas_at_TMIN", "n_gas @ TMIN"),
-        _col("n_gas_at_TMAX", "n_gas @ TMAX"),
+        _col("n_gas_at_Tmin", "n_gas @ Tmin"),
+        _col("n_gas_at_Tmax", "n_gas @ Tmax"),
     ],
     "21-2": _ID
     + [
         _col("A", "A"),
         _col("B", "B"),
         _col("C", "C"),
-        _col("TMIN", "TMIN", "K"),
-        _col("TMAX", "TMAX", "K"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
         _col("n_gas_at_25_C", "n_gas @ 25 C"),
-        _col("n_gas_at_TMIN", "n_gas @ TMIN"),
-        _col("n_gas_at_TMAX", "n_gas @ TMAX"),
+        _col("n_gas_at_Tmin", "n_gas @ Tmin"),
+        _col("n_gas_at_Tmax", "n_gas @ Tmax"),
     ],
     "22-1": _ID
     + [
@@ -160,10 +273,10 @@ TABLE_COLUMN_SCHEMAS: dict[str, list[dict[str, str | None]]] = {
         _col("B", "B"),
         _col("C", "C"),
         _col("D", "D"),
-        _col("TMIN", "TMIN", "K"),
-        _col("TMAX", "TMAX", "K"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
         _col("n_liq_at_25_C", "n_liq @ 25 C"),
-        _col("n_liq_at_TMAX", "n_liq @ TMAX"),
+        _col("n_liq_at_Tmax", "n_liq @ Tmax"),
     ],
     "22-2": _ID
     + [
@@ -171,55 +284,55 @@ TABLE_COLUMN_SCHEMAS: dict[str, list[dict[str, str | None]]] = {
         _col("B", "B"),
         _col("C", "C"),
         _col("D", "D"),
-        _col("TMIN", "TMIN", "K"),
-        _col("TMAX", "TMAX", "K"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
         _col("n_liq_at_25_C", "n_liq @ 25 C"),
-        _col("n_liq_at_TMAX", "n_liq @ TMAX"),
+        _col("n_liq_at_Tmax", "n_liq @ Tmax"),
     ],
     "23-1": _ID
     + [
         _col("A", "A"),
         _col("B", "B"),
         _col("C", "C"),
-        _col("TMIN", "TMIN", "K"),
-        _col("TMAX", "TMAX", "K"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
         _col("k_gas_at_25_C", "k_gas @ 25 C"),
-        _col("k_gas_at_TMIN", "k_gas @ TMIN"),
-        _col("k_gas_at_TMAX", "k_gas @ TMAX"),
+        _col("k_gas_at_Tmin", "k_gas @ Tmin"),
+        _col("k_gas_at_Tmax", "k_gas @ Tmax"),
     ],
     "23-2": _ID
     + [
         _col("A", "A"),
         _col("B", "B"),
         _col("C", "C"),
-        _col("TMIN", "TMIN", "K"),
-        _col("TMAX", "TMAX", "K"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
         _col("k_gas_at_25_C", "k_gas @ 25 C"),
-        _col("k_gas_at_TMIN", "k_gas @ TMIN"),
-        _col("k_gas_at_TMAX", "k_gas @ TMAX"),
+        _col("k_gas_at_Tmin", "k_gas @ Tmin"),
+        _col("k_gas_at_Tmax", "k_gas @ Tmax"),
     ],
     "24-1": _ID
     + [
         _col("A", "A"),
         _col("B", "B"),
         _col("C", "C"),
-        _col("TMIN", "TMIN", "K"),
-        _col("TMAX", "TMAX", "K"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
         _col("k_liq_at_25_C", "k_liq @ 25 C"),
-        _col("k_liq_at_TMIN", "k_liq @ TMIN"),
-        _col("k_liq_at_TMAX", "k_liq @ TMAX"),
+        _col("k_liq_at_Tmin", "k_liq @ Tmin"),
+        _col("k_liq_at_Tmax", "k_liq @ Tmax"),
     ],
     "24-2": _ID
     + [
         _col("A", "A"),
         _col("B", "B"),
         _col("C", "C"),
-        _col("TMIN", "TMIN", "K"),
-        _col("TMAX", "TMAX", "K"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
         _col("Phase", "Phase"),
         _col("k_at_25_C", "k @ 25 C"),
-        _col("k_at_TMIN", "k @ TMIN"),
-        _col("k_at_TMAX", "k @ TMAX"),
+        _col("k_at_Tmin", "k @ Tmin"),
+        _col("k_at_Tmax", "k @ Tmax"),
     ],
     "25-1": _ID
     + [
@@ -240,6 +353,59 @@ TABLE_COLUMN_SCHEMAS: dict[str, list[dict[str, str | None]]] = {
         _col("flash_point_F", "Flash Point, F", "F"),
         _col("autoignition_code", "Autoignition Temperature Code"),
         _col("autoignition_F", "Autoignition Temperature, F", "F"),
+    ],
+    "26-1": _ID
+    + [
+        _col("State", "State"),
+        _col("Hc_kjoule_mol", "Hc, kjoule/mol", "kjoule/mol"),
+        _col("Hc_kjoule_kg", "Hc, kjoule/kg", "kjoule/kg"),
+        _col("Hc_BTU_lb", "Hc, BTU/lb", "BTU/lb"),
+    ],
+    # Stacked agency headers: each of TLV/PEL/REL/MAK has ppm (vol) + mg/m³.
+    "27-1": _ID
+    + [
+        _col("CAS_No", "CAS No"),
+        _col("TLV_ACGIH_ppm", "TLV (ACGIH), ppm (vol)", "ppm (vol)"),
+        _col("TLV_ACGIH_mg_m3", "TLV (ACGIH), mg/m3", "mg/m3"),
+        _col("PEL_OSHA_ppm", "PEL (OSHA), ppm (vol)", "ppm (vol)"),
+        _col("PEL_OSHA_mg_m3", "PEL (OSHA), mg/m3", "mg/m3"),
+        _col("REL_NIOSH_ppm", "REL (NIOSH), ppm (vol)", "ppm (vol)"),
+        _col("REL_NIOSH_mg_m3", "REL (NIOSH), mg/m3", "mg/m3"),
+        _col("MAK_DFG_ppm", "MAK (DFG), ppm (vol)", "ppm (vol)"),
+        _col("MAK_DFG_mg_m3", "MAK (DFG), mg/m3", "mg/m3"),
+    ],
+    "27-2": _ID
+    + [
+        _col("CAS_No", "CAS No"),
+        _col("TLV_ACGIH_ppm", "TLV (ACGIH), ppm (vol)", "ppm (vol)"),
+        _col("TLV_ACGIH_mg_m3", "TLV (ACGIH), mg/m3", "mg/m3"),
+        _col("PEL_OSHA_ppm", "PEL (OSHA), ppm (vol)", "ppm (vol)"),
+        _col("PEL_OSHA_mg_m3", "PEL (OSHA), mg/m3", "mg/m3"),
+        _col("REL_NIOSH_ppm", "REL (NIOSH), ppm (vol)", "ppm (vol)"),
+        _col("REL_NIOSH_mg_m3", "REL (NIOSH), mg/m3", "mg/m3"),
+        _col("MAK_DFG_ppm", "MAK (DFG), ppm (vol)", "ppm (vol)"),
+        _col("MAK_DFG_mg_m3", "MAK (DFG), mg/m3", "mg/m3"),
+    ],
+    # 28-x: OCR turns B_liq / density_liq into Bllq, B_{llq}, density_{IIq}, …
+    "28-1": _ID
+    + [
+        _col("a", "a"),
+        _col("Tc", "Tc", "K"),
+        _col("m", "m"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
+        _col("B_liq_at_25_C", "B_liq @ 25 C", "1/C"),
+        _col("density_liq_at_25_C", "density_liq @ 25 C", "g/cm3"),
+    ],
+    "28-2": _ID
+    + [
+        _col("a", "a"),
+        _col("Tc", "Tc", "K"),
+        _col("m", "m"),
+        _col("Tmin", "Tmin", "K"),
+        _col("Tmax", "Tmax", "K"),
+        _col("B_liq_at_25_C", "B_liq @ 25 C", "1/C"),
+        _col("density_liq_at_25_C", "density_liq @ 25 C", "g/cm3"),
     ],
 }
 

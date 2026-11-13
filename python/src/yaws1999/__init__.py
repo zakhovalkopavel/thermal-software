@@ -2,7 +2,7 @@
 yaws1999 — Parse Carl L. Yaws, *Chemical Properties Handbook* (1999) tables.
 
 OCR is delegated to ``page-ocr`` (``PAGE_OCR_BACKEND=local|modal``).
-Each ``Table X-Y`` becomes its own JSON file under ``shared/processed/yaws1999/``.
+Each ``Table X-Y`` becomes its own JSON file under ``shared/processed/yaws1999/tables/``.
 """
 from yaws1999.constants import PAGE_OFFSET, PROCESSED_DIR, REPORT_DIR, SOURCE_DJVU
 from yaws1999.ocr import load_ocr_config, ocr_source_page

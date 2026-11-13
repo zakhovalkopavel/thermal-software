@@ -6,7 +6,7 @@ OCR each page via page-ocr, parse rows, write slug-named dataset JSON plus a deb
 
 Output
 ------
-  shared/processed/yaws1999/<Slug>_(table_<id>).json
+  shared/processed/yaws1999/tables/<Slug>_(table_<id>).json
   shared/processed/yaws1999/index.json
   reports/yaws1999/pages/page-NNNN.txt
   reports/yaws1999/debug/<Slug>_(table_<id>).json

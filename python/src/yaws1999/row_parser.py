@@ -17,16 +17,31 @@ _EQUATION = re.compile(
 )
 _HEADER_MARKERS = re.compile(r"(?i)\bFORMULA\b.*\bNAME\b")
 _ROW_START = re.compile(r"^\s*[|Il]?\s*(\d{1,4})\s+(\S+)\s+(.*\S)\s*$")
+# Handbook categorical cells (CODE / State / Phase / allotrope) — not free text.
+_CATEGORICAL_VALUE = (
+    r"data|estimated|"
+    r"gas|solid|liquid|soild|"
+    r"white|yellow|"
+    r"in\s+benzene(?:/dioxane)?"
+)
+# CAS RN like 7782-42-5 (must be before generic number: hyphen blocks (?=\s|$)).
+_CAS_VALUE = r"\d{2,7}-\d{2}-\d{1,2}"
 _VALUE_START = re.compile(
     r"(?:^|(?<=\s))"
     r"("
-    r"-?\d+(?:\.\d+)?(?:\s*[Ee]\s*[+-]?\s*\d+)?"  # number / scientific
+    rf"{_CAS_VALUE}"
+    r"|-?\d+(?:\.\d+)?(?:\s*[Ee]\s*[+-]?\s*\d+)?"  # number / scientific
     r"|[—–_\-]{1,3}"  # missing-value dash
     r"|(?:NA|N/?A|APP)"
+    rf"|{_CATEGORICAL_VALUE}"
     r")"
     r"(?=\s|$)",
     re.I,
 )
+_CAT_NORMALIZE = {
+    "soild": "solid",
+}
+_CAS_RE = re.compile(rf"^{_CAS_VALUE}$")
 _SCI_SPACE = re.compile(r"(\d)\s*([Ee])\s*([+-]?)\s*(\d+)")
 _TRAILING_JUNK = re.compile(r"[\s\|\]\[IJl\"'`]+$")
 _TRAILING_RULE_ONE = re.compile(r"(?<=\d{2})\s+1\s*$")  # vertical rule OCR'd as "1" after TMAX
@@ -283,6 +298,13 @@ def _coerce_value(token: str) -> Any:
     t = token.strip()
     if re.fullmatch(r"[—–_\-]{1,3}", t) or t.upper() in {"NA", "N/A", "APP"}:
         return None
+    # CAS registry number (keep as string).
+    if _CAS_RE.fullmatch(t):
+        return t
+    # Categorical handbook cells (CODE / State / Phase / allotrope).
+    if re.fullmatch(_CATEGORICAL_VALUE, t, flags=re.I):
+        key = re.sub(r"\s+", " ", t.lower())
+        return _CAT_NORMALIZE.get(key, key)
     compact = _SCI_SPACE.sub(r"\1\2\3\4", t).replace(" ", "")
     try:
         if re.search(r"[Ee]", compact) or "." in compact:
@@ -313,9 +335,19 @@ def _looks_like_equation(line: str) -> bool:
         return False
     if _ROW_START.match(_LEADING_JUNK.sub("", line)):
         return False
-    if len(line) >= 120:
+    if len(line) >= 160:
         return False
     if "=" in line and re.search(r"(?i)\bT\b", line):
+        return True
+    # Salt-water / adsorption correlations use X or y instead of T (16-1, 19-1).
+    if "=" in line and re.search(
+        r"(?i)(?:\\log|log)\s*(?:_\{?10\}?)?.*\b[ABC]\b.*\b(?:[XXy]|\\mu|mu)\b",
+        line,
+    ):
+        return True
+    if "=" in line and re.search(r"(?i)\b(?:[SQ])\b.*=.*\bA\b.*=.*\bB\b", line):
+        return True
+    if re.search(r"(?i)\\log_\{10\}\s*[SQ]\s*=", line):
         return True
     # OCR often drops the "=" ("CpsA + BT + … (CP-joule/(mol K), T - K)").
     if re.search(r"(?i)\bCP\b.*\bT\b.*\bK\b", line):
@@ -326,7 +358,36 @@ def _looks_like_equation(line: str) -> bool:
 
 
 def _clean_equation(line: str) -> str:
-    return re.sub(r"\s+", " ", line).strip(" |")
+    """Normalize whitespace and repair common Yaws OCR equation damage."""
+    out = re.sub(r"\s+", " ", line).strip(" |")
+    # T2 / T3 / T4 → T^2 … (avoid touching TMIN/TMAX tokens).
+    out = re.sub(r"(?<![A-Za-z])T([234])\b", r"T^\1", out)
+    # Watson / surface-tension: (1 - T/Tc)n → (1 - T/Tc)^n
+    out = re.sub(r"\(1\s*-\s*T/T_?c\)\s*n\b", r"(1 - T/T_c)^n", out, flags=re.I)
+    # Rackett: B-(1 - T/Tc)^n → B^{-(1 - T/Tc)^n}
+    out = re.sub(
+        r"\bB-\((1\s*-\s*T/T_?c)\)\^n",
+        r"B^{-(\1)^n}",
+        out,
+        flags=re.I,
+    )
+    # Liquid viscosity: duplicate C term → D for T^2 (columns have D).
+    out = re.sub(
+        r"(B/T\s*\+\s*C\s*T\s*\+\s*)C(\s*T\^2)",
+        r"\1D\2",
+        out,
+        flags=re.I,
+    )
+    # Thermal conductivity liquid: ^{27} → ^{2/7}
+    out = re.sub(r"\[\s*1\s*-\s*T/C\s*\]\^\{?27\}?", r"[1 - T/C]^{2/7}", out)
+    # Thermal expansion: BIIq / B_llq / densityIIq OCR for liq
+    out = re.sub(r"\bBIIq\b", "B_{liq}", out)
+    out = re.sub(r"\bB_\{llq\}\b", "B_{liq}", out)
+    out = re.sub(r"\bBllq\b", "B_{liq}", out)
+    out = re.sub(r"\bdensityIIq\b", "density_liq", out, flags=re.I)
+    out = re.sub(r"\bdensityllq\b", "density_liq", out, flags=re.I)
+    out = re.sub(r"\bdensity_\{llq\}\b", "density_liq", out, flags=re.I)
+    return out
 
 
 def _is_noise_line(line: str) -> bool:

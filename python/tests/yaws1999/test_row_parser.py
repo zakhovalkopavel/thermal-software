@@ -140,3 +140,82 @@ def test_row_fixes_br_and_ci_from_name():
     assert row is not None
     assert row.formula == "CBrClF2"
     assert row.formula_raw == "CbrCIF2"
+
+
+def test_parse_data_line_code_data_estimated():
+    data = parse_data_line(
+        "1 CCL4 TETRACHLOROMETHANE 153.838 -23.16 1.22E+02 data",
+        djvu_page=438,
+    )
+    assert data is not None
+    assert data.values == [153.838, -23.16, 122.0, "data"]
+    assert data.unparsed_tail == ""
+
+    est = parse_data_line(
+        "4 CH3NO2 NITROMETHANE 61.040 -28.16 1.76E+02 estimated",
+        djvu_page=438,
+    )
+    assert est is not None
+    assert est.values[-1] == "estimated"
+
+
+def test_parse_data_line_state_mid_row():
+    row = parse_data_line(
+        "1 Ag SILVER 107.868 solid 0.00 0.00 42.60",
+        djvu_page=305,
+    )
+    assert row is not None
+    assert row.name == "SILVER"
+    assert row.values == [107.868, "solid", 0.0, 0.0, 42.6]
+    assert row.unparsed_tail == ""
+
+
+def test_parse_data_line_state_before_numbers_not_in_name():
+    row = parse_data_line(
+        "1 CBrCIF2 BROMOCHLORODIFLUOROMETHANE gas -53.3 -322.3 -138.6",
+        djvu_page=576,
+    )
+    assert row is not None
+    assert row.name == "BROMOCHLORODIFLUOROMETHANE"
+    assert row.values == ["gas", -53.3, -322.3, -138.6]
+
+
+def test_parse_data_line_phase_and_soild_ocr():
+    row = parse_data_line(
+        "1 Ag SILVER 438.2178 -2.2947E-02 -3.5429E-05 200 1200 solid 428.227 432.211 359.664",
+        djvu_page=540,
+    )
+    assert row is not None
+    assert row.values[5:] == ["solid", 428.227, 432.211, 359.664]
+
+    bad = parse_data_line(
+        "10 Xx EXAMPLE 1.0 soild 2.0",
+        djvu_page=1,
+    )
+    assert bad is not None
+    assert bad.values == [1.0, "solid", 2.0]
+
+
+def test_parse_data_line_in_benzene_state():
+    row = parse_data_line(
+        "9 C6H6 BENZENE 25.0 1.5011 in benzene 0.10 ---",
+        djvu_page=250,
+    )
+    assert row is not None
+    assert row.values[2] == "in benzene"
+    assert row.values[3] == 0.10
+    assert row.values[4] is None
+
+
+def test_parse_data_line_cas_registry_number():
+    row = parse_data_line(
+        "1 C GRAPHITE 7782-42-5 -- 2 -- -- -- 2.5 -- 6",
+        djvu_page=596,
+    )
+    assert row is not None
+    assert row.name == "GRAPHITE"
+    assert row.values[0] == "7782-42-5"
+    assert row.values[1] is None
+    assert row.values[2] == 2
+    assert row.values[6] == 2.5
+    assert row.values[8] == 6

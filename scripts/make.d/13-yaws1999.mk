@@ -1,6 +1,6 @@
 # Yaws Chemical Properties Handbook (1999) → one JSON per table
 # Source: shared/sources/compound-data/Chemical properties handbook (Yaws 1999).djvu
-# Dataset: shared/processed/yaws1999/<Slug>_(table_<id>).json + index.json
+# Dataset: shared/processed/yaws1999/tables/<Slug>_(table_<id>).json + index.json
 # Dumps/debug: tmp/reports/python/yaws1999/pages/, …/debug/
 # OCR: vendor/page-ocr (PAGE_OCR_*). Spec: docs/scripts/YAWS1999_PARSER_SPEC.md
 

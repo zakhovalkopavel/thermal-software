@@ -3,6 +3,7 @@
 Appendix pages list ``CAS  NAME  FORMULA`` in two side-by-side columns, so one
 OCR line holds two entries. This module splits them and returns entries in
 column-major order (full left column, then full right) to match CAS sort order.
+Public rows match handbook tables: ``{id, cas, name, formula}``.
 """
 from __future__ import annotations
 
@@ -21,28 +22,24 @@ _FORMULA_TOKEN = re.compile(r"^[A-Za-z][A-Za-z0-9]*$")
 class CasIndexEntry:
     """One compound from a CAS index page."""
 
+    id: int
     cas: str
     name: str
     formula: str
-    column: int  # 0 = left, 1 = right
-    line: int  # 1-based source line number among kept lines
-    djvu_page: int
-    raw: str
+    column: int = 0  # internal: 0 = left, 1 = right
+    line: int = 0  # internal OCR line among kept lines
+    djvu_page: int = 0
+    raw: str = ""
     formula_raw: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        out: dict[str, Any] = {
+        """Public row shape aligned with handbook tables."""
+        return {
+            "id": self.id,
             "cas": self.cas,
             "name": self.name,
             "formula": self.formula,
-            "column": self.column,
-            "line": self.line,
-            "djvuPage": self.djvu_page,
-            "raw": self.raw,
         }
-        if self.formula_raw and self.formula_raw != self.formula:
-            out["formulaRaw"] = self.formula_raw
-        return out
 
 
 @dataclass
@@ -72,7 +69,10 @@ def looks_like_cas_index(lines: list[str], *, min_hits: int = 5, min_ratio: floa
 
 
 def parse_cas_index_lines(lines: list[str], djvu_page: int) -> CasIndexParse:
-    """Split two-column CAS index OCR lines into structured entries."""
+    """Split two-column CAS index OCR lines into structured entries.
+
+    IDs are assigned left column top→bottom, then right column (column-major).
+    """
     out = CasIndexParse()
     left: list[CasIndexEntry] = []
     right: list[CasIndexEntry] = []
@@ -96,7 +96,10 @@ def parse_cas_index_lines(lines: list[str], djvu_page: int) -> CasIndexParse:
                 out.unparsed.append(f"p{djvu_page}:col{col}: {chunk}")
                 continue
             (left if col == 0 else right).append(entry)
-    out.entries = left + right
+    ordered = left + right
+    for i, entry in enumerate(ordered, start=1):
+        entry.id = i
+    out.entries = ordered
     return out
 
 
@@ -145,6 +148,7 @@ def parse_cas_index_entry(
     if not name:
         return None
     return CasIndexEntry(
+        id=0,
         cas=cas,
         name=name,
         formula=_clean_index_formula(formula_raw, name),

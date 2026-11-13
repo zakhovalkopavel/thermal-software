@@ -85,27 +85,92 @@ def expand_row(
     return out
 
 
+_EQ_META_KEYS = (
+    "equations",
+    "equationSource",
+    "equationPage",
+    "coefficients",
+)
+
+_LEGACY_EQ_DOC_KEYS = (
+    "equation",
+    "definition",
+    "estimationEquation",
+    "derivedDefinitions",
+    "equationDjvuPage",
+)
+
+
+def _primary_equation(parsed: dict[str, Any]) -> str | None:
+    """First curated / OCR equation — used only for unit footnote parsing."""
+    eqs = parsed.get("equations") or []
+    if eqs:
+        return str(eqs[0])
+    eq = parsed.get("equation")
+    return str(eq) if eq else None
+
+
+def _with_equation_meta(doc: dict[str, Any], parsed: dict[str, Any]) -> dict[str, Any]:
+    """Copy curated equation metadata onto dataset/debug docs when present.
+
+    Public docs expose ``equations`` only (no singular ``equation`` or legacy
+    alternate fields). Metadata is inserted **before** ``rows``.
+    """
+    for key in _LEGACY_EQ_DOC_KEYS:
+        doc.pop(key, None)
+
+    meta: dict[str, Any] = {}
+    for key in _EQ_META_KEYS:
+        if key in parsed and parsed[key] is not None:
+            meta[key] = parsed[key]
+    # Always emit equations list when curated source set it (may be empty).
+    if "equations" in parsed and "equations" not in meta:
+        meta["equations"] = list(parsed.get("equations") or [])
+
+    if not meta:
+        return doc
+    if "rows" not in doc:
+        doc.update(meta)
+        return doc
+    out: dict[str, Any] = {}
+    for key, value in doc.items():
+        if key == "rows":
+            out.update(meta)
+        out[key] = value
+    return out
+
+
 def to_dataset_table(parsed: dict[str, Any]) -> dict[str, Any]:
     """Public processed-table document (no OCR provenance)."""
     prepared = _with_source_pages(parsed)
     prepared["columns"] = _shape_columns(prepared)
-    return _to_dataset_table(
+    # Vendor helper still reads singular ``equation`` for unit footnotes.
+    primary = _primary_equation(prepared)
+    if primary is not None:
+        prepared["equation"] = primary
+    doc = _to_dataset_table(
         prepared,
         default_ref_key=REF_KEY,
         page_offset=PAGE_OFFSET,
     )
+    return _with_equation_meta(doc, prepared)
 
 
 def to_debug_table(parsed: dict[str, Any]) -> dict[str, Any]:
-    """Debug document: dataset fields + OCR provenance; Yaws ``djvu*`` keys."""
+    """Debug document: dataset-shaped rows + document-level OCR provenance.
+
+    Per-row ``raw`` / ``djvuPage`` are not included — those stay out of both
+    processed and debug row objects. Page span is ``djvuPages`` on the doc.
+    """
     prepared = _with_source_pages(parsed)
     prepared["columns"] = _shape_columns(prepared)
+    primary = _primary_equation(prepared)
+    if primary is not None:
+        prepared["equation"] = primary
     doc = _to_debug_table(prepared, default_ref_key=REF_KEY)
     if doc.get("sourcePages") is not None:
         doc["djvuPages"] = doc.pop("sourcePages")
     elif parsed.get("djvuPages") is not None:
         doc["djvuPages"] = parsed["djvuPages"]
-    for row in doc.get("rows") or []:
-        if "sourcePage" in row:
-            row["djvuPage"] = row.pop("sourcePage")
-    return doc
+    # Equation meta before rows; debug ``unparsed`` stays after rows.
+    return _with_equation_meta(doc, prepared)

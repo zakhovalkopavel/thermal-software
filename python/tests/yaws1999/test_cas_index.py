@@ -85,6 +85,19 @@ def test_parse_page_column_major_order():
         "95-87-4",
     ]
     assert [e.column for e in parsed.entries] == [0, 0, 1, 1]
+    # Left column first, then right — sequential table-style ids.
+    assert [e.id for e in parsed.entries] == [1, 2, 3, 4]
+    row = parsed.entries[0].to_dict()
+    assert row == {
+        "id": 1,
+        "cas": "78-97-7",
+        "name": "LACTONITRILE",
+        "formula": "C3H5NO",
+    }
+    assert "line" not in row
+    assert "djvuPage" not in row
+    assert "raw" not in row
+    assert "column" not in row
 
 
 def test_looks_like_cas_index_on_sample():
