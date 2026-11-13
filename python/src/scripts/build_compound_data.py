@@ -55,6 +55,9 @@ Report (tmp/reports/python/compound-data/report.json, /app/reports in the contai
   formula conflicts, Perry rows without a range, VDI liquid rows without Tm/Tc, Zabransky rows
   without CAS, equation sanity issues and one check point per equation
   missing-cas.txt — CAS numbers the chemicals identifier files miss: input of the PubChem step
+  yaws1999-replace-log.jsonl — Yaws-linked values replaced by processed Yaws 1999
+  yaws1999-issues-log.jsonl  — table-only CAS (not in appendix) + noRecord attach misses
+  yaws1999-created-log.jsonl — compounds created from the Yaws appendix (for a later PubChem search)
 
 Implementation
 --------------
@@ -119,6 +122,11 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--no-book-gas", action="store_true", help="Do not read the hand-moved book gas equations")
     p.add_argument(
+        "--yaws1999-dir", metavar="DIR", type=Path, default=Path("shared/processed/yaws1999"),
+        help="Processed Yaws 1999 tables (fill + replace Yaws-linked values) (default: %(default)s)",
+    )
+    p.add_argument("--no-yaws1999", action="store_true", help="Do not import processed Yaws 1999")
+    p.add_argument(
         "--nbs-file", metavar="FILE", type=Path,
         default=Path("shared/sources/NBS/NBS_Tables_with_ErratumValues.csv"),
         help="Corrected NBS tables; fills a 298.15 K value only when that phase is missing (default: %(default)s)",
@@ -156,11 +164,15 @@ def main(argv: list[str] | None = None) -> int:
 
     from compound_data.builder import build_compound_data
     from compound_data.constants.pubchem_source import MISSING_CAS_FILE
+    from compound_data.constants.yaws1999_source import (
+        YAWS1999_CREATED_LOG, YAWS1999_ISSUES_LOG, YAWS1999_REPLACE_LOG,
+    )
     from compound_data.compound_files import compound_files
     from compound_data.writers import (
         write_compound_index, write_compound_json, write_compound_sources, write_compound_units, write_interactions,
         write_missing_cas, write_unresolved,
     )
+    from compound_data.yaws1999_links import write_yaws1999_jsonl
     from compound_data.molten_salt_mixtures import write_molten_salt_mixtures
     from dataset_layout.clear_dataset_dir import clear_dataset_dir
 
@@ -170,6 +182,7 @@ def main(argv: list[str] | None = None) -> int:
             None if args.no_nasa else args.nasa_dir, None if args.no_transport else args.transport_file,
             None if args.no_nbs else args.nbs_file, None if args.no_molten else args.molten_dir,
             None if args.no_book_gas else args.book_gas_file,
+            None if args.no_yaws1999 else args.yaws1999_dir,
         )
         generated_at = datetime.now(timezone.utc).isoformat()
         files = compound_files(result.merge.records.values())
@@ -179,7 +192,8 @@ def main(argv: list[str] | None = None) -> int:
         write_compound_index(files, args.out_dir, generated_at)
         write_compound_units(args.out_dir)
         write_compound_sources(args.out_dir, result.chem, generated_at, result.janaf, result.pubchem_tables, result.nasa,
-                               result.transport_tables, result.nbs_tables, result.molten_tables, result.book_gas_tables)
+                               result.transport_tables, result.nbs_tables, result.molten_tables, result.book_gas_tables,
+                               result.yaws1999_tables)
         write_interactions(args.out_dir, result.interactions, generated_at)
         if not args.no_molten and args.molten_dir.is_dir():
             write_molten_salt_mixtures(
@@ -193,6 +207,9 @@ def main(argv: list[str] | None = None) -> int:
             encoding="utf-8",
         )
         write_missing_cas(args.report_dir / MISSING_CAS_FILE, result.missing_cas, generated_at)
+        write_yaws1999_jsonl(args.report_dir / Path(YAWS1999_REPLACE_LOG).name, result.yaws1999_replace_log)
+        write_yaws1999_jsonl(args.report_dir / Path(YAWS1999_ISSUES_LOG).name, result.yaws1999_issues_log)
+        write_yaws1999_jsonl(args.report_dir / Path(YAWS1999_CREATED_LOG).name, result.yaws1999_created_log)
     except Exception as exc:
         logger.exception("Fatal error building compound data: %s", exc)
         return 1

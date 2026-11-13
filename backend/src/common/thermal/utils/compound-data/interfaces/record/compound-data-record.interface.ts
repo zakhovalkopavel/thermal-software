@@ -20,6 +20,8 @@ export interface CompoundDataRecord {
   formula?: string;
   /** Identifier database name, else the first source label */
   name?: string;
+  /** Alternate names (e.g. Yaws synonym appendix); excludes `name` */
+  synonyms?: string[];
   /** Molar mass [kg/mol] (`units.json` → `Mr`) */
   Mr?: number;
   /** Structure line notation, e.g. "CCO" (ethanol), "[Al]" */

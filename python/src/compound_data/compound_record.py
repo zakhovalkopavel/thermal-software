@@ -45,6 +45,7 @@ class CompoundRecord:
     compound_class: str
     group: str
     name: Optional[str] = None
+    synonyms: list[str] = field(default_factory=list)
     Mr: Optional[float] = None
     smiles: Optional[str] = None
     inchikey: Optional[str] = None
@@ -97,6 +98,7 @@ class CompoundRecord:
             "cas": self.pubchem_cas,
             "casRef": self.pubchem_cas_source.to_ref() if self.pubchem_cas_source else None,
             "name": self.name,
+            "synonyms": self.synonyms,
             "Mr": self.Mr,
             "smiles": self.smiles,
             "inchikey": self.inchikey,

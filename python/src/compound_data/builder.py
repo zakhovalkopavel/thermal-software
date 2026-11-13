@@ -66,6 +66,10 @@ class BuildResult:
     ``nbs_tables`` is the corrected NBS CSV. ``molten_tables`` are the pure-salt files that were read.
     ``molten_mixtures`` are the salt mixtures (no CAS), written apart from the compound files.
     ``book_gas_tables`` are the hand-moved book gas equation tables.
+    ``yaws1999_tables`` are the processed Yaws 1999 tables that were applied.
+    ``yaws1999_replace_log`` lists Yaws-linked values replaced by processed Yaws 1999.
+    ``yaws1999_issues_log`` lists table-only CAS and noRecord attach misses.
+    ``yaws1999_created_log`` lists compounds created from the Yaws appendix (for PubChem search).
     """
 
     chem: ChemicalsSource
@@ -82,6 +86,10 @@ class BuildResult:
     molten_mixtures: list[dict[str, Any]] = field(default_factory=list)
     molten_mixture_tables: list[TableSpec] = field(default_factory=list)
     book_gas_tables: list[TableSpec] = field(default_factory=list)
+    yaws1999_tables: list[TableSpec] = field(default_factory=list)
+    yaws1999_replace_log: list[dict[str, Any]] = field(default_factory=list)
+    yaws1999_issues_log: list[dict[str, Any]] = field(default_factory=list)
+    yaws1999_created_log: list[dict[str, Any]] = field(default_factory=list)
 
 
 def build_compound_data(
@@ -89,6 +97,7 @@ def build_compound_data(
     nasa_dir: Optional[Path] = None, transport_file: Optional[Path] = None,
     nbs_file: Optional[Path] = None, molten_dir: Optional[Path] = None,
     book_gas_file: Optional[Path] = None,
+    yaws1999_dir: Optional[Path] = None,
 ) -> BuildResult:
     """Parse every table under ``source_dir`` (the chemicals copy with ``PROVENANCE.txt``).
 
@@ -108,7 +117,11 @@ def build_compound_data(
     is kept on ``BuildResult.molten_mixtures`` and is not given a compound record.
     ``book_gas_file`` is the hand-moved book gas equations (Perry 7, Borgnakke, Yaws 1999, Incropera,
     Szargut) so a rebuild does not drop them.
+    ``yaws1999_dir`` is ``shared/processed/yaws1999``; mappable tables fill compounds and replace
+    Yaws-linked values that differ from the processed rows.
     """
+    from compound_data.yaws1999_links import attach_yaws1999
+
     chem = read_chemicals_source(source_dir / "PROVENANCE.txt")
     entries, issues = parse_source_entries(source_dir, chem)
     transport = _parse_transport(transport_file)
@@ -179,6 +192,48 @@ def build_compound_data(
         else:
             logger.warning("[nbs] Not found: %s — NBS tables skipped", nbs_file)
 
+    yaws1999_tables: list[TableSpec] = []
+    yaws1999_replace_log: list[dict[str, Any]] = []
+    yaws1999_issues_log: list[dict[str, Any]] = []
+    yaws1999_created_log: list[dict[str, Any]] = []
+    yaws1999_counts: dict[str, int] = {}
+    if yaws1999_dir is not None:
+        if yaws1999_dir.is_dir():
+            (
+                yaws_issues, yaws1999_replace_log, yaws1999_counts, yaws1999_tables,
+                yaws_unmatched, yaws_created, yaws1999_issues_log, yaws1999_created_log,
+            ) = attach_yaws1999(merge.records.values(), yaws1999_dir)
+            issues += yaws_issues
+            for record in yaws_created:
+                merge.records[record.id] = record
+            # Keep unmatched Yaws rows visible in unresolved.json for review.
+            merge.unresolved.extend(
+                {
+                    "cas": None,
+                    "labels": [row["name"]] if row.get("name") else [],
+                    "formulas": [row["formula"]] if row.get("formula") else [],
+                    "reason": f"yaws1999:{row.get('status')}",
+                    "values": [],
+                    "tableId": row.get("tableId"),
+                    "rowId": row.get("rowId"),
+                }
+                for row in yaws_unmatched
+            )
+            logger.info(
+                "[yaws1999] %d entries applied (%d filled, %d replaced, %d same); "
+                "%d created, %d with synonyms, %d unmatched rows, %d issue-log rows",
+                yaws1999_counts.get("yaws1999Entries", 0),
+                yaws1999_counts.get("yaws1999Filled", 0),
+                yaws1999_counts.get("yaws1999Replaced", 0),
+                yaws1999_counts.get("yaws1999Same", 0),
+                yaws1999_counts.get("yaws1999Created", 0),
+                yaws1999_counts.get("yaws1999SynonymsAttached", 0),
+                yaws1999_counts.get("yaws1999Unmatched", 0),
+                len(yaws1999_issues_log),
+            )
+        else:
+            logger.warning("[yaws1999] Not found: %s — processed Yaws 1999 skipped", yaws1999_dir)
+
     for record in merge.records.values():
         order_values(record)
 
@@ -226,6 +281,7 @@ def build_compound_data(
             **molten_counts,
             **transport_counts,
             **book_gas_counts,
+            **yaws1999_counts,
             **{kind: len(items) for kind, items in sorted(grouped.items())},
         },
         "formulaConflicts": merge.conflicts,
@@ -240,12 +296,18 @@ def build_compound_data(
         **{kind: items for kind, items in sorted(grouped.items())},
         "equationIssues": equation_issues,
         "checks": checks,
+        "yaws1999ReplaceCount": len(yaws1999_replace_log),
+        "yaws1999IssuesLogCount": len(yaws1999_issues_log),
+        "yaws1999CreatedLogCount": len(yaws1999_created_log),
     }
     return BuildResult(chem=chem, merge=merge, report=report, janaf=janaf_source, nasa=nasa_block,
                        pubchem_tables=list(pubchem.tables.values()), missing_cas=missing_cas, transport_tables=transport.tables,
                        interactions=interactions, nbs_tables=nbs_tables, molten_tables=molten_tables,
                        molten_mixtures=molten_mixtures, molten_mixture_tables=molten_mixture_tables,
-                       book_gas_tables=book_gas.tables)
+                       book_gas_tables=book_gas.tables, yaws1999_tables=yaws1999_tables,
+                       yaws1999_replace_log=yaws1999_replace_log,
+                       yaws1999_issues_log=yaws1999_issues_log,
+                       yaws1999_created_log=yaws1999_created_log)
 
 
 def _parse_book_gas(book_gas_file: Optional[Path]) -> BookGasEquations:

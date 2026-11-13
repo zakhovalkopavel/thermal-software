@@ -10,7 +10,9 @@ from typing import Any
 from chemicals_tables.constants.coefficient_tables import COEFFICIENT_TABLES
 from chemicals_tables.constants.source_tables import SOURCE_TABLES
 from compound_data.constants.transport_source import TRANSPORT_COLUMNS
-from compound_data.constants.units import EQUATION_UNITS, MOLAR_MASS_UNIT, TEMPERATURE_UNIT, TRANSPORT_UNITS
+from compound_data.constants.units import (
+    EQUATION_UNITS, MOLAR_MASS_UNIT, TEMPERATURE_UNIT, TRANSPORT_UNITS, YAWS1999_PROPERTY_UNITS,
+)
 
 
 def property_units() -> dict[str, str]:
@@ -23,6 +25,10 @@ def property_units() -> dict[str, str]:
         known = units.setdefault(column.property, column.unit)
         if known != column.unit:
             raise ValueError(f"{column.property}: units {known} and {column.unit}")
+    for prop, unit in YAWS1999_PROPERTY_UNITS.items():
+        known = units.setdefault(prop, unit)
+        if known != unit:
+            raise ValueError(f"{prop}: units {known} and {unit}")
     return dict(sorted(units.items()))
 
 

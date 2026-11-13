@@ -38,3 +38,9 @@ class EquationType(StrEnum):
     wagner25                    = "wagner25"
     sutherland                  = "sutherland"
     powerLaw                    = "powerLaw"
+    # Yaws 1999 handbook correlations (exact printed forms)
+    yawsVaporPressure           = "yawsVaporPressure"
+    yawsLiquidViscosity         = "yawsLiquidViscosity"
+    yawsLiquidConductivity      = "yawsLiquidConductivity"
+    yawsLiquidDensity           = "yawsLiquidDensity"
+    yawsWaterSolubility         = "yawsWaterSolubility"

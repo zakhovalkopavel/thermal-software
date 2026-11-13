@@ -18,8 +18,32 @@ EQUATION_UNITS: dict[str, str] = {
     "enthalpyVaporization": "J/mol",
     "surfaceTension": "N/m",
     "vaporPressure": "Pa",
+    "waterSolubility": "1",
 }
 """Result unit of each equation property (after ``k``); equations take T in ``TEMPERATURE_UNIT``."""
+
+# Scalars written by the Yaws1999 importer (not present in chemicals table columns).
+YAWS1999_PROPERTY_UNITS: dict[str, str] = {
+    "solubilityParameter": "Pa^0.5",
+    "liquidMolarVolume": "m3/mol",
+    "vdwArea": "m2/mol",
+    "vdwVolume": "m3/mol",
+    "waterSolubility": "1",
+    "logKow": "1",
+    "lowerExplosionLimit": "1",
+    "upperExplosionLimit": "1",
+    "flashPoint": "K",
+    "autoignitionTemperature": "K",
+    "enthalpyCombustion": "J/mol",
+    "tlvAcgih": "kg/m3",
+    "pelOsha": "kg/m3",
+    "relNiosh": "kg/m3",
+    "makDfg": "kg/m3",
+    "tlvAcgihPpm": "1",
+    "pelOshaPpm": "1",
+    "relNioshPpm": "1",
+    "makDfgPpm": "1",
+}
 
 TRANSPORT_UNITS: dict[str, str] = {
     "sigma": "m",

@@ -21,6 +21,9 @@ class SourceLink:
 
     ``extra`` holds per-value data written next to ``ref`` in the dataset (``variant``, ``error``,
     ``dataType``, ``uncertainty``) and links to other rows (``tcRef``, ``rangeRef``).
+
+    Citation location is only ``ref`` (``[RefKey, line, fileKey]`` → ``sources.json``). Do not put
+    ``tableId`` / ``rowId`` / ``page*`` in ``extra``; those keys are stripped if present.
     """
 
     table: str
@@ -31,6 +34,9 @@ class SourceLink:
     label: Optional[str] = None
     extra: dict[str, Any] = field(default_factory=dict)
     ref_text: Optional[str] = None
+
+    # Provenance on a compound value is only ``ref``. Table/page locators belong in sources.json.
+    _CITATION_ONLY_KEYS = frozenset({"tableId", "rowId", "page", "pageFirst", "pageLast", "pages"})
 
     def to_ref(self) -> list | str:
         """``[RefKey, line, fileKey]``; identifier rows have no ref and give ``[line, fileKey]``.
@@ -44,11 +50,14 @@ class SourceLink:
         return [self.ref.value, self.line, self.key]
 
     def extra_fields(self) -> dict[str, Any]:
-        """``extra`` for the dataset: links become ``ref`` tuples, ``None`` values are dropped."""
+        """``extra`` for the dataset: links become ``ref`` tuples, ``None`` values are dropped.
+
+        Citation-location keys are never written beside ``ref``.
+        """
         return {
             k: v.to_ref() if isinstance(v, SourceLink) else v
             for k, v in self.extra.items()
-            if v is not None
+            if v is not None and k not in self._CITATION_ONLY_KEYS
         }
 
     def to_dict(self) -> dict:

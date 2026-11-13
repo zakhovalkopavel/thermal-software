@@ -25,3 +25,8 @@ export * from './dippr-n106-equation';
 export * from './wagner25-equation';
 export * from './sutherland-equation';
 export * from './power-law-equation';
+export * from './yaws-vapor-pressure-equation';
+export * from './yaws-liquid-viscosity-equation';
+export * from './yaws-liquid-conductivity-equation';
+export * from './yaws-liquid-density-equation';
+export * from './yaws-water-solubility-equation';

@@ -21,6 +21,11 @@ import { DipprEquation106Method } from './equation-methods/dippr-equation-106-me
 import { Wagner25EquationMethod } from './equation-methods/wagner25-equation-method';
 import { SutherlandEquationMethod } from './equation-methods/sutherland-equation-method';
 import { PowerLawEquationMethod } from './equation-methods/power-law-equation-method';
+import { YawsVaporPressureEquationMethod } from './equation-methods/yaws-vapor-pressure-equation-method';
+import { YawsLiquidViscosityEquationMethod } from './equation-methods/yaws-liquid-viscosity-equation-method';
+import { YawsLiquidConductivityEquationMethod } from './equation-methods/yaws-liquid-conductivity-equation-method';
+import { YawsLiquidDensityEquationMethod } from './equation-methods/yaws-liquid-density-equation-method';
+import { YawsWaterSolubilityEquationMethod } from './equation-methods/yaws-water-solubility-equation-method';
 
 export class Common {
   static logarithmicAverage(x1: number, x2: number): number {
@@ -66,6 +71,11 @@ export class Common {
       case EquationTypeDto.wagner25:                    return new Wagner25EquationMethod();
       case EquationTypeDto.sutherland:                  return new SutherlandEquationMethod();
       case EquationTypeDto.powerLaw:                    return new PowerLawEquationMethod();
+      case EquationTypeDto.yawsVaporPressure:           return new YawsVaporPressureEquationMethod();
+      case EquationTypeDto.yawsLiquidViscosity:         return new YawsLiquidViscosityEquationMethod();
+      case EquationTypeDto.yawsLiquidConductivity:      return new YawsLiquidConductivityEquationMethod();
+      case EquationTypeDto.yawsLiquidDensity:           return new YawsLiquidDensityEquationMethod();
+      case EquationTypeDto.yawsWaterSolubility:         return new YawsWaterSolubilityEquationMethod();
       default: throw new Error(`Unknown equation type: ${type}`);
     }
   }

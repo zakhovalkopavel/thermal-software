@@ -16,12 +16,14 @@
 #               shared/sources/NIST-molten-salts/ (pure-salt liquid equations; mixtures → shared/processed/molten-salt-mixtures/)
 # Output files: shared/processed/compound-data/{inorganic/<Element>,organic/<family>}/<formula>-<name>.json,
 #               unresolved.json, index.json, units.json, sources.json, interactions.json (the folder is cleared first)
-# Report: tmp/reports/python/compound-data/report.json, missing-cas.txt
-# Spec: docs/scripts/COMPOUND_DATA_SPEC.md
+# Report: tmp/reports/python/compound-data/report.json, missing-cas.txt,
+#         yaws1999-replace-log.jsonl, yaws1999-issues-log.jsonl, yaws1999-created-log.jsonl
+# Spec: docs/scripts/COMPOUND_DATA_SPEC.md, tmp/spec/02_yaws1999_compound_data_update.md
 # Implementation: python/src/chemical_formula/, chemicals_tables/, pubchem/, dataset_layout/, nasa_thermo/, compound_data/
 
 COMPOUND_DATA_OUT := shared/processed/compound-data
 COMPOUND_DATA_MISSING_CAS := tmp/reports/python/compound-data/missing-cas.txt
+YAWS1999_PROCESSED := shared/processed/yaws1999
 PUBCHEM_ARGS ?=
 Q ?=
 QUERY_FILE ?=
@@ -30,11 +32,12 @@ COMPOUND_DATA_TESTS := /app/tests/chemical_formula/ /app/tests/chemicals_tables/
 
 .PHONY: compound-data-build compound-data-test compound-data-pubchem pubchem-search
 
-compound-data-build: ## Step 1: build compound JSON from the chemicals tables (offline) → shared/processed/compound-data/
-	@echo "🧪 Building compound data..."
+compound-data-build: ## Step 1: build compound JSON from the chemicals tables + processed Yaws1999 → shared/processed/compound-data/
+	@echo "🧪 Building compound data (includes processed Yaws1999 fill/replace)..."
 	@docker-compose run --rm python python src/scripts/build_compound_data.py \
-		--out-dir $(COMPOUND_DATA_OUT)
-	@echo "✅ Done → $(COMPOUND_DATA_OUT)/ (report: tmp/reports/python/compound-data/report.json)"
+		--out-dir $(COMPOUND_DATA_OUT) \
+		--yaws1999-dir $(YAWS1999_PROCESSED)
+	@echo "✅ Done → $(COMPOUND_DATA_OUT)/ (report: tmp/reports/python/compound-data/report.json, yaws1999-*-log.jsonl)"
 
 compound-data-pubchem: ## Step 2: look up in PubChem the CAS numbers step 1 could not identify and search the records without a CAS by formula (slow, resumable); PUBCHEM_ARGS="--class inorganic unclassified" / "--all-cas --class organic"
 	@[ -f $(COMPOUND_DATA_MISSING_CAS) ] || $(MAKE) compound-data-build

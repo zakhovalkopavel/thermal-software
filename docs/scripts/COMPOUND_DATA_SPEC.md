@@ -142,6 +142,13 @@ The list below is the summary used by this dataset.
   - **VDI ranges:**
     - Liquid properties get `min = Tm` and `max = Tc` from the VDI surface-tension and boiling-temperature rows of the same CAS. Both rows come from the same book, and the row used is cited in `rangeRef`.
     - Gas properties have no limits in the source (chemicals: "Provides no temperature limits"). They get `min/max = null` and no `rangeRef`. The backend loader maps null to ±Infinity, which means no clamping (see [NEW_EQUATION_TYPES_SPEC.md](../services/NEW_EQUATION_TYPES_SPEC.md#ranges-that-are-not-set)).
+- **Yaws 1999 handbook forms** (processed tables under `shared/processed/yaws1999/`, ref `Yaws1999`):
+  - **`yawsVaporPressure`** (7-1/7-2): log₁₀(P/mmHg) = a + b/T + c log₁₀(T) + d T + e T²; `vars {a..e}`, `k = 133.322387415` → Pa.
+  - **`yawsLiquidViscosity`** (22-1/22-2): log₁₀(μ/cP) = a + b/T + c T + d T²; `vars {a..d}`, `k = 1e-3` → Pa·s.
+  - **`yawsLiquidConductivity`** (24-1): log₁₀(k) = a + b (1 − T/c)^(2/7); `vars {a,b,c}`, W/(m·K).
+  - **`yawsLiquidDensity`** (8-1/8-2): ρ = a · b^(-(1 − T/Tc)^n); `vars {a,b,n,Tc}`, `k = 1000` → kg/m³.
+  - **`yawsWaterSolubility`** (17-1): log₁₀(S/ppm wt) = a + b/T + c/T²; `vars {a,b,c}`, `k = 1e-6` → mass fraction.
+  - Salt-water solubility (16-1) and activated-carbon adsorption (19-1) are not T-equations; they are stored as `raw` coefficient rows.
 - **Not included:** `CRCHeatCapacitySolids.tsv`. It holds Cp values at fixed temperatures (200, 250, ... K), not coefficients, so it is left for a possible tabulated type later.
 
 ---
@@ -350,7 +357,7 @@ The compound files carry no units, no source links and no `generatedAt` (a rebui
 }
 ```
 
-Entry fields: `cas` and `casRef` (only on records without CAS: the CAS a PubChem formula search found, and its search record, see [PubChem identifiers](#pubchem-identifiers)), `name` (identifier name, else the first source label), `Mr` [kg/mol], `smiles` (structure line notation, e.g. `CCO`; used for the organic families), `inchikey` (hashed IUPAC InChI, a lookup key for PubChem and other databases), `pubchemCid` (PubChem compound id; page `sources.json` → `pubchem.compoundUrl`), `families`, `identifierRef`, `otherCas`, `properties`, `equations`, `raw`, `transport` (see [Transport parameters](#transport-parameters)), `janaf`, `nasa7`, `nasa9`. Compounds that no identifier source knows have no `Mr`, `smiles`, `inchikey`, `pubchemCid` or `identifierRef`.
+Entry fields: `cas` and `casRef` (only on records without CAS: the CAS a PubChem formula search found, and its search record, see [PubChem identifiers](#pubchem-identifiers)), `name` (identifier name, else the first source label), `synonyms` (alternate names from the Yaws 1999 synonym appendix; excludes `name`), `Mr` [kg/mol], `smiles` (structure line notation, e.g. `CCO`; used for the organic families), `inchikey` (hashed IUPAC InChI, a lookup key for PubChem and other databases), `pubchemCid` (PubChem compound id; page `sources.json` → `pubchem.compoundUrl`), `families`, `identifierRef`, `otherCas`, `properties`, `equations`, `raw`, `transport` (see [Transport parameters](#transport-parameters)), `janaf`, `nasa7`, `nasa9`. Compounds that no identifier source knows have no `Mr`, `smiles`, `inchikey`, `pubchemCid` or `identifierRef`. Validated Yaws CAS that were missing from the chemicals/PubChem identifier set are created as new records from the Yaws appendix (and then filled from the property tables).
 
 ### units.json
 
@@ -412,6 +419,7 @@ Perry files Al2O3 under 39377-45-2 (a PubChem ionic entry) and CRC under 1344-28
 ### Links to the source repository
 
 - Every `PropertyValue`, `EquationValue` and `raw` entry has `ref: [RefKey, line, fileKey]`, except a PubChem experimental value, whose `ref` is the string `pubchem` + catalog number (`pubchem151`). The RefKey is the short key of [REFERENCES.md](../REFERENCES.md); the line is 1-based in the source file (for the Shomate JSON, the line of the CAS key). A JANAF melting or boiling point uses the table id as the file key (`[NISTJANAF, line, tableId]`), opened with `sources.json` → `janaf.tableUrl`.
+- **Citation location is only `ref`.** Do not write `tableId`, `rowId`, `page`, `pageFirst`, `pageLast` (or similar locators) on the value; `sources.json` resolves the file key, and `line` in `ref` is the row.
 - Rows used from other tables are cited the same way: `tcRef` (DIPPR 114 Tc from Yaws) and `rangeRef` (VDI liquid Tm/Tc).
 - The identifiers (formula, MW, SMILES) carry `identifierRef: [line, fileKey]` (the identifier databases have no RefKey).
 - `sources.json` maps each file key (`TableSpec.key` in `constants/source_tables.py`) to the table name, repo path, RefKey and file URL pinned to the commit in `PROVENANCE.txt`. The row URL is `lineUrl` = `{url}#L{line}`. `pubchem.references` is `pubchem-references.jsonl` and `pubchem.ref` is the form of a PubChem value citation. Those catalog rows are not copied into the main references database.

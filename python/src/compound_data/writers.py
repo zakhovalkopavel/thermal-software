@@ -44,6 +44,7 @@ def write_compound_sources(
     nbs_tables: Iterable[TableSpec] = (),
     molten_tables: Iterable[TableSpec] = (),
     book_gas_tables: Iterable[TableSpec] = (),
+    yaws1999_tables: Iterable[TableSpec] = (),
 ) -> Path:
     """Write ``sources.json``: repository, commit, license, the file-key → file map, the JANAF and NASA links.
 
@@ -53,6 +54,7 @@ def write_compound_sources(
     transport-parameters file, ``url: null``). ``nbs_tables`` add the corrected NBS tables CSV the same way.
     ``molten_tables`` add the molten-salt density, surface-tension and viscosity files.
     ``book_gas_tables`` add the hand-moved book gas equation tables.
+    ``yaws1999_tables`` add the processed Yaws 1999 property tables.
     """
     payload: dict[str, Any] = {
         "generatedAt": generated_at,
@@ -95,7 +97,7 @@ def write_compound_sources(
                        "(pubchem-inorganic.jsonl or pubchem-organic.jsonl). "
                        "It is not a key of the main references database.",
         }
-    for table in (*transport_tables, *nbs_tables, *molten_tables, *book_gas_tables):
+    for table in (*transport_tables, *nbs_tables, *molten_tables, *book_gas_tables, *yaws1999_tables):
         payload["files"][table.key] = {"name": table.name, "path": table.path, "ref": table.ref.value if table.ref else None, "url": None}
     path = _write(out_dir / "sources.json", payload)
     logger.info("[output] Written → %s  (%d files)", path, len(payload["files"]))
@@ -165,6 +167,7 @@ def write_compound_index(files: Iterable[CompoundFile], out_dir: Path, generated
                 else (record.formula if record.formula != record.hill else None)
             ),
             "name": record.name,
+            "synonyms": record.synonyms,
             "class": record.compound_class,
             "group": record.group,
             "families": record.families,

@@ -19,4 +19,6 @@ export interface CompoundDataEquations {
   surfaceTension?: ByPhase;
   /** Saturated vapor pressure Psat [Pa] */
   vaporPressure?: ByPhase;
+  /** Water solubility as mass fraction [-] (Yaws1999 T-correlation) */
+  waterSolubility?: ByPhase;
 }

@@ -20,8 +20,13 @@ Types:
 - `wagner25`
 - `sutherland`
 - `powerLaw`
+- `yawsVaporPressure`
+- `yawsLiquidViscosity`
+- `yawsLiquidConductivity`
+- `yawsLiquidDensity`
+- `yawsWaterSolubility`
 
-`sutherland` and `powerLaw` come from White, *Viscous Fluid Flow* (`White3`), not from chemicals; their test values are computed from the printed formulas.
+`sutherland` and `powerLaw` come from White, *Viscous Fluid Flow* (`White3`), not from chemicals; their test values are computed from the printed formulas. The five `yaws*` types come from Yaws, *Chemical Properties Handbook* (1999); integrals use Gauss–Legendre.
 
 The VDI gas viscosity, gas thermal conductivity and liquid thermal conductivity polynomials use the existing `quartic` type, so they need nothing here.
 
@@ -35,7 +40,7 @@ Each type follows the existing pattern (see `dipprN102`):
 - `backend/src/common/thermal/utils/equation-methods/<name>-equation-method.ts`: a class implementing `Equation<T>` with `calculate`, `integral` and `calculateAverage`, exported from `equation-methods/index.ts`.
 - `backend/src/common/thermal/dto/equation-type.dto.ts`: a new `EquationTypeDto` value.
 - `backend/src/common/thermal/utils/common.ts`: a new case in `Common.equation`.
-- `backend/test/unit/thermal/utils/`: the unit tests, grouped by property in `heat-capacity-equation-methods.spec.ts` (`dipprN114`, `trcCp`, `shomate`, `zabranskySpline`, `zabranskyQuasiPolynomial`), `liquid-property-equation-methods.spec.ts` (`dipprN101`, `ppds9`, `ppds10`, `ppds12`, `dipprN106`, `wagner25`) and `gas-transport-equation-methods.spec.ts` (`sutherland`, `powerLaw`).
+- `backend/test/unit/thermal/utils/`: the unit tests, grouped by property in `heat-capacity-equation-methods.spec.ts` (`dipprN114`, `trcCp`, `shomate`, `zabranskySpline`, `zabranskyQuasiPolynomial`), `liquid-property-equation-methods.spec.ts` (`dipprN101`, `ppds9`, `ppds10`, `ppds12`, `dipprN106`, `wagner25`), `gas-transport-equation-methods.spec.ts` (`sutherland`, `powerLaw`) and `yaws-equation-methods.spec.ts` (five `yaws*` types).
 - [COMMON_THERMAL_LIBRARY.md](COMMON_THERMAL_LIBRARY.md): a new row in the equation types table.
 - `python/src/chemicals_tables/constants/planned_equation_types.py`: the type leaves `PLANNED_EQUATION_TYPES` (now empty).
 
@@ -232,6 +237,41 @@ Types without a closed-form antiderivative use `gaussLegendre20` from `backend/s
 - **Tests** (air, Table 1-2: y0 = 1.716e-5, T0 = 273, n = 0.666):
   - `calculate(400, ..., 210, 1900)` = 2.2131197548169116e-05; below 210 K it equals `calculate(210)`.
   - `integral(500) − integral(300)` = 0.004415881357539366.
+
+### `yawsVaporPressure`
+
+- **Source:** Yaws 1999 tables 7-1 / 7-2.
+- **Vars:** `{ a, b, c, d, e }`
+- **Formula:** log₁₀(P/mmHg) = a + b/T + c log₁₀(T) + d T + e T²; dataset `k = 133.322387415` → Pa.
+- **Integral:** numerical (Gauss–Legendre).
+
+### `yawsLiquidViscosity`
+
+- **Source:** Yaws 1999 tables 22-1 / 22-2.
+- **Vars:** `{ a, b, c, d }`
+- **Formula:** log₁₀(μ/cP) = a + b/T + c T + d T²; dataset `k = 1e-3` → Pa·s.
+- **Integral:** numerical.
+
+### `yawsLiquidConductivity`
+
+- **Source:** Yaws 1999 table 24-1.
+- **Vars:** `{ a, b, c }`
+- **Formula:** log₁₀(k) = a + b (1 − T/c)^(2/7), W/(m·K). When T ≥ c the branch clamps to 10^a.
+- **Integral:** numerical.
+
+### `yawsLiquidDensity`
+
+- **Source:** Yaws 1999 tables 8-1 / 8-2.
+- **Vars:** `{ a, b, n, Tc }`
+- **Formula:** ρ = a · b^(-(1 − T/Tc)^n) in g/ml; dataset `k = 1000` → kg/m³. At T ≥ Tc returns a·k.
+- **Integral:** numerical.
+
+### `yawsWaterSolubility`
+
+- **Source:** Yaws 1999 table 17-1.
+- **Vars:** `{ a, b, c }`
+- **Formula:** log₁₀(S/ppm wt) = a + b/T + c/T²; dataset `k = 1e-6` → mass fraction.
+- **Integral:** numerical.
 
 ---
 

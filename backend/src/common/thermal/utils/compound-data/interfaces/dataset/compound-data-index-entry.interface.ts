@@ -22,6 +22,8 @@ export interface CompoundDataIndexEntry {
   /** Source formula when it differs from `hill` */
   formula?: string;
   name?: string;
+  /** Alternate names, as in `CompoundDataRecord.synonyms` */
+  synonyms?: string[];
   class: 'inorganic' | 'organic';
   group: string;
   families?: string[];
