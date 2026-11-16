@@ -219,3 +219,15 @@ def test_parse_data_line_cas_registry_number():
     assert row.values[2] == 2
     assert row.values[6] == 2.5
     assert row.values[8] == 6
+
+
+def test_parse_data_line_corrects_known_cas_typos():
+    from yaws1999.constants import correct_cas
+    assert correct_cas("72-02-5") == "75-02-5"
+    assert correct_cas("75-05-08") == "75-05-8"
+    row = parse_data_line(
+        "86 C2H3F VINYL FLUORIDE 72-02-5 -- -- -- 1 -- -- --",
+        djvu_page=596,
+    )
+    assert row is not None
+    assert row.values[0] == "75-02-5"

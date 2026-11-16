@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from yaws1999.cas_index import _clean_index_formula
+from yaws1999.constants import correct_appendix_formula, correct_cas
 from yaws1999.row_parser import clean_name
 
 # Standard CAS RN at end of line, or OCR placeholder dashes.
@@ -132,12 +133,14 @@ class SynonymIndexEntry:
 
     def to_dict(self) -> dict[str, Any]:
         """Public row shape aligned with handbook tables."""
+        cas = correct_cas(self.cas) if self.cas else None
+        formula = correct_appendix_formula(cas or self.cas, self.formula) or self.formula
         return {
             "id": self.id,
             "synonyms": list(self.synonyms),
-            "formula": self.formula,
+            "formula": formula,
             "name": self.name,
-            "cas": self.cas,
+            "cas": cas,
         }
 
 

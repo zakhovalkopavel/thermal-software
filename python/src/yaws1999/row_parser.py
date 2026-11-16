@@ -11,6 +11,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from yaws1999.constants import correct_cas
+
 _TABLE_HEADER = re.compile(r"(?i)^\s*Table\s+(\d+-\d+)\s+(.+?)(?:\s*\(continued\))?\s*$")
 _EQUATION = re.compile(
     r"(?i)(?:^|\s)((?:CP|log10P|n(?:gas|liq)|k(?:gas|liq)|H)\s*=|[A-Za-z].{0,8}=\s*[A-Z].{5,})",
@@ -298,9 +300,9 @@ def _coerce_value(token: str) -> Any:
     t = token.strip()
     if re.fullmatch(r"[—–_\-]{1,3}", t) or t.upper() in {"NA", "N/A", "APP"}:
         return None
-    # CAS registry number (keep as string).
+    # CAS registry number (keep as string; apply known OCR typos).
     if _CAS_RE.fullmatch(t):
-        return t
+        return correct_cas(t)
     # Categorical handbook cells (CODE / State / Phase / allotrope).
     if re.fullmatch(_CATEGORICAL_VALUE, t, flags=re.I):
         key = re.sub(r"\s+", " ", t.lower())

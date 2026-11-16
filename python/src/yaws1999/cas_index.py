@@ -11,6 +11,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
+from yaws1999.constants import correct_appendix_formula, correct_cas
 from yaws1999.row_parser import clean_formula, clean_name
 
 # Standard CAS RN: 2–7 digits, 2 digits, 1 check digit.
@@ -36,11 +37,12 @@ class CasIndexEntry:
 
     def to_dict(self) -> dict[str, Any]:
         """Public row shape aligned with handbook tables."""
+        cas = correct_cas(self.cas) or self.cas
         return {
             "id": self.id,
-            "cas": self.cas,
+            "cas": cas,
             "name": self.name,
-            "formula": self.formula,
+            "formula": correct_appendix_formula(cas, self.formula) or self.formula,
         }
 
 
