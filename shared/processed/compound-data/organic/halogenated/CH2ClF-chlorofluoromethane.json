@@ -34,6 +34,14 @@
       "properties": {
         "acentricFactor": [
           {
+            "value": 0.211,
+            "ref": [
+              "Yaws2014",
+              1561,
+              "yawsCritical"
+            ]
+          },
+          {
             "value": 0.199,
             "ref": [
               "Yaws1999",
@@ -50,9 +58,25 @@
               3175,
               "yawsTb"
             ]
+          },
+          {
+            "value": 264.06,
+            "ref": [
+              "Yaws1999",
+              23,
+              "yaws1999Table1_1"
+            ]
           }
         ],
         "criticalPressure": [
+          {
+            "value": 5620000,
+            "ref": [
+              "Yaws2014",
+              1561,
+              "yawsCritical"
+            ]
+          },
           {
             "value": 5131000.0,
             "ref": [
@@ -64,6 +88,14 @@
         ],
         "criticalTemperature": [
           {
+            "value": 427,
+            "ref": [
+              "Yaws2014",
+              1561,
+              "yawsCritical"
+            ]
+          },
+          {
             "value": 424.91,
             "ref": [
               "Yaws1999",
@@ -73,6 +105,14 @@
           }
         ],
         "criticalVolume": [
+          {
+            "value": 0.000154,
+            "ref": [
+              "Yaws2014",
+              1561,
+              "yawsCritical"
+            ]
+          },
           {
             "value": 0.0001585,
             "ref": [
@@ -122,6 +162,15 @@
               "TRC1994",
               687,
               "trcGasCp"
+            ]
+          },
+          {
+            "value": -265700,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              1095,
+              "yawsHfS0g"
             ]
           },
           {
@@ -213,6 +262,17 @@
               "Yaws1999",
               23,
               "yaws1999Table24_1"
+            ]
+          }
+        ],
+        "viscosity": [
+          {
+            "value": 0.00019,
+            "phase": "liquid",
+            "ref": [
+              "Yaws1999",
+              23,
+              "yaws1999Table22_1"
             ]
           }
         ],
@@ -429,6 +489,28 @@
                 "min": 275.0,
                 "max": 1000.0,
                 "k": 1e-07
+              }
+            ]
+          },
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsLiquidViscosity",
+                "ref": [
+                  "Yaws1999",
+                  23,
+                  "yaws1999Table22_1"
+                ],
+                "vars": {
+                  "a": -9.6115,
+                  "b": 974.34,
+                  "c": 0.029611,
+                  "d": -3.6067e-05
+                },
+                "min": 170.0,
+                "max": 424.0,
+                "k": 0.001
               }
             ]
           }

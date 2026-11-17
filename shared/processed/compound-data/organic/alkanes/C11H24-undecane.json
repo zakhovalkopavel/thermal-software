@@ -28,6 +28,14 @@
       "properties": {
         "acentricFactor": [
           {
+            "value": 0.53,
+            "ref": [
+              "Yaws2014",
+              2333,
+              "yawsCritical"
+            ]
+          },
+          {
             "value": 0.536,
             "ref": [
               "Yaws1999",
@@ -74,6 +82,14 @@
               4940,
               "yawsTb"
             ]
+          },
+          {
+            "value": 469.08,
+            "ref": [
+              "Yaws1999",
+              1116,
+              "yaws1999Table18_1"
+            ]
           }
         ],
         "collisionDiameter": [
@@ -89,6 +105,14 @@
         ],
         "criticalPressure": [
           {
+            "value": 1950000,
+            "ref": [
+              "Yaws2014",
+              2333,
+              "yawsCritical"
+            ]
+          },
+          {
             "value": 1966000.0,
             "ref": [
               "Yaws1999",
@@ -99,6 +123,14 @@
         ],
         "criticalTemperature": [
           {
+            "value": 639,
+            "ref": [
+              "Yaws2014",
+              2333,
+              "yawsCritical"
+            ]
+          },
+          {
             "value": 638.76,
             "ref": [
               "Yaws1999",
@@ -108,6 +140,14 @@
           }
         ],
         "criticalVolume": [
+          {
+            "value": 0.000659,
+            "ref": [
+              "Yaws2014",
+              2333,
+              "yawsCritical"
+            ]
+          },
           {
             "value": 0.0006569999999999999,
             "ref": [
@@ -185,9 +225,27 @@
               1597,
               "yawsHfS0g"
             ]
+          },
+          {
+            "value": -270290.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              1116,
+              "yaws1999Table12_1"
+            ]
           }
         ],
         "entropy298": [
+          {
+            "value": 585.72,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              1597,
+              "yawsHfS0g"
+            ]
+          },
           {
             "value": 585.0,
             "phase": "gas",
@@ -216,6 +274,17 @@
               "Yaws1999",
               1116,
               "yaws1999Table25_1"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": 41590.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              1116,
+              "yaws1999Table13_1"
             ]
           }
         ],
@@ -399,12 +468,12 @@
         ],
         "waterSolubility": [
           {
-            "value": 4.4e-08,
+            "value": 4.4e-09,
             "phase": "liquid",
             "ref": [
               "Yaws1999",
-              1116,
-              "yaws1999Table15_1"
+              193,
+              "yaws1999Table17_1"
             ]
           }
         ]
@@ -917,9 +986,53 @@
               }
             ]
           }
+        },
+        "waterSolubility": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsWaterSolubility",
+                "ref": [
+                  "Yaws1999",
+                  193,
+                  "yaws1999Table17_1"
+                ],
+                "vars": {
+                  "a": 28.051,
+                  "b": -18123.096,
+                  "c": 2700340.0
+                },
+                "min": null,
+                "max": null,
+                "k": 1e-06
+              }
+            ]
+          }
         }
       },
       "raw": [
+        {
+          "property": "saltWaterSolubility",
+          "phase": "liquid",
+          "values": {
+            "a": -2.3565,
+            "b": -3.8443e-06,
+            "c": 1.9221e-12,
+            "equation": "log10(S/ppm wt) = A + B X + C X^2",
+            "X_unit": "ppm wt NaCl",
+            "S_unit": "ppm wt",
+            "S_at_X_0": 0.0044,
+            "S_at_X_34_472": 0.00326,
+            "Tb": 468.7,
+            "MW": 156.311
+          },
+          "ref": [
+            "Yaws1999",
+            193,
+            "yaws1999Table16_1"
+          ]
+        },
         {
           "property": "adsorptionCapacity",
           "phase": "gas",

@@ -11,7 +11,8 @@
     "1081-77-2": {
       "name": "nonylbenzene",
       "synonyms": [
-        "n-NONYLBENZENE"
+        "n-NONYLBENZENE",
+        "1-phenylnonane"
       ],
       "Mr": 0.20435106,
       "smiles": "CCCCCCCCCC1=CC=CC=C1",
@@ -34,6 +35,14 @@
               2308,
               "yawsCritical"
             ]
+          },
+          {
+            "value": 0.638,
+            "ref": [
+              "Yaws1999",
+              1237,
+              "yaws1999Table1_1"
+            ]
           }
         ],
         "boilingPoint": [
@@ -43,6 +52,14 @@
               "Yaws2014",
               4884,
               "yawsTb"
+            ]
+          },
+          {
+            "value": 555.2,
+            "ref": [
+              "Yaws1999",
+              1237,
+              "yaws1999Table18_1"
             ]
           }
         ],
@@ -54,6 +71,14 @@
               2308,
               "yawsCritical"
             ]
+          },
+          {
+            "value": 1895000.0,
+            "ref": [
+              "Yaws1999",
+              1237,
+              "yaws1999Table1_1"
+            ]
           }
         ],
         "criticalTemperature": [
@@ -64,6 +89,14 @@
               2308,
               "yawsCritical"
             ]
+          },
+          {
+            "value": 741.0,
+            "ref": [
+              "Yaws1999",
+              1237,
+              "yaws1999Table1_1"
+            ]
           }
         ],
         "criticalVolume": [
@@ -73,6 +106,14 @@
               "Yaws2014",
               2308,
               "yawsCritical"
+            ]
+          },
+          {
+            "value": 0.00079,
+            "ref": [
+              "Yaws1999",
+              1237,
+              "yaws1999Table1_1"
             ]
           }
         ],
@@ -116,9 +157,27 @@
               1584,
               "yawsHfS0g"
             ]
+          },
+          {
+            "value": -116860.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              1237,
+              "yaws1999Table12_1"
+            ]
           }
         ],
         "entropy298": [
+          {
+            "value": 635.98,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              1584,
+              "yawsHfS0g"
+            ]
+          },
           {
             "value": 636.16,
             "phase": "gas",
@@ -136,6 +195,17 @@
               "Yaws1999",
               1237,
               "yaws1999Table25_1"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": 186560.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              1237,
+              "yaws1999Table13_1"
             ]
           }
         ],
@@ -194,11 +264,11 @@
         ],
         "meltingPoint": [
           {
-            "value": 249.0,
+            "value": 248.98999999999998,
             "ref": [
               "Yaws1999",
-              1237,
-              "yaws1999Table1_1"
+              325,
+              "yaws1999Table20_1"
             ]
           }
         ],
@@ -268,12 +338,12 @@
         ],
         "waterSolubility": [
           {
-            "value": 3.6655999999999997e-07,
+            "value": 1.609e-07,
             "phase": "liquid",
             "ref": [
               "Yaws1999",
-              1237,
-              "yaws1999Table15_1"
+              212,
+              "yaws1999Table17_1"
             ]
           }
         ]
@@ -559,8 +629,54 @@
               }
             ]
           }
+        },
+        "waterSolubility": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsWaterSolubility",
+                "ref": [
+                  "Yaws1999",
+                  212,
+                  "yaws1999Table17_1"
+                ],
+                "vars": {
+                  "a": 9.552,
+                  "b": -6165.937,
+                  "c": 918725.0
+                },
+                "min": null,
+                "max": null,
+                "k": 1e-06
+              }
+            ]
+          }
         }
-      }
+      },
+      "raw": [
+        {
+          "property": "saltWaterSolubility",
+          "phase": "liquid",
+          "values": {
+            "a": -0.7934,
+            "b": -3.3292e-06,
+            "c": 1.6646e-12,
+            "equation": "log10(S/ppm wt) = A + B X + C X^2",
+            "X_unit": "ppm wt NaCl",
+            "S_unit": "ppm wt",
+            "S_at_X_0": 0.1609,
+            "S_at_X_34_472": 0.1241,
+            "Tb": 555.16,
+            "MW": 204.355
+          },
+          "ref": [
+            "Yaws1999",
+            212,
+            "yaws1999Table16_1"
+          ]
+        }
+      ]
     }
   }
 }

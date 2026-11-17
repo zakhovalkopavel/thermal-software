@@ -11,7 +11,8 @@
     "1795-26-2": {
       "name": "1,3,5-Trimethylcyclohexane",
       "synonyms": [
-        "cis,trans-1,3,5-TRIMETHYLCYCLOHEXANE"
+        "cis,trans-1,3,5-TRIMETHYLCYCLOHEXANE",
+        "c-t-135trimethylcyclohexane"
       ],
       "Mr": 0.12624,
       "smiles": "CC1CC(CC(C1)C)C",
@@ -21,7 +22,7 @@
         "alkanes"
       ],
       "identifierRef": [
-        669,
+        3501,
         "idPubchemRestUnclassified"
       ],
       "properties": {
@@ -43,9 +44,25 @@
               5638,
               "yawsTb"
             ]
+          },
+          {
+            "value": 413.7,
+            "ref": [
+              "Yaws1999",
+              906,
+              "yaws1999Table1_1"
+            ]
           }
         ],
         "criticalPressure": [
+          {
+            "value": 2840000,
+            "ref": [
+              "Yaws2014",
+              2673,
+              "yawsCritical"
+            ]
+          },
           {
             "value": 2649000.0,
             "ref": [
@@ -63,9 +80,25 @@
               2673,
               "yawsCritical"
             ]
+          },
+          {
+            "value": 602.2,
+            "ref": [
+              "Yaws1999",
+              906,
+              "yaws1999Table1_1"
+            ]
           }
         ],
         "criticalVolume": [
+          {
+            "value": 0.000472,
+            "ref": [
+              "Yaws2014",
+              2673,
+              "yawsCritical"
+            ]
+          },
           {
             "value": 0.0004705,
             "ref": [
@@ -114,6 +147,15 @@
               "TRC1994",
               1066,
               "trcGasCp"
+            ]
+          },
+          {
+            "value": -206500,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              1775,
+              "yawsHfS0g"
             ]
           },
           {
@@ -487,8 +529,54 @@
               }
             ]
           }
+        },
+        "waterSolubility": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsWaterSolubility",
+                "ref": [
+                  "Yaws1999",
+                  71,
+                  "yaws1999Table17_1"
+                ],
+                "vars": {
+                  "a": 17.089,
+                  "b": -10041.877,
+                  "c": 1496240.0
+                },
+                "min": null,
+                "max": null,
+                "k": 1e-06
+              }
+            ]
+          }
         }
-      }
+      },
+      "raw": [
+        {
+          "property": "saltWaterSolubility",
+          "phase": "liquid",
+          "values": {
+            "a": 0.2405,
+            "b": -4.5987e-06,
+            "c": 2.2994e-12,
+            "equation": "log10(S/ppm wt) = A + B X + C X^2",
+            "X_unit": "ppm wt NaCl",
+            "S_unit": "ppm wt",
+            "S_at_X_0": 1.74,
+            "S_at_X_34_472": 1.215,
+            "Tb": 413.7,
+            "MW": 126.241
+          },
+          "ref": [
+            "Yaws1999",
+            71,
+            "yaws1999Table16_1"
+          ]
+        }
+      ]
     }
   }
 }

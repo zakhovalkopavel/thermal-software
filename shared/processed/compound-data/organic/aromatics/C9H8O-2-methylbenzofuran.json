@@ -44,6 +44,14 @@
             "ref": "pubchem978"
           },
           {
+            "value": 470.15,
+            "ref": [
+              "Yaws2014",
+              7147,
+              "yawsTb"
+            ]
+          },
+          {
             "value": 470.65,
             "ref": [
               "Yaws1999",
@@ -89,7 +97,7 @@
             "ref": [
               "Yaws1999",
               877,
-              "yaws1999Table28_1"
+              "yaws1999Table8_1"
             ]
           }
         ],
@@ -113,9 +121,27 @@
               2117,
               "yawsHfS0g"
             ]
+          },
+          {
+            "value": -8250.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              877,
+              "yaws1999Table12_1"
+            ]
           }
         ],
         "entropy298": [
+          {
+            "value": 303.82,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              2117,
+              "yawsHfS0g"
+            ]
+          },
           {
             "value": 302.0,
             "phase": "gas",
@@ -123,6 +149,16 @@
               "Yaws1999",
               877,
               "yaws1999Table11_1"
+            ]
+          }
+        ],
+        "flashPoint": [
+          {
+            "value": 340.92777777777775,
+            "ref": [
+              "Yaws1999",
+              877,
+              "yaws1999Table25_1"
             ]
           }
         ],
@@ -159,6 +195,27 @@
             ]
           }
         ],
+        "logKow": [
+          {
+            "value": 3.22,
+            "ref": [
+              "Yaws1999",
+              877,
+              "yaws1999Table15_1"
+            ]
+          }
+        ],
+        "lowerExplosionLimit": [
+          {
+            "value": 0.01,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              877,
+              "yaws1999Table25_1"
+            ]
+          }
+        ],
         "solubilityParameter": [
           {
             "value": 20131.0,
@@ -178,6 +235,17 @@
               "Yaws1999",
               877,
               "yaws1999Table24_1"
+            ]
+          }
+        ],
+        "upperExplosionLimit": [
+          {
+            "value": 0.086,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              877,
+              "yaws1999Table25_1"
             ]
           }
         ],
@@ -203,6 +271,30 @@
         ]
       },
       "equations": {
+        "density": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsLiquidDensity",
+                "ref": [
+                  "Yaws1999",
+                  877,
+                  "yaws1999Table8_1"
+                ],
+                "vars": {
+                  "a": 0.32648,
+                  "b": 0.2539,
+                  "n": 0.2857,
+                  "Tc": 698.0
+                },
+                "min": 290.0,
+                "max": 698.0,
+                "k": 1000.0
+              }
+            ]
+          }
+        },
         "enthalpyVaporization": {
           "liquid": {
             "def": 0,

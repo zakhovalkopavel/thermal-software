@@ -11,7 +11,8 @@
     "624-29-3": {
       "name": "1,4-Dimethylcyclohexane",
       "synonyms": [
-        "cis-1,4-DIMETHYLCYCLOHEXANE"
+        "cis-1,4-DIMETHYLCYCLOHEXANE",
+        "c-1,4-dimethylcyclohexane"
       ],
       "Mr": 0.11220999999999999,
       "smiles": "CC1CCC(CC1)C",
@@ -32,6 +33,14 @@
               "Yaws2014",
               1732,
               "yawsCritical"
+            ]
+          },
+          {
+            "value": 0.231,
+            "ref": [
+              "Yaws1999",
+              809,
+              "yaws1999Table1_1"
             ]
           }
         ],
@@ -57,6 +66,14 @@
               3675,
               "yawsTb"
             ]
+          },
+          {
+            "value": 397.47,
+            "ref": [
+              "Yaws1999",
+              809,
+              "yaws1999Table18_1"
+            ]
           }
         ],
         "criticalPressure": [
@@ -66,6 +83,14 @@
               "Yaws2014",
               1732,
               "yawsCritical"
+            ]
+          },
+          {
+            "value": 2938000.0,
+            "ref": [
+              "Yaws1999",
+              809,
+              "yaws1999Table1_1"
             ]
           }
         ],
@@ -77,6 +102,14 @@
               1732,
               "yawsCritical"
             ]
+          },
+          {
+            "value": 598.15,
+            "ref": [
+              "Yaws1999",
+              809,
+              "yaws1999Table1_1"
+            ]
           }
         ],
         "criticalVolume": [
@@ -86,6 +119,14 @@
               "Yaws2014",
               1732,
               "yawsCritical"
+            ]
+          },
+          {
+            "value": 0.00045999999999999996,
+            "ref": [
+              "Yaws1999",
+              809,
+              "yaws1999Table1_1"
             ]
           }
         ],
@@ -157,6 +198,15 @@
               1210,
               "yawsHfS0g"
             ]
+          },
+          {
+            "value": -176650.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              809,
+              "yaws1999Table12_1"
+            ]
           }
         ],
         "entropy298": [
@@ -167,6 +217,15 @@
               "CRC95",
               1109,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": 370.92,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              1210,
+              "yawsHfS0g"
             ]
           },
           {
@@ -186,6 +245,17 @@
               "Yaws1999",
               809,
               "yaws1999Table25_1"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": 37950.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              809,
+              "yaws1999Table13_1"
             ]
           }
         ],
@@ -297,12 +367,12 @@
         ],
         "waterSolubility": [
           {
-            "value": 4.5276e-06,
+            "value": 4.5039999999999996e-06,
             "phase": "liquid",
             "ref": [
               "Yaws1999",
-              809,
-              "yaws1999Table15_1"
+              40,
+              "yaws1999Table17_1"
             ]
           }
         ]
@@ -588,9 +658,53 @@
               }
             ]
           }
+        },
+        "waterSolubility": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsWaterSolubility",
+                "ref": [
+                  "Yaws1999",
+                  40,
+                  "yaws1999Table17_1"
+                ],
+                "vars": {
+                  "a": 15.184,
+                  "b": -8660.0,
+                  "c": 1290340.0
+                },
+                "min": null,
+                "max": null,
+                "k": 1e-06
+              }
+            ]
+          }
         }
       },
       "raw": [
+        {
+          "property": "saltWaterSolubility",
+          "phase": "liquid",
+          "values": {
+            "a": 0.6536,
+            "b": -4.5987e-06,
+            "c": 2.2993e-12,
+            "equation": "log10(S/ppm wt) = A + B X + C X^2",
+            "X_unit": "ppm wt NaCl",
+            "S_unit": "ppm wt",
+            "S_at_X_0": 4.504,
+            "S_at_X_34_472": 3.146,
+            "Tb": 397.56,
+            "MW": 112.214
+          },
+          "ref": [
+            "Yaws1999",
+            40,
+            "yaws1999Table16_1"
+          ]
+        },
         {
           "property": "adsorptionCapacity",
           "phase": "gas",

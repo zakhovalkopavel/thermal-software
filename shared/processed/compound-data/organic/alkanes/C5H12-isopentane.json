@@ -11,6 +11,7 @@
     "78-78-4": {
       "name": "Isopentane",
       "synonyms": [
+        "2-methylbutane(isopentane)",
         "isoamylhydride",
         "2-methylbutane"
       ],
@@ -33,6 +34,14 @@
               "Yaws2014",
               170,
               "yawsCritical"
+            ]
+          },
+          {
+            "value": 0.228,
+            "ref": [
+              "Yaws1999",
+              438,
+              "yaws1999Table1_1"
             ]
           }
         ],
@@ -74,9 +83,25 @@
               280,
               "yawsTb"
             ]
+          },
+          {
+            "value": 300.99,
+            "ref": [
+              "Yaws1999",
+              438,
+              "yaws1999Table18_1"
+            ]
           }
         ],
         "criticalPressure": [
+          {
+            "value": 3380000,
+            "ref": [
+              "Yaws2014",
+              170,
+              "yawsCritical"
+            ]
+          },
           {
             "value": 3381000.0,
             "ref": [
@@ -88,6 +113,14 @@
         ],
         "criticalTemperature": [
           {
+            "value": 460.4,
+            "ref": [
+              "Yaws2014",
+              170,
+              "yawsCritical"
+            ]
+          },
+          {
             "value": 460.43,
             "ref": [
               "Yaws1999",
@@ -97,6 +130,14 @@
           }
         ],
         "criticalVolume": [
+          {
+            "value": 0.000306,
+            "ref": [
+              "Yaws2014",
+              170,
+              "yawsCritical"
+            ]
+          },
           {
             "value": 0.0003058,
             "ref": [
@@ -174,6 +215,15 @@
               152,
               "yawsHfS0g"
             ]
+          },
+          {
+            "value": -154470.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              438,
+              "yaws1999Table12_1"
+            ]
           }
         ],
         "entropy298": [
@@ -184,6 +234,15 @@
               "CRC95",
               208,
               "crcStdThermo"
+            ]
+          },
+          {
+            "value": 343.89,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              152,
+              "yawsHfS0g"
             ]
           },
           {
@@ -203,6 +262,17 @@
               "Yaws1999",
               438,
               "yaws1999Table25_1"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": -14810.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              438,
+              "yaws1999Table13_1"
             ]
           }
         ],
@@ -964,9 +1034,53 @@
               }
             ]
           }
+        },
+        "waterSolubility": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsWaterSolubility",
+                "ref": [
+                  "Yaws1999",
+                  3,
+                  "yaws1999Table17_1"
+                ],
+                "vars": {
+                  "a": 9.473,
+                  "b": -4645.254,
+                  "c": 692143.0
+                },
+                "min": null,
+                "max": null,
+                "k": 1e-06
+              }
+            ]
+          }
         }
       },
       "raw": [
+        {
+          "property": "saltWaterSolubility",
+          "phase": "liquid",
+          "values": {
+            "a": 1.6794,
+            "b": -3.86e-06,
+            "c": 1.93e-12,
+            "equation": "log10(S/ppm wt) = A + B X + C X^2",
+            "X_unit": "ppm wt NaCl",
+            "S_unit": "ppm wt",
+            "S_at_X_0": 47.8,
+            "S_at_X_34_472": 35.37,
+            "Tb": 301.15,
+            "MW": 72.15
+          },
+          "ref": [
+            "Yaws1999",
+            3,
+            "yaws1999Table16_1"
+          ]
+        },
         {
           "property": "adsorptionCapacity",
           "phase": "gas",

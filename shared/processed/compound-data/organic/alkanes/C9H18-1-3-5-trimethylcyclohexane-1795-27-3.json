@@ -11,7 +11,8 @@
     "1795-27-3": {
       "name": "1,3,5-Trimethylcyclohexane",
       "synonyms": [
-        "cis,cis-1,3,5-TRIMETHYLCYCLOHEXANE"
+        "cis,cis-1,3,5-TRIMETHYLCYCLOHEXANE",
+        "c-c-135trimethylcyclohexane"
       ],
       "Mr": 0.12624,
       "smiles": "CC1CC(CC(C1)C)C",
@@ -21,7 +22,7 @@
         "alkanes"
       ],
       "identifierRef": [
-        670,
+        3500,
         "idPubchemRestUnclassified"
       ],
       "properties": {
@@ -43,6 +44,14 @@
               5639,
               "yawsTb"
             ]
+          },
+          {
+            "value": 411.66,
+            "ref": [
+              "Yaws1999",
+              905,
+              "yaws1999Table1_1"
+            ]
           }
         ],
         "criticalPressure": [
@@ -52,6 +61,14 @@
               "Yaws2014",
               2674,
               "yawsCritical"
+            ]
+          },
+          {
+            "value": 2649000.0,
+            "ref": [
+              "Yaws1999",
+              905,
+              "yaws1999Table1_1"
             ]
           }
         ],
@@ -63,6 +80,14 @@
               2674,
               "yawsCritical"
             ]
+          },
+          {
+            "value": 607.86,
+            "ref": [
+              "Yaws1999",
+              905,
+              "yaws1999Table1_1"
+            ]
           }
         ],
         "criticalVolume": [
@@ -72,6 +97,14 @@
               "Yaws2014",
               2674,
               "yawsCritical"
+            ]
+          },
+          {
+            "value": 0.0004705,
+            "ref": [
+              "Yaws1999",
+              905,
+              "yaws1999Table1_1"
             ]
           }
         ],
@@ -105,6 +138,15 @@
               "TRC1994",
               1067,
               "trcGasCp"
+            ]
+          },
+          {
+            "value": -215200,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              1776,
+              "yawsHfS0g"
             ]
           },
           {
@@ -478,8 +520,54 @@
               }
             ]
           }
+        },
+        "waterSolubility": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsWaterSolubility",
+                "ref": [
+                  "Yaws1999",
+                  70,
+                  "yaws1999Table17_1"
+                ],
+                "vars": {
+                  "a": 16.852,
+                  "b": -9869.544,
+                  "c": 1470560.0
+                },
+                "min": null,
+                "max": null,
+                "k": 1e-06
+              }
+            ]
+          }
         }
-      }
+      },
+      "raw": [
+        {
+          "property": "saltWaterSolubility",
+          "phase": "liquid",
+          "values": {
+            "a": 0.2926,
+            "b": -4.5987e-06,
+            "c": 2.2994e-12,
+            "equation": "log10(S/ppm wt) = A + B X + C X^2",
+            "X_unit": "ppm wt NaCl",
+            "S_unit": "ppm wt",
+            "S_at_X_0": 1.962,
+            "S_at_X_34_472": 1.37,
+            "Tb": 411.66,
+            "MW": 126.241
+          },
+          "ref": [
+            "Yaws1999",
+            70,
+            "yaws1999Table16_1"
+          ]
+        }
+      ]
     }
   }
 }

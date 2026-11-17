@@ -15,8 +15,7 @@
         "adakane 12",
         "bihexyl",
         "dihexyl",
-        "n-DODECAN",
-        "duodecane"
+        "n-DODECAN"
       ],
       "Mr": 0.17033,
       "smiles": "CCCCCCCCCCCC",
@@ -31,6 +30,14 @@
       ],
       "properties": {
         "acentricFactor": [
+          {
+            "value": 0.576,
+            "ref": [
+              "Yaws2014",
+              831,
+              "yawsCritical"
+            ]
+          },
           {
             "value": 0.573,
             "ref": [
@@ -74,6 +81,14 @@
               1390,
               "yawsTb"
             ]
+          },
+          {
+            "value": 489.47,
+            "ref": [
+              "Yaws1999",
+              1164,
+              "yaws1999Table18_1"
+            ]
           }
         ],
         "collisionDiameter": [
@@ -89,6 +104,14 @@
         ],
         "criticalPressure": [
           {
+            "value": 1820000,
+            "ref": [
+              "Yaws2014",
+              831,
+              "yawsCritical"
+            ]
+          },
+          {
             "value": 1823999.9999999998,
             "ref": [
               "Yaws1999",
@@ -99,6 +122,14 @@
         ],
         "criticalTemperature": [
           {
+            "value": 658,
+            "ref": [
+              "Yaws2014",
+              831,
+              "yawsCritical"
+            ]
+          },
+          {
             "value": 658.2,
             "ref": [
               "Yaws1999",
@@ -108,6 +139,14 @@
           }
         ],
         "criticalVolume": [
+          {
+            "value": 0.000716,
+            "ref": [
+              "Yaws2014",
+              831,
+              "yawsCritical"
+            ]
+          },
           {
             "value": 0.0007267999999999999,
             "ref": [
@@ -185,9 +224,27 @@
               610,
               "yawsHfS0g"
             ]
+          },
+          {
+            "value": -290870.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              1164,
+              "yaws1999Table12_1"
+            ]
           }
         ],
         "entropy298": [
+          {
+            "value": 625.21,
+            "phase": "gas",
+            "ref": [
+              "Yaws2014",
+              610,
+              "yawsHfS0g"
+            ]
+          },
           {
             "value": 624.2,
             "phase": "gas",
@@ -216,6 +273,17 @@
               "Yaws1999",
               1164,
               "yaws1999Table25_1"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": 50040.0,
+            "phase": "gas",
+            "ref": [
+              "Yaws1999",
+              1164,
+              "yaws1999Table13_1"
             ]
           }
         ],
@@ -1007,9 +1075,53 @@
               }
             ]
           }
+        },
+        "waterSolubility": {
+          "liquid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "yawsWaterSolubility",
+                "ref": [
+                  "Yaws1999",
+                  200,
+                  "yaws1999Table17_1"
+                ],
+                "vars": {
+                  "a": 23.755,
+                  "b": -15607.165,
+                  "c": 2325470.0
+                },
+                "min": null,
+                "max": null,
+                "k": 1e-06
+              }
+            ]
+          }
         }
       },
       "raw": [
+        {
+          "property": "saltWaterSolubility",
+          "phase": "liquid",
+          "values": {
+            "a": -2.4318,
+            "b": -3.1231e-06,
+            "c": 1.5616e-12,
+            "equation": "log10(S/ppm wt) = A + B X + C X^2",
+            "X_unit": "ppm wt NaCl",
+            "S_unit": "ppm wt",
+            "S_at_X_0": 0.0037,
+            "S_at_X_34_472": 0.0029,
+            "Tb": 488.61,
+            "MW": 170.337
+          },
+          "ref": [
+            "Yaws1999",
+            200,
+            "yaws1999Table16_1"
+          ]
+        },
         {
           "property": "adsorptionCapacity",
           "phase": "gas",
