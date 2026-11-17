@@ -325,6 +325,7 @@ Spec: [`STEP_05_DATABASE_MIGRATION.md`](STEP_05_DATABASE_MIGRATION.md)
 | Thermodynamics services | 1 (radiation) | 192 | ⚠️ Partial — 7 services missing |
 | Thermodynamics controllers | 1 | 332 | ✅ Full |
 | Common thermal | 1 | 188 | ✅ Full |
+| Conventions (file length) | 2 | ~330 | ⚠️ Written, not yet run — Docker daemon was unavailable when added; run `docker compose exec backend npm run test -- conventions`. Baseline: 35 grandfathered files (20 code, 15 docs) in `backend/test/unit/conventions/file-length-baseline.json` |
 
 ### Missing
 - [ ] Backend integration tests (0)

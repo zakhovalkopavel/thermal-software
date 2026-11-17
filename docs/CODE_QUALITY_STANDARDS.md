@@ -281,6 +281,12 @@ export class TypeOrmCalculationRepository implements ICalculationRepository {
 ## 4. OOP Organization
 
 ### Module Structure
+
+> **Mandatory layout.** Each construct lives in its own folder with its own suffix, one construct per
+> file. Full mapping (types, enums, constants, data, utils, …) and placement rules:
+> [`CONVENTIONS.md`](./CONVENTIONS.md) § Construct → folder → file → export.
+> The tree below shows the core folders only.
+
 ```
 backend/src/modules/[feature]/
 ├── entities/
