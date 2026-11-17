@@ -12,13 +12,20 @@ import { BadRequestException } from '@nestjs/common';
 import { FluidPropertyService } from '../../../../src/modules/thermodynamics/services/fluid-property.service';
 import { GasPropertiesService } from '../../../../src/modules/thermodynamics/services/gas-properties.service';
 import { TransportService } from '../../../../src/modules/thermodynamics/services/transport.service';
+import { CompoundFluidPropsService } from '../../../../src/modules/thermodynamics/services/compound-fluid-props.service';
 import { FlowRegime } from '../../../../src/modules/thermodynamics/types';
 import { FlowGeometry, CorrelationName, Species } from '../../../../src/modules/thermodynamics/enums';
 
 // ── Factory ───────────────────────────────────────────────────────────────────
 
 function buildService(): FluidPropertyService {
-  return new FluidPropertyService(new GasPropertiesService(), new TransportService());
+  const gasProps = new GasPropertiesService();
+  const transport = new TransportService();
+  return new FluidPropertyService(
+    gasProps,
+    transport,
+    new CompoundFluidPropsService(gasProps, transport),
+  );
 }
 
 // ── POST /thermodynamics/fluid/cp ─────────────────────────────────────────────
@@ -40,12 +47,12 @@ describe('POST /thermodynamics/fluid/cp', () => {
     expect(result.validity!.action).toBe('none');
   });
 
-  it('should return Cp for a catalogue compoundId — nitrogen CAS', () => {
+  it('should return Cp for a catalogue compoundId — nitrogen', () => {
     const svc = buildService();
-    const result = svc.getCp({ compoundId: '7727-37-9', T_fluid_K: 1000 });
+    const result = svc.getCp({ compoundId: 'nitrogen', T_fluid_K: 1000 });
     expect(result.Cp_J_kgK).toBeGreaterThan(900);
     expect(result.Cp_J_kgK).toBeLessThan(1400);
-    expect(result.species).toBe('7727-37-9');
+    expect(result.species).toBe('nitrogen');
   });
 
   it('should clamp+warn when T is outside the Cp correlation range', () => {

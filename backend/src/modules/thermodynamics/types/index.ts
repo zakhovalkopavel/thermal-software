@@ -1,4 +1,4 @@
 export { CorrelationName } from './correlation-name.type';
-export { KnownFluid, KNOWN_FLUIDS, KNOWN_FLUID_DESCRIPTION, normalizeKnownFluid } from './known-fluid.type';
+export { KnownFluid } from './known-fluid.type';
+export { KnownFluids } from '../utils/known-fluids';
 export { FlowRegime } from './flow-regime.type';
-

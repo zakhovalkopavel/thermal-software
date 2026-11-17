@@ -141,7 +141,7 @@
 All input/output DTOs for fluid, dimensionless, geometry, numeric endpoints in `dto/index.ts`.
 
 ### Types (4 files) — ✅ Complete
-- [x] `known-fluid.type.ts` — single source of truth for fluid keys
+- [x] `known-fluid.type.ts` + `KnownFluids` — named fluids = `FLUID_REGISTRY` keys (+ `gas_mix`); no separate allowlist
 - [x] `correlation-name.type.ts`
 - [x] `flow-regime.type.ts`
 
@@ -349,7 +349,8 @@ Per-service checklist: [`docs/SERVICE_TEST_CHECKLIST.md`](../SERVICE_TEST_CHECKL
 
 Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).  
 - [x] **Phase 0** — suite baseline (1137 tests), conventions + structure ratchet, Swagger snapshot, D2 equation-type exception in `CONVENTIONS.md`.  
-- [x] **Phase 1** — `metals` pilot: split metal thermal shapes into `types/*.type.ts` (awaiting commit / pilot approval before Phase 2).
+- [x] **Phase 1** — `metals` pilot: split metal thermal shapes into `types/*.type.ts`.  
+- [x] **Phase 2** — `thermodynamics`: known-fluid split; `CompoundFluidPropsService` (V7=0); helpers → `utils/` (V6=0); controller split by resource; structure baselines shrunk (awaiting commit).
 
 ### Medium priority
 

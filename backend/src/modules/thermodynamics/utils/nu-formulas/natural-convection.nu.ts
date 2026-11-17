@@ -1,5 +1,5 @@
 import { GeometryDimsDto } from '../../dto/geometry/geometry-dims.dto';
-import { morganCoeffs, macGregorEmery } from '../nu-coefficients.helper';
+import { NuCoefficients } from '../nu-coefficients';
 
 /**
  * Nu correlations for natural convection.
@@ -51,7 +51,7 @@ export const naturalConvectionNu = {
    * Range: Ra [10⁻¹⁰–10¹²]
    */
   morgan(ra: number): number {
-    const [C, n] = morganCoeffs(ra);
+    const [C, n] = NuCoefficients.morganCoeffs(ra);
     return C * Math.pow(ra, n);
   },
 
@@ -166,7 +166,7 @@ export const naturalConvectionNu = {
    * Range: H/L ≤ 40, Ra [10³–10¹⁰]
    */
   macGregorEmery(ra: number, pr: number, dims: GeometryDimsDto): number {
-    return macGregorEmery(ra, (dims.b ?? 1) / (dims.a ?? 1), pr);
+    return NuCoefficients.macGregorEmery(ra, (dims.b ?? 1) / (dims.a ?? 1), pr);
   },
 
   // ── Mixed convection ───────────────────────────────────────────────────

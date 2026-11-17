@@ -6,7 +6,7 @@ import { CORRELATION_NAME_TO_FAMILY } from '../constants/correlation-families.co
 import { FlowGeometry } from '../enums/flow-geometry.enum';
 import { FlowRegime } from '../types/flow-regime.type';
 import { ResolvedDimensionlessPropsDto } from '../dto/dimensionless/resolved-dimensionless-props.dto';
-import { CORRELATION_VALIDITY } from './correlation-validity.helper';
+import { CORRELATION_VALIDITY } from '../constants/correlation-validity.constants';
 import { pipeDuctNu } from './nu-formulas/pipe-duct.nu';
 import { flatPlateNu } from './nu-formulas/flat-plate.nu';
 import { cylinderNu } from './nu-formulas/cylinder.nu';

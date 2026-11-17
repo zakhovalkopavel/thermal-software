@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { GasPropertiesService } from './gas-properties.service';
 import { TransportService } from './transport.service';
-import { Species } from '../enums';
+import { CompoundFluidPropsService } from './compound-fluid-props.service';
+import { Species, FlowGeometry, CorrelationName } from '../enums';
 import { PHYSICAL_CONSTANTS, STANDARD_CONDITIONS } from '../../../common/thermal';
 import { FLUID_REGISTRY } from '../../../common/thermal/compound/gas';
 import { CompoundValue } from '../../../common/thermal/interfaces/compound-value.interface';
@@ -11,11 +12,8 @@ import { FluidCpResultDto } from '../dto/fluid/fluid-cp-result.dto';
 import { FluidViscosityResultDto } from '../dto/fluid/fluid-viscosity-result.dto';
 import { FluidDensityResultDto } from '../dto/fluid/fluid-density-result.dto';
 import { FluidThermalConductivityResultDto } from '../dto/fluid/fluid-thermal-conductivity-result.dto';
-import { FlowRegime, normalizeKnownFluid } from '../types';
-import { FlowGeometry } from '../enums';
-import { CorrelationName } from '../enums';
-import { CORRELATION_VALIDITY } from '../helpers/correlation-validity.helper';
-import { resolveCompoundFluidProps } from '../helpers/compound-fluid-props.helper';
+import { FlowRegime, KnownFluids } from '../types';
+import { CORRELATION_VALIDITY } from '../constants/correlation-validity.constants';
 import {
   FlowModeEntry,
   FluidListEntry,
@@ -35,6 +33,7 @@ export class FluidPropertyService {
   constructor(
     private readonly gasProps: GasPropertiesService,
     private readonly transport: TransportService,
+    private readonly compoundFluidProps: CompoundFluidPropsService,
   ) {}
 
   // ── Cp ────────────────────────────────────────────────────────────────────
@@ -45,7 +44,7 @@ export class FluidPropertyService {
     const named = this._resolveNamedCompound(dto);
 
     if (named) {
-      const props = resolveCompoundFluidProps(this.gasProps, this.transport, named.compound, T);
+      const props = this.compoundFluidProps.resolve(named.compound, T);
       const Cv_J_kgK = props.Cp_J_kgK - PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK / props.M;
       return {
         Cp_J_kgK: props.Cp_J_kgK,
@@ -80,7 +79,7 @@ export class FluidPropertyService {
     const named = this._resolveNamedCompound(dto);
 
     if (named) {
-      const props = resolveCompoundFluidProps(this.gasProps, this.transport, named.compound, T, P);
+      const props = this.compoundFluidProps.resolve(named.compound, T, P);
       return {
         mu_Pa_s: props.mu_Pa_s,
         nu_m2s: props.nu_m2s,
@@ -132,7 +131,7 @@ export class FluidPropertyService {
     const named = this._resolveNamedCompound(dto);
 
     if (named) {
-      const props = resolveCompoundFluidProps(this.gasProps, this.transport, named.compound, T);
+      const props = this.compoundFluidProps.resolve(named.compound, T);
       return {
         lambda: props.lambda,
         T_K: T,
@@ -269,7 +268,7 @@ export class FluidPropertyService {
         throw new BadRequestException((error as Error).message);
       }
     }
-    const fluid = normalizeKnownFluid(dto.fluid);
+    const fluid = KnownFluids.normalize(dto.fluid);
     if (fluid && fluid !== 'gas_mix') {
       return { compound: this._requireCompound(fluid), label: fluid };
     }

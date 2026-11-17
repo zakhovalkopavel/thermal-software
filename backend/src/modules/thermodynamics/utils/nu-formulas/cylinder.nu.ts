@@ -1,4 +1,4 @@
-import { hilpertCoeffs } from '../nu-coefficients.helper';
+import { NuCoefficients } from '../nu-coefficients';
 
 /**
  * Nu correlations for external flow over cylinders and tube banks.
@@ -25,7 +25,7 @@ export const cylinderNu = {
    * Range: Re [0.4–4×10⁵]
    */
   hilpert(re: number, pr: number): number {
-    const [C, m] = hilpertCoeffs(re);
+    const [C, m] = NuCoefficients.hilpertCoeffs(re);
     return C * Math.pow(re, m) * Math.pow(pr, 1/3);
   },
 

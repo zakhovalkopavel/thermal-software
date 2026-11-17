@@ -1,6 +1,6 @@
 # Conventions Refactoring Plan
 
-**Status:** In progress — Phase 1 complete (awaiting commit); next: Phase 2 after pilot approval  
+**Status:** In progress — Phase 2 complete (awaiting commit); next: Phase 3 (`common/`)  
 **Branch:** `refactoring`  
 **Goal:** bring the backend in line with [`CONVENTIONS.md`](../CONVENTIONS.md) (one construct per file,
 folder-per-construct, service / static-class / function rules, file-length limits) **without changing behaviour**.  
@@ -142,12 +142,12 @@ largest module last.
 
 | Step | Action | Checkpoint |
 |------|--------|-----------|
-| 2.1 | `known-fluid.type.ts` (type + const + function) → split into `types/known-fluid.type.ts`, `constants/known-fluids.constants.ts`, and the function into a static class or the owning service. Ensure `KNOWN_FLUIDS` stays the single source of truth. | C1–C9; V2 −1. |
-| 2.2 | `compound-fluid-props.helper.ts` → **`CompoundFluidPropsService`** (`@Injectable`, constructor injects `GasPropertiesService` + `TransportService`; `heatCapacityOf` / `viscosityOf` / `conductivityOf` become `private` methods); interface → `interfaces/` or `types/`; `1.25` Eucken factor → named constant; update `fluid-property.service.ts` and `dimensionless-calculation.service.ts` to inject it. **Add tests first** (the service has none today): characterization tests for pure compound, mixture, Sutherland, and Eucken-fallback paths. | **CP2.2:** characterization tests written *before* the move and green *before and after*; V7 = 0. |
-| 2.3 | `correlation-validity.helper.ts` (const + 3 functions) and `nu-coefficients.helper.ts` (4 functions) → static classes (`CorrelationValidity`, `NuCoefficients`) in `utils/`; constants split out. | C1–C9; V3 −2, V6 −2. |
-| 2.4 | Move/rename the remaining helpers (`BodyGeometry`, `ChannelGeometry`, `CorrelationSelector` are already static classes) from `helpers/*.helper.ts` to `utils/<kebab-name>.ts`; remove the `helpers/` folder. | **CP2:** V6 = 0 (except D5 objects); `helpers/` folder gone. |
-| 2.5 | `dimensionless-calculation.service.ts` (class + inline interface) → move the interface out; check the controller has no logic (`thermodynamics.controller.ts` 400 lines → split by resource if > 300, **keeping routes identical**). | C8 mandatory: route table and Swagger identical. |
-| 2.6 | (Optional, D5) `nu-formulas/*.nu.ts` → static classes. | Own PR; skip if not agreed. |
+| 2.1 | `known-fluid.type.ts` (type + const + function) → split; named fluids use **`FLUID_REGISTRY`** (no parallel `KNOWN_FLUIDS` allowlist). | ✅ `KnownFluids` derives allow-list/docs from registry (+ `gas_mix`); legacy `water`→`H2O` only. |
+| 2.2 | `compound-fluid-props.helper.ts` → **`CompoundFluidPropsService`** … characterization tests first. | ✅ Tests green before/after; `EUCKEN_FACTOR`; V7 = 0. |
+| 2.3 | `correlation-validity` + `nu-coefficients` → static classes in `utils/`; constants split out. | ✅ `CorrelationValidity`, `NuCoefficients`. |
+| 2.4 | Move remaining helpers to `utils/`; remove `helpers/`. | ✅ `helpers/` gone; `nu-formulas/` under `utils/` (D5 objects left as-is). V6 = 0. |
+| 2.5 | Move inline types out of `dimensionless-calculation.service.ts`; split controller if > 300. | ✅ `ResolvedFluidProps` / `FlatFluidInput` types; controller split into gas / body-geometry / dimensionless (routes unchanged). |
+| 2.6 | (Optional, D5) `nu-formulas/*.nu.ts` → static classes. | Skipped (D5). |
 
 ### Phase 3 — `common/` (shared foundation: thermal library, utils, chemistry)
 

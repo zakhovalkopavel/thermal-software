@@ -4,7 +4,7 @@ import { GasPropertiesService } from '../../thermodynamics/services/gas-properti
 import { TransportService } from '../../thermodynamics/services/transport.service';
 import { DiffusionService } from '../../thermodynamics/services/diffusion.service';
 import { AerodynamicsService } from '../../thermodynamics/services/aerodynamics.service';
-import { specialNu } from '../../thermodynamics/helpers/nu-formulas/special.nu';
+import { specialNu } from '../../thermodynamics/utils/nu-formulas/special.nu';
 import { MultilayerWallService } from '../../thermal-exchange/services/multilayer-wall.service';
 import { WallGeometry } from '../../thermal-exchange/enums/wall-geometry.enum';
 import { LayerDto } from '../../thermal-exchange/dto/layer.dto';

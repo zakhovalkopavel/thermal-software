@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { GasPropertiesService } from './gas-properties.service';
 import { TransportService } from './transport.service';
 import { DimensionlessNumbersService } from './dimensionless-numbers.service';
+import { CompoundFluidPropsService } from './compound-fluid-props.service';
 import { DimensionlessInputDto } from '../dto/dimensionless/dimensionless-input.dto';
 import { DimensionlessResultDto } from '../dto/dimensionless/dimensionless-result.dto';
 import { GeometryDimsDto } from '../dto/geometry/geometry-dims.dto';
@@ -14,34 +15,11 @@ import { GrashofInputDto } from '../dto/dimensionless/grashof-input.dto';
 import { RayleighInputDto } from '../dto/dimensionless/rayleigh-input.dto';
 import { ReynoldsInputDto } from '../dto/dimensionless/reynolds-input.dto';
 import { PrandtlInputDto } from '../dto/dimensionless/prandtl-input.dto';
-import { KnownFluid, normalizeKnownFluid } from '../types/known-fluid.type';
-import {
-  EquationValidity,
-  MixtureValidity,
-} from '../../../common/thermal/interfaces/equation-validity.interface';
+import { KnownFluids } from '../utils/known-fluids';
 import { FLUID_REGISTRY } from '../../../common/thermal/compound/gas';
 import { CompoundValueBuilder } from '../../../common/thermal/utils/compound-data';
-import { resolveCompoundFluidProps } from '../helpers/compound-fluid-props.helper';
-
-/** Resolved fluid transport properties — output of Mode B resolution. */
-export interface ResolvedFluidProps {
-  rho_kg_m3: number;
-  mu_Pa_s: number;
-  Cp_J_kgK: number;
-  lambda: number;
-  nu_m2s: number;
-  validity?: EquationValidity;
-  mixtureValidity?: MixtureValidity;
-}
-
-/** Flat-format fluid descriptor shared by all scalar dimensionless endpoints. */
-interface FlatFluidInput {
-  fluid?: KnownFluid;
-  compoundId?: string;
-  composition?: Record<string, number>;
-  T_fluid_K?: number;
-  P_Pa?: number;
-}
+import { FlatFluidInput } from '../types/flat-fluid-input.type';
+import { ResolvedFluidProps } from '../types/resolved-fluid-props.type';
 
 /**
  * Service responsible for orchestrating dimensionless number calculations.
@@ -54,15 +32,22 @@ export class DimensionlessCalculationService {
     private readonly gasProps: GasPropertiesService,
     private readonly transport: TransportService,
     private readonly numbers: DimensionlessNumbersService,
+    private readonly compoundFluidProps: CompoundFluidPropsService,
   ) {}
 
   // ── Scalar calculations ──────────────────────────────────────────────
 
   reynolds(dto: ReynoldsInputDto): ScalarDimensionlessResultDto {
     const T = dto.T_fluid_K ?? STANDARD_CONDITIONS.TEMPERATURE_K;
-    const fluid = this.resolveFluid({ fluid: dto.fluid, composition: dto.composition, T_fluid_K: T, P_Pa: dto.P_Pa });
+    const fluid = this.resolveFluid({
+      fluid: dto.fluid,
+      compoundId: dto.compoundId,
+      composition: dto.composition,
+      T_fluid_K: T,
+      P_Pa: dto.P_Pa,
+    });
     if (!fluid)
-      throw new Error('Could not resolve fluid properties — supply fluid name or composition + T_fluid_K');
+      throw new Error('Could not resolve fluid properties — supply fluid name, compoundId, or composition + T_fluid_K');
     const L = this.numbers.characteristicLength(dto.geometry, dto.dimensions);
     return {
       value: this.numbers.reynolds(fluid.rho_kg_m3, dto.w_m_s, L, fluid.mu_Pa_s),
@@ -90,9 +75,15 @@ export class DimensionlessCalculationService {
 
   grashof(dto: GrashofInputDto): ScalarDimensionlessResultDto {
     const T = dto.T_fluid_K ?? dto.T_cold_K;
-    const fluid = this.resolveFluid({ fluid: dto.fluid, composition: dto.composition, T_fluid_K: T, P_Pa: dto.P_Pa });
+    const fluid = this.resolveFluid({
+      fluid: dto.fluid,
+      compoundId: dto.compoundId,
+      composition: dto.composition,
+      T_fluid_K: T,
+      P_Pa: dto.P_Pa,
+    });
     if (!fluid)
-      throw new Error('Could not resolve fluid properties — supply fluid name or composition + T_fluid_K');
+      throw new Error('Could not resolve fluid properties — supply fluid name, compoundId, or composition + T_fluid_K');
     const L = this.numbers.characteristicLength(dto.geometry, dto.dimensions);
     return {
       value: this.numbers.grashof(dto.T_hot_K, dto.T_cold_K, L, fluid.nu_m2s, dto.g_m_s2 ?? PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2),
@@ -103,9 +94,15 @@ export class DimensionlessCalculationService {
 
   rayleigh(dto: RayleighInputDto): ScalarDimensionlessResultDto {
     const T = dto.T_fluid_K ?? dto.T_cold_K;
-    const fluid = this.resolveFluid({ fluid: dto.fluid, composition: dto.composition, T_fluid_K: T, P_Pa: dto.P_Pa });
+    const fluid = this.resolveFluid({
+      fluid: dto.fluid,
+      compoundId: dto.compoundId,
+      composition: dto.composition,
+      T_fluid_K: T,
+      P_Pa: dto.P_Pa,
+    });
     if (!fluid)
-      throw new Error('Could not resolve fluid properties — supply fluid name or composition + T_fluid_K');
+      throw new Error('Could not resolve fluid properties — supply fluid name, compoundId, or composition + T_fluid_K');
     const Pr = this.numbers.prandtl(fluid.mu_Pa_s, fluid.Cp_J_kgK, fluid.lambda);
     const L  = this.numbers.characteristicLength(dto.geometry, dto.dimensions);
     return {
@@ -139,7 +136,7 @@ export class DimensionlessCalculationService {
     if (input.compoundId) {
       try {
         const compound = CompoundValueBuilder.fromId(input.compoundId);
-        const props = resolveCompoundFluidProps(this.gasProps, this.transport, compound, T, P);
+        const props = this.compoundFluidProps.resolve(compound, T, P);
         return {
           rho_kg_m3: props.rho_kg_m3,
           mu_Pa_s: props.mu_Pa_s,
@@ -154,12 +151,12 @@ export class DimensionlessCalculationService {
       }
     }
 
-    const fluid = normalizeKnownFluid(input.fluid);
+    const fluid = KnownFluids.normalize(input.fluid);
 
     if (fluid && fluid !== 'gas_mix') {
       const compound = FLUID_REGISTRY[fluid];
       if (!compound) return null;
-      const props = resolveCompoundFluidProps(this.gasProps, this.transport, compound, T, P);
+      const props = this.compoundFluidProps.resolve(compound, T, P);
       return {
         rho_kg_m3: props.rho_kg_m3,
         mu_Pa_s: props.mu_Pa_s,
@@ -209,13 +206,14 @@ export class DimensionlessCalculationService {
 
     const fluid = this.resolveFluid({
       fluid: dto.fluid,
+      compoundId: dto.compoundId,
       composition: dto.composition,
       T_fluid_K: T,
       P_Pa: P,
     });
     if (!fluid) {
       throw new Error(
-        'Cannot resolve fluid properties: supply either a known fluid name or a composition map.',
+        'Cannot resolve fluid properties: supply compoundId, a known fluid name, or a composition map.',
       );
     }
 

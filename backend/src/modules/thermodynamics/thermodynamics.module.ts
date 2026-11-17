@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ThermodynamicsController } from './controllers/thermodynamics.controller';
+import { ThermodynamicsGasController } from './controllers/thermodynamics-gas.controller';
+import { ThermodynamicsBodyGeometryController } from './controllers/thermodynamics-body-geometry.controller';
 import { ThermodynamicsFluidController } from './controllers/thermodynamics-fluid.controller';
 import { NumericController } from './controllers/numeric.controller';
 import { GasPropertiesService } from './services/gas-properties.service';
@@ -10,16 +12,20 @@ import { DimensionlessCalculationService } from './services/dimensionless-calcul
 import { AerodynamicsService } from './services/aerodynamics.service';
 import { DiffusionService } from './services/diffusion.service';
 import { RadiationService } from './services/radiation.service';
+import { CompoundFluidPropsService } from './services/compound-fluid-props.service';
 
 @Module({
   controllers: [
     ThermodynamicsController,
+    ThermodynamicsGasController,
+    ThermodynamicsBodyGeometryController,
     ThermodynamicsFluidController,
     NumericController,
   ],
   providers: [
     GasPropertiesService,
     TransportService,
+    CompoundFluidPropsService,
     FluidPropertyService,
     DimensionlessNumbersService,
     DimensionlessCalculationService,
@@ -30,6 +36,7 @@ import { RadiationService } from './services/radiation.service';
   exports: [
     GasPropertiesService,
     TransportService,
+    CompoundFluidPropsService,
     FluidPropertyService,
     DimensionlessNumbersService,
     DimensionlessCalculationService,

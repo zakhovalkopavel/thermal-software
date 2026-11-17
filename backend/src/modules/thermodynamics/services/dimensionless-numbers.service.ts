@@ -7,15 +7,12 @@ import { ResolvedDimensionlessPropsDto } from '../dto/dimensionless/resolved-dim
 import { CorrelationName } from '../enums/correlation-name.enum';
 import { FlowRegime } from '../types/flow-regime.type';
 import { NusseltResult } from '../interfaces/nusselt-result.interface';
-import { ChannelGeometryHelper } from '../helpers/channel-geometry.helper';
+import { ChannelGeometryHelper } from '../utils/channel-geometry';
 
 export { NusseltResult } from '../interfaces/nusselt-result.interface';
-import { BodyGeometryHelper } from '../helpers/body-geometry.helper';
-import {
-  availableCorrelations,
-  resolveRegime, validatePreferredCorrelation,
-} from '../helpers/correlation-validity.helper';
-import { CorrelationSelectorHelper } from '../helpers/correlation-selector.helper';
+import { BodyGeometryHelper } from '../utils/body-geometry';
+import { CorrelationValidity } from '../utils/correlation-validity';
+import { CorrelationSelectorHelper } from '../utils/correlation-selector';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 
 @Injectable()
@@ -111,10 +108,10 @@ export class DimensionlessNumbersService {
     const { lambda } = resolved;
     const L = ChannelGeometryHelper.characteristicLength(geometry, dimensions as GeometryDimsDto);
 
-    const regime    = resolveRegime(geometry, Re, Ra, params.forceRegime);
+    const regime    = CorrelationValidity.resolveRegime(geometry, Re, Ra, params.forceRegime);
     const isNatural = regime === FlowRegime.NATURAL;
 
-    const available  = availableCorrelations(geometry);
+    const available  = CorrelationValidity.availableCorrelations(geometry);
     const allResults: Record<string, { Nu: number; rangeValid: boolean; warning?: string }> = {};
     for (const corr of available) {
       try {
@@ -127,7 +124,7 @@ export class DimensionlessNumbersService {
     let preferredRejectedReason: string | undefined;
 
     if (preferredCorrelation) {
-      const rejection = validatePreferredCorrelation(preferredCorrelation, geometry, Re, Pr, Ra);
+      const rejection = CorrelationValidity.validatePreferredCorrelation(preferredCorrelation, geometry, Re, Pr, Ra);
       if (!rejection) {
         selectedCorr = preferredCorrelation;
         preferredUsed = true;

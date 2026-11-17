@@ -11,7 +11,7 @@ uses the **same flat fluid-identification fields** — never a nested object:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `fluid` | `KnownFluid` | Named species/alias. Source of truth: `KNOWN_FLUIDS` constant in `types/known-fluid.type.ts`. |
+| `fluid` | `string` | Key of `FLUID_REGISTRY` (`common/thermal/compound/gas`) or `"gas_mix"`. |
 | `composition` | `Record<Species, number>` | Mole fractions — required when `fluid = "gas_mix"` or `fluid` is absent. Must sum to 1. |
 | `T_fluid_K` | `number` | Bulk temperature [K]. Always explicit; no magic defaults in DTOs (defaults only where documented). |
 | `P_Pa` | `number` | Absolute pressure [Pa]. Default: `STANDARD_CONDITIONS.PRESSURE_PA` (101 325 Pa). |
@@ -19,32 +19,25 @@ uses the **same flat fluid-identification fields** — never a nested object:
 **Rule:** exactly one of `fluid` or `composition` must be provided; using both is allowed only
 when `fluid = "gas_mix"`.
 
-### Single source of truth for fluid keys
+### Single source of truth for named fluids
 
-The runtime array `KNOWN_FLUIDS` in `types/known-fluid.type.ts` is the **only** place where
-fluid keys are listed. The `KnownFluid` type and all Swagger description strings are derived
-from it:
-
-```typescript
-// types/known-fluid.type.ts
-export const KNOWN_FLUIDS = [...] as const;
-export type KnownFluid = typeof KNOWN_FLUIDS[number];
-export const KNOWN_FLUID_DESCRIPTION: string = KNOWN_FLUIDS.map(f => `"${f}"`).join(', ');
-```
-
-In every DTO that shows a fluid field in Swagger, import and embed `KNOWN_FLUID_DESCRIPTION`:
+Named fluids are **real compounds** in `FLUID_REGISTRY` (built from `compound/gas`). There is no
+separate allowlist. Swagger text and DTO `@IsIn` validation use `KnownFluids.allowedNames()` /
+`KnownFluids.description()` (registry keys + `"gas_mix"`).
 
 ```typescript
-import { KNOWN_FLUID_DESCRIPTION } from '../types/known-fluid.type';
+import { KnownFluids } from '../utils/known-fluids';
 
 @ApiPropertyOptional({
-  description: `Named fluid or species: ${KNOWN_FLUID_DESCRIPTION}. Required when composition is absent.`,
+  description: `FLUID_REGISTRY key or "gas_mix": ${KnownFluids.description()}.`,
   example: 'air',
 })
-fluid?: KnownFluid;
+@IsIn(KnownFluids.allowedNames())
+fluid?: string;
 ```
 
 **Never hardcode the fluid list as a string literal in a DTO description.**
+**Never maintain a parallel `KNOWN_FLUIDS` array.**
 
 ---
 

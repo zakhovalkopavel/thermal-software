@@ -1,7 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
+import { IsIn, IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { KnownFluid, KNOWN_FLUID_DESCRIPTION } from '../../types/known-fluid.type';
+import { KnownFluid } from '../../types/known-fluid.type';
+import { KnownFluids } from '../../utils/known-fluids';
 import { STANDARD_CONDITIONS } from '../../../../common/thermal';
 
 const P_DEFAULT = STANDARD_CONDITIONS.PRESSURE_PA;
@@ -13,21 +14,25 @@ const P_DEFAULT = STANDARD_CONDITIONS.PRESSURE_PA;
  * depend on geometry or flow velocity.
  *
  * Fluid identification — choose one:
- *   (A) Set `fluid` to a named species/alias (e.g. "air", "CO2").
+ *   (A) Set `fluid` to a FLUID_REGISTRY key (e.g. "air", "CO2").
  *   (B) Set `fluid = "gas_mix"` and provide `composition` (mole fractions).
  */
 export class PrandtlInputDto {
   @ApiPropertyOptional({
     description:
-      `Named fluid or species: ${KNOWN_FLUID_DESCRIPTION}. ` +
+      `FLUID_REGISTRY key or "gas_mix": ${KnownFluids.description()}. ` +
       'Required when `composition` / `compoundId` is absent.',
     example: 'CO2',
   })
-  @IsOptional() @IsString() fluid?: KnownFluid;
+  @IsOptional() @IsString()
+  @IsIn(KnownFluids.allowedNames())
+  fluid?: KnownFluid;
 
   @ApiPropertyOptional({
-    description: 'Compound-data id (CAS or formula:…). Alternative to `fluid` for catalogue compounds.',
-    example: '124-38-9',
+    description:
+      'Catalogue compoundId from search (name with spaces as `_`; `_1`/`_2`/… on collisions). '
+      + 'Alternative to `fluid`.',
+    example: 'carbon_dioxide',
   })
   @IsOptional() @IsString() compoundId?: string;
 

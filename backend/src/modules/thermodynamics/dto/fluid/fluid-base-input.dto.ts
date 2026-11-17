@@ -1,14 +1,14 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
-import { KnownFluid, KNOWN_FLUID_DESCRIPTION, normalizeKnownFluid } from '../../types';
+import { IsIn, IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
+import { KnownFluid, KnownFluids } from '../../types';
 import { STANDARD_CONDITIONS } from '../../../../common/thermal';
 
 /**
  * Shared base for all single-fluid property requests.
  *
  * Resolution rules (same for every endpoint):
- *   - Provide `fluid` (a named species or 'air') to look up a known compound.
+ *   - Provide `fluid` as a `FLUID_REGISTRY` key (real compound) or `gas_mix`.
  *   - Provide `composition` (mole fractions by Species key) when `fluid = 'gas_mix'`
  *     or when no `fluid` is given.
  *   - `T_fluid_K` is always required (validated at service level so the error
@@ -17,17 +17,21 @@ import { STANDARD_CONDITIONS } from '../../../../common/thermal';
  */
 export class FluidBaseInputDto {
   @ApiPropertyOptional({
-    description: `Named fluid or species (required if composition / compoundId is absent). One of: ${KNOWN_FLUID_DESCRIPTION}.`,
+    description:
+      `Named fluid: a key of FLUID_REGISTRY (common/thermal/compound/gas) or "gas_mix". `
+      + `One of: ${KnownFluids.description()}.`,
     example: 'air',
   })
   @IsOptional() @IsString()
-  @Transform(({ value }) => normalizeKnownFluid(value))
+  @Transform(({ value }) => KnownFluids.normalize(value))
+  @IsIn(KnownFluids.allowedNames())
   fluid?: KnownFluid;
 
   @ApiPropertyOptional({
     description:
-      'Compound-data id (CAS or formula:…). Alternative to `fluid` for catalogue compounds from search.',
-    example: '124-38-9',
+      'Catalogue compoundId from GET /compounds/search (name with spaces as `_`; `_1`/`_2`/… on collisions). '
+      + 'Alternative to `fluid`.',
+    example: 'carbon_dioxide',
   })
   @IsOptional() @IsString()
   compoundId?: string;

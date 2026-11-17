@@ -1,6 +1,6 @@
 import { FlowGeometry } from '../../enums/flow-geometry.enum';
 import { GeometryDimsDto } from '../../dto/geometry/geometry-dims.dto';
-import { zukauskasCoeffs } from '../nu-coefficients.helper';
+import { NuCoefficients } from '../nu-coefficients';
 
 /**
  * Nu correlations for tube banks (inline and staggered).
@@ -21,7 +21,7 @@ export const tubeBankNu = {
     const ST = dims.S_T ?? 0.03;
     const SL = dims.S_L ?? 0.03;
     const isStaggered = geometry === FlowGeometry.TUBE_BANK_STAGGERED;
-    const [C1, m] = zukauskasCoeffs(re_max, isStaggered, ST, SL);
+    const [C1, m] = NuCoefficients.zukauskasCoeffs(re_max, isStaggered, ST, SL);
     return C1 * Math.pow(re_max, m) * Math.pow(pr, 0.36);
   },
 

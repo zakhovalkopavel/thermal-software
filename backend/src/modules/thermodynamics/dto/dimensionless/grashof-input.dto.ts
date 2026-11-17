@@ -1,9 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNumber, IsObject, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
+import { IsEnum, IsIn, IsNumber, IsObject, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { FlowGeometry } from '../../enums/flow-geometry.enum';
 import { GeometryDimsDto } from '../geometry/geometry-dims.dto';
-import { KnownFluid, KNOWN_FLUID_DESCRIPTION } from '../../types/known-fluid.type';
+import { KnownFluid } from '../../types/known-fluid.type';
+import { KnownFluids } from '../../utils/known-fluids';
 import { PHYSICAL_CONSTANTS, STANDARD_CONDITIONS } from '../../../../common/thermal';
 
 const P_DEFAULT = STANDARD_CONDITIONS.PRESSURE_PA;
@@ -15,8 +16,9 @@ const G_DEFAULT = PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2;
  * Fluid bulk temperature defaults to `T_cold_K` when `T_fluid_K` is absent.
  *
  * Fluid identification — choose one:
- *   (A) Set `fluid` to a named species/alias (e.g. "air", "N2").
- *   (B) Set `fluid = "gas_mix"` and provide `composition` (mole fractions).
+ *   (A) Set `compoundId` to a catalogue id from GET /compounds/search (name slug).
+ *   (B) Set `fluid` to a FLUID_REGISTRY key (e.g. "air", "N2").
+ *   (C) Set `fluid = "gas_mix"` and provide `composition` (mole fractions).
  */
 export class GrashofInputDto {
   @ApiProperty({
@@ -53,16 +55,27 @@ export class GrashofInputDto {
   @ValidateNested() @Type(() => GeometryDimsDto)
   dimensions: GeometryDimsDto;
 
-  // ── Fluid (option A: named species) ──────────────────────────────────
   @ApiPropertyOptional({
     description:
-      `Named fluid or species: ${KNOWN_FLUID_DESCRIPTION}. ` +
-      'Required when `composition` is absent.',
+      'Catalogue compoundId from search (name with spaces as `_`; `_1`/`_2`/… on collisions). '
+      + 'Alternative to `fluid`.',
+    example: 'nitrogen',
+  })
+  @IsOptional() @IsString()
+  compoundId?: string;
+
+  // ── Fluid (option B: named species) ──────────────────────────────────
+  @ApiPropertyOptional({
+    description:
+      `FLUID_REGISTRY key or "gas_mix": ${KnownFluids.description()}. ` +
+      'Required when `composition` / `compoundId` is absent.',
     example: 'air',
   })
-  @IsOptional() @IsString() fluid?: KnownFluid;
+  @IsOptional() @IsString()
+  @IsIn(KnownFluids.allowedNames())
+  fluid?: KnownFluid;
 
-  // ── Fluid (option B: custom mixture) ─────────────────────────────────
+  // ── Fluid (option C: custom mixture) ─────────────────────────────────
   @ApiPropertyOptional({
     description: 'Mole fractions by species key — required when `fluid = "gas_mix"` or fluid is absent.',
     example: { N2: 0.79, O2: 0.21 },
