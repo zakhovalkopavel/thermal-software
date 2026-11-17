@@ -239,6 +239,9 @@ def build_compound_data(
     for record in merge.records.values():
         order_values(record)
 
+    from compound_data.compound_id import assign_compound_ids
+    assign_compound_ids(merge.records.values())
+
     interactions, interaction_issues = _resolve_interactions(transport.interactions, merge.records)
     issues += interaction_issues
     transport_counts = {
@@ -340,12 +343,13 @@ def _parse_transport(transport_file: Optional[Path]) -> TransportParameters:
 def _resolve_interactions(
     interactions: list[dict[str, Any]], records: dict[str, CompoundRecord],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """Add ``ids`` (record id of each species, by CAS or moved CAS; None without a record) to every pair row."""
+    """Add ``ids`` (public ``compoundId`` of each species, by CAS or moved CAS; None without a record)."""
     by_cas: dict[str, str] = {}
     for record in records.values():
+        compound_id = getattr(record, "compound_id", None) or record.id
         for cas in (record.cas, *record.other_cas):
             if cas:
-                by_cas[cas] = record.id
+                by_cas[cas] = compound_id
     resolved, issues = [], []
     for item in interactions:
         ids = [by_cas.get(cas) if cas else None for cas in item["cas"]]

@@ -327,13 +327,14 @@ The compound files carry no units, no source links and no `generatedAt` (a rebui
 
 ### Compound file
 
-`entries` are keyed by CAS (`noCas` for the record without CAS; its record id if one formula ever has two), ordered by CAS. The CAS, Hill formula and elements are not repeated inside an entry, `formula` is written only when it differs from the Hill key (isotopes, charges: `C2D4O`), and null or empty fields are left out. Example `inorganic/Al/Al2O3-electrocorundum.json` (abridged, from a real build):
+`entries` are keyed by CAS (`noCas` for the record without CAS; its record id if one formula ever has two), ordered by CAS. The CAS, Hill formula and elements are not repeated inside an entry. `compoundId` is the public catalogue id: the compound `name` with spaces changed to `_`; when several records share that slug they get `_1`, `_2`, `_3`, … (stable CAS order); a unique name stays unsuffixed. `formula` is written only when it differs from the Hill key (isotopes, charges: `C2D4O`), and null or empty fields are left out. Example `inorganic/Al/Al2O3-electrocorundum.json` (abridged, from a real build):
 
 ```json
 {
   "class": "inorganic", "group": "Al", "displayFormula": "Al2O3", "hill": "Al2O3", "elements": ["Al", "O"],
   "entries": {
         "1344-28-1": {
+          "compoundId": "electrocorundum",
           "name": "electrocorundum", "Mr": 0.10196, "smiles": "O=[Al]O[Al]=O", "inchikey": "TWNQGVIAIRXVLR-UHFFFAOYSA-N",
           "identifierRef": [1213, "idPubchemSmall"],
           "properties": {
@@ -344,6 +345,7 @@ The compound files carry no units, no source links and no `generatedAt` (a rebui
           "janaf": ["Al-096", "Al-097", "Al-098", "Al-099", "Al-100", "Al-101"]
         },
         "39377-45-2": {
+          "compoundId": "aluminium_oxide",
           "name": "aluminium oxide", "Mr": 0.10196, "smiles": "[O-2].[O-2].[O-2].[Al+3].[Al+3]", "inchikey": "...",
           "identifierRef": [63145, "idPubchemLarge"],
           "equations": {
@@ -358,7 +360,7 @@ The compound files carry no units, no source links and no `generatedAt` (a rebui
 }
 ```
 
-Entry fields: `cas` and `casRef` (only on records without CAS: the CAS a PubChem formula search found, and its search record, see [PubChem identifiers](#pubchem-identifiers)), `name` (identifier name, else the first source label), `synonyms` (alternate names from the Yaws 1999 synonym appendix; excludes `name`), `Mr` [kg/mol], `smiles` (structure line notation, e.g. `CCO`; used for the organic families), `inchikey` (hashed IUPAC InChI, a lookup key for PubChem and other databases), `pubchemCid` (PubChem compound id; page `sources.json` → `pubchem.compoundUrl`), `families`, `identifierRef`, `otherCas`, `properties`, `equations`, `raw`, `transport` (see [Transport parameters](#transport-parameters)), `janaf`, `nasa7`, `nasa9`. Compounds that no identifier source knows have no `Mr`, `smiles`, `inchikey`, `pubchemCid` or `identifierRef`. Validated Yaws CAS that were missing from the chemicals/PubChem identifier set are created as new records from the Yaws appendix (and then filled from the property tables).
+Entry fields: `compoundId` (public catalogue id from the name; equals the `index.json` compounds map key), `cas` and `casRef` (only on records without CAS: the CAS a PubChem formula search found, and its search record, see [PubChem identifiers](#pubchem-identifiers)), `name` (identifier name, else the first source label), `synonyms` (alternate names from the Yaws 1999 synonym appendix; excludes `name`), `Mr` [kg/mol], `smiles` (structure line notation, e.g. `CCO`; used for the organic families), `inchikey` (hashed IUPAC InChI, a lookup key for PubChem and other databases), `pubchemCid` (PubChem compound id; page `sources.json` → `pubchem.compoundUrl`), `families`, `identifierRef`, `otherCas`, `properties`, `equations`, `raw`, `transport` (see [Transport parameters](#transport-parameters)), `janaf`, `nasa7`, `nasa9`. Compounds that no identifier source knows have no `Mr`, `smiles`, `inchikey`, `pubchemCid` or `identifierRef`. Validated Yaws CAS that were missing from the chemicals/PubChem identifier set are created as new records from the Yaws appendix (and then filled from the property tables).
 
 ### units.json
 
@@ -516,8 +518,8 @@ The comparison that produced the list also checked the 234 CAS numbers of those 
 
 `index.json` holds:
 - `generatedAt`, `count` and `equationTypes`;
-- `compounds`, keyed by record id (the CAS, or `formula:<F>`), one entry per compound with its location (`file`, `hill`, `entry`: the record is at `file` → `entries[entry]`), `cas` (records without CAS that a PubChem formula search identified), `displayFormula`, `formula` when it differs from `hill`, name, class, group, families, refs (with `NISTJANAF` when it has JANAF ids, `NASA7` / `NASA9` when it has NASA keys), which properties and equation phases it has, the properties of its `transport` block, `janaf`, `nasa7`, `nasa9` and `otherCas`; null and empty fields are left out;
-- the lookups `byFormula`, `byElement` (sorted keys), `byFamily` and `byOtherCas` (moved CAS → record id).
+- `compounds`, keyed by public `compoundId` (name with spaces as `_`; `_1`/`_2`/… when names collide), one entry per compound with `compoundId` (same as the map key), its location (`file`, `hill`, `entry`: the record is at `file` → `entries[entry]`), `cas` (primary CAS when known, else a PubChem formula-search CAS), `displayFormula`, `formula` when it differs from `hill`, name, class, group, families, refs (with `NISTJANAF` when it has JANAF ids, `NASA7` / `NASA9` when it has NASA keys), which properties and equation phases it has, the properties of its `transport` block, `janaf`, `nasa7`, `nasa9` and `otherCas`; null and empty fields are left out;
+- the lookups `byFormula`, `byElement` (sorted keys), `byFamily`, `byCas` (primary CAS → compoundId) and `byOtherCas` (moved CAS → compoundId).
 
 It holds no property values.
 

@@ -18,6 +18,7 @@ from chemicals_tables.source_entry import SourceEntry
 from chemicals_tables.source_link import SourceLink
 from chemicals_tables.transport_value import TransportValue
 from compound_data.compound_files import compound_files
+from compound_data.compound_id import assign_compound_ids
 from compound_data.constants.transport_source import TRANSPORT_FILE, TRANSPORT_TABLES
 from compound_data.compound_units import compound_units, property_units
 from compound_data.constants.units import EQUATION_UNITS
@@ -37,6 +38,7 @@ ETHANOL = "organic/alcohols/C2H6O-ethanol.json"
 
 
 def _write_all(records, out, unresolved=()):
+    assign_compound_ids(records)
     files = compound_files(records)
     paths = write_compound_json(files, out)
     write_unresolved(out, list(unresolved), GENERATED)
@@ -147,8 +149,10 @@ class TestFiles:
     def test_entry_has_no_duplicates_or_empty_fields(self, written):
         out, _, _, _ = written
         entry = _read(out, AL2O3)["entries"]["1344-28-1"]
+        assert entry["compoundId"] == "aluminium_oxide"
         assert not {"id", "cas", "hill", "elements", "formula", "families", "raw", "janaf", "otherCas"} & set(entry)
-        assert set(_read(out, NE)["entries"]["noCas"]) == {"name", "raw"}
+        assert set(_read(out, NE)["entries"]["noCas"]) == {"compoundId", "name", "raw"}
+        assert _read(out, NE)["entries"]["noCas"]["compoundId"] == "Ne"
 
     def test_record_shape(self, written):
         out, _, _, _ = written
@@ -198,25 +202,28 @@ class TestIndex:
         _, _, index, _ = written
         data = json.loads(index.read_text(encoding="utf-8"))
         assert list(data["byElement"]) == sorted(data["byElement"])
-        assert data["byElement"]["Ti"] == ["13463-67-7"]
-        assert data["byFormula"]["Al2O3"] == ["1344-28-1"]
-        assert data["byFamily"]["alcohols"] == ["64-17-5"]
-        assert data["compounds"]["13463-67-7"]["file"] == TIO2
-        assert data["compounds"]["13463-67-7"]["group"] == "Ti"
-        assert data["compounds"]["1344-28-1"]["equations"] == {"heatCapacity": ["solid"]}
-        assert data["compounds"]["1344-28-1"]["refs"] == ["CRC95", "Perry8"]
+        assert data["byElement"]["Ti"] == ["titanium_dioxide"]
+        assert data["byFormula"]["Al2O3"] == ["aluminium_oxide"]
+        assert data["byFamily"]["alcohols"] == ["ethanol"]
+        assert data["compounds"]["titanium_dioxide"]["file"] == TIO2
+        assert data["compounds"]["titanium_dioxide"]["group"] == "Ti"
+        assert data["compounds"]["aluminium_oxide"]["equations"] == {"heatCapacity": ["solid"]}
+        assert data["compounds"]["aluminium_oxide"]["refs"] == ["CRC95", "Perry8"]
+        assert data["byCas"]["1344-28-1"] == "aluminium_oxide"
         assert data["equationTypes"] == {"maierKelley": "implemented"}
         assert data["byOtherCas"] == {}
 
     def test_entry_location(self, written):
         out, _, index, _ = written
         data = json.loads(index.read_text(encoding="utf-8"))
-        for record_id, entry in data["compounds"].items():
+        for compound_id, entry in data["compounds"].items():
+            assert entry["compoundId"] == compound_id
             file = _read(out, entry["file"])
             assert file["hill"] == entry["hill"]
-            assert entry["entry"] in file["entries"], record_id
-        assert data["compounds"]["formula:Ne"]["entry"] == "noCas"
-        assert "families" not in data["compounds"]["13463-67-7"]
+            assert entry["entry"] in file["entries"], compound_id
+            assert file["entries"][entry["entry"]]["compoundId"] == compound_id
+        assert data["compounds"]["Ne"]["entry"] == "noCas"
+        assert "families" not in data["compounds"]["titanium_dioxide"]
 
     def test_unknown_cas_is_listed(self, tmp_path, chem, classifier):
         perry = SOURCE_TABLES["Perry 2-151"]
@@ -234,9 +241,11 @@ class TestIndex:
         index = json.loads(index_path.read_text(encoding="utf-8"))
         al = _read(tmp_path, "inorganic/Al/Al-aluminum.json")["entries"]
         assert list(al) == ["7429-90-5"]
+        assert al["7429-90-5"]["compoundId"] == "aluminum"
         assert al["7429-90-5"]["otherCas"] == ["3303-34-2"]
         assert al["7429-90-5"]["equations"]["heatCapacity"]["solid"]["values"][0]["ref"] == ["Perry8", 160, "perry151"]
-        assert index["byOtherCas"] == {"3303-34-2": "7429-90-5"}
+        assert index["byCas"]["7429-90-5"] == "aluminum"
+        assert index["byOtherCas"] == {"3303-34-2": "aluminum"}
 
     def test_no_nan(self, written):
         _, paths, index, sources = written
@@ -339,9 +348,12 @@ class TestTransport:
 
     def test_index_lists_transport(self, transport_out):
         _, _, index, _ = transport_out
-        entry = json.loads(index.read_text(encoding="utf-8"))["compounds"]["7727-37-9"]
+        data = json.loads(index.read_text(encoding="utf-8"))
+        entry = data["compounds"]["nitrogen"]
+        assert data["byCas"]["7727-37-9"] == "nitrogen"
         assert entry["transport"] == ["viscosity"]
         assert entry["refs"] == ["Svehla1995", "White3"]
+        assert _read(transport_out[0], "inorganic/N/N2-nitrogen.json")["entries"]["7727-37-9"]["compoundId"] == "nitrogen"
 
     def test_interactions_file(self, transport_out):
         out, _, _, _ = transport_out

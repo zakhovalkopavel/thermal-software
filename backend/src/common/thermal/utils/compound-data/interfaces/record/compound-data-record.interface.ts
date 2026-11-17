@@ -9,6 +9,8 @@ import { CompoundDataTransport } from '../transport/compound-data-transport.inte
  * The CAS (entry key), Hill formula and elements (file level) are not repeated; null and empty fields are left out.
  */
 export interface CompoundDataRecord {
+  /** Public catalogue id (name slug; `_1`/`_2`/… when names collide) */
+  compoundId: string;
   /**
    * Only on records without CAS (entry "noCas", id "formula:…"): the CAS a PubChem formula search found,
    * e.g. "21548-73-2" (Ag2S); the record keeps its key

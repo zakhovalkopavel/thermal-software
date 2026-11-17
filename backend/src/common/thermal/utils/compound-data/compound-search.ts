@@ -66,9 +66,11 @@ export class CompoundSearch {
         ...CompoundText.formulaSearchKeys(meta.displayFormula),
         ...(meta.formula ? CompoundText.formulaSearchKeys(meta.formula) : []),
       ]);
+      const compoundId = meta.compoundId ?? id;
       out.push({
-        id,
-        cas: meta.cas ?? (id.startsWith('formula:') ? null : id),
+        id: compoundId,
+        compoundId,
+        cas: meta.cas ?? null,
         otherCas: meta.otherCas ?? [],
         name,
         nameNorm: CompoundText.normalizeName(name),
@@ -86,7 +88,7 @@ export class CompoundSearch {
   }
 
   private static casMatches(doc: CompoundSearchDoc, casQuery: string): 'exact' | 'substring' | null {
-    const ids = [doc.id, doc.cas, ...doc.otherCas].filter(Boolean) as string[];
+    const ids = [doc.compoundId, doc.id, doc.cas, ...doc.otherCas].filter(Boolean) as string[];
     for (const id of ids) {
       const norm = CompoundText.normalizeCas(id);
       if (norm === casQuery) return 'exact';
@@ -132,7 +134,8 @@ export class CompoundSearch {
 
   private static toHit(doc: CompoundSearchDoc, score: number): CompoundSearchHit {
     return {
-      id: doc.id,
+      id: doc.compoundId,
+      compoundId: doc.compoundId,
       cas: doc.cas,
       name: doc.name,
       formula: doc.hill,

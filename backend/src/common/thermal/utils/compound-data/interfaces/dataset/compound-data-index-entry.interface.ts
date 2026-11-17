@@ -9,6 +9,8 @@ import { CompoundDataTransport } from '../transport/compound-data-transport.inte
  * Null and empty fields are left out.
  */
 export interface CompoundDataIndexEntry {
+  /** Public catalogue id (name slug; `_1`/`_2`/… when names collide); equals the map key */
+  compoundId: string;
   /** Compound file relative to the dataset folder, e.g. "inorganic/Ti/TiO2-titanium-dioxide.json" */
   file: string;
   /** Hill formula, as in `CompoundDataCompoundFile.hill` */

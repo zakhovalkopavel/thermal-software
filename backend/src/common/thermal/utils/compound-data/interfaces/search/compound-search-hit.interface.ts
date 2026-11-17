@@ -1,9 +1,11 @@
 /**
  * One ranked hit from compound-data catalogue search.
- * `id` is the index key (CAS or `formula:…`).
+ * `compoundId` is the index key (name slug; `_1`/`_2`/… when names collide).
  */
 export interface CompoundSearchHit {
+  /** @deprecated Prefer `compoundId` */
   id: string;
+  compoundId: string;
   cas: string | null;
   name: string;
   formula: string;

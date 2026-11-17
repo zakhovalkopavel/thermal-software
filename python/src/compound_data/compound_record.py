@@ -5,8 +5,11 @@ Spec: docs/scripts/COMPOUND_DATA_SPEC.md
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import Any, Optional
+
+_SPACE = re.compile(r"\s+")
 
 from chemicals_tables.constants.planned_equation_types import PLANNED_EQUATION_TYPES
 from chemicals_tables.equation_value import EquationValue
@@ -44,6 +47,8 @@ class CompoundRecord:
     elements: list[str]
     compound_class: str
     group: str
+    #: Public catalogue id (name slug; ``_1``/``_2``/… when names collide). Set by ``assign_compound_ids``.
+    compound_id: Optional[str] = None
     name: Optional[str] = None
     synonyms: list[str] = field(default_factory=list)
     Mr: Optional[float] = None
@@ -84,16 +89,18 @@ class CompoundRecord:
     def to_dict(self) -> dict:
         """Entry of the compound file: the CAS is its key, Hill formula and elements are file fields, so they are not repeated.
 
-        ``formula`` is the conventional/standard form when it differs from ``hill`` (IUPAC order,
-        accepted structural formulas, isotopes, charges); the file also always carries
-        ``displayFormula`` + ``hill``. ``cas`` / ``casRef`` only on records without CAS that a PubChem
-        formula search identified; null and empty fields are left out.
+        ``compoundId`` is the public catalogue id (compound name with spaces as ``_``; ``_1``/``_2``/…
+        when several records share the name). ``formula`` is the conventional/standard form when it
+        differs from ``hill`` (IUPAC order, accepted structural formulas, isotopes, charges); the file
+        also always carries ``displayFormula`` + ``hill``. ``cas`` / ``casRef`` only on records without
+        CAS that a PubChem formula search identified; null and empty fields are left out.
         """
         # Prefer display (standard) over the raw stored string when writing the entry formula.
         written_formula = self.display_formula if self.display_formula != self.hill else (
             self.formula if self.formula != self.hill else None
         )
         out: dict[str, Any] = {
+            "compoundId": self.compound_id or self._fallback_compound_id(),
             "formula": written_formula,
             "cas": self.pubchem_cas,
             "casRef": self.pubchem_cas_source.to_ref() if self.pubchem_cas_source else None,
@@ -122,6 +129,15 @@ class CompoundRecord:
             "nasa9": self.nasa9,
         }
         return {k: v for k, v in out.items() if v is not None and v != [] and v != {}}
+
+    def _fallback_compound_id(self) -> str:
+        """Name slug without collision index — used only when ``assign_compound_ids`` has not run."""
+        for candidate in (self.name, self.display_formula, self.hill, self.formula, self.id):
+            if candidate and str(candidate).strip():
+                stem = _SPACE.sub("_", str(candidate).strip().replace(":", "_"))
+                if stem:
+                    return stem
+        return self.id.replace(":", "_")
 
 
 def _equation_list(values: list[EquationValue]) -> dict:

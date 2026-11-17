@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { BoilingPointSource } from '../../../common/thermal';
 
 export class CompoundGasBoundsDto {
-  @ApiProperty({ example: '7732-18-5' })
+  @ApiProperty({ example: 'water' })
   id: string;
 
   @ApiProperty({ nullable: true, example: '7732-18-5' })

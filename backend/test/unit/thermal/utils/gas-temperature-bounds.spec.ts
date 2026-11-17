@@ -6,7 +6,7 @@ import { EquationTypeDto } from '../../../../src/common/thermal/dto/equation-typ
 
 describe('gas temperature bounds', () => {
   it('solves water Tb ≈ 373 K at 101325 Pa from vapour pressure', () => {
-    const bounds = CompoundGasBounds.forCompound('7732-18-5', 101325);
+    const bounds = CompoundGasBounds.forCompound('water', 101325);
     expect(bounds.boilingPointSource).toBe('vaporPressure');
     expect(bounds.Tmin_K).toBeGreaterThan(370);
     expect(bounds.Tmin_K).toBeLessThan(376);
@@ -22,7 +22,7 @@ describe('gas temperature bounds', () => {
 
   it('binary-searches a vapour-pressure equation for Tb(P)', () => {
     const index = CompoundData.loadIndex();
-    const meta = index.compounds['7732-18-5'];
+    const meta = index.compounds['water'] ?? index.compounds[index.byCas!['7732-18-5']];
     const doc = CompoundData.loadFile(meta.file);
     const row = doc.entries[meta.entry].equations!.vaporPressure!.liquid!.values[0];
     const entry = CompoundData.toEquationValue(row);

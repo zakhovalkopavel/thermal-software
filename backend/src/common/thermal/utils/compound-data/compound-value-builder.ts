@@ -66,7 +66,7 @@ export class CompoundValueBuilder {
   }
 
   /**
-   * Build a `CompoundValue` from any compound-data id (CAS or `formula:…`).
+   * Build a `CompoundValue` from a public `compoundId` (name slug), or a CAS via `byCas` / `byOtherCas`.
    * Requires gas viscosity + thermal conductivity; Cp may come from equations or NASA keys.
    */
   static fromId(id: string): CompoundValue {
@@ -208,6 +208,8 @@ export class CompoundValueBuilder {
     const index = CompoundData.loadIndex();
     const direct = index.compounds[id];
     if (direct) return { id, meta: direct };
+    const viaCas = index.byCas?.[id];
+    if (viaCas && index.compounds[viaCas]) return { id: viaCas, meta: index.compounds[viaCas] };
     const viaOther = index.byOtherCas[id];
     if (viaOther && index.compounds[viaOther]) return { id: viaOther, meta: index.compounds[viaOther] };
     return undefined;

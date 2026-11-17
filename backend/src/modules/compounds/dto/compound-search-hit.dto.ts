@@ -1,7 +1,18 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CompoundSearchHitDto {
-  @ApiProperty({ description: 'Compound id (CAS or formula:…)', example: '124-38-9' })
+  @ApiProperty({
+    description:
+      'Public compound id: compound name with spaces as `_`; `_1`/`_2`/… when names collide. Prefer over `id`.',
+    example: 'carbon_dioxide',
+  })
+  compoundId: string;
+
+  @ApiProperty({
+    description: 'Deprecated alias of `compoundId`',
+    example: 'carbon_dioxide',
+    deprecated: true,
+  })
   id: string;
 
   @ApiProperty({ description: 'Primary CAS, or null for formula-only records', nullable: true, example: '124-38-9' })

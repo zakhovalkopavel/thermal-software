@@ -181,7 +181,9 @@ export class CompoundGasBounds {
     const index = CompoundData.loadIndex();
     const registryId = CompoundGasBounds.resolveRegistryKey(id);
     const lookupId = registryId
-      ?? (index.compounds[id] ? id : index.byOtherCas[id]);
+      ?? (index.compounds[id] ? id : undefined)
+      ?? index.byCas?.[id]
+      ?? index.byOtherCas[id];
     const meta = lookupId ? index.compounds[lookupId] : undefined;
     if (!meta || !lookupId) throw new Error(`Unknown compound id: ${id}`);
     const doc = CompoundData.loadFile(meta.file);
@@ -189,7 +191,7 @@ export class CompoundGasBounds {
     if (!record) throw new Error(`Compound file ${meta.file} has no entry "${meta.entry}"`);
     return {
       id: lookupId,
-      cas: meta.cas ?? (lookupId.startsWith('formula:') ? null : lookupId),
+      cas: meta.cas ?? null,
       name: meta.name ?? record.name ?? doc.displayFormula,
       formula: meta.hill,
       displayFormula: meta.displayFormula,

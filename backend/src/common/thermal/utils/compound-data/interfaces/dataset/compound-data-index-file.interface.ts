@@ -6,14 +6,16 @@ export interface CompoundDataIndexFile {
   generatedAt: string;
   count: number;
   equationTypes: Partial<Record<CompoundDataEquationType, 'implemented' | 'planned'>>;
-  /** Keyed by record id: the CAS, or "formula:<formula>" without CAS */
+  /** Keyed by public `compoundId` (name slug; `_1`/`_2`/… when names collide) */
   compounds: Record<string, CompoundDataIndexEntry>;
-  /** Hill formula → record ids */
+  /** Hill formula → compoundIds */
   byFormula: Record<string, string[]>;
-  /** Element → record ids */
+  /** Element → compoundIds */
   byElement: Record<string, string[]>;
-  /** Organic family → record ids */
+  /** Organic family → compoundIds */
   byFamily: Record<string, string[]>;
-  /** Moved CAS (`otherCas`) → record id */
+  /** Primary CAS → compoundId */
+  byCas?: Record<string, string>;
+  /** Moved CAS (`otherCas`) → compoundId */
   byOtherCas: Record<string, string>;
 }

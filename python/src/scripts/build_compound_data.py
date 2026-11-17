@@ -185,6 +185,7 @@ def main(argv: list[str] | None = None) -> int:
             None if args.no_yaws1999 else args.yaws1999_dir,
         )
         generated_at = datetime.now(timezone.utc).isoformat()
+        # compound_id is assigned in build_compound_data before interactions are resolved.
         files = compound_files(result.merge.records.values())
         clear_dataset_dir(args.out_dir)
         written = write_compound_json(files, args.out_dir)

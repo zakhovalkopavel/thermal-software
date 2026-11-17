@@ -144,24 +144,28 @@ def write_compound_units(out_dir: Path) -> Path:
 
 
 def write_compound_index(files: Iterable[CompoundFile], out_dir: Path, generated_at: str) -> Path:
-    """Write ``index.json``: per-compound summary and the byFormula / byElement / byFamily / byOtherCas lookups.
+    """Write ``index.json``: per-compound summary and the byFormula / byElement / byFamily / byCas / byOtherCas lookups.
 
-    A record is at ``file`` → ``entries[entry]``; null and empty fields are left out.
+    Keyed by public ``compoundId`` (name slug). A record is at ``file`` → ``entries[entry]``; null and
+    empty fields are left out.
     """
     located = [(file, key, record) for file in files for key, record in file.entries.items()]
     compounds: dict[str, dict[str, Any]] = {}
     by_formula: dict[str, list[str]] = {}
     by_element: dict[str, list[str]] = {}
     by_family: dict[str, list[str]] = {}
+    by_cas: dict[str, str] = {}
     by_other_cas: dict[str, str] = {}
     types: set[str] = set()
-    for file, key, record in sorted(located, key=lambda item: item[2].id):
+    for file, key, record in sorted(located, key=lambda item: item[2].compound_id or item[2].id):
+        compound_id = record.compound_id or record._fallback_compound_id()
         entry = {
+            "compoundId": compound_id,
             "file": file.path,
             "hill": record.hill,
             "displayFormula": record.display_formula,
             "entry": key,
-            "cas": record.pubchem_cas,
+            "cas": record.cas or record.pubchem_cas,
             "formula": (
                 record.display_formula if record.display_formula != record.hill
                 else (record.formula if record.formula != record.hill else None)
@@ -180,14 +184,16 @@ def write_compound_index(files: Iterable[CompoundFile], out_dir: Path, generated
             "nasa9": record.nasa9,
             "otherCas": record.other_cas,
         }
-        compounds[record.id] = {k: v for k, v in entry.items() if v is not None and v != [] and v != {}}
+        compounds[compound_id] = {k: v for k, v in entry.items() if v is not None and v != [] and v != {}}
+        if record.cas:
+            by_cas[record.cas] = compound_id
         for cas in record.other_cas:
-            by_other_cas[cas] = record.id
-        by_formula.setdefault(record.hill, []).append(record.id)
+            by_other_cas[cas] = compound_id
+        by_formula.setdefault(record.hill, []).append(compound_id)
         for element in record.elements:
-            by_element.setdefault(element, []).append(record.id)
+            by_element.setdefault(element, []).append(compound_id)
         for family in record.families:
-            by_family.setdefault(family, []).append(record.id)
+            by_family.setdefault(family, []).append(compound_id)
         types |= {v.type.value for phases in record.equations.values() for vs in phases.values() for v in vs}
 
     payload = {
@@ -198,6 +204,7 @@ def write_compound_index(files: Iterable[CompoundFile], out_dir: Path, generated
         "byFormula": dict(sorted(by_formula.items())),
         "byElement": dict(sorted(by_element.items())),
         "byFamily": dict(sorted(by_family.items())),
+        "byCas": dict(sorted(by_cas.items())),
         "byOtherCas": dict(sorted(by_other_cas.items())),
     }
     path = _write(out_dir / "index.json", payload)

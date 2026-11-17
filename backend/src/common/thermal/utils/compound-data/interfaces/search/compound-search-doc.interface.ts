@@ -1,6 +1,8 @@
 /** Internal searchable document built once from the compound-data index. */
 export interface CompoundSearchDoc {
+  /** @deprecated Prefer `compoundId` */
   id: string;
+  compoundId: string;
   cas: string | null;
   otherCas: string[];
   name: string;
