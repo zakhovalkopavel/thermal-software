@@ -27,7 +27,7 @@ import { evaluateNasaThermo } from '../../../../src/common/thermal/utils/nasa/ev
 import { compoundNasaThermo } from '../../../../src/common/thermal/utils/nasa';
 import { N2, CO2 } from '../../../../src/common/thermal/compound/gas';
 import { GasPropertiesService } from '../../../../src/modules/thermodynamics/services/gas-properties.service';
-import { toEquationValue } from '../../../../src/common/thermal/utils/compound-data/to-equation-value.util';
+import { CompoundData } from '../../../../src/common/thermal/utils/compound-data';
 import { CompoundDataEquationValue } from '../../../../src/common/thermal/utils/compound-data/interfaces/equation/compound-data-equation-value.interface';
 
 const linearEntry: EquationValue = {
@@ -176,7 +176,7 @@ describe('Mixture with one OOR component', () => {
   });
 });
 
-describe('toEquationValue preserves null ranges', () => {
+describe('CompoundData.toEquationValue preserves null ranges', () => {
   it('null min/max stay null (not ±Infinity)', () => {
     const row = {
       type: 'linear',
@@ -185,7 +185,7 @@ describe('toEquationValue preserves null ranges', () => {
       min: null,
       max: null,
     } as CompoundDataEquationValue;
-    const v = toEquationValue(row);
+    const v = CompoundData.toEquationValue(row);
     expect(v.min).toBeNull();
     expect(v.max).toBeNull();
   });

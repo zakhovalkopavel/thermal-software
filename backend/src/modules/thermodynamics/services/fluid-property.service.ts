@@ -5,6 +5,7 @@ import { Species } from '../enums';
 import { PHYSICAL_CONSTANTS, STANDARD_CONDITIONS } from '../../../common/thermal';
 import { FLUID_REGISTRY } from '../../../common/thermal/compound/gas';
 import { CompoundValue } from '../../../common/thermal/interfaces/compound-value.interface';
+import { CompoundValueBuilder } from '../../../common/thermal/utils/compound-data';
 import { FluidBaseInputDto } from '../dto/fluid/fluid-base-input.dto';
 import { FluidCpResultDto } from '../dto/fluid/fluid-cp-result.dto';
 import { FluidViscosityResultDto } from '../dto/fluid/fluid-viscosity-result.dto';
@@ -41,18 +42,17 @@ export class FluidPropertyService {
   getCp(dto: FluidBaseInputDto): FluidCpResultDto {
     this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
-    const fluid = normalizeKnownFluid(dto.fluid);
+    const named = this._resolveNamedCompound(dto);
 
-    if (fluid && fluid !== 'gas_mix') {
-      const compound = this._requireCompound(fluid);
-      const props = resolveCompoundFluidProps(this.gasProps, this.transport, compound, T);
+    if (named) {
+      const props = resolveCompoundFluidProps(this.gasProps, this.transport, named.compound, T);
       const Cv_J_kgK = props.Cp_J_kgK - PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK / props.M;
       return {
         Cp_J_kgK: props.Cp_J_kgK,
         Cv_J_kgK,
         gamma: props.Cp_J_kgK / Cv_J_kgK,
         molecularWeight_kg_mol: props.M,
-        species: fluid,
+        species: named.label,
         T_K: T,
         validity: props.cpValidity,
         mixtureValidity: props.mixtureValidity,
@@ -77,11 +77,10 @@ export class FluidPropertyService {
     this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
     const P = dto.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
-    const fluid = normalizeKnownFluid(dto.fluid);
+    const named = this._resolveNamedCompound(dto);
 
-    if (fluid && fluid !== 'gas_mix') {
-      const compound = this._requireCompound(fluid);
-      const props = resolveCompoundFluidProps(this.gasProps, this.transport, compound, T, P);
+    if (named) {
+      const props = resolveCompoundFluidProps(this.gasProps, this.transport, named.compound, T, P);
       return {
         mu_Pa_s: props.mu_Pa_s,
         nu_m2s: props.nu_m2s,
@@ -112,11 +111,11 @@ export class FluidPropertyService {
     this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
     const P = dto.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
-    const fluid = normalizeKnownFluid(dto.fluid);
+    const named = this._resolveNamedCompound(dto);
 
     let M: number;
-    if (fluid && fluid !== 'gas_mix') {
-      M = this._requireCompound(fluid).Mr;
+    if (named) {
+      M = named.compound.Mr;
     } else {
       M = this.gasProps.molecularWeight(this._requireComposition(dto.composition));
     }
@@ -130,11 +129,10 @@ export class FluidPropertyService {
   getThermalConductivity(dto: FluidBaseInputDto): FluidThermalConductivityResultDto {
     this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
-    const fluid = normalizeKnownFluid(dto.fluid);
+    const named = this._resolveNamedCompound(dto);
 
-    if (fluid && fluid !== 'gas_mix') {
-      const compound = this._requireCompound(fluid);
-      const props = resolveCompoundFluidProps(this.gasProps, this.transport, compound, T);
+    if (named) {
+      const props = resolveCompoundFluidProps(this.gasProps, this.transport, named.compound, T);
       return {
         lambda: props.lambda,
         T_K: T,
@@ -254,7 +252,34 @@ export class FluidPropertyService {
     return compound;
   }
 
+  /**
+   * Resolve a pure named fluid from `fluid` (registry) or `compoundId` (catalogue).
+   * Returns null when the request is a composition / gas_mix path.
+   */
+  private _resolveNamedCompound(
+    dto: FluidBaseInputDto,
+  ): { compound: CompoundValue; label: string } | null {
+    if (dto.compoundId) {
+      if (dto.fluid && dto.fluid !== 'gas_mix') {
+        throw new BadRequestException('Provide either fluid or compoundId, not both');
+      }
+      try {
+        return { compound: CompoundValueBuilder.fromId(dto.compoundId), label: dto.compoundId };
+      } catch (error) {
+        throw new BadRequestException((error as Error).message);
+      }
+    }
+    const fluid = normalizeKnownFluid(dto.fluid);
+    if (fluid && fluid !== 'gas_mix') {
+      return { compound: this._requireCompound(fluid), label: fluid };
+    }
+    return null;
+  }
+
   private _validateNoCompositionConflict(dto: FluidBaseInputDto): void {
+    if (dto.compoundId && dto.composition && Object.keys(dto.composition).length > 0) {
+      throw new BadRequestException('composition must not be provided when compoundId is set');
+    }
     if (
       dto.fluid &&
       dto.fluid !== 'gas_mix' &&

@@ -4,6 +4,8 @@ import type { MaterialListQuery } from '../types/material-list-query.type';
 export const MATERIALS_QUERY_KEYS = {
   metals: ['materials', 'metals'] as const,
   gases: ['materials', 'gases'] as const,
+  compoundSearch: ['materials', 'compounds', 'search'] as const,
+  compoundGasBounds: ['materials', 'compounds', 'gas-bounds'] as const,
   refractories: ['materials', 'refractories'] as const,
   groups: ['materials', 'groups'] as const,
   group: (route: MaterialGroupRoute) => ['materials', 'group', route] as const,

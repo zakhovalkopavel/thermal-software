@@ -44,10 +44,12 @@ backend/src/common/thermal/
 │   ├── standard-conditions.constants.ts ← STANDARD_CONDITIONS (p, T, T_ref)
 │   └── index.ts
 └── utils/                      ← one export per file, each folder has an index.ts
-    ├── common.ts               ← Common helper methods
+    ├── common.ts               ← Common helper methods (static)
     ├── equation-methods/       ← one class per correlation (NASA-7/9, DIPPR, …)
     ├── nasa/                   ← NASA database loader, nasa7Species / nasa9Species, compoundNasa*
-    └── compound-properties/    ← CompoundPropertyResolver, heatCapacityEntries
+    ├── compound-properties/    ← CompoundPropertyResolver, heatCapacityEntries
+    └── compound-data/          ← loaders + static helper classes (CompoundText, CompoundValueBuilder,
+                                   CompoundSearch, CompoundGasBounds); shapes in interfaces/
 
 backend/src/common/chemistry/   ← elements, formulas, compound molar masses (see below)
 backend/src/common/utils/       ← numerics: bessel/, root-finding/, optimization/, regression/,
@@ -253,6 +255,10 @@ The objects are not `as const`: a literal type would break default parameters su
 `P_Pa = STANDARD_CONDITIONS.PRESSURE_PA`.
 
 `Common` (`utils/common.ts`) keeps only the helper methods (`logarithmicAverage`, `average`, `validInterval`, `isValidInterval`, `equation`).
+
+Compound-data domain helpers follow the same **static utility class** pattern (not free-function
+`*.util.ts` files): `CompoundText`, `CompoundValueBuilder`, `CompoundSearch`, `CompoundGasBounds`.
+See [CONVENTIONS.md §1](../CONVENTIONS.md).
 
 ---
 

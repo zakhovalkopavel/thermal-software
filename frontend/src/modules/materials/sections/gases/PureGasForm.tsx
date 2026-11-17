@@ -2,7 +2,7 @@ import { Alert, Box, Button, IconButton, Stack, Typography } from '@mui/material
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { CalculateButton, NumberField } from '@/shared/ui/calc';
-import { MaterialPicker } from '../../components/MaterialPicker';
+import { CompoundAutocomplete } from '../../components/CompoundAutocomplete';
 import { TemperatureSweepFields } from '../../components/TemperatureSweepFields';
 import { GASES_UI } from './constants/gases-ui.constants';
 import type { PureGasFormProps } from './types/pure-gas-form-props.type';
@@ -14,11 +14,18 @@ export function PureGasForm({
   onSweepChange,
   pressure_Pa,
   onPressureChange,
+  boundsHint,
   onCalculate,
   loading,
   formError,
 }: PureGasFormProps) {
-  const setGas = (index: number, key: string | null) => onGasesChange(gases.map((gas, i) => (i === index ? key : gas)));
+  const setGas = (index: number, next: (typeof gases)[number]) =>
+    onGasesChange(gases.map((gas, i) => (i === index ? next : gas)));
+
+  const excludeIds = gases.flatMap((gas) => {
+    if (!gas) return [];
+    return gas.source === 'registry' ? [gas.key] : [gas.id];
+  });
 
   return (
     <Stack
@@ -33,12 +40,14 @@ export function PureGasForm({
       {gases.map((gas, index) => (
         <Stack key={index} direction="row" spacing={1} alignItems="center">
           <Box sx={{ flex: 1 }}>
-            <MaterialPicker
-              kinds={['gas']}
+            <CompoundAutocomplete
               label={index === 0 ? 'Gas' : 'Compare with'}
-              excludeIds={[...GASES_UI.excludedPickerIds, ...gases.filter((key): key is string => Boolean(key) && key !== gas)]}
-              value={gas ? { kind: 'gas', materialId: gas } : null}
-              onChange={(selection) => setGas(index, selection?.materialId ?? null)}
+              excludeIds={excludeIds.filter((id) => {
+                if (!gas) return true;
+                return gas.source === 'registry' ? id !== gas.key : id !== gas.id;
+              })}
+              value={gas}
+              onChange={(selection) => setGas(index, selection)}
             />
           </Box>
           {index > 0 && (
@@ -57,6 +66,11 @@ export function PureGasForm({
       )}
       <Typography variant="subtitle2">Conditions</Typography>
       <TemperatureSweepFields value={sweep} onChange={onSweepChange} />
+      {boundsHint && (
+        <Typography variant="caption" color="text.secondary">
+          {boundsHint}
+        </Typography>
+      )}
       <NumberField label="Pressure" unit="Pa" value={pressure_Pa} min={1} onChange={onPressureChange} />
       {formError && <Alert severity="warning">{formError}</Alert>}
       <Box>

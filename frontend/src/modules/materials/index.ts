@@ -1,5 +1,6 @@
 export { materialsRoutes } from './routes';
 export { MaterialPicker } from './components/MaterialPicker';
+export { CompoundAutocomplete } from './components/CompoundAutocomplete';
 export { TemperatureSweepFields } from './components/TemperatureSweepFields';
 export { useMetalList } from './hooks/useMetalList';
 export { useGasList } from './hooks/useGasList';
@@ -17,5 +18,6 @@ export type { MaterialPickerKind } from './types/material-picker-kind.type';
 export type { MetalSummary } from './types/metal-summary.type';
 export type { RefractoryProductSummary } from './types/refractory-product-summary.type';
 export type { GasListEntry } from './types/gas-list-entry.type';
+export type { CompoundSelection } from './types/compound-selection.type';
 export type { TemperatureSweep } from './types/temperature-sweep.type';
 export type { MaterialThermalProperties } from './types/material-thermal-properties.type';

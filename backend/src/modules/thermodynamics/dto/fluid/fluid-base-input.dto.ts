@@ -17,12 +17,20 @@ import { STANDARD_CONDITIONS } from '../../../../common/thermal';
  */
 export class FluidBaseInputDto {
   @ApiPropertyOptional({
-    description: `Named fluid or species (required if composition is absent). One of: ${KNOWN_FLUID_DESCRIPTION}.`,
+    description: `Named fluid or species (required if composition / compoundId is absent). One of: ${KNOWN_FLUID_DESCRIPTION}.`,
     example: 'air',
   })
   @IsOptional() @IsString()
   @Transform(({ value }) => normalizeKnownFluid(value))
   fluid?: KnownFluid;
+
+  @ApiPropertyOptional({
+    description:
+      'Compound-data id (CAS or formula:…). Alternative to `fluid` for catalogue compounds from search.',
+    example: '124-38-9',
+  })
+  @IsOptional() @IsString()
+  compoundId?: string;
 
   @ApiPropertyOptional({
     description: 'Mole fractions by species key (required when fluid = gas_mix or absent). Values must sum to 1.',

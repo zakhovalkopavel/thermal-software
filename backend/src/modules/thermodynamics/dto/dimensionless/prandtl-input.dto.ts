@@ -20,10 +20,16 @@ export class PrandtlInputDto {
   @ApiPropertyOptional({
     description:
       `Named fluid or species: ${KNOWN_FLUID_DESCRIPTION}. ` +
-      'Required when `composition` is absent.',
+      'Required when `composition` / `compoundId` is absent.',
     example: 'CO2',
   })
   @IsOptional() @IsString() fluid?: KnownFluid;
+
+  @ApiPropertyOptional({
+    description: 'Compound-data id (CAS or formula:…). Alternative to `fluid` for catalogue compounds.',
+    example: '124-38-9',
+  })
+  @IsOptional() @IsString() compoundId?: string;
 
   @ApiPropertyOptional({
     description: 'Mole fractions by species key — required when `fluid = "gas_mix"` or fluid is absent.',

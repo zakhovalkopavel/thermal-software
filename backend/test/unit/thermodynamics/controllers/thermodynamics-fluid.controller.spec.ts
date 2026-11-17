@@ -40,6 +40,14 @@ describe('POST /thermodynamics/fluid/cp', () => {
     expect(result.validity!.action).toBe('none');
   });
 
+  it('should return Cp for a catalogue compoundId — nitrogen CAS', () => {
+    const svc = buildService();
+    const result = svc.getCp({ compoundId: '7727-37-9', T_fluid_K: 1000 });
+    expect(result.Cp_J_kgK).toBeGreaterThan(900);
+    expect(result.Cp_J_kgK).toBeLessThan(1400);
+    expect(result.species).toBe('7727-37-9');
+  });
+
   it('should clamp+warn when T is outside the Cp correlation range', () => {
     const svc = buildService();
     const result = svc.getCp({ fluid: 'N2', T_fluid_K: 20 });

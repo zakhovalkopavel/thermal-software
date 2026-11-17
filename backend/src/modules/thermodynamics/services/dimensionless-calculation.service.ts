@@ -20,6 +20,7 @@ import {
   MixtureValidity,
 } from '../../../common/thermal/interfaces/equation-validity.interface';
 import { FLUID_REGISTRY } from '../../../common/thermal/compound/gas';
+import { CompoundValueBuilder } from '../../../common/thermal/utils/compound-data';
 import { resolveCompoundFluidProps } from '../helpers/compound-fluid-props.helper';
 
 /** Resolved fluid transport properties — output of Mode B resolution. */
@@ -36,6 +37,7 @@ export interface ResolvedFluidProps {
 /** Flat-format fluid descriptor shared by all scalar dimensionless endpoints. */
 interface FlatFluidInput {
   fluid?: KnownFluid;
+  compoundId?: string;
   composition?: Record<string, number>;
   T_fluid_K?: number;
   P_Pa?: number;
@@ -70,7 +72,13 @@ export class DimensionlessCalculationService {
   }
 
   prandtl(dto: PrandtlInputDto): ScalarDimensionlessResultDto {
-    const fluid = this.resolveFluid({ fluid: dto.fluid, composition: dto.composition, T_fluid_K: dto.T_fluid_K, P_Pa: dto.P_Pa });
+    const fluid = this.resolveFluid({
+      fluid: dto.fluid,
+      compoundId: dto.compoundId,
+      composition: dto.composition,
+      T_fluid_K: dto.T_fluid_K,
+      P_Pa: dto.P_Pa,
+    });
     if (!fluid)
       throw new Error('Could not resolve fluid properties — supply fluid name or composition + T_fluid_K');
     return {
@@ -127,6 +135,25 @@ export class DimensionlessCalculationService {
     if (!T || T <= 0) return null;
 
     const P = input.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
+
+    if (input.compoundId) {
+      try {
+        const compound = CompoundValueBuilder.fromId(input.compoundId);
+        const props = resolveCompoundFluidProps(this.gasProps, this.transport, compound, T, P);
+        return {
+          rho_kg_m3: props.rho_kg_m3,
+          mu_Pa_s: props.mu_Pa_s,
+          Cp_J_kgK: props.Cp_J_kgK,
+          lambda: props.lambda,
+          nu_m2s: props.nu_m2s,
+          validity: props.validity,
+          mixtureValidity: props.mixtureValidity,
+        };
+      } catch {
+        return null;
+      }
+    }
+
     const fluid = normalizeKnownFluid(input.fluid);
 
     if (fluid && fluid !== 'gas_mix') {

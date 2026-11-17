@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { RefractoryModule } from './modules/refractory/refractory.module';
 import { ThermodynamicsModule } from './modules/thermodynamics/thermodynamics.module';
+import { CompoundsModule } from './modules/compounds/compounds.module';
 import { ThermalDistributionModule } from './modules/thermal-distribution/thermal-distribution.module';
 import { CombustionModule } from './modules/combustion/combustion.module';
 import { MetalsModule } from './modules/metals/metals.module';
@@ -15,6 +16,7 @@ import { RecuperatorModule } from './modules/recuperator/recuperator.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CompoundsModule,
     ThermodynamicsModule,
     RefractoryModule,
     ThermalDistributionModule,

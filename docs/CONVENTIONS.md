@@ -37,14 +37,44 @@ Each file exports **exactly one primary construct**:
 
 | File suffix | Exports |
 |-------------|---------|
-| `*.type.ts` / type files in `type/` | One `export type` |
+| `*.type.ts` / type files in `type/` or `interfaces/` | One `export type` |
 | `*.interface.ts` | One `export interface` |
-| `*.class.ts` / method files in `utils/` | One `export class` |
+| Utility / method classes in `utils/` (`common.ts`, `compound-text.ts`, …) | One `export class` (static helpers or instance API) |
 | `*.dto.ts` | One `export class` (DTO) or one `export enum` |
 | compound data files (`gas/*.ts`, etc.) | One `export const` (compound object) |
 
 > **Do not mix** interfaces, types, and classes in a single file.  
 > A type file must not contain a class. A class file must not contain a type alias.
+
+#### Utility helpers: prefer a class with static methods
+
+Related pure helpers in `backend/src/common/thermal/` (and similar domain utils) belong on **one
+utility class with `static` methods**, not a scatter of free functions across `*.util.ts` files.
+
+```typescript
+// ✅ CORRECT — related helpers on one class (see Common, CompoundText, CompoundData, CompoundValueBuilder)
+export class CompoundText {
+  static normalizeCas(raw: string): string { /* … */ }
+  static normalizeFormula(raw: string): string { /* … */ }
+  static hillFormula(formula: string): string { /* … */ }
+}
+
+CompoundText.normalizeCas('124389');
+CompoundData.loadIndex();
+CompoundData.toEquationValue(row);
+
+// ❌ WRONG — one tiny free function per file for the same concern
+export function normalizeCasText(raw: string): string { /* … */ }
+export function normalizeFormulaText(raw: string): string { /* … */ }
+```
+
+**Rules:**
+- Group by concern (`CompoundText`, `CompoundData`, `CompoundSearch`, `CompoundGasBounds`, `Common`).
+- File name is `kebab-case` matching the class (`compound-text.ts` → `CompoundText`). Prefer **no**
+  `.util.ts` suffix for these classes (reserve `*.util.ts` for thin single-purpose adapters elsewhere,
+  e.g. numeric wrappers under `common/utils/`).
+- Data shapes stay in `interfaces/` / `types/` as separate one-export files; the class imports them.
+- Private helpers used only by that class are `private static` on the same class.
 
 #### SRP for Controllers and Services
 

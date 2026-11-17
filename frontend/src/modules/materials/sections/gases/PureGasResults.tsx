@@ -7,11 +7,20 @@ import { PURE_GAS_PROPERTIES } from './constants/pure-gas-properties.constants';
 import type { GasPropertyKey } from './types/gas-property-key.type';
 import type { PureGasPropertyRow } from './types/pure-gas-property-row.type';
 import type { PureGasResultsProps } from './types/pure-gas-results-props.type';
+import type { PureGasSpeciesRef } from './types/pure-gas-species-ref.type';
 
 const CHART_KEYS: GasPropertyKey[] = ['Cp_J_kgK', 'mu_Pa_s', 'nu_m2s', 'rho_kg_m3', 'lambda_WmK', 'Pr'];
 
+function speciesId(gas: PureGasSpeciesRef): string {
+  return gas.source === 'registry' ? gas.key : gas.id;
+}
+
 export function PureGasResults({ request, rows, gasList }: PureGasResultsProps) {
-  const nameOf = (key: string) => gasList.find((gas) => gas.key === key)?.name ?? key;
+  const nameOf = (id: string) => {
+    const fromRequest = request.gases.find((gas) => speciesId(gas) === id)?.label;
+    if (fromRequest) return fromRequest;
+    return gasList.find((gas) => gas.key === id)?.name ?? id;
+  };
 
   const problems = useMemo(() => {
     const byGas = new Map<string, Set<string>>();
@@ -27,10 +36,13 @@ export function PureGasResults({ request, rows, gasList }: PureGasResultsProps) 
 
   const groups = useMemo(
     () =>
-      request.gases.map((gas) => ({
-        name: gasList.find((entry) => entry.key === gas)?.name ?? gas,
-        rows: rows.filter((row) => row.gas === gas),
-      })),
+      request.gases.map((gas) => {
+        const id = speciesId(gas);
+        return {
+          name: nameOf(id),
+          rows: rows.filter((row) => row.gas === id),
+        };
+      }),
     [request.gases, rows, gasList],
   );
 
@@ -55,7 +67,10 @@ export function PureGasResults({ request, rows, gasList }: PureGasResultsProps) 
     const columns: ResultTableColumn<PropertyRow>[] = [
       { key: 'label', label: 'Property', align: 'left' },
       { key: 'unit', label: 'Unit', align: 'left' },
-      ...request.gases.map((gas) => ({ key: gas, label: nameOf(gas) })),
+      ...request.gases.map((gas) => {
+        const id = speciesId(gas);
+        return { key: id, label: nameOf(id) };
+      }),
     ];
     return (
       <Stack spacing={2}>
