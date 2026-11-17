@@ -1,4 +1,4 @@
-import { SolveLinearResult } from './solve-linear-result.interface';
+import { SolveLinearResult } from './types/solve-linear-result.type';
 
 /**
  * Solve a dense linear system A·x = b using LU decomposition.

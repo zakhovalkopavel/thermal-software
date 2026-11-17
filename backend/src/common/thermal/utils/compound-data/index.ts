@@ -1,8 +1,8 @@
-export type { CompoundDataRef } from './interfaces/property/compound-data-ref.type';
-export type { CompoundDataLineRef } from './interfaces/property/compound-data-line-ref.type';
-export type { CompoundDataEquationType } from './interfaces/equation/compound-data-equation-type.type';
-export type { CompoundDataPlannedEquationType } from './interfaces/equation/compound-data-planned-equation-type.type';
-export type { CompoundDataPhase } from './interfaces/property/compound-data-phase.type';
+export type { CompoundDataRef } from './types/property/compound-data-ref.type';
+export type { CompoundDataLineRef } from './types/property/compound-data-line-ref.type';
+export type { CompoundDataEquationType } from './types/equation/compound-data-equation-type.type';
+export type { CompoundDataPlannedEquationType } from './types/equation/compound-data-planned-equation-type.type';
+export type { CompoundDataPhase } from './types/property/compound-data-phase.type';
 export type { CompoundDataPropertyValue } from './interfaces/property/compound-data-property-value.interface';
 export type { CompoundDataEquationValue } from './interfaces/equation/compound-data-equation-value.interface';
 export type { CompoundDataRawValue } from './interfaces/property/compound-data-raw-value.interface';
@@ -13,7 +13,7 @@ export type { CompoundDataRecord } from './interfaces/record/compound-data-recor
 export type { CompoundDataCompoundFile } from './interfaces/record/compound-data-compound-file.interface';
 export { CompoundData } from './compound-data';
 export { CompoundValueBuilder } from './compound-value-builder';
-export type { GasCompoundQuery } from './interfaces/gas-compound-query.type';
+export type { GasCompoundQuery } from './types/gas-compound-query.type';
 export { CompoundText } from './compound-text';
 export { CompoundSearch } from './compound-search';
 export type { CompoundSearchHit } from './interfaces/search/compound-search-hit.interface';
@@ -21,13 +21,13 @@ export type { CompoundSearchOptions } from './interfaces/search/compound-search-
 export type { CompoundSearchDoc } from './interfaces/search/compound-search-doc.interface';
 export { CompoundGasBounds } from './compound-gas-bounds';
 export type { GasTemperatureBounds } from './interfaces/bounds/gas-temperature-bounds.interface';
-export type { BoilingPointSource } from './interfaces/bounds/boiling-point-source.type';
+export type { BoilingPointSource } from './types/bounds/boiling-point-source.type';
 export type { CompoundDataIndexEntry } from './interfaces/dataset/compound-data-index-entry.interface';
 export type { CompoundDataIndexFile } from './interfaces/dataset/compound-data-index-file.interface';
 export type { CompoundDataUnitsFile } from './interfaces/dataset/compound-data-units-file.interface';
 export type { CompoundDataTransport } from './interfaces/transport/compound-data-transport.interface';
 export type { CompoundDataTransportMethod } from './interfaces/transport/compound-data-transport-method.interface';
-export type { CompoundDataTransportMethodName } from './interfaces/transport/compound-data-transport-method-name.type';
+export type { CompoundDataTransportMethodName } from './types/transport/compound-data-transport-method-name.type';
 export type { CompoundDataTransportValue } from './interfaces/transport/compound-data-transport-value.interface';
 export type { CompoundDataInteraction } from './interfaces/transport/compound-data-interaction.interface';
 export type { CompoundDataInteractionsFile } from './interfaces/transport/compound-data-interactions-file.interface';
@@ -39,4 +39,4 @@ export type { CompoundDataSourceFile } from './interfaces/sources/compound-data-
 export type { CompoundDataSourcesFile } from './interfaces/sources/compound-data-sources-file.interface';
 export type { CompoundDataUnresolvedEntry } from './interfaces/dataset/compound-data-unresolved-entry.interface';
 export type { CompoundDataUnresolvedFile } from './interfaces/dataset/compound-data-unresolved-file.interface';
-export type { CompoundDataUnresolvedValue } from './interfaces/dataset/compound-data-unresolved-value.type';
+export type { CompoundDataUnresolvedValue } from './types/dataset/compound-data-unresolved-value.type';

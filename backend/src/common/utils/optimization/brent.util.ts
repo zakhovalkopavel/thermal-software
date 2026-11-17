@@ -1,4 +1,4 @@
-import { MinimizeResult } from './minimize-result.interface';
+import { MinimizeResult } from './types/minimize-result.type';
 
 /**
  * Minimise a scalar function of one variable on [a, b] using golden-section search.

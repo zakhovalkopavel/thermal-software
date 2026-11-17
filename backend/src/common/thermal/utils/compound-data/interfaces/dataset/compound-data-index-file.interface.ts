@@ -1,4 +1,4 @@
-import { CompoundDataEquationType } from '../equation/compound-data-equation-type.type';
+import { CompoundDataEquationType } from '../../types/equation/compound-data-equation-type.type';
 import { CompoundDataIndexEntry } from './compound-data-index-entry.interface';
 
 /** `index.json` */

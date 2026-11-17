@@ -1,5 +1,5 @@
 import { CHEMISTRY } from '../constants/chemistry.constants';
-import { ChemicalElement } from './chemical-element.interface';
+import { ChemicalElement } from './types/chemical-element.type';
 import { PERIODIC_TABLE } from './periodic-table.data';
 
 /** Molar mass of an element [kg/mol]; throws for unknown symbols and elements without a standard atomic weight */

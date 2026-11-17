@@ -1,8 +1,8 @@
-import { AdaptiveIntegrateOptions } from './adaptive-integrate-options.interface';
+import { AdaptiveIntegrateOptions } from './types/adaptive-integrate-options.type';
 import { clenshawCurtis } from './clenshaw-curtis.util';
 import { gaussLegendre } from './gauss-legendre.util';
-import { GaussNodeCount } from './gauss-node-count.type';
-import { QUADRATURE } from './quadrature.constants';
+import { GaussNodeCount } from './types/gauss-node-count.type';
+import { QUADRATURE } from './constants/quadrature.constants';
 
 /**
  * Returns true if the integrand appears to oscillate on [a, b].

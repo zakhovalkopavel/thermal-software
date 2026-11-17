@@ -1,5 +1,5 @@
-import { GAUSS_LEGENDRE_TABLES } from './gauss-legendre-tables.constants';
-import { GaussNodeCount } from './gauss-node-count.type';
+import { GAUSS_LEGENDRE_TABLES } from './constants/gauss-legendre-tables.constants';
+import { GaussNodeCount } from './types/gauss-node-count.type';
 
 /**
  * Approximate ∫ₐᵇ f(x) dx using N-point Gauss–Legendre quadrature.

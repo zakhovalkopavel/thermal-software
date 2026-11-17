@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { NasaDatabase } from './nasa-database.interface';
+import { NasaDatabase } from './interfaces/nasa-database.interface';
 
 /**
  * `shared/processed/NASA` of the repo root: the nearest ancestor of this file

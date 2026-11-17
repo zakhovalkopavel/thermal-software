@@ -1,7 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationValue } from '../../interfaces/equation-value.interface';
 import { CompoundText } from './compound-text';
-import { GasCompoundQuery } from './interfaces/gas-compound-query.type';
+import { GasCompoundQuery } from './types/gas-compound-query.type';
 import { CompoundDataIndexEntry } from './interfaces/dataset/compound-data-index-entry.interface';
 import { CompoundDataEquationList } from './interfaces/equation/compound-data-equation-list.interface';
 import { CompoundDataEquationValue } from './interfaces/equation/compound-data-equation-value.interface';

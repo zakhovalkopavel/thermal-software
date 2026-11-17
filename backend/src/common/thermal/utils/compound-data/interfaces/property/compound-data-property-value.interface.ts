@@ -1,6 +1,6 @@
 import { RefKey } from '../../../../enum/ref-key.enum';
-import { CompoundDataPhase } from './compound-data-phase.type';
-import { CompoundDataRef } from './compound-data-ref.type';
+import { CompoundDataPhase } from '../../types/property/compound-data-phase.type';
+import { CompoundDataRef } from '../../types/property/compound-data-ref.type';
 
 /** One scalar value from one source row; the unit is fixed per property (`CompoundDataProperties`) */
 export interface CompoundDataPropertyValue {

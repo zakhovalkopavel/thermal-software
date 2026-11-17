@@ -1,4 +1,4 @@
-import { Root1dResult } from './root-1d-result.interface';
+import { Root1dResult } from './types/root-1d-result.type';
 
 /**
  * Find a root of f in [a, b] using Brent's method.

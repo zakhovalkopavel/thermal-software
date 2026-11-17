@@ -1,5 +1,5 @@
-import { CompoundDataPhase } from './compound-data-phase.type';
-import { CompoundDataRef } from './compound-data-ref.type';
+import { CompoundDataPhase } from '../../types/property/compound-data-phase.type';
+import { CompoundDataRef } from '../../types/property/compound-data-ref.type';
 
 /**
  * Source row kept verbatim because it cannot become an equation

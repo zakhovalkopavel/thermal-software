@@ -1,7 +1,7 @@
 import { loadNasaDatabase } from './load-nasa-database.util';
-import { NASA_DATABASE } from './nasa-database.constants';
-import { NasaDatabase } from './nasa-database.interface';
-import { Nasa7Species } from './nasa7-species.interface';
+import { NASA_DATABASE } from './constants/nasa-database.constants';
+import { NasaDatabase } from './interfaces/nasa-database.interface';
+import { Nasa7Species } from './interfaces/nasa7-species.interface';
 
 let nasa7Db: NasaDatabase<Nasa7Species> | undefined;
 

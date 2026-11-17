@@ -1,4 +1,4 @@
-import { ChemicalElement } from './chemical-element.interface';
+import { ChemicalElement } from './types/chemical-element.type';
 
 /**
  * Periodic table keyed by element symbol.

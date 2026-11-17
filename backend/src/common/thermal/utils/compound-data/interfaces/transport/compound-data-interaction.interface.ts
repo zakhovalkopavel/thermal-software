@@ -1,4 +1,4 @@
-import { CompoundDataRef } from '../property/compound-data-ref.type';
+import { CompoundDataRef } from '../../types/property/compound-data-ref.type';
 import { CompoundDataTransportMethod } from './compound-data-transport-method.interface';
 
 /** One species pair of Svehla 1995 Table I that is not a pure-species viscosity or conductivity row */

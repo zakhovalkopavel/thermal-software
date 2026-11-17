@@ -1,4 +1,4 @@
-export type { ChemicalCompound } from './chemical-compound.interface';
+export type { ChemicalCompound } from './types/chemical-compound.type';
 export { COMPOUND_LIBRARY } from './compound-library.data';
 export { molarMass } from './molar-mass.util';
 export { molarMassGramsPerMol } from './molar-mass-grams-per-mol.util';

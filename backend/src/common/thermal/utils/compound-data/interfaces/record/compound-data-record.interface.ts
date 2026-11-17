@@ -1,7 +1,7 @@
 import { CompoundDataEquations } from '../equation/compound-data-equations.interface';
 import { CompoundDataProperties } from '../property/compound-data-properties.interface';
 import { CompoundDataRawValue } from '../property/compound-data-raw-value.interface';
-import { CompoundDataLineRef } from '../property/compound-data-line-ref.type';
+import { CompoundDataLineRef } from '../../types/property/compound-data-line-ref.type';
 import { CompoundDataTransport } from '../transport/compound-data-transport.interface';
 
 /**

@@ -1,6 +1,6 @@
 import { EvaluationResult } from '../../interfaces/equation-validity.interface';
 import { buildTemperatureValidity } from '../equation-validity.util';
-import { NasaThermo } from './nasa-thermo.interface';
+import { NasaThermo } from './interfaces/nasa-thermo.interface';
 
 export type NasaThermoProperty = 'cp' | 'enthalpy' | 'entropy' | 'gibbsEnergy';
 

@@ -1,4 +1,4 @@
-import { ExponentialFitResult } from './exponential-fit-result.interface';
+import { ExponentialFitResult } from './types/exponential-fit-result.type';
 
 /**
  * Fit y = A·eᴮˣ using linearisation (ln y = ln A + B·x).

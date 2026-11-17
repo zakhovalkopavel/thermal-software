@@ -1,4 +1,4 @@
-import { LinearRegressionResult } from './linear-regression-result.interface';
+import { LinearRegressionResult } from './types/linear-regression-result.type';
 
 /**
  * Fit y = slope·x + intercept using ordinary least squares.

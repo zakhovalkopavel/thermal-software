@@ -1,4 +1,4 @@
-import { CompoundDataUnresolvedValue } from './compound-data-unresolved-value.type';
+import { CompoundDataUnresolvedValue } from '../../types/dataset/compound-data-unresolved-value.type';
 
 export interface CompoundDataUnresolvedEntry {
   cas: string | null;

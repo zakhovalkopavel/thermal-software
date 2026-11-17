@@ -7,7 +7,7 @@ import {
 } from '../equation-validity.util';
 import { compoundNasaThermo, evaluateNasaThermo } from '../nasa';
 import { heatCapacityEntries } from './heat-capacity-entries.util';
-import { PreferredApprox } from './preferred-approx.type';
+import { PreferredApprox } from './types/preferred-approx.type';
 
 /** True when the equation publishes a finite range that covers T. */
 function coversTemperature(entry: EquationValue, T: number): boolean {

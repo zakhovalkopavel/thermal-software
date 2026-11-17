@@ -1,4 +1,4 @@
-import { PolynomialFitResult } from './polynomial-fit-result.interface';
+import { PolynomialFitResult } from './types/polynomial-fit-result.type';
 
 /**
  * Fit a polynomial y = c0 + c1·x + … + cn·xⁿ by least squares (regression).

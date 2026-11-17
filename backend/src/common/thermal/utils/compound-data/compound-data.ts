@@ -5,7 +5,7 @@ import { RefKey } from '../../enum/ref-key.enum';
 import { EquationValue } from '../../interfaces/equation-value.interface';
 import { CompoundDataIndexFile } from './interfaces/dataset/compound-data-index-file.interface';
 import { CompoundDataEquationValue } from './interfaces/equation/compound-data-equation-value.interface';
-import { CompoundDataRef } from './interfaces/property/compound-data-ref.type';
+import { CompoundDataRef } from './types/property/compound-data-ref.type';
 import { CompoundDataCompoundFile } from './interfaces/record/compound-data-compound-file.interface';
 
 const REF_KEYS = new Set<string>(Object.values(RefKey));

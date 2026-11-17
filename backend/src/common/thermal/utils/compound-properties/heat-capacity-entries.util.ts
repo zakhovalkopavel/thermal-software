@@ -3,7 +3,7 @@ import { EquationValue } from '../../interfaces/equation-value.interface';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
 import { compoundNasa7, compoundNasa9 } from '../nasa';
-import { HeatCapacityEntries } from './heat-capacity-entries.interface';
+import { HeatCapacityEntries } from './types/heat-capacity-entries.type';
 
 const cache = new WeakMap<CompoundValue, HeatCapacityEntries>();
 

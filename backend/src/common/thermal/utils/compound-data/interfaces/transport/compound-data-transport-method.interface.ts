@@ -1,4 +1,4 @@
-import { CompoundDataTransportMethodName } from './compound-data-transport-method-name.type';
+import { CompoundDataTransportMethodName } from '../../types/transport/compound-data-transport-method-name.type';
 
 /**
  * One method Svehla 1995 (NASA TM-4647) Table I used for a property, in the printed order.

@@ -1,5 +1,5 @@
 import { getFmin } from './get-fmin.util';
-import { MinimizeResult } from './minimize-result.interface';
+import { MinimizeResult } from './types/minimize-result.type';
 
 /**
  * Minimise a scalar function of N variables using the Polak-Ribière

@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { FminExports } from './fmin-exports.interface';
+import { FminExports } from './types/fmin-exports.type';
 
 // fmin@0.0.4 ships "type":"module" in package.json but the actual build/fmin.js
 // is a UMD bundle. Dynamic import() fails because Node treats it as ESM.

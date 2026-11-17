@@ -1,4 +1,4 @@
-import { BoilingPointSource } from './boiling-point-source.type';
+import { BoilingPointSource } from '../../types/bounds/boiling-point-source.type';
 
 /**
  * Gas-state temperature window for a compound at pressure P.

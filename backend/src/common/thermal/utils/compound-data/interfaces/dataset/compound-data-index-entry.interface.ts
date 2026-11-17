@@ -1,6 +1,6 @@
 import { RefKey } from '../../../../enum/ref-key.enum';
 import { CompoundDataEquations } from '../equation/compound-data-equations.interface';
-import { CompoundDataPhase } from '../property/compound-data-phase.type';
+import { CompoundDataPhase } from '../../types/property/compound-data-phase.type';
 import { CompoundDataProperties } from '../property/compound-data-properties.interface';
 import { CompoundDataTransport } from '../transport/compound-data-transport.interface';
 

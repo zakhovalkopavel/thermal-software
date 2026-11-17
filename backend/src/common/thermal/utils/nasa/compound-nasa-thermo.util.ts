@@ -4,8 +4,8 @@ import { Nasa7EquationMethod } from '../equation-methods/nasa7-equation-method';
 import { Nasa9EquationMethod } from '../equation-methods/nasa9-equation-method';
 import { compoundNasa7 } from './compound-nasa7.util';
 import { compoundNasa9 } from './compound-nasa9.util';
-import { NasaMethod } from './nasa-method.interface';
-import { NasaThermo } from './nasa-thermo.interface';
+import { NasaMethod } from './interfaces/nasa-method.interface';
+import { NasaThermo } from './interfaces/nasa-thermo.interface';
 
 const nasa7Method = new Nasa7EquationMethod();
 const nasa9Method = new Nasa9EquationMethod();

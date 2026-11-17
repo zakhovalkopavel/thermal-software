@@ -21,11 +21,11 @@
  *   Use levenbergMarquardt when the model is an arbitrary nonlinear function
  *                      (e.g. Arrhenius A·exp(B/T), VTF A+B/(T−T₀)) — iterative.
  */
-export type { CurveFitResult } from './curve-fit-result.interface';
-export type { LinearRegressionResult } from './linear-regression-result.interface';
-export type { PolynomialFitResult } from './polynomial-fit-result.interface';
-export type { ExponentialFitResult } from './exponential-fit-result.interface';
-export type { PowerFitResult } from './power-fit-result.interface';
+export type { CurveFitResult } from './types/curve-fit-result.type';
+export type { LinearRegressionResult } from './types/linear-regression-result.type';
+export type { PolynomialFitResult } from './types/polynomial-fit-result.type';
+export type { ExponentialFitResult } from './types/exponential-fit-result.type';
+export type { PowerFitResult } from './types/power-fit-result.type';
 export { linearRegression } from './linear-regression.util';
 export { polynomialFit } from './polynomial-fit.util';
 export { exponentialFit } from './exponential-fit.util';

@@ -334,8 +334,7 @@ The compound files carry no units, no source links and no `generatedAt` (a rebui
   "class": "inorganic", "group": "Al", "displayFormula": "Al2O3", "hill": "Al2O3", "elements": ["Al", "O"],
   "entries": {
         "1344-28-1": {
-          "compoundId": "electrocorundum",
-          "name": "electrocorundum", "Mr": 0.10196, "smiles": "O=[Al]O[Al]=O", "inchikey": "TWNQGVIAIRXVLR-UHFFFAOYSA-N",
+          "compoundId": "electrocorundum", "name": "electrocorundum", "Mr": 0.10196, "smiles": "O=[Al]O[Al]=O", "inchikey": "TWNQGVIAIRXVLR-UHFFFAOYSA-N",
           "identifierRef": [1213, "idPubchemSmall"],
           "properties": {
             "meltingPoint": [{"value": 2327.15, "variant": "α", "ref": ["CRC95", 301, "crcConstants"]}],
@@ -345,8 +344,7 @@ The compound files carry no units, no source links and no `generatedAt` (a rebui
           "janaf": ["Al-096", "Al-097", "Al-098", "Al-099", "Al-100", "Al-101"]
         },
         "39377-45-2": {
-          "compoundId": "aluminium_oxide",
-          "name": "aluminium oxide", "Mr": 0.10196, "smiles": "[O-2].[O-2].[O-2].[Al+3].[Al+3]", "inchikey": "...",
+          "compoundId": "aluminium_oxide", "name": "aluminium oxide", "Mr": 0.10196, "smiles": "[O-2].[O-2].[O-2].[Al+3].[Al+3]", "inchikey": "...",
           "identifierRef": [63145, "idPubchemLarge"],
           "equations": {
             "heatCapacity": {

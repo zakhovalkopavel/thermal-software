@@ -12,7 +12,7 @@
  *   nelderMead      → scipy.optimize.minimize(method='Nelder-Mead')
  *   conjugateGradient → scipy.optimize.minimize(method='CG')
  */
-export type { MinimizeResult } from './minimize-result.interface';
+export type { MinimizeResult } from './types/minimize-result.type';
 export { brent } from './brent.util';
 export { nelderMead } from './nelder-mead.util';
 export { conjugateGradient } from './conjugate-gradient.util';

@@ -350,7 +350,8 @@ Per-service checklist: [`docs/SERVICE_TEST_CHECKLIST.md`](../SERVICE_TEST_CHECKL
 Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).  
 - [x] **Phase 0** — suite baseline (1137 tests), conventions + structure ratchet, Swagger snapshot, D2 equation-type exception in `CONVENTIONS.md`.  
 - [x] **Phase 1** — `metals` pilot: split metal thermal shapes into `types/*.type.ts`.  
-- [x] **Phase 2** — `thermodynamics`: known-fluid split; `CompoundFluidPropsService` (V7=0); helpers → `utils/` (V6=0); controller split by resource; structure baselines shrunk (awaiting commit).
+- [x] **Phase 2** — `thermodynamics`: known-fluid split; `CompoundFluidPropsService` (V7=0); helpers → `utils/` (V6=0); controller split by resource; structure baselines shrunk.
+- [ ] **Phase 3** — `common/`: **3.1 done** (V5→0: chemistry/utils/compound-data/janaf/nasa construct folders; data shapes → `type` where moved); next 3.2–3.5 (equation-validity / NASA splits, `EquationValidity` class, docs).
 
 ### Medium priority
 

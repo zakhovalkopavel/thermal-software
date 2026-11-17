@@ -1,4 +1,4 @@
-import { ChemicalCompound } from './chemical-compound.interface';
+import { ChemicalCompound } from './types/chemical-compound.type';
 
 /**
  * Compounds used by the application, keyed by chemical formula (isomers share one entry).

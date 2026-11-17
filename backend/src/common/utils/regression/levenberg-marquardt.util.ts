@@ -1,4 +1,4 @@
-import { CurveFitResult } from './curve-fit-result.interface';
+import { CurveFitResult } from './types/curve-fit-result.type';
 
 /**
  * Fit a parametric model to data using the Levenberg-Marquardt algorithm.

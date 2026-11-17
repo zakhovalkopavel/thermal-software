@@ -1,4 +1,4 @@
-import { PowerFitResult } from './power-fit-result.interface';
+import { PowerFitResult } from './types/power-fit-result.type';
 
 /**
  * Fit y = A·xᴮ using linearisation (ln y = ln A + B·ln x).
