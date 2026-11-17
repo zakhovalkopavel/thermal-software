@@ -44,6 +44,7 @@ Folders sit inside a module (`backend/src/modules/<feature>/<folder>/`) or a sha
 | Construct | Folder | File name | The file exports exactly one |
 |-----------|--------|-----------|------------------------------|
 | Type alias (data shape) | `types/` | `<name>.type.ts` | `export type` |
+| Equation coefficient type (legacy) | `type/` | `<name>-equation.ts` (no `.type.ts`) | `export type` — **exception** for `common/thermal/type/` only; do not copy this pattern elsewhere |
 | Interface (behavioural contract) | `interfaces/` | `<name>.interface.ts` | `export interface` |
 | DTO | `dto/` | `<name>.dto.ts` | `export class` |
 | Enum | `enums/` | `<name>.enum.ts` | `export enum` |

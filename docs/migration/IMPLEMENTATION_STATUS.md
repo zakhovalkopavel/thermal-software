@@ -1,6 +1,6 @@
 # Implementation Status
 
-**Last Updated:** September 2026
+**Last Updated:** November 2026
 **Overall Progress:** ~55%
 
 > ⚠️ **Maintenance rule:** This file must be updated in the **same commit** as any change
@@ -325,7 +325,7 @@ Spec: [`STEP_05_DATABASE_MIGRATION.md`](STEP_05_DATABASE_MIGRATION.md)
 | Thermodynamics services | 1 (radiation) | 192 | ⚠️ Partial — 7 services missing |
 | Thermodynamics controllers | 1 | 332 | ✅ Full |
 | Common thermal | 1 | 188 | ✅ Full |
-| Conventions (file length) | 2 | ~330 | ⚠️ Written, not yet run — Docker daemon was unavailable when added; run `docker compose exec backend npm run test -- conventions`. Baseline: 35 grandfathered files (20 code, 15 docs) in `backend/test/unit/conventions/file-length-baseline.json` |
+| Conventions (file length + structure) | 4 | ~700 | ✅ Passing in Docker — file-length baseline (20 code + 15 docs); structure baseline (V1=55, V2=25, V3=25, V5=47, V6=6) in `structure-baseline.json`. Docs mount: `./docs:/docs:ro`. |
 
 ### Missing
 - [ ] Backend integration tests (0)
@@ -345,9 +345,11 @@ Per-service checklist: [`docs/SERVICE_TEST_CHECKLIST.md`](../SERVICE_TEST_CHECKL
 2. **Add thermodynamics service tests** (fluid-property, dimensionless-calculation, gas-properties, dimensionless-numbers, diffusion, transport, aerodynamics)
 3. **Frontend: first pages** — Phase Equilibrium + Blend Optimizer (highest user value)
 
-### Conventions refactoring (proposed)
+### Conventions refactoring (in progress on `refactoring`)
 
-Plan with phases, steps and checkpoints: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md) — not started; Phase 0 (guardrails, run the new `conventions` tests in Docker) comes first.
+Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).  
+- [x] **Phase 0** — suite baseline (1137 tests), conventions + structure ratchet, Swagger snapshot, D2 equation-type exception in `CONVENTIONS.md`.  
+- [ ] Phase 1 — `metals` pilot (next).
 
 ### Medium priority
 

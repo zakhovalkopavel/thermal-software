@@ -1,10 +1,13 @@
 # Conventions Refactoring Plan
 
-**Status:** Proposed — not started  
+**Status:** In progress — Phase 0 complete (awaiting commit); next: Phase 1 (`metals` pilot)  
+**Branch:** `refactoring`  
 **Goal:** bring the backend in line with [`CONVENTIONS.md`](../CONVENTIONS.md) (one construct per file,
 folder-per-construct, service / static-class / function rules, file-length limits) **without changing behaviour**.  
 **Rule of the plan:** every step is a behaviour-preserving move / split / rename. No formula, API, DTO
 name or response shape changes. If a step needs one, stop and raise it separately.
+**Commit workflow:** agent does not commit; after each phase the agent hands a commit command for
+human verify + commit, then continues.
 
 ---
 
@@ -73,6 +76,33 @@ Run **inside Docker** (never on the host). A step is not done until all of these
 **Rollback rule:** if C2 fails and the cause is not obvious within one fix attempt, revert the step's
 commit and split it into smaller steps — do not push forward with a red suite.
 
+### New code must comply now (no deferred rewrite)
+
+Grandfathering applies **only** to pre-existing `src/` violations listed in the structure / file-length
+baselines. **Every file created or substantially rewritten by this plan** — including tests,
+convention checkers, seed scripts, and docs — must already satisfy [`CONVENTIONS.md`](../CONVENTIONS.md)
+before the step is handed off. Do **not** leave “fix in a later phase” debt in new files.
+
+| # | Requirement |
+|---|-------------|
+| N1 | **One exported construct per file** (V1). Related constants → one `export const` object, or separate `*.constants.ts` files — never several top-level `export const`s in one file. |
+| N2 | **No mixed exported kinds** (V2): no `export const` + `export function`, no class + exported type, etc. in the same file. |
+| N3 | **No free-function families** (V3); use a static class or a service. |
+| N4 | **Correct folder + suffix** (V5): `types/` + `.type.ts`, `constants/` + `.constants.ts`, `utils/` + kebab class file or `*.util.ts`, … |
+| N5 | **No new `*.helper.ts`** (V6). |
+| N6 | **Length:** new production code ≤ 300 lines; new tests ≤ 500. Prefer splitting early (aim ≤ 200 for new utils/services). “It’s under `test/` so 500 is fine” is not a reason to ship a 300+ line utility that should be several classes. |
+| N7 | **File-private `const`s** next to a class are allowed only when trivial and used solely by that class (CONVENTIONS § placement rule 5). Shared or non-trivial config (path sets, rule tables, baseline paths) goes in `constants/*.constants.ts` **in the same step** — do not park them beside the class “for now”. |
+| N8 | **One-shot scripts** live under `backend/scripts/` (or the repo’s existing scripts area), not beside unit specs. |
+| N9 | Before handoff, **manually audit every new/changed file** for N1–N8 (the structure ratchet only scans `src/`, so `test/` and `scripts/` will not catch violations automatically). |
+
+**Lesson (Phase 0):** shipping a multi-export `structure-rules.constants.ts` and a 300+ line
+`structure-checker.ts` with inline config, then “splitting later,” violated this rule and forced a
+rewrite before commit. Do not repeat.
+
+| # | Check | Command / action |
+|---|-------|------------------|
+| C10 | New/rewritten files obey N1–N9 | Review the step’s diff file-by-file; fix before asking for commit |
+
 ### Techniques (reuse, do not reinvent)
 
 - `backend/codemod-split.mjs` — splits multi-export TS files into one construct per file and rewrites
@@ -95,11 +125,11 @@ largest module last.
 
 | Step | Action | Checkpoint |
 |------|--------|-----------|
-| 0.1 | Run the whole suite in Docker; record suites / tests / coverage (`npm run test:cov` → `tmp/reports/tests/`). | **CP0.1:** green, or a written list of already-failing tests. Refactoring starts only from a known baseline. |
-| 0.2 | Run the new `conventions` tests (written but **never executed** when added). Fix any defect in them; confirm `docs/` is mounted (`./docs:/docs:ro`). | **CP0.2:** `npm run test -- conventions` passes; docs rule not skipped. |
-| 0.3 | Add a **structure spec** next to the file-length spec, each rule with a ratcheting baseline JSON (same semantics: may not grow, only shrink): (a) one exported construct per file; (b) no mixed construct kinds; (c) no ≥ 2 exported free functions per file; (d) suffix ↔ folder match; (e) no new `*.helper.ts`. Seed baselines with today's violations (V1–V3, V5, V6). | **CP0.3:** spec passes with baselines; baseline sizes equal the Section 1 counts (±heuristic noise, recorded). From here every phase is *measurable*. |
-| 0.4 | Snapshot public contracts: Swagger JSON (if enabled) and frontend-generated types. | **CP0.4:** snapshot files stored under `tmp/reports/` (untracked); used for C8. |
-| 0.5 | Create the working branch (decide whether from `mineral-phase` or `main`); no mixing with feature work. | **CP0.5:** clean `git status`, branch named. |
+| 0.1 | Run the whole suite in Docker; record suites / tests / coverage (`npm run test:cov` → `tmp/reports/tests/`). | **CP0.1:** ✅ 71 suites / 1137 passed / 1 skipped (2026-11-17). |
+| 0.2 | Run the new `conventions` tests (written but **never executed** when added). Fix any defect in them; confirm `docs/` is mounted (`./docs:/docs:ro`). | **CP0.2:** ✅ file-length + docs rule pass after backend recreate with `/docs` mount. |
+| 0.3 | Add a **structure spec** next to the file-length spec, each rule with a ratcheting baseline JSON (same semantics: may not grow, only shrink): (a) one exported construct per file; (b) no mixed construct kinds; (c) no ≥ 2 exported free functions per file; (d) suffix ↔ folder match; (e) no new `*.helper.ts`. Seed baselines with today's violations (V1–V3, V5, V6). | **CP0.3:** ✅ AST baselines: V1=55, V2=25, V3=25, V5=47, V6=6 (match §1 ±1 on V5). |
+| 0.4 | Snapshot public contracts: Swagger JSON (if enabled) and frontend-generated types. | **CP0.4:** ✅ Swagger → `tmp/reports/contracts/swagger-phase0.json` (71 paths). Frontend OpenAPI gen not implemented — C8 is Swagger-only for now. |
+| 0.5 | Create the working branch (decide whether from `mineral-phase` or `main`); no mixing with feature work. | **CP0.5:** ✅ using existing branch `refactoring`. |
 
 ### Phase 1 — Pilot: `metals` module (smallest; validates the procedure)
 
