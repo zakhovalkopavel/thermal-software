@@ -16,7 +16,8 @@ function refKey(ref: CompoundDataRef | string): RefKey {
 /**
  * Dataset row → backend `EquationValue`.
  * `ref` is the source-row tuple; the backend keeps `ref[0]`.
- * A missing temperature range (`null`, VDI gas tables) becomes ±Infinity, so the equation is not clamped.
+ * A missing temperature range (`null`, e.g. VDI gas tables) stays `null`
+ * (unknown — not conflated with “valid everywhere”).
  */
 export function toEquationValue(row: CompoundDataEquationValue): EquationValue {
   if (!EQUATION_TYPES.has(row.type)) {
@@ -26,8 +27,8 @@ export function toEquationValue(row: CompoundDataEquationValue): EquationValue {
     type: row.type as EquationTypeDto,
     ref: refKey(row.ref),
     vars: row.vars,
-    min: row.min ?? Number.NEGATIVE_INFINITY,
-    max: row.max ?? Number.POSITIVE_INFINITY,
+    min: row.min,
+    max: row.max,
   };
   if (row.k !== undefined) value.k = row.k;
   return value;

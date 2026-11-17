@@ -34,6 +34,20 @@ describe('POST /thermodynamics/fluid/cp', () => {
     expect(result.molecularWeight_kg_mol).toBeCloseTo(0.028014, 4);
     expect(result.species).toBe('N2');
     expect(result.T_K).toBe(1000);
+    expect(result.validity).toBeDefined();
+    expect(result.validity!.requestedT).toBe(1000);
+    expect(result.validity!.inRange).toBe(true);
+    expect(result.validity!.action).toBe('none');
+  });
+
+  it('should clamp+warn when T is outside the Cp correlation range', () => {
+    const svc = buildService();
+    const result = svc.getCp({ fluid: 'N2', T_fluid_K: 20 });
+    expect(result.validity).toBeDefined();
+    expect(result.validity!.inRange).toBe(false);
+    expect(result.validity!.action).toBe('clamped');
+    expect(result.validity!.effectiveT).toBeGreaterThan(20);
+    expect(result.Cp_J_kgK).toBeGreaterThan(0);
   });
 
   it('should return Cp and Cv for a gas — CO2 at 500 K', () => {
@@ -115,6 +129,16 @@ describe('POST /thermodynamics/fluid/viscosity', () => {
     const svc = buildService();
     expect(() => svc.getViscosity({ fluid: 'N2', T_fluid_K: 0 })).toThrow(BadRequestException);
   });
+
+  it('should resolve air via dry-air mole composition (not GAS_REGISTRY)', () => {
+    const svc = buildService();
+    const result = svc.getViscosity({ fluid: 'air', T_fluid_K: 300 });
+    expect(result.mu_Pa_s).toBeGreaterThan(1e-5);
+    expect(result.mu_Pa_s).toBeLessThan(3e-5);
+    expect(result.rho_kg_m3).toBeGreaterThan(1.0);
+    expect(result.rho_kg_m3).toBeLessThan(1.3);
+    expect(result.validity).toBeDefined();
+  });
 });
 
 // ── POST /thermodynamics/fluid/density ────────────────────────────────────────
@@ -148,6 +172,15 @@ describe('POST /thermodynamics/fluid/density', () => {
     const svc = buildService();
     expect(() => svc.getDensity({ fluid: 'O2', T_fluid_K: 0 })).toThrow(BadRequestException);
   });
+
+  it('should return density for air at 300 K, 1 atm', () => {
+    const svc = buildService();
+    const result = svc.getDensity({ fluid: 'air', T_fluid_K: 300 });
+    // ρ ≈ P·0.028951/(R·300) ≈ 1.177 kg/m³
+    expect(result.rho_kg_m3).toBeGreaterThan(1.1);
+    expect(result.rho_kg_m3).toBeLessThan(1.25);
+    expect(result.molecularWeight_kg_mol).toBeCloseTo(0.028951, 4);
+  });
 });
 
 // ── POST /thermodynamics/fluid/thermal-conductivity ───────────────────────────
@@ -157,10 +190,20 @@ describe('POST /thermodynamics/fluid/thermal-conductivity', () => {
   it('should return λ for CO2 at 800 K', () => {
     const svc = buildService();
     const result = svc.getThermalConductivity({ fluid: 'CO2', T_fluid_K: 800 });
-    // Eucken λ ~ 0.01–0.15 W/(m·K) for CO2 at high T
+    // Prefers stored k(T) when present; otherwise Eucken. Typical gas λ ~ 0.01–0.2 W/(m·K)
     expect(result.lambda).toBeGreaterThan(0.01);
     expect(result.lambda).toBeLessThan(0.2);
     expect(result.T_K).toBe(800);
+    expect(result.validity).toBeDefined();
+    expect(result.validity!.requestedT).toBe(800);
+  });
+
+  it('should return λ for air at 300 K via dry-air mixture', () => {
+    const svc = buildService();
+    const result = svc.getThermalConductivity({ fluid: 'air', T_fluid_K: 300 });
+    expect(result.lambda).toBeGreaterThan(0.02);
+    expect(result.lambda).toBeLessThan(0.04);
+    expect(result.validity).toBeDefined();
   });
 
   it('should return mixture λ via mole-fraction weighted mixing', () => {

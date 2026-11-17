@@ -4,24 +4,25 @@ import { RefKey } from '../../enum/ref-key.enum';
 import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
- * Air — dry atmospheric air treated as a pseudo-pure compound.
+ * Air — dry atmospheric air treated as a compound.
  *
- * Marked with `isComposition: true` because air is not a single pure substance —
- * its exact mole-fraction breakdown is provided in
- * `compound/composition/air.composition.ts` (`AIR_MOLE_COMPOSITION`).
+ * Bulk Cp / λ correlations live on this object; when a bucket is empty (viscosity),
+ * fall back to `composition` and evaluate the mixture of registry species.
  *
- * Thermophysical property correlations (Cp, λ) are valid for the bulk mixture
- * without requiring per-species resolution.
- *
- * References:
- *   ICAO Doc 7488/3 — Manual of the ICAO Standard Atmosphere, 3rd ed. (1993).
- *   ISO 2533:1975   — Standard Atmosphere.
+ * Composition: ICAO Doc 7488/3 / ISO 2533:1975 dry-air mole fractions
+ * (Ne/He/Kr omitted, < 0.001 % effect).
  */
 export const Air: CompoundValue = {
   name: 'Air',
   chemicalFormula: '78.084%(v) N2, 20.946%(v) O2, 0.934%(v) Ar, 0.040%(v) CO2',
   Mr: COMPOUND_LIBRARY.Air.molarMass_kg_mol,
   isComposition: true,
+  composition: {
+    N2:  0.78084,
+    O2:  0.20946,
+    Ar:  0.00934,
+    CO2: 0.00040,
+  },
   enthalpyFormation298: 0,
   gibbsEnergy298: 0,
   collisionDiameter: 3.6,

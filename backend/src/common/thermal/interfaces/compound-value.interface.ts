@@ -18,10 +18,15 @@ export interface CompoundValue {
   readonly Mr: number;
   /**
    * When `true`, this compound is a defined composition of individual pure-component
-   * species rather than a single pure substance.  The exact mole fractions are
-   * stored in a corresponding `*Composition` constant under `compound/composition/`.
+   * species rather than a single pure substance. Pair with `composition` (mole fractions).
    */
   readonly isComposition?: true;
+  /**
+   * Mole fractions by species key (e.g. `{ N2: 0.78084, O2: 0.20946, … }`).
+   * Required when `isComposition` is set — used when a property bucket is empty
+   * and the mixture must be evaluated from constituents.
+   */
+  readonly composition?: Readonly<Record<string, number>>;
   /**
    * Standard enthalpy of formation at 298 K [J/mol].
    * Optional when `nasa7Key` / `nasa9Key` is given (the NASA datasets encode ΔHf).
@@ -36,9 +41,16 @@ export interface CompoundValue {
   /**
    * Sutherland viscosity parameters: μ = μ0·(T/T0)^1.5·(T0+S)/(T+S)
    * mu0 [Pa·s] at reference temperature T0 [K], S [K] Sutherland constant.
+   * Optional min/max [K] from the source equation row (null = unknown).
    * ref White3 unless the compound file cites another source
    */
-  readonly sutherlandParams?: { mu0: number; T0: number; S: number };
+  readonly sutherlandParams?: {
+    mu0: number;
+    T0: number;
+    S: number;
+    min: number | null;
+    max: number | null;
+  };
 
   /**
    * Exact species key in `shared/processed/NASA/nasa7.json` (ref NASA7), e.g. "N2", "C4H10,isobutane".

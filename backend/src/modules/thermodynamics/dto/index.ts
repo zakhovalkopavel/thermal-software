@@ -1,3 +1,6 @@
+// ── Shared validity ───────────────────────────────────────────────────────────
+export { EquationValidityDto, MixtureValidityDto } from './shared/equation-validity.dto';
+
 // ── Gas properties ────────────────────────────────────────────────────────────
 export { GasMixtureInputDto } from './gas-properties/gas-mixture-input.dto';
 export { GasPropertiesResultDto } from './gas-properties/gas-properties-result.dto';

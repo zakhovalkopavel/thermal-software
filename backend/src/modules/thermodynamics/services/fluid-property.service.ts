@@ -3,18 +3,18 @@ import { GasPropertiesService } from './gas-properties.service';
 import { TransportService } from './transport.service';
 import { Species } from '../enums';
 import { PHYSICAL_CONSTANTS, STANDARD_CONDITIONS } from '../../../common/thermal';
-import { GAS_REGISTRY } from '../../../common/thermal/compound/gas';
-import { Air } from '../../../common/thermal/compound/gas';
-import { AIR_MOLE_COMPOSITION } from '../../../common/thermal/compound/composition';
+import { FLUID_REGISTRY } from '../../../common/thermal/compound/gas';
+import { CompoundValue } from '../../../common/thermal/interfaces/compound-value.interface';
 import { FluidBaseInputDto } from '../dto/fluid/fluid-base-input.dto';
 import { FluidCpResultDto } from '../dto/fluid/fluid-cp-result.dto';
 import { FluidViscosityResultDto } from '../dto/fluid/fluid-viscosity-result.dto';
 import { FluidDensityResultDto } from '../dto/fluid/fluid-density-result.dto';
 import { FluidThermalConductivityResultDto } from '../dto/fluid/fluid-thermal-conductivity-result.dto';
-import { FlowRegime } from '../types';
+import { FlowRegime, normalizeKnownFluid } from '../types';
 import { FlowGeometry } from '../enums';
 import { CorrelationName } from '../enums';
 import { CORRELATION_VALIDITY } from '../helpers/correlation-validity.helper';
+import { resolveCompoundFluidProps } from '../helpers/compound-fluid-props.helper';
 import {
   FlowModeEntry,
   FluidListEntry,
@@ -22,15 +22,12 @@ import {
   CorrelationListEntry,
 } from '../interfaces/fluid-property.interfaces';
 
-// ── Air molar mass (convenience alias) ───────────────────────────────────────
-const AIR_MR = Air.Mr; // 0.028951 kg/mol
-
 /**
- * FluidPropertyService — orchestration layer for individual thermophysical
- * property endpoints under /thermodynamics/fluid/*.
+ * FluidPropertyService — orchestration for /thermodynamics/fluid/*.
  *
- * SRP: owns the logic for resolving species vs mixture, air/water aliases,
- * and delegating maths to GasPropertiesService and TransportService.
+ * Named fluids resolve to a `CompoundValue` (registry species or composition
+ * compounds such as air). Missing equation buckets fall back to
+ * `compound.composition` as a mole-fraction mixture — no fluid-specific branches.
  */
 @Injectable()
 export class FluidPropertyService {
@@ -44,34 +41,34 @@ export class FluidPropertyService {
   getCp(dto: FluidBaseInputDto): FluidCpResultDto {
     this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
+    const fluid = normalizeKnownFluid(dto.fluid);
 
-    if (dto.fluid === 'air') {
-      const M        = AIR_MR;
-      // Use Air compound's own polynomial correlation (DIPPR 107, Perry 7th) via
-      // mixture rule over nominal mole fractions — consistent with all other species.
-      const Cp_mol   = this.gasProps.cpMixture(
-        AIR_MOLE_COMPOSITION as Partial<Record<Species, number>>,
-        T,
-      );
-      const Cp_J_kgK = Cp_mol / M;
-      const Cv_J_kgK = Cp_J_kgK - PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK / M;
-      return { Cp_J_kgK, Cv_J_kgK, gamma: Cp_J_kgK / Cv_J_kgK, molecularWeight_kg_mol: M, species: 'air', T_K: T };
-    }
-
-    if (dto.fluid && dto.fluid !== 'gas_mix') {
-      const { sp, M } = this._resolveSpecies(dto.fluid);
-      const Cp_mol    = this.gasProps.cpSpecies(sp, T);
-      const Cp_J_kgK  = Cp_mol / M;
-      const Cv_J_kgK  = Cp_J_kgK - PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK / M;
-      return { Cp_J_kgK, Cv_J_kgK, gamma: Cp_J_kgK / Cv_J_kgK, molecularWeight_kg_mol: M, species: sp, T_K: T };
+    if (fluid && fluid !== 'gas_mix') {
+      const compound = this._requireCompound(fluid);
+      const props = resolveCompoundFluidProps(this.gasProps, this.transport, compound, T);
+      const Cv_J_kgK = props.Cp_J_kgK - PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK / props.M;
+      return {
+        Cp_J_kgK: props.Cp_J_kgK,
+        Cv_J_kgK,
+        gamma: props.Cp_J_kgK / Cv_J_kgK,
+        molecularWeight_kg_mol: props.M,
+        species: fluid,
+        T_K: T,
+        validity: props.cpValidity,
+        mixtureValidity: props.mixtureValidity,
+      };
     }
 
     const mole     = this._requireComposition(dto.composition);
     const M        = this.gasProps.molecularWeight(mole);
-    const Cp_mol   = this.gasProps.cpMixture(mole, T);
-    const Cp_J_kgK = Cp_mol / M;
+    const cpResult = this.gasProps.cpMixtureResult(mole, T);
+    const Cp_J_kgK = cpResult.value / M;
     const Cv_J_kgK = Cp_J_kgK - PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK / M;
-    return { Cp_J_kgK, Cv_J_kgK, gamma: Cp_J_kgK / Cv_J_kgK, molecularWeight_kg_mol: M, T_K: T };
+    return {
+      Cp_J_kgK, Cv_J_kgK, gamma: Cp_J_kgK / Cv_J_kgK, molecularWeight_kg_mol: M, T_K: T,
+      validity: cpResult.validity,
+      mixtureValidity: cpResult.mixtureValidity,
+    };
   }
 
   // ── Viscosity ─────────────────────────────────────────────────────────────
@@ -80,23 +77,33 @@ export class FluidPropertyService {
     this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
     const P = dto.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
+    const fluid = normalizeKnownFluid(dto.fluid);
 
-    let mu: number;
-    let M: number;
-
-    if (dto.fluid && dto.fluid !== 'gas_mix') {
-      const { sp } = this._resolveSpecies(dto.fluid);
-      M  = GAS_REGISTRY[sp]?.Mr ?? AIR_MR;
-      mu = this.transport.viscosity(sp, T);
-    } else {
-      const mole = this._requireComposition(dto.composition);
-      M          = this.gasProps.molecularWeight(mole);
-      mu         = this.transport.viscosityMix(mole, T);
+    if (fluid && fluid !== 'gas_mix') {
+      const compound = this._requireCompound(fluid);
+      const props = resolveCompoundFluidProps(this.gasProps, this.transport, compound, T, P);
+      return {
+        mu_Pa_s: props.mu_Pa_s,
+        nu_m2s: props.nu_m2s,
+        rho_kg_m3: props.rho_kg_m3,
+        T_K: T,
+        validity: props.muValidity,
+        mixtureValidity: props.mixtureValidity,
+      };
     }
 
-    const rho     = this.gasProps.density(M, T, P);
-    const nu_m2s  = mu / rho;
-    return { mu_Pa_s: mu, nu_m2s, rho_kg_m3: rho, T_K: T };
+    const mole = this._requireComposition(dto.composition);
+    const M    = this.gasProps.molecularWeight(mole);
+    const r    = this.transport.viscosityMixResult(mole, T);
+    const rho  = this.gasProps.density(M, T, P);
+    return {
+      mu_Pa_s: r.value,
+      nu_m2s: r.value / rho,
+      rho_kg_m3: rho,
+      T_K: T,
+      validity: r.validity,
+      mixtureValidity: r.mixtureValidity,
+    };
   }
 
   // ── Density ───────────────────────────────────────────────────────────────
@@ -105,15 +112,13 @@ export class FluidPropertyService {
     this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
     const P = dto.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
+    const fluid = normalizeKnownFluid(dto.fluid);
 
     let M: number;
-
-    if (dto.fluid && dto.fluid !== 'gas_mix') {
-      const resolved = this._resolveSpecies(dto.fluid);
-      M = resolved.M;
+    if (fluid && fluid !== 'gas_mix') {
+      M = this._requireCompound(fluid).Mr;
     } else {
-      const mole = this._requireComposition(dto.composition);
-      M          = this.gasProps.molecularWeight(mole);
+      M = this.gasProps.molecularWeight(this._requireComposition(dto.composition));
     }
 
     const rho = this.gasProps.density(M, T, P);
@@ -125,22 +130,30 @@ export class FluidPropertyService {
   getThermalConductivity(dto: FluidBaseInputDto): FluidThermalConductivityResultDto {
     this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
+    const fluid = normalizeKnownFluid(dto.fluid);
 
-    let lambda: number;
-
-    if (dto.fluid && dto.fluid !== 'gas_mix') {
-      const { sp } = this._resolveSpecies(dto.fluid);
-      const Cp_mol = this.gasProps.cpSpecies(sp, T);
-      lambda = this.transport.thermalConductivity(sp, T, Cp_mol);
-    } else {
-      const mole   = this._requireComposition(dto.composition);
-      const cpBySp = Object.fromEntries(
-        (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T)]),
-      ) as Partial<Record<Species, number>>;
-      lambda = this.transport.thermalConductivityMix(mole, T, cpBySp);
+    if (fluid && fluid !== 'gas_mix') {
+      const compound = this._requireCompound(fluid);
+      const props = resolveCompoundFluidProps(this.gasProps, this.transport, compound, T);
+      return {
+        lambda: props.lambda,
+        T_K: T,
+        validity: props.lambdaValidity,
+        mixtureValidity: props.mixtureValidity,
+      };
     }
 
-    return { lambda, T_K: T };
+    const mole   = this._requireComposition(dto.composition);
+    const cpBySp = Object.fromEntries(
+      (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T)]),
+    ) as Partial<Record<Species, number>>;
+    const r = this.transport.thermalConductivityMixResult(mole, T, cpBySp);
+    return {
+      lambda: r.value,
+      T_K: T,
+      validity: r.validity,
+      mixtureValidity: r.mixtureValidity,
+    };
   }
 
   // ── Flow modes list ───────────────────────────────────────────────────────
@@ -158,13 +171,12 @@ export class FluidPropertyService {
   // ── Fluid list ────────────────────────────────────────────────────────────
 
   getFluidList(): FluidListEntry[] {
-    const entries: FluidListEntry[] = Object.entries(GAS_REGISTRY).map(([key, c]) => ({
+    const entries: FluidListEntry[] = Object.entries(FLUID_REGISTRY).map(([key, c]) => ({
       key,
       name:       c.name,
       formula:    c.chemicalFormula,
       Mr_kg_mol:  c.Mr,
     }));
-    entries.push({ key: 'air',   name: 'Air (dry atmospheric mixture)',   formula: null, Mr_kg_mol: AIR_MR });
     entries.push({ key: 'gas_mix', name: 'Custom gas mixture (supply composition)', formula: null, Mr_kg_mol: null });
     return entries;
   }
@@ -225,7 +237,6 @@ export class FluidPropertyService {
     return (Object.keys(CORRELATION_VALIDITY) as CorrelationName[]).map(name => {
       const v = CORRELATION_VALIDITY[name]!;
       const entry: CorrelationListEntry = { name, geometry: v.geometries };
-      /** Replace JS Infinity with the string "Infinity" for JSON serialisation */
       const sanitiseBound = (n: number): number | string =>
         Number.isFinite(n) ? n : 'Infinity';
       if (v.Re) entry.Re = [v.Re[0], sanitiseBound(v.Re[1])];
@@ -237,10 +248,12 @@ export class FluidPropertyService {
 
   // ── Private helpers ───────────────────────────────────────────────────────
 
-  /**
-   * Throws 400 when a named fluid AND a non-empty composition are both supplied.
-   * Composition is only meaningful for `fluid = 'gas_mix'` (or when fluid is absent).
-   */
+  private _requireCompound(fluid: string): CompoundValue {
+    const compound = FLUID_REGISTRY[fluid];
+    if (!compound) throw new BadRequestException(`Unknown fluid: ${fluid}`);
+    return compound;
+  }
+
   private _validateNoCompositionConflict(dto: FluidBaseInputDto): void {
     if (
       dto.fluid &&
@@ -255,24 +268,12 @@ export class FluidPropertyService {
     }
   }
 
-  /** Throws 400 when temperature is missing or ≤ 0 */
   private _requireT(T?: number): number {
     if (T === undefined || T === null)
       throw new BadRequestException('T_fluid_K is required');
     if (T <= 0)
       throw new BadRequestException('T_fluid_K must be > 0 K');
     return T;
-  }
-
-  /**
-   * Resolve a KnownFluid alias (excluding 'gas_mix' and 'air') to a Species + molar mass.
-   * 'air' is handled separately because it is not in GAS_REGISTRY.
-   */
-  private _resolveSpecies(fluid: string): { sp: Species; M: number } {
-    const sp = fluid as Species;
-    const compound = GAS_REGISTRY[sp];
-    if (!compound) throw new BadRequestException(`Unknown fluid: ${fluid}`);
-    return { sp, M: compound.Mr };
   }
 
   private _requireComposition(composition?: Record<string, number>): Partial<Record<Species, number>> {
@@ -289,4 +290,3 @@ export class FluidPropertyService {
     return composition as Partial<Record<Species, number>>;
   }
 }
-

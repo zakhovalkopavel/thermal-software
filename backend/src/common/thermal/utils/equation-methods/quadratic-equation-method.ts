@@ -19,7 +19,11 @@ export class QuadraticEquationMethod implements Equation<QuadraticEquation> {
     return (vars.a * x + vars.b * x * x / 2 + vars.c * x * x * x / 3) * k;
   }
   calculateAverage(x1: number, x2: number, vars: QuadraticEquation, min: number, max: number, k = 1): number {
-    return (this.integral(x2, vars, min, max, k) - this.integral(x1, vars, min, max, k)) / (x2 - x1);
+    return Common.averageOverClampedInterval(
+      x => this.integral(x, vars, min, max, k),
+      x => this.calculate(x, vars, min, max, k),
+      x1, x2, min, max,
+    );
   }
 }
 

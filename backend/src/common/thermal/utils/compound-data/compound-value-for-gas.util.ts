@@ -70,13 +70,18 @@ function sutherlandParams(
   if (typeof vars.y0 !== 'number' || typeof vars.T0 !== 'number' || typeof vars.S !== 'number') {
     throw new Error('Compound-data Sutherland equation is missing y0, T0 or S');
   }
-  return { mu0: vars.y0, T0: vars.T0, S: vars.S };
+  return { mu0: vars.y0, T0: vars.T0, S: vars.S, min: row.min, max: row.max };
 }
 
-/** Isotopic and labelled records (D2O, H2[18O], (2H3)ammonia) share the parent's NASA keys. */
+/**
+ * Isotopic / mass-labelled records (D2O, H2[18O], (2H3)ammonia, tritiated water) often share
+ * the parent's NASA keys. Detected from the display name — not from `formula`, which is
+ * also set for plain records whose source formula differs from the Hill form (e.g. NH3 vs H3N).
+ */
 function isLabelled(meta: CompoundDataIndexEntry): boolean {
-  if (meta.formula) return true;
-  return /[0-9()]/.test(meta.name ?? '');
+  const name = meta.name ?? '';
+  if (/[0-9()]/.test(name)) return true;
+  return /\b(deuterium|tritium|tritiated)\b/i.test(name);
 }
 
 function matchingRecord(key: string, query: GasCompoundQuery): {

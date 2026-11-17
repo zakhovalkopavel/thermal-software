@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { EquationValidityDto, MixtureValidityDto } from '../shared/equation-validity.dto';
 
 export class FluidViscosityResultDto {
   @ApiProperty({ description: 'Dynamic viscosity μ [Pa·s]' })
@@ -12,5 +13,11 @@ export class FluidViscosityResultDto {
 
   @ApiProperty({ description: 'Temperature at which properties were evaluated [K]' })
   T_K: number;
+
+  @ApiPropertyOptional({ type: EquationValidityDto, description: 'Correlation boundary status' })
+  validity?: EquationValidityDto;
+
+  @ApiPropertyOptional({ type: MixtureValidityDto, description: 'Per-component boundary status for mixtures' })
+  mixtureValidity?: MixtureValidityDto;
 }
 

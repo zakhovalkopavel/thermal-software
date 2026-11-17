@@ -1,7 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 import { GAS_REGISTRY } from '../../../common/thermal/compound/gas/registry';
-import { Common } from '../../../common/thermal/utils/common';
+import { EvaluationResult } from '../../../common/thermal/interfaces/equation-validity.interface';
+import { CompoundPropertyResolver } from '../../../common/thermal/utils/compound-properties/compound-property-resolver';
+import {
+  aggregateMixtureValidity,
+  evaluateEquation,
+} from '../../../common/thermal/utils/equation-validity.util';
+import { EquationTypeDto } from '../../../common/thermal/dto/equation-type.dto';
+import { EquationValue } from '../../../common/thermal/interfaces/equation-value.interface';
+import { RefKey } from '../../../common/thermal/enum/ref-key.enum';
 import { Species } from '../enums/species.enum';
 
 @Injectable()
@@ -9,16 +17,38 @@ export class TransportService {
 
   /**
    * Dynamic viscosity of a pure species [Pa·s].
-   * Sutherland parameters from compound data when that record has a Sutherland row;
-   * otherwise the record's default gas-viscosity equation.
+   * Uses the compound viscosity bucket (Sutherland when present as an equation row,
+   * otherwise `def`), preserving stored min/max ranges.
    */
   viscosity(species: Species, T_K: number): number {
+    return this.viscosityResult(species, T_K).value;
+  }
+
+  viscosityResult(species: Species, T_K: number): EvaluationResult {
     const compound = GAS_REGISTRY[species];
     if (!compound) throw new Error(`Unknown species: ${species}`);
+
+    // Prefer the viscosity equation bucket so ranges are never dropped.
+    // If a legacy sutherlandParams side-channel exists without a matching bucket row,
+    // evaluate it with the stored min/max.
+    const sutherlandRow = compound.viscosity.values.find(v => v.type === EquationTypeDto.sutherland);
+    if (sutherlandRow) {
+      return evaluateEquation(sutherlandRow, T_K);
+    }
+
     const p = compound.sutherlandParams;
-    if (p) return p.mu0 * Math.pow(T_K / p.T0, 1.5) * (p.T0 + p.S) / (T_K + p.S);
-    const entry = compound.viscosity.values[compound.viscosity.def];
-    return Common.equation(entry.type).calculate(T_K, entry.vars as never, entry.min, entry.max, entry.k ?? 1);
+    if (p) {
+      const entry: EquationValue = {
+        type: EquationTypeDto.sutherland,
+        ref: RefKey.White3,
+        vars: { y0: p.mu0, T0: p.T0, S: p.S },
+        min: p.min,
+        max: p.max,
+      };
+      return evaluateEquation(entry, T_K);
+    }
+
+    return new CompoundPropertyResolver(compound).viscosityResult(T_K);
   }
 
   /**
@@ -26,10 +56,22 @@ export class TransportService {
    * Source: [Leg] furnaceCombustion/classes/TransportProperties.js
    */
   viscosityMix(moleFractions: Partial<Record<Species, number>>, T_K: number): number {
+    return this.viscosityMixResult(moleFractions, T_K).value;
+  }
+
+  viscosityMixResult(
+    moleFractions: Partial<Record<Species, number>>,
+    T_K: number,
+  ): EvaluationResult & { mixtureValidity: ReturnType<typeof aggregateMixtureValidity> } {
     const species = (Object.keys(moleFractions) as Species[])
       .filter(sp => (moleFractions[sp] ?? 0) > 0 && GAS_REGISTRY[sp]);
     const mu_i: Record<string, number> = {};
-    for (const sp of species) mu_i[sp] = this.viscosity(sp, T_K);
+    const components: Record<string, EvaluationResult['validity']> = {};
+    for (const sp of species) {
+      const r = this.viscosityResult(sp, T_K);
+      mu_i[sp] = r.value;
+      components[sp] = r.validity;
+    }
 
     let mu_mix = 0;
     for (const i of species) {
@@ -45,18 +87,63 @@ export class TransportService {
       }
       mu_mix += yi * mu_i[i] / denom;
     }
-    return mu_mix;
+
+    const mixtureValidity = aggregateMixtureValidity(components);
+    const anyClamped = Object.values(components).some(v => v.action === 'clamped');
+    const anyExtrapolated = Object.values(components).some(v => v.action === 'extrapolated');
+    const anyUnknown = Object.values(components).some(v => v.rangeUnknown);
+    return {
+      value: mu_mix,
+      validity: {
+        requestedT: T_K,
+        effectiveT: T_K,
+        min: null,
+        max: null,
+        inRange: mixtureValidity.allInRange,
+        rangeUnknown: anyUnknown,
+        action: anyExtrapolated ? 'extrapolated' : anyClamped ? 'clamped' : 'none',
+        message: mixtureValidity.allInRange
+          ? undefined
+          : 'One or more mixture components are outside their viscosity correlation range.',
+      },
+      mixtureValidity,
+    };
   }
 
   /**
-   * Thermal conductivity of a pure species via Eucken-type relation [W/(m·K)]
-   * λ = (Cp_mol + 1.25·R)·μ / M
-   * Source: [Leg] furnaceCombustion/classes/TransportProperties.js
+   * Thermal conductivity of a pure species [W/(m·K)].
+   * Prefers the stored k(T) correlation (and its range) when present;
+   * otherwise falls back to the Eucken-type relation λ = (Cp_mol + 1.25·R)·μ / M.
    */
   thermalConductivity(species: Species, T_K: number, Cp_J_molK: number): number {
-    const mu = this.viscosity(species, T_K);
-    const M  = GAS_REGISTRY[species].Mr;
-    return (Cp_J_molK + 1.25 * PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK) * mu / M;
+    return this.thermalConductivityResult(species, T_K, Cp_J_molK).value;
+  }
+
+  thermalConductivityResult(
+    species: Species,
+    T_K: number,
+    Cp_J_molK: number,
+  ): EvaluationResult {
+    const compound = GAS_REGISTRY[species];
+    if (!compound) throw new Error(`Unknown species: ${species}`);
+
+    if (compound.thermalConductivity.values.length > 0) {
+      return new CompoundPropertyResolver(compound).thermalConductivityResult(T_K);
+    }
+
+    // Eucken fallback — inherits viscosity range status
+    const muResult = this.viscosityResult(species, T_K);
+    const M = compound.Mr;
+    const value = (Cp_J_molK + 1.25 * PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK) * muResult.value / M;
+    return {
+      value,
+      validity: {
+        ...muResult.validity,
+        message: muResult.validity.message
+          ? `Eucken λ from μ: ${muResult.validity.message}`
+          : 'Eucken λ from μ (no stored k(T) correlation).',
+      },
+    };
   }
 
   /**
@@ -68,15 +155,45 @@ export class TransportService {
     T_K: number,
     cpBySpecies: Partial<Record<Species, number>>,
   ): number {
+    return this.thermalConductivityMixResult(moleFractions, T_K, cpBySpecies).value;
+  }
+
+  thermalConductivityMixResult(
+    moleFractions: Partial<Record<Species, number>>,
+    T_K: number,
+    cpBySpecies: Partial<Record<Species, number>>,
+  ): EvaluationResult & { mixtureValidity: ReturnType<typeof aggregateMixtureValidity> } {
     const species = (Object.keys(moleFractions) as Species[])
       .filter(sp => (moleFractions[sp] ?? 0) > 0 && GAS_REGISTRY[sp]);
     let num = 0; let den = 0;
+    const components: Record<string, EvaluationResult['validity']> = {};
     for (const sp of species) {
       const y  = moleFractions[sp] ?? 0;
       const Cp = cpBySpecies[sp] ?? 30.0;
-      num += y * this.thermalConductivity(sp, T_K, Cp);
+      const r = this.thermalConductivityResult(sp, T_K, Cp);
+      components[sp] = r.validity;
+      num += y * r.value;
       den += y;
     }
-    return den > 0 ? num / den : 0;
+    const mixtureValidity = aggregateMixtureValidity(components);
+    const anyClamped = Object.values(components).some(v => v.action === 'clamped');
+    const anyExtrapolated = Object.values(components).some(v => v.action === 'extrapolated');
+    const anyUnknown = Object.values(components).some(v => v.rangeUnknown);
+    return {
+      value: den > 0 ? num / den : 0,
+      validity: {
+        requestedT: T_K,
+        effectiveT: T_K,
+        min: null,
+        max: null,
+        inRange: mixtureValidity.allInRange,
+        rangeUnknown: anyUnknown,
+        action: anyExtrapolated ? 'extrapolated' : anyClamped ? 'clamped' : 'none',
+        message: mixtureValidity.allInRange
+          ? undefined
+          : 'One or more mixture components are outside their conductivity correlation range.',
+      },
+      mixtureValidity,
+    };
   }
 }

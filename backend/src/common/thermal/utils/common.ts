@@ -39,12 +39,31 @@ export class Common {
     return data.reduce((a, b) => a + b, 0) / data.length;
   }
 
+  /** Clamp x into [min, max]. Callers that need boundary metadata should use `buildTemperatureValidity`. */
   static validInterval(x: number, min: number, max: number): number {
     return x < min ? min : x > max ? max : x;
   }
 
   static isValidInterval(x: number, min: number, max: number): boolean {
     return x >= min && x <= max;
+  }
+
+  /**
+   * Average over [x1, x2] using the same clamped interval for both the integral
+   * and the denominator (avoids inflated/deflated averages when an endpoint is OOR).
+   */
+  static averageOverClampedInterval(
+    integralFn: (x: number) => number,
+    calculateFn: (x: number) => number,
+    x1: number,
+    x2: number,
+    min: number,
+    max: number,
+  ): number {
+    const t1 = Common.validInterval(x1, min, max);
+    const t2 = Common.validInterval(x2, min, max);
+    if (Math.abs(t2 - t1) < 1e-10) return calculateFn(t1);
+    return (integralFn(t2) - integralFn(t1)) / (t2 - t1);
   }
 
   static equation(type: EquationTypeDto) {

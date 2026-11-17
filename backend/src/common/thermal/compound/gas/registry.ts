@@ -1,10 +1,11 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { compoundValueForGas } from '../../utils/compound-data/compound-value-for-gas.util';
 import { GAS_COMPOUND_BINDING } from './gas-compound-binding';
+import { Air } from './air';
 
 /**
- * Species key → thermophysical data loaded from `shared/processed/compound-data`.
- * Air is a mixture and is not in this registry (`Air` in `air.ts`).
+ * Pure-species key → thermophysical data from `shared/processed/compound-data`.
+ * Keys match `Species` / combustion mechanism names.
  */
 export const GAS_REGISTRY: Record<keyof typeof GAS_COMPOUND_BINDING, CompoundValue> = {
   Ar:     compoundValueForGas('Ar', GAS_COMPOUND_BINDING.Ar),
@@ -28,6 +29,15 @@ export const GAS_REGISTRY: Record<keyof typeof GAS_COMPOUND_BINDING, CompoundVal
   SO3:    compoundValueForGas('SO3', GAS_COMPOUND_BINDING.SO3),
   NO:     compoundValueForGas('NO', GAS_COMPOUND_BINDING.NO),
   NO2:    compoundValueForGas('NO2', GAS_COMPOUND_BINDING.NO2),
+};
+
+/**
+ * All named fluids available to thermodynamics APIs: pure species + composition
+ * compounds (air). Look up by key — no per-fluid branches.
+ */
+export const FLUID_REGISTRY: Readonly<Record<string, CompoundValue>> = {
+  ...GAS_REGISTRY,
+  air: Air,
 };
 
 export const {

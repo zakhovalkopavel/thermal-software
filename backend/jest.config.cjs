@@ -2,7 +2,8 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   roots: ['<rootDir>/test'],
-  testRegex: '(/test/.*|(\\.|/)(test|spec))\\.(ts|tsx)$',
+  // Only *.spec.ts / *.test.ts — helpers under test/ (e.g. *.util.ts) must not run as suites
+  testRegex: '.*\\.(test|spec)\\.(ts|tsx)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'json', 'node'],
   // ml-levenberg-marquardt is a pure ESM package (no CJS build).
   // We must transform it through ts-jest instead of leaving it as-is.

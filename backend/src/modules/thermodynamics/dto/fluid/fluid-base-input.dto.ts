@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
-import { KnownFluid, KNOWN_FLUID_DESCRIPTION } from '../../types';
+import { KnownFluid, KNOWN_FLUID_DESCRIPTION, normalizeKnownFluid } from '../../types';
 import { STANDARD_CONDITIONS } from '../../../../common/thermal';
 
 /**
@@ -20,6 +21,7 @@ export class FluidBaseInputDto {
     example: 'air',
   })
   @IsOptional() @IsString()
+  @Transform(({ value }) => normalizeKnownFluid(value))
   fluid?: KnownFluid;
 
   @ApiPropertyOptional({

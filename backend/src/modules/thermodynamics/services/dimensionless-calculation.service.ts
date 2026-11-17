@@ -14,7 +14,13 @@ import { GrashofInputDto } from '../dto/dimensionless/grashof-input.dto';
 import { RayleighInputDto } from '../dto/dimensionless/rayleigh-input.dto';
 import { ReynoldsInputDto } from '../dto/dimensionless/reynolds-input.dto';
 import { PrandtlInputDto } from '../dto/dimensionless/prandtl-input.dto';
-import { KnownFluid } from '../types/known-fluid.type';
+import { KnownFluid, normalizeKnownFluid } from '../types/known-fluid.type';
+import {
+  EquationValidity,
+  MixtureValidity,
+} from '../../../common/thermal/interfaces/equation-validity.interface';
+import { FLUID_REGISTRY } from '../../../common/thermal/compound/gas';
+import { resolveCompoundFluidProps } from '../helpers/compound-fluid-props.helper';
 
 /** Resolved fluid transport properties — output of Mode B resolution. */
 export interface ResolvedFluidProps {
@@ -23,6 +29,8 @@ export interface ResolvedFluidProps {
   Cp_J_kgK: number;
   lambda: number;
   nu_m2s: number;
+  validity?: EquationValidity;
+  mixtureValidity?: MixtureValidity;
 }
 
 /** Flat-format fluid descriptor shared by all scalar dimensionless endpoints. */
@@ -37,9 +45,6 @@ interface FlatFluidInput {
  * Service responsible for orchestrating dimensionless number calculations.
  * Resolves fluid properties from flat-format inputs (fluid name + T_K + optional P_Pa)
  * and delegates the actual correlation maths to DimensionlessNumbersService.
- *
- * SRP: this service owns the fluid-resolution + orchestration layer;
- *      DimensionlessNumbersService owns the pure maths.
  */
 @Injectable()
 export class DimensionlessCalculationService {
@@ -115,101 +120,91 @@ export class DimensionlessCalculationService {
 
   /**
    * Resolve all transport properties from a flat-format fluid descriptor.
-   * Returns null when neither species nor composition is provided, or T_K is missing.
+   * Named fluids → compound (own equations, else composition mixture).
    */
   resolveFluid(input: FlatFluidInput): ResolvedFluidProps | null {
     const T = input.T_fluid_K;
     if (!T || T <= 0) return null;
 
     const P = input.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
+    const fluid = normalizeKnownFluid(input.fluid);
 
-    let mu: number, Cp: number, lambda: number, rho: number;
-
-    if (input.fluid && input.fluid !== 'gas_mix') {
-      const sp  = input.fluid as Species;
-      mu     = this.transport.viscosity(sp, T);
-      const cpM = this.gasProps.cpSpecies(sp, T);
-      const M   = this.gasProps.molecularWeight({ [sp]: 1 });
-      Cp     = cpM / M;
-      lambda = this.transport.thermalConductivity(sp, T, cpM);
-      rho    = this.gasProps.density(M, T, P);
-    } else if (input.composition) {
-      const mole   = input.composition as Partial<Record<Species, number>>;
-      const M      = this.gasProps.molecularWeight(mole);
-      mu           = this.transport.viscosityMix(mole, T);
-      const cpM    = this.gasProps.cpMixture(mole, T);
-      Cp           = cpM / M;
-      const cpBySp = Object.fromEntries(
-        (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T)]),
-      ) as Partial<Record<Species, number>>;
-      lambda = this.transport.thermalConductivityMix(mole, T, cpBySp);
-      rho    = this.gasProps.density(M, T, P);
-    } else {
-      return null;
+    if (fluid && fluid !== 'gas_mix') {
+      const compound = FLUID_REGISTRY[fluid];
+      if (!compound) return null;
+      const props = resolveCompoundFluidProps(this.gasProps, this.transport, compound, T, P);
+      return {
+        rho_kg_m3: props.rho_kg_m3,
+        mu_Pa_s: props.mu_Pa_s,
+        Cp_J_kgK: props.Cp_J_kgK,
+        lambda: props.lambda,
+        nu_m2s: props.nu_m2s,
+        validity: props.validity,
+        mixtureValidity: props.mixtureValidity,
+      };
     }
 
-    return { rho_kg_m3: rho, mu_Pa_s: mu, Cp_J_kgK: Cp, lambda, nu_m2s: mu / rho };
+    if (!input.composition) return null;
+
+    const mole   = input.composition as Partial<Record<Species, number>>;
+    const M      = this.gasProps.molecularWeight(mole);
+    const muR    = this.transport.viscosityMixResult(mole, T);
+    const cpR    = this.gasProps.cpMixtureResult(mole, T);
+    const Cp     = cpR.value / M;
+    const cpBySp = Object.fromEntries(
+      (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T)]),
+    ) as Partial<Record<Species, number>>;
+    const lamR = this.transport.thermalConductivityMixResult(mole, T, cpBySp);
+    const rho  = this.gasProps.density(M, T, P);
+    const validity = !cpR.mixtureValidity.allInRange ? cpR.validity
+      : !muR.mixtureValidity.allInRange ? muR.validity
+        : lamR.validity;
+
+    return {
+      rho_kg_m3: rho,
+      mu_Pa_s: muR.value,
+      Cp_J_kgK: Cp,
+      lambda: lamR.value,
+      nu_m2s: muR.value / rho,
+      validity,
+      mixtureValidity: cpR.mixtureValidity,
+    };
   }
 
   /**
-   * Resolve all dimensionless properties (Re, Pr, Gr, Ra, λ, ν) from a
-   * DimensionlessInputDto (Mode B: species/composition + T).
-   *
-   * All returned fields are mandatory (never undefined):
-   *   - Re = 0 when w_m_s = 0 → natural convection mode.
-   *   - Gr = Ra = 0 when T_surface_K is not supplied.
-   *
-   * @throws when fluid/composition cannot be resolved or T_fluid_K is missing.
+   * Resolve Re, Pr, Gr, Ra, λ, ν — fluid props via `resolveFluid`.
    */
   resolveDimensionlessProperties(dto: DimensionlessInputDto): ResolvedDimensionlessPropsDto {
     const T  = dto.T_fluid_K ?? STANDARD_CONDITIONS.TEMPERATURE_K;
     const Ts = dto.T_surface_K;
     const P  = dto.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
-    // w = 0 is the default → natural convection; undefined is also treated as 0.
     const w  = dto.w_m_s ?? 0;
 
-    let mu: number, Cp: number, lambda: number, rho: number;
-
-    if (dto.fluid && dto.fluid !== 'gas_mix') {
-      const sp  = dto.fluid as Species;
-      mu     = this.transport.viscosity(sp, T);
-      const cpM = this.gasProps.cpSpecies(sp, T);
-      const M   = this.gasProps.molecularWeight({ [sp]: 1 });
-      Cp     = cpM / M;
-      lambda = this.transport.thermalConductivity(sp, T, cpM);
-      rho    = this.gasProps.density(M, T, P);
-    } else if (dto.composition) {
-      const mole   = dto.composition as Partial<Record<Species, number>>;
-      const M      = this.gasProps.molecularWeight(mole);
-      mu           = this.transport.viscosityMix(mole, T);
-      const cpM    = this.gasProps.cpMixture(mole, T);
-      Cp           = cpM / M;
-      const cpBySp = Object.fromEntries(
-        (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T)]),
-      ) as Partial<Record<Species, number>>;
-      lambda = this.transport.thermalConductivityMix(mole, T, cpBySp);
-      rho    = this.gasProps.density(M, T, P);
-    } else {
+    const fluid = this.resolveFluid({
+      fluid: dto.fluid,
+      composition: dto.composition,
+      T_fluid_K: T,
+      P_Pa: P,
+    });
+    if (!fluid) {
       throw new Error(
         'Cannot resolve fluid properties: supply either a known fluid name or a composition map.',
       );
     }
 
+    const { mu_Pa_s: mu, Cp_J_kgK: Cp, lambda, rho_kg_m3: rho, nu_m2s: nu_f } = fluid;
     if (!mu || !Cp || !lambda || !rho) {
       throw new Error('Fluid property resolution returned zero/null values — check species data.');
     }
 
-    const nu_f = mu / rho;
-    const Pr   = this.numbers.prandtl(mu, Cp, lambda);
+    const Pr = this.numbers.prandtl(mu, Cp, lambda);
 
-    // Re = 0 when w = 0 (natural convection mode — resolveRegime will pick NATURAL).
     let Re = 0;
     if (w > 0 && dto.dimensions) {
       const L = this.numbers.characteristicLength(dto.geometry, dto.dimensions as GeometryDimsDto);
       Re = this.numbers.reynolds(rho, w, L, mu);
     }
 
-    // Gr/Ra = 0 when no surface temperature is given.
     let Gr = 0;
     let Ra = 0;
     if (Ts !== undefined && dto.dimensions) {
@@ -221,4 +216,3 @@ export class DimensionlessCalculationService {
     return { Re, Pr, Gr, Ra, lambda, mu_f: mu, nu_f };
   }
 }
-
