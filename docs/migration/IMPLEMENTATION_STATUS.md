@@ -345,6 +345,10 @@ Per-service checklist: [`docs/SERVICE_TEST_CHECKLIST.md`](../SERVICE_TEST_CHECKL
 2. **Add thermodynamics service tests** (fluid-property, dimensionless-calculation, gas-properties, dimensionless-numbers, diffusion, transport, aerodynamics)
 3. **Frontend: first pages** — Phase Equilibrium + Blend Optimizer (highest user value)
 
+### Conventions refactoring (proposed)
+
+Plan with phases, steps and checkpoints: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md) — not started; Phase 0 (guardrails, run the new `conventions` tests in Docker) comes first.
+
 ### Medium priority
 
 4. **Transport / aerodynamics services** — thin implementations (40-78 lines), likely incomplete
