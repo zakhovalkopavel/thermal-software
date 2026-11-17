@@ -243,7 +243,7 @@ Spec: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md)
 **Path:** `backend/src/modules/metals/`
 - [x] `metals.module.ts`
 - [x] `enums/metal-material.enum.ts` — AISI_304, MILD_STEEL
-- [x] `data/interfaces/metal-thermal.interface.ts` — `MetalThermalEntry`, λ `tempUnit` flag (K vs °C)
+- [x] `types/metal-thermal-entry.type.ts`, `metal-lambda-coefficients.type.ts`, `metal-emissivity-coefficients.type.ts` — data shapes as `type` (Phase 1 conventions pilot; was `data/interfaces/metal-thermal.interface.ts`)
 - [x] `data/materials/metal-thermal.data.ts` — `METAL_THERMAL_MATERIALS[]` + `METAL_THERMAL_MAP`
 - [x] `services/metal-thermal.service.ts` — pure computation (no hardcoded values)
 - [x] `dto/metal-thermal-query.dto.ts`, `metal-thermal-result.dto.ts`
@@ -349,7 +349,7 @@ Per-service checklist: [`docs/SERVICE_TEST_CHECKLIST.md`](../SERVICE_TEST_CHECKL
 
 Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).  
 - [x] **Phase 0** — suite baseline (1137 tests), conventions + structure ratchet, Swagger snapshot, D2 equation-type exception in `CONVENTIONS.md`.  
-- [ ] Phase 1 — `metals` pilot (next).
+- [x] **Phase 1** — `metals` pilot: split metal thermal shapes into `types/*.type.ts` (awaiting commit / pilot approval before Phase 2).
 
 ### Medium priority
 

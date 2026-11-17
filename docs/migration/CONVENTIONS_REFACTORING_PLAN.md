@@ -1,6 +1,6 @@
 # Conventions Refactoring Plan
 
-**Status:** In progress — Phase 0 complete (awaiting commit); next: Phase 1 (`metals` pilot)  
+**Status:** In progress — Phase 1 complete (awaiting commit); next: Phase 2 after pilot approval  
 **Branch:** `refactoring`  
 **Goal:** bring the backend in line with [`CONVENTIONS.md`](../CONVENTIONS.md) (one construct per file,
 folder-per-construct, service / static-class / function rules, file-length limits) **without changing behaviour**.  
@@ -135,8 +135,8 @@ largest module last.
 
 | Step | Action | Checkpoint |
 |------|--------|-----------|
-| 1.1 | Split `metals/data/interfaces/metal-thermal.interface.ts` (3 exports) into 3 files; `MetalLambdaCoefficients` and `MetalEmissivityCoefficients` become `type` in `types/`; `MetalThermalEntry` stays an `interface` only if it has methods, otherwise `type` (D1). | C1–C9; baselines lowered by 1 file (V1, V4). |
-| 1.2 | Dry-run `codemod-split.mjs` / `codemod-tidy.mjs` here; record what they get right/wrong in a short note appended to this doc. | **CP1:** written procedure ("what to run, what to fix by hand") — **review gate**: proceed to Phase 2 only after the user approves the pilot PR. |
+| 1.1 | Split `metals/data/interfaces/metal-thermal.interface.ts` (3 exports) into 3 files; `MetalLambdaCoefficients` and `MetalEmissivityCoefficients` become `type` in `types/`; `MetalThermalEntry` stays an `interface` only if it has methods, otherwise `type` (D1). | ✅ Manual split → `metals/types/*.type.ts` (all three are data shapes → `type`). Structure baseline unchanged: file lived under `data/` and is excluded by `STRUCTURE_EXCLUDE_PATTERNS`. |
+| 1.2 | Dry-run `codemod-split.mjs` / `codemod-tidy.mjs` here; record what they get right/wrong in a short note appended to this doc. | ✅ See **Phase 1 codemod notes** below. **Review gate:** proceed to Phase 2 only after user approval. |
 
 ### Phase 2 — `thermodynamics` (helpers → service/classes)
 
@@ -242,6 +242,36 @@ Do it as several PRs, in this order (each PR is one sub-step, each passes C1–C
 | 8 | Close-out | S | all |
 
 Phase 7 is independent of code phases and can run in parallel.
+
+---
+
+## Phase 1 codemod notes (CP1 procedure)
+
+Pilot file: `metals/data/interfaces/metal-thermal.interface.ts` → three `metals/types/*.type.ts` files
+(`interface` → `type` for all three; no methods). Sole importer:
+`data/materials/metal-thermal.data.ts`.
+
+### What was run
+
+| Tool | Result |
+|------|--------|
+| **Manual split** | Used for the pilot. One construct per file, D1 conversion, import rewrite, delete empty `data/interfaces/`. Prefer this for small files and whenever `interface` → `type` is required. |
+| `codemod-split.mjs` | **No dry-run mode** — writes, rewrites importers, can delete the source. Requires a `split.json` that maps every export. Does **not** convert `interface` → `type` or move into a different construct folder with a new suffix; it copies declaration text as-is into target paths. For this pilot it would have left three `.interface.ts` bodies unless targets were pre-named `*.type.ts` **and** the keyword rewritten by hand afterward. |
+| `codemod-tidy.mjs` | Only useful when a folder has an `index.ts` barrel with named re-exports. Metals `types/` has no barrel yet — tidy would be a no-op. Also writes in place with no dry-run. |
+
+### Procedure for later phases
+
+1. For **≤ ~5 exports** or any `interface` → `type` / suffix-folder change: **split by hand** (or `git mv` + edit), follow N1–N9.
+2. For **large multi-export files** that stay the same construct kind: optional `node codemod-split.mjs split.json` with every export mapped; then immediately `tsc`, tests, and a manual pass for D1 / folder / suffix.
+3. After adding a folder `index.ts` barrel: optional `node codemod-tidy.mjs <module-path>` to point external imports at the barrel — review the diff; it skips default imports and `index.ts` itself.
+4. Never rely on the codemods alone for C6/C10; always review with `git diff -M --color-moved=dimmed-zebra`.
+
+### Baseline note
+
+Files under `data/` are excluded from the structure ratchet (`STRUCTURE_EXCLUDE_PATTERNS`). The pilot
+file was therefore **not** in `structure-baseline.json`; fixing it does not shrink V1 in the baseline.
+Types that belong in `types/` must not stay under `data/` — placement is still mandatory even when
+the ratchet does not see them.
 
 ---
 
