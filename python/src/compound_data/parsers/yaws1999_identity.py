@@ -3,6 +3,8 @@ compound_data.parsers.yaws1999_identity — Resolve Yaws table rows to CAS via a
 
 Join order: validated CAS from the CAS appendix by (normalized name, Hill), then synonym+Hill,
 then unique primary name+Hill, then unique Hill-only for simple unambiguous inorganics.
+``CAS_TableMatched_Index`` supplements name/Hill matching for table compounds missing from the
+printed appendix; those CAS are not auto-created (see ``CAS_TableOnly_Create``).
 
 Spec: tmp/spec/02_yaws1999_compound_data_update.md
 """
@@ -18,6 +20,7 @@ from chemical_formula.formula_elements import formula_elements
 from chemical_formula.hill_formula import hill_formula
 from compound_data.label_normalize import normalize_label
 from pubchem.cas_number import is_cas
+from yaws1999.constants import APPENDIX_FORMULA_FIXES, correct_appendix_name
 
 _WS = re.compile(r"\s+")
 _NON_ALNUM = re.compile(r"[^a-z0-9]+")
@@ -39,8 +42,12 @@ class YawsIdentityIndex:
     """Lookup tables built from the CAS and synonym appendix JSON files."""
 
     by_name_hill: dict[tuple[str, str], list[YawsIdentity]] = field(default_factory=dict)
+    by_name: dict[str, list[YawsIdentity]] = field(default_factory=dict)
     by_hill: dict[str, list[YawsIdentity]] = field(default_factory=dict)
     by_cas: dict[str, YawsIdentity] = field(default_factory=dict)
+    # CAS only present via ``CAS_TableMatched_Index`` (not the printed appendix).
+    # Used for name/Hill matching; compound creates stay on the table-only allow-list.
+    table_matched_cas: set[str] = field(default_factory=set)
     issues: list[dict[str, Any]] = field(default_factory=list)
 
     def resolve(self, name: Optional[str], formula: Optional[str]) -> tuple[Optional[str], Optional[str], str]:
@@ -69,12 +76,39 @@ class YawsIdentityIndex:
                 return None, hill, "ambiguous"
         return None, hill, "no_match"
 
+    def lookup_by_name(self, name: Optional[str]) -> tuple[Optional[YawsIdentity], str]:
+        """Resolve a table/appendix label by normalized name or synonym only.
 
-def load_yaws1999_identity(cas_path: Path, synonym_path: Path) -> YawsIdentityIndex:
-    """Build the identity index from the two appendix files."""
+        Returns ``(identity, status)`` where ``status`` is ``matched``, ``ambiguous``, or ``no_match``.
+        Used when a printed table CAS is missing from the appendix (OCR) but the name is present.
+        """
+        key = _norm_name(name)
+        if not key:
+            return None, "no_match"
+        hits = self.by_name.get(key, [])
+        by_cas = {h.cas: h for h in hits if h.cas}
+        if len(by_cas) == 1:
+            return next(iter(by_cas.values())), "matched"
+        if len(by_cas) > 1:
+            return None, "ambiguous"
+        return None, "no_match"
+
+
+def load_yaws1999_identity(
+    cas_path: Path,
+    synonym_path: Path,
+    table_matched_path: Path | None = None,
+) -> YawsIdentityIndex:
+    """Build the identity index from the appendix files (optional table-matched supplement)."""
     index = YawsIdentityIndex()
-    for path, kind in ((cas_path, "cas"), (synonym_path, "synonym")):
+    paths: list[tuple[Path, str]] = [(cas_path, "cas"), (synonym_path, "synonym")]
+    if table_matched_path is not None:
+        paths.append((table_matched_path, "tableMatched"))
+    for path, kind in paths:
         if not path.is_file():
+            # Table-matched is optional; printed appendix files are required.
+            if kind == "tableMatched":
+                continue
             index.issues.append({"issue": "yaws1999MissingAppendix", "path": str(path), "kind": kind})
             continue
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -98,17 +132,28 @@ def _add_row(index: YawsIdentityIndex, row: dict[str, Any], kind: str) -> None:
             "issue": "yaws1999BadAppendixFormula", "cas": cas, "name": row.get("name"),
             "formula": formula, "kind": kind,
         })
-    name = row.get("name") or ""
+    name = correct_appendix_name(row.get("name")) or row.get("name") or ""
     synonyms = [str(s) for s in row.get("synonyms") or [] if s]
+    # Keep OCR appendix labels as synonyms so both spellings resolve.
+    raw_name = row.get("name") or ""
+    if raw_name and str(raw_name) != str(name) and str(raw_name) not in synonyms:
+        synonyms = [str(raw_name), *synonyms]
+    if cas and cas in APPENDIX_FORMULA_FIXES:
+        formula = APPENDIX_FORMULA_FIXES[cas]
+        hill = hill_of(formula)
     identity = YawsIdentity(cas=cas, name=str(name), formula=str(formula or ""), hill=hill, synonyms=synonyms)
     if cas:
+        already = cas in index.by_cas
         _merge_by_cas(index, identity)
         identity = index.by_cas[cas]
+        if kind == "tableMatched" and not already:
+            index.table_matched_cas.add(cas)
     names = [name, *synonyms]
     for label in names:
         key = _norm_name(label)
         if not key:
             continue
+        index.by_name.setdefault(key, []).append(identity)
         if hill:
             index.by_name_hill.setdefault((key, hill), []).append(identity)
     if hill:

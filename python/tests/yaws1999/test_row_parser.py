@@ -96,6 +96,43 @@ def test_clean_formula_yttrium_and_caps_cl_from_name():
     assert clean_formula("C6H15A1", "TRIETHYLALUMINUM") == "C6H15Al"
 
 
+def test_clean_formula_auto_ocr_glyph_families():
+    """Accepted rebuild rules for the 16 mismatch auto-OCR cases."""
+    cases = [
+        ("C6H1OO3", "2-HYDROXYPROPYL ACRYLATE", "C6H10O3"),
+        ("C9H8CI3NO2S", "CAPTAN", "C9H8Cl3NO2S"),
+        ("C9H11C3NO3PS", "CHLORPYRIFOS", "C9H11Cl3NO3PS"),
+        ("Cl0Cl8", "OCTACHLORONAPHTHALENE", "C10Cl8"),
+        ("Cl0Cl10O", "CHLORDECONE", "C10Cl10O"),
+        ("Cl0H5Cl3", "TRICHLORONAPHTHALENE", "C10H5Cl3"),
+        ("Cl0H5Cl7", "HEPTACHLOR", "C10H5Cl7"),
+        ("ClOH5Cl7O", "HEPTACHLOR EPOXIDE", "C10H5Cl7O"),
+        ("Cl0H6Cl8", "CHLORDANE", "C10H6Cl8"),
+        ("C10H9CI4NO2S", "CAPTAFOL", "C10H9Cl4NO2S"),
+        ("Cl2H4Cl6O", "CHLORINATED DIPHENYL OXIDE", "C12H4Cl6O"),
+        ("C12H8CI60", "DIELDRIN", "C12H8Cl6O"),
+        ("C12H8CI60", "ENDRIN", "C12H8Cl6O"),
+        ("Cl3H12Cl2N2", "4,4'-METHYLENE BIS(2-CHLOROANILINE)", "C13H12Cl2N2"),
+        ("Cl6H15Cl3O2", "METHOXYCHLOR", "C16H15Cl3O2"),
+        ("C9H2OO", "2-nonanol", "C9H20O"),
+    ]
+    for raw, name, want in cases:
+        assert clean_formula(raw, name) == want, (raw, name, clean_formula(raw, name))
+
+
+def test_clean_formula_leading_cl_as_carbon_does_not_touch_cl2o():
+    assert clean_formula("CI20", "CHLORINE MONOXIDE") == "Cl2O"
+    assert clean_formula("Cl2O", "CHLORINE MONOXIDE") == "Cl2O"
+    assert clean_formula("H2O", "WATER") == "H2O"
+
+
+def test_clean_formula_unparseable_ocr_cases():
+    assert clean_formula("C6H15Al2Cl3ETHYL", "ALUMINUM SESQUICHLORIDE") == "C6H15Al2Cl3"
+    assert clean_formula("ALB3H12", "ALUMINUM BOROHYDRIDE") == "AlB3H12"
+    assert clean_formula("Oso4", "OSMIUM TETROXIDE - YELLOW") == "OsO4"
+    assert clean_formula("C6H19Nsi2", "HEXAMETHYLDISILAZANE") == "C6H19NSi2"
+
+
 def test_clean_name_restores_missing_i_in_iodide():
     assert clean_name("ARSENIC TRIODIDE") == "ARSENIC TRIIODIDE"
     assert clean_name("ARSENIC TRIIODIDE") == "ARSENIC TRIIODIDE"

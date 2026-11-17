@@ -221,12 +221,14 @@ def build_compound_data(
             )
             logger.info(
                 "[yaws1999] %d entries applied (%d filled, %d replaced, %d same); "
-                "%d created, %d with synonyms, %d unmatched rows, %d issue-log rows",
+                "%d created (%d table-only allow-list), %d with synonyms, "
+                "%d unmatched rows, %d issue-log rows",
                 yaws1999_counts.get("yaws1999Entries", 0),
                 yaws1999_counts.get("yaws1999Filled", 0),
                 yaws1999_counts.get("yaws1999Replaced", 0),
                 yaws1999_counts.get("yaws1999Same", 0),
                 yaws1999_counts.get("yaws1999Created", 0),
+                yaws1999_counts.get("yaws1999CreatedTableOnly", 0),
                 yaws1999_counts.get("yaws1999SynonymsAttached", 0),
                 yaws1999_counts.get("yaws1999Unmatched", 0),
                 len(yaws1999_issues_log),

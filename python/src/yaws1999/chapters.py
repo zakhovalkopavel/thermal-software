@@ -8,7 +8,11 @@ subfolder for the public file). Staging pages may briefly live under
 ``chapters/chNN-slug/pages/`` then are retired to ``reports/…/intermediates/``.
 CAS / synonym appendix: flat finals ``appendix/CAS_Compound_Index.json`` and
 ``appendix/Name_and_Synonym_Index.json`` (no ``cas-index/`` / ``synonyms/``
-subfolders for publics). OCR quant/dpi variants never go under processed —
+subfolders for publics). Curated supplements:
+``appendix/CAS_Corrections.json``, ``appendix/Name_Corrections.json``
+(table OCR names → appendix spelling), ``appendix/CAS_TableMatched_Index.json``
+(table CAS missing from the printed index), and
+``appendix/CAS_TableOnly_Create.json``. OCR quant/dpi variants never go under processed —
 only under ``reports/…/variants/``.
 """
 from __future__ import annotations

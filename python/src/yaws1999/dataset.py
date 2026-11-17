@@ -28,7 +28,13 @@ from source_extract.tables.dataset import (
 from source_extract.tables.naming import dataset_file_name, debug_file_name, title_slug
 
 from yaws1999.column_schemas import schema_for
-from yaws1999.constants import PAGE_OFFSET, REF_KEY
+from yaws1999.constants import (
+    PAGE_OFFSET,
+    REF_KEY,
+    correct_appendix_formula,
+    correct_name,
+    correct_name_formula,
+)
 
 __all__ = [
     "align_values",
@@ -140,6 +146,58 @@ def _with_equation_meta(doc: dict[str, Any], parsed: dict[str, Any]) -> dict[str
     return out
 
 
+def _apply_cas_formula_fixes(doc: dict[str, Any]) -> dict[str, Any]:
+    """Apply CAS-keyed formula overrides on rows that expose ``CAS_No``."""
+    rows = doc.get("rows")
+    if not rows:
+        return doc
+    for row in rows:
+        cas = row.get("CAS_No")
+        formula = row.get("formula")
+        if not cas or formula is None:
+            continue
+        fixed = correct_appendix_formula(str(cas), str(formula))
+        if fixed is not None and fixed != formula:
+            row["formula"] = fixed
+    return doc
+
+
+def _apply_name_typo_fixes(doc: dict[str, Any]) -> dict[str, Any]:
+    """Replace known table OCR names with the appendix CAS-list spelling."""
+    rows = doc.get("rows")
+    if not rows:
+        return doc
+    for row in rows:
+        name = row.get("name")
+        if name is None:
+            continue
+        fixed = correct_name(str(name))
+        if fixed is not None and fixed != name:
+            row["name"] = fixed
+    return doc
+
+
+def _apply_name_formula_fixes(doc: dict[str, Any]) -> dict[str, Any]:
+    """Apply name-keyed formula overrides (rows without CAS, verified lookup)."""
+    rows = doc.get("rows")
+    if not rows:
+        return doc
+    for row in rows:
+        name = row.get("name")
+        formula = row.get("formula")
+        if name is None or formula is None:
+            continue
+        fixed = correct_name_formula(str(name), str(formula))
+        if fixed is not None and fixed != formula:
+            row["formula"] = fixed
+    return doc
+
+
+def _apply_row_fixes(doc: dict[str, Any]) -> dict[str, Any]:
+    """CAS formula overrides + table name OCR / name-formula corrections."""
+    return _apply_name_formula_fixes(_apply_name_typo_fixes(_apply_cas_formula_fixes(doc)))
+
+
 def to_dataset_table(parsed: dict[str, Any]) -> dict[str, Any]:
     """Public processed-table document (no OCR provenance)."""
     prepared = _with_source_pages(parsed)
@@ -153,7 +211,7 @@ def to_dataset_table(parsed: dict[str, Any]) -> dict[str, Any]:
         default_ref_key=REF_KEY,
         page_offset=PAGE_OFFSET,
     )
-    return _with_equation_meta(doc, prepared)
+    return _apply_row_fixes(_with_equation_meta(doc, prepared))
 
 
 def to_debug_table(parsed: dict[str, Any]) -> dict[str, Any]:
@@ -173,4 +231,4 @@ def to_debug_table(parsed: dict[str, Any]) -> dict[str, Any]:
     elif parsed.get("djvuPages") is not None:
         doc["djvuPages"] = parsed["djvuPages"]
     # Equation meta before rows; debug ``unparsed`` stays after rows.
-    return _with_equation_meta(doc, prepared)
+    return _apply_row_fixes(_with_equation_meta(doc, prepared))

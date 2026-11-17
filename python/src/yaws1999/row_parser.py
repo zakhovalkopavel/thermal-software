@@ -56,15 +56,39 @@ _FORMULA_OCR = (
     # Oxide oxygen misread as digit zero (Al203 → Al2O3); not B10H14 (0 before a letter).
     (re.compile(r"(?<=[A-Za-z]\d)0(?=\d)"), "O"),
 )
+# H1OO3→H10O3, H2OO→H20O (digit zero misread as O after H-count). Not lone H2O.
+# Applied *after* name-gated 0→O so H10 is not re-broken into H1O.
+_H_COUNT_OO = re.compile(r"(?<=H)([1-9])OO")
+# Leading Cl+digit OCR'd as carbon count for chlorocarbons (before 0→O).
+# Guards require H…Cl or Cl… so real Cl2O / Cl2 stay untouched.
+_LEADING_CL_AS_CARBON = (
+    (re.compile(r"^Cl0(?=H|Cl)"), "C10"),
+    (re.compile(r"^ClO(?=H)"), "C10"),
+    (re.compile(r"^Cl2(?=H\d+Cl)"), "C12"),
+    (re.compile(r"^Cl3(?=H\d+Cl)"), "C13"),
+    (re.compile(r"^Cl6(?=H\d+Cl)"), "C16"),
+)
+# After H-count, bare C+digit meant Cl (C9H11C3NO3PS → …Cl3…); fixed-width lookbehinds.
+_BARE_C_AS_CL_AFTER_H = (
+    re.compile(r"(?<=H\d)C(?=\d)"),
+    re.compile(r"(?<=H\d\d)C(?=\d)"),
+)
+# Cl60→Cl6O even when the name lacks OXIDE/HYDROXY (dieldrin/endrin).
+# Only counts 2–9 (not Cl10O / Cl10 which are ten chlorines).
+_ZERO_AFTER_CL_COUNT = re.compile(r"(?<=Cl[2-9])0(?=$|[A-Z])")
 # Name-gated halogen / oxygen fixes: only when the English name mentions them.
 _NAME_HAS_CL = re.compile(r"(?i)CHLOR")
 _NAME_HAS_BR = re.compile(r"(?i)BROM")
 _NAME_HAS_I = re.compile(r"(?i)IOD(?:IDE|INE|O)?|\bIOD\b")
 _NAME_HAS_F = re.compile(r"(?i)FLUOR")
 _NAME_HAS_AL = re.compile(r"(?i)ALUMIN")
+_NAME_HAS_SI = re.compile(r"(?i)SILIC|SILAZ|SILYL|SILANE")
+_NAME_HAS_OS = re.compile(r"(?i)OSMIUM")
 _NAME_HAS_O = re.compile(
     r"(?i)OXID|OXYGEN|\bOXY|HYDROXY|PERCHLOR|PHOSGENE|\bWATER\b|MONOXIDE|DIOXIDE|TRIOXIDE|TETROXIDE|PENTOXIDE",
 )
+# Trailing name fragment glued onto formula (C6H15Al2Cl3ETHYL).
+_TRAILING_ETHYL = re.compile(r"ETHYL$", re.I)
 # Name-gated element-symbol OCR: (name hint, wrong symbol(s), correct symbol).
 # Wrong match is an element token boundary so TiO2 / TIBr / TII / Yt stay well-formed.
 _NAME_ELEMENT_OCR: tuple[tuple[re.Pattern[str], re.Pattern[str], str], ...] = (
@@ -81,14 +105,16 @@ _NAME_ELEMENT_OCR: tuple[tuple[re.Pattern[str], re.Pattern[str], str], ...] = (
         "Y",
     ),
 )
-# CI/Ci → Cl; OCR digit-one Cl (C1F); bare cl before digit/end/element; all-caps CL.
-_CL_OCR = re.compile(r"CL|C[Ii1]|cl(?=\d|$|[A-Z])")
+# CI/Ci → Cl; OCR digit-one Cl (C1F, not C10…); bare cl before digit/end/element; all-caps CL.
+_CL_OCR = re.compile(r"CL|C[Ii]|C1(?!\d)|cl(?=\d|$|[A-Z])")
 _BR_OCR = re.compile(r"br|BR(?![a-z])")
 _F_OCR = re.compile(r"(?<![A-Za-z])(?:fl|FL|f)(?=\d|$|[A-Z])")
 # Digits OCR'd as oxygen: letter+0 (S02→SO2, ClF03→ClFO3, Os04→OsO4, ^02→O2).
 _ZERO_AFTER_LETTER = re.compile(r"(?<=[A-Za-z])0(?=\d|$|[A-Z])|^0(?=\d)")
-# Trailing oxygen after a count digit, but not the "10" in P4O10 (letter before count ≠ O).
-_ZERO_AFTER_COUNT = re.compile(r"(?<=[A-NP-Za-np-z]\d)0(?=$|[A-Z])")
+# Trailing oxygen after a count digit (legacy); Cl\d0 is handled by
+# _ZERO_AFTER_CL_COUNT. Kept for tests/callers that still reference it.
+# Excludes C/H/O before the count so C10/H10/P4O10 are not broken.
+_ZERO_AFTER_COUNT = re.compile(r"(?<=[A-BD-GI-NP-Za-bd-gi-np-z]\d)0(?=$|[A-Z])")
 # Iodide I misread as lowercase L after a two-letter element (Agl → AgI).
 # Do not match the L of Cl.
 _IODIDE_L = re.compile(r"([A-Z][a-z])l(?=\d|$|[A-Z])")
@@ -218,16 +244,28 @@ def clean_formula(text: str, name: str | None = None) -> str:
     ``br`` → ``Br``, ``CIF`` + chlorine → ``ClF``. Oxide names: ``0`` → ``O``
     (``C02`` → ``CO2``, ``Cl20`` → ``Cl2O``). ``CI4`` with an iodide name is left alone.
     Thallium names: ``Ti``/``TI``/``TIBr``/``TII`` → ``Tl``/``TlBr``/``TlI``.
+
+    Also (unconditional / guarded): ``H1OO``→``H10O``, leading ``Cl0``/``Cl2H…Cl``
+    as carbon counts (``C10``/``C12``), and ``Cl60``→``Cl6O``.
     """
     out = text.strip()
     for pattern, repl in _FORMULA_OCR:
         out = pattern.sub(repl, out)
+    # Before any 0→O pass: Cl0… / ClOH… are carbon-10 OCR, not Cl+oxygen.
+    for pattern, repl in _LEADING_CL_AS_CARBON:
+        out = pattern.sub(repl, out)
+    # Name fragment glued to formula (sesquichloride …Cl3ETHYL).
+    out = _TRAILING_ETHYL.sub("", out)
     if name:
         out = reconcile_formula_with_name(out, name)
     else:
         # No name: keep the old unconditional CI→Cl (most Yaws rows are chlorides).
         out = re.sub(r"CI", "Cl", out)
         out = _IODIDE_L.sub(r"\1I", out)
+    # Trailing 0 after Cl-count (CI60→Cl60→Cl6O) even without OXIDE in the name.
+    out = _ZERO_AFTER_CL_COUNT.sub("O", out)
+    # After oxygen passes: repair H1OO / H2OO (and undo accidental H10→H1O).
+    out = _H_COUNT_OO.sub(r"\g<1>0O", out)
     return out
 
 
@@ -248,17 +286,31 @@ def reconcile_formula_with_name(formula: str, name: str) -> str:
         out = re.sub(r"AI(?=[A-Z0-9]|$)", "Al", out)
         # Digit one misread for lowercase L (A1 → Al).
         out = re.sub(r"A1(?=[A-Z0-9]|$)", "Al", out)
-    if has_cl:
+        # All-caps AL (ALB3H12 → AlB3H12); do not touch already-correct Al.
+        out = re.sub(r"AL(?=[A-Z0-9]|$)", "Al", out)
+    if _NAME_HAS_SI.search(name):
+        # Lowercase si (Nsi2 → NSi2); already-correct Si is untouched.
+        out = re.sub(r"si(?=\d|$|[A-Z])", "Si", out)
+    if _NAME_HAS_OS.search(name):
+        # Oso4 → OsO4 (osmium + oxygen OCR).
+        out = re.sub(r"(?<![A-Za-z])Oso(?=\d|$|[A-Z])", "OsO", out)
+        out = re.sub(r"(?<![A-Za-z])OSO(?=\d|$|[A-Z])", "OsO", out)
+    # CI→Cl unless this is an iodide-only name (CI4 carbon tetraiodide).
+    # Captan/captafol/dieldrin lack CHLOR in the printed name but use Cl.
+    if has_cl or not has_i:
         out = _CL_OCR.sub("Cl", out)
+    if has_cl:
+        for bare_c in _BARE_C_AS_CL_AFTER_H:
+            out = bare_c.sub("Cl", out)
     if has_br:
         out = _BR_OCR.sub("Br", out)
     if has_f:
         # OCR sometimes emits Fl/fl for fluorine (symbol F).
         out = _F_OCR.sub("F", out)
     if has_o:
-        # Digit zero misread for oxygen (after Cl/CIF fixes so Cl20 → Cl2O).
+        # Digit zero misread for oxygen (S02→SO2, Os04→OsO4). Cl20→Cl2O is
+        # applied later via _ZERO_AFTER_CL_COUNT so C10/H10 stay intact.
         out = _ZERO_AFTER_LETTER.sub("O", out)
-        out = _ZERO_AFTER_COUNT.sub("O", out)
     if has_i or not has_cl:
         # Agl → AgI. When the name also has chloro, skip the L that belongs to Cl
         # (negative lookbehind: do not match the ``l`` in ``Cl``).

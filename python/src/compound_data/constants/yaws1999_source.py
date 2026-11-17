@@ -15,6 +15,10 @@ YAWS1999_DIR = "shared/processed/yaws1999"
 YAWS1999_INDEX = f"{YAWS1999_DIR}/index.json"
 YAWS1999_CAS_INDEX = f"{YAWS1999_DIR}/appendix/CAS_Compound_Index.json"
 YAWS1999_SYNONYM_INDEX = f"{YAWS1999_DIR}/appendix/Name_and_Synonym_Index.json"
+# Valid table CAS absent from the printed appendix CAS index (casIndex-shaped supplement).
+YAWS1999_CAS_TABLE_MATCHED_INDEX = f"{YAWS1999_DIR}/appendix/CAS_TableMatched_Index.json"
+# Valid table CAS not in appendix — allow-list for compound-data create on rebuild.
+YAWS1999_TABLE_ONLY_CREATE = f"{YAWS1999_DIR}/appendix/CAS_TableOnly_Create.json"
 YAWS1999_REPLACE_LOG = "reports/compound-data/yaws1999-replace-log.jsonl"
 # Table-only CAS (not in appendix) + noRecord attach misses — review / later PubChem.
 YAWS1999_ISSUES_LOG = "reports/compound-data/yaws1999-issues-log.jsonl"

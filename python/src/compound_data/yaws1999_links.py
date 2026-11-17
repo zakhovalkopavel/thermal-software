@@ -4,15 +4,17 @@ compound_data.yaws1999_links — Fill / replace compound values from processed Y
 Matching rows become ``SourceEntry`` values. For each property/phase on an existing record:
 
 - missing → append (fill)
-- existing Yaws-linked value that differs → replace and log
-- identical Yaws-linked value → leave as-is
+- existing processed Yaws1999 / ``yaws1999Gas`` value that differs → replace and log
+- identical processed Yaws1999 value → leave as-is
+- ``Yaws2014`` is kept alongside Yaws1999 (never replaced)
 
 Non-Yaws sources (Perry, Poling, VDI, …) are never replaced.
 
 Also:
 
 - attach Yaws synonym-appendix names onto matching records (``synonyms``);
-- create new compound records for validated Yaws CAS that are not yet in the dataset.
+- create new compound records for validated Yaws appendix CAS that are not yet in the dataset;
+- create records for curated table-only CAS in ``appendix/CAS_TableOnly_Create.json``.
 
 Spec: tmp/spec/02_yaws1999_compound_data_update.md
 """
@@ -41,9 +43,11 @@ from compound_data.parsers.yaws1999_identity import YawsIdentity, YawsIdentityIn
 from compound_data.parsers.yaws1999_tables import Yaws1999Tables, parse_yaws1999_tables
 from pubchem.cas_number import is_cas
 from references import RefKey
+from yaws1999.constants import correct_cas
 
-_YAWS_REFS = {RefKey.Yaws1999, RefKey.Yaws2014}
-_YAWS_KEYS = {"yaws1999Gas"}
+# Only processed 1999 / book-gas rows are replaced on rebuild. Yaws2014 stays as a sibling source.
+_YAWS1999_REFS = {RefKey.Yaws1999}
+_YAWS1999_KEYS = {"yaws1999Gas"}
 
 # Standard atomic weights (g/mol) for Mr of Yaws-created records that have no identifier MW.
 _ATOMIC_WEIGHT: dict[str, float] = {
@@ -101,24 +105,45 @@ def attach_yaws1999(
         "yaws1999NoRecord": 0,
         "yaws1999AmbiguousRecord": 0,
         "yaws1999Created": 0,
+        "yaws1999CreatedTableOnly": 0,
         "yaws1999SynonymsAttached": 0,
         "yaws1999TableOnlyCas": 0,
     }
 
     identity = parsed.identity or YawsIdentityIndex()
     created: list[CompoundRecord] = []
+    created_sources: dict[str, str] = {}
 
-    # Create missing CAS records only from the validated appendix (table-only CAS often
-    # carry OCR-corrupted formulas, e.g. exposure-limit rows).
+    # Create missing CAS records from the validated printed appendix (preferred).
+    # Table-matched CAS are for row matching only; creates stay on CAS_TableOnly_Create.
     for cas, ident in sorted(identity.by_cas.items()):
+        if cas in identity.table_matched_cas:
+            continue
         if cas in by_cas:
             continue
         record = _new_record_from_identity(ident)
         if record is None:
             continue
         _register(record, by_cas, by_hill, created, counts)
+        created_sources[cas] = "yaws1999Appendix"
 
-    # Synonyms onto every record that matches a Yaws CAS identity.
+    # Curated table-only CAS (not in appendix): create only when allow-listed.
+    table_only_idents = _load_table_only_create(processed_dir)
+    for cas, ident in sorted(table_only_idents.items()):
+        if cas in by_cas:
+            # Still register allow-list identity for synonym merge / issue classification.
+            if cas not in identity.by_cas:
+                identity.by_cas[cas] = ident
+            continue
+        record = _new_record_from_identity(ident)
+        if record is None:
+            continue
+        _register(record, by_cas, by_hill, created, counts)
+        created_sources[cas] = "yaws1999TableOnly"
+        counts["yaws1999CreatedTableOnly"] += 1
+        identity.by_cas[cas] = ident
+
+    # Synonyms onto every record that matches a Yaws CAS identity (appendix + allow-list).
     for cas, ident in identity.by_cas.items():
         target = by_cas.get(cas)
         if target is None:
@@ -127,6 +152,7 @@ def attach_yaws1999(
             counts["yaws1999SynonymsAttached"] += 1
 
     # Issue 1: every table row whose printed CAS is not in the appendix.
+    # Allow-listed creates are registered in identity.by_cas above, so they are omitted here.
     table_only = _collect_table_only_cas(processed_dir, identity, by_cas)
     issues_log.extend(table_only)
     counts["yaws1999TableOnlyCas"] = len(table_only)
@@ -157,8 +183,36 @@ def attach_yaws1999(
             seen.add(rid)
             order_values(record)
 
-    created_log = [_created_row(record) for record in created]
+    created_log = [
+        _created_row(record, source=created_sources.get(record.cas or record.id, "yaws1999Appendix"))
+        for record in created
+    ]
     return issues, replace_log, counts, parsed.tables, parsed.unmatched, created, issues_log, created_log
+
+
+def _load_table_only_create(processed_dir: Path) -> dict[str, YawsIdentity]:
+    """Load curated table-only CAS allow-list → ``YawsIdentity`` keyed by corrected CAS."""
+    path = processed_dir / "appendix" / "CAS_TableOnly_Create.json"
+    if not path.is_file():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    out: dict[str, YawsIdentity] = {}
+    for row in data.get("records") or []:
+        cas = correct_cas(row.get("cas"))
+        if not cas or not is_cas(str(cas)):
+            continue
+        cas_s = str(cas)
+        formula = row.get("formula") or ""
+        hill = row.get("hill") or hill_of(formula)
+        synonyms = [str(s) for s in (row.get("synonyms") or []) if s]
+        out[cas_s] = YawsIdentity(
+            cas=cas_s,
+            name=str(row.get("name") or ""),
+            formula=str(formula),
+            hill=hill,
+            synonyms=synonyms,
+        )
+    return out
 
 
 def write_yaws1999_jsonl(path: Path, rows: list[dict[str, Any]]) -> Path:
@@ -325,7 +379,7 @@ def _collect_table_only_cas(
             continue
         data = json.loads(path.read_text(encoding="utf-8"))
         for row in data.get("rows", []):
-            cas = row.get("CAS_No") or row.get("cas")
+            cas = correct_cas(row.get("CAS_No") or row.get("cas"))
             if not cas:
                 continue
             cas_s = str(cas)
@@ -336,22 +390,46 @@ def _collect_table_only_cas(
                 continue
             seen.add(key)
             formula = row.get("formula")
-            out.append({
+            name = row.get("name")
+            appendix_hit, name_status = identity.lookup_by_name(name)
+            # Prefer unique name; if that fails, try name+Hill (same join as table parsing).
+            if appendix_hit is None or name_status != "matched":
+                resolved_cas, _, resolve_status = identity.resolve(name, formula)
+                if resolve_status == "matched" and resolved_cas and resolved_cas in identity.by_cas:
+                    appendix_hit = identity.by_cas[resolved_cas]
+                    name_status = "matched_name_hill"
+            row_out: dict[str, Any] = {
                 "kind": "tableOnlyCas",
                 "cas": cas_s,
                 "casValid": is_cas(cas_s),
-                "name": row.get("name"),
+                "name": name,
                 "formula": formula,
                 "hill": hill_of(formula) if formula else None,
                 "tableId": table_id,
                 "rowId": row.get("id"),
                 "inAppendix": False,
                 "inCompoundData": cas_s in by_cas,
-                "note": (
+                "appendixNameStatus": name_status,
+            }
+            if appendix_hit and appendix_hit.cas:
+                row_out.update({
+                    "appendixCas": appendix_hit.cas,
+                    "appendixName": appendix_hit.name,
+                    "appendixFormula": appendix_hit.formula,
+                    "appendixInCompoundData": appendix_hit.cas in by_cas,
+                    "note": (
+                        "CAS printed on a table row but not in the Yaws appendix; "
+                        f"name matched appendix CAS {appendix_hit.cas}"
+                        + (" (also in compound-data)" if appendix_hit.cas in by_cas else "")
+                    ),
+                })
+            else:
+                row_out["note"] = (
                     "CAS printed on a table row but not in the Yaws appendix; "
                     "formula may be OCR-corrupted — compound not auto-created"
-                ),
-            })
+                    + (f"; name lookup {name_status}" if name_status != "no_match" else "")
+                )
+            out.append(row_out)
     return out
 
 
@@ -383,8 +461,15 @@ def _no_record_row(entry: SourceEntry, identity: YawsIdentityIndex) -> dict[str,
     }
 
 
-def _created_row(record: CompoundRecord) -> dict[str, Any]:
-    """One appendix-created compound for the follow-up PubChem search log."""
+def _created_row(record: CompoundRecord, source: str = "yaws1999Appendix") -> dict[str, Any]:
+    """One newly created compound for the follow-up PubChem / review log."""
+    if source == "yaws1999TableOnly":
+        note = (
+            "Created from curated table-only CAS allow-list "
+            "(appendix/CAS_TableOnly_Create.json); PubChem cache / manual identity may apply"
+        )
+    else:
+        note = "Created from Yaws CAS appendix; run PubChem search to fill identifiers"
     return {
         "cas": record.cas or record.id,
         "name": record.name,
@@ -396,8 +481,8 @@ def _created_row(record: CompoundRecord) -> dict[str, Any]:
         "families": record.families,
         "synonyms": record.synonyms,
         "Mr": record.Mr,
-        "source": "yaws1999Appendix",
-        "note": "Created from Yaws CAS appendix; run PubChem search to fill identifiers",
+        "source": source,
+        "note": note,
     }
 
 
@@ -418,7 +503,7 @@ def _apply_entry(record: CompoundRecord, entry: SourceEntry, replace_log: list[d
     value = entry.value
     if isinstance(value, PropertyValue):
         values = record.properties.setdefault(entry.property, [])
-        linked = [(i, v) for i, v in enumerate(values) if _is_yaws_linked(v)]
+        linked = [(i, v) for i, v in enumerate(values) if _is_yaws1999_linked(v)]
         if not linked:
             values.append(value)
             return "yaws1999Filled"
@@ -436,7 +521,7 @@ def _apply_entry(record: CompoundRecord, entry: SourceEntry, replace_log: list[d
     if isinstance(value, EquationValue):
         phase = entry.phase or "none"
         values = record.equations.setdefault(entry.property, {}).setdefault(phase, [])
-        linked = [(i, v) for i, v in enumerate(values) if _is_yaws_linked(v)]
+        linked = [(i, v) for i, v in enumerate(values) if _is_yaws1999_linked(v)]
         if not linked:
             values.append(value)
             return "yaws1999Filled"
@@ -455,7 +540,7 @@ def _apply_entry(record: CompoundRecord, entry: SourceEntry, replace_log: list[d
         values = record.raw
         linked = [
             (i, v) for i, v in enumerate(values)
-            if _is_yaws_linked(v) and v.property == value.property and v.phase == value.phase
+            if _is_yaws1999_linked(v) and v.property == value.property and v.phase == value.phase
         ]
         if not linked:
             values.append(value)
@@ -474,16 +559,15 @@ def _apply_entry(record: CompoundRecord, entry: SourceEntry, replace_log: list[d
     return "yaws1999Same"
 
 
-def _is_yaws_linked(value: Any) -> bool:
-    if getattr(value, "ref", None) in _YAWS_REFS:
+def _is_yaws1999_linked(value: Any) -> bool:
+    """True only for processed Yaws1999 / book-gas rows — not Yaws2014."""
+    if getattr(value, "ref", None) in _YAWS1999_REFS:
         return True
     source = getattr(value, "source", None)
-    return bool(source and getattr(source, "key", None) in _YAWS_KEYS)
+    return bool(source and getattr(source, "key", None) in _YAWS1999_KEYS)
 
 
 def _replace_reason(old: Any) -> str:
-    if getattr(old, "ref", None) == RefKey.Yaws2014:
-        return "yaws2014_replaced_by_1999"
     source = getattr(old, "source", None)
     if source and source.key == "yaws1999Gas":
         return "yaws1999Gas_replaced_by_processed"

@@ -93,7 +93,7 @@ def test_compound_values_cite_with_ref_only():
     assert set(fields).isdisjoint({"tableId", "rowId", "pageFirst", "pageLast"})
 
 
-def test_attach_fills_and_replaces_yaws_linked(tmp_path: Path):
+def test_attach_keeps_yaws2014_and_fills_yaws1999(tmp_path: Path):
     root = _write_processed(tmp_path / "yaws")
     old_link = SourceLink("Yaws 2014", "yawsCritical", "", ref=RefKey.Yaws2014, line=1, label="CO2")
     record = CompoundRecord(
@@ -117,20 +117,39 @@ def test_attach_fills_and_replaces_yaws_linked(tmp_path: Path):
         [record, n2], root,
     )
     assert not unmatched
-    assert counts["yaws1999Filled"] == 1  # N2
-    assert counts["yaws1999Replaced"] == 1  # CO2 Yaws2014 → 1999
-    assert replace_log[0]["reason"] == "yaws2014_replaced_by_1999"
-    assert replace_log[0]["property"] == "heatCapacity"
-    co2_eq = record.equations["heatCapacity"]["gas"][0]
-    assert co2_eq.ref == RefKey.Yaws1999 and co2_eq.vars["a"] == 1.0
+    assert counts["yaws1999Filled"] == 2  # CO2 alongside 2014 + N2
+    assert counts["yaws1999Replaced"] == 0
+    assert replace_log == []
+    co2_eqs = record.equations["heatCapacity"]["gas"]
+    assert len(co2_eqs) == 2
+    assert co2_eqs[0].ref == RefKey.Yaws2014 and co2_eqs[0].vars["a"] == 9.0
+    assert co2_eqs[1].ref == RefKey.Yaws1999 and co2_eqs[1].vars["a"] == 1.0
     assert n2.equations["heatCapacity"]["gas"][0].vars["a"] == 10.0
     assert tables and tables[0].ref == RefKey.Yaws1999
     assert "carbonic anhydride" in record.synonyms
 
-    log_path = tmp_path / "yaws1999-replace-log.jsonl"
-    write_yaws1999_jsonl(log_path, replace_log)
-    lines = log_path.read_text(encoding="utf-8").strip().splitlines()
-    assert len(lines) == 1 and json.loads(lines[0])["cas"] == "124-38-9"
+
+def test_attach_replaces_only_processed_yaws1999(tmp_path: Path):
+    root = _write_processed(tmp_path / "yaws")
+    old_link = SourceLink("Yaws 1999 gas", "yaws1999Gas", "", ref=RefKey.Yaws1999, line=1, label="CO2")
+    record = CompoundRecord(
+        id="124-38-9", cas="124-38-9", formula="CO2", hill="CO2", display_formula="CO2",
+        elements=["C", "O"], compound_class="inorganic", group="C", name="carbon dioxide",
+        equations={
+            "heatCapacity": {
+                "gas": [EquationValue(
+                    type=EquationType.quartic, ref=RefKey.Yaws1999,
+                    vars={"a": 9.0, "b": 0.0, "c": 0.0, "d": 0.0, "e": 0.0},
+                    min=50, max=1000, source=old_link, k=1.0,
+                )],
+            },
+        },
+    )
+    _, replace_log, counts, _, _, _, _, _ = attach_yaws1999([record], root)
+    assert counts["yaws1999Replaced"] == 1
+    assert replace_log[0]["reason"] == "yaws1999Gas_replaced_by_processed"
+    assert record.equations["heatCapacity"]["gas"][0].vars["a"] == 1.0
+    assert len(record.equations["heatCapacity"]["gas"]) == 1
 
 
 def test_attach_creates_missing_yaws_compound_and_synonyms(tmp_path: Path):
@@ -210,16 +229,150 @@ def test_issues_log_table_only_cas_and_no_record(tmp_path: Path):
     _, _, counts, _, _, created, issues_log, created_log = attach_yaws1999([], root)
     assert created == [] and created_log == []
     assert counts["yaws1999TableOnlyCas"] == 1
+    assert counts["yaws1999CreatedTableOnly"] == 0
     assert counts["yaws1999NoRecord"] >= 1
     kinds = {row["kind"] for row in issues_log}
     assert kinds == {"tableOnlyCas", "noRecord"}
     table_only = next(r for r in issues_log if r["kind"] == "tableOnlyCas")
     assert table_only["cas"] == "101-14-4" and table_only["inAppendix"] is False
+    assert table_only["appendixNameStatus"] == "no_match"
+    assert "appendixCas" not in table_only
     assert table_only["tableId"] == "27-1"
     no_rec = next(r for r in issues_log if r["kind"] == "noRecord")
     assert no_rec["cas"] == "101-14-4" and no_rec["property"] in {
         "tlvAcgih", "tlvAcgihPpm", "pelOsha", "pelOshaPpm", "relNiosh", "relNioshPpm", "makDfg", "makDfgPpm",
     }
+
+
+def test_table_only_allow_list_creates_and_fills(tmp_path: Path):
+    """Curated CAS_TableOnly_Create.json creates a missing record and attaches table values."""
+    root = tmp_path / "yaws"
+    appendix = root / "appendix"
+    tables = root / "tables"
+    appendix.mkdir(parents=True)
+    tables.mkdir(parents=True)
+    (appendix / "CAS_Compound_Index.json").write_text(json.dumps({"id": "CAS", "rows": []}), encoding="utf-8")
+    (appendix / "Name_and_Synonym_Index.json").write_text(json.dumps({"id": "SYN", "rows": []}), encoding="utf-8")
+    (appendix / "CAS_TableOnly_Create.json").write_text(json.dumps({
+        "id": "CAS_TABLE_ONLY_CREATE",
+        "records": [{
+            "cas": "7782-42-5",
+            "name": "GRAPHITE",
+            "formula": "C",
+            "hill": "C",
+            "synonyms": ["Plumbago", "Black lead"],
+            "formulaSource": "manual",
+            "manual": True,
+        }],
+    }), encoding="utf-8")
+    (tables / "Exposure_(table_27-2).json").write_text(json.dumps({
+        "id": "27-2", "title": "EXPOSURE INORGANIC", "rows": [
+            {
+                "id": 10, "formula": "C", "name": "GRAPHITE",
+                "CAS_No": "7782-42-5", "TLV_ACGIH_mg_m3": 2.0,
+            },
+        ],
+    }), encoding="utf-8")
+    (root / "index.json").write_text(json.dumps({
+        "tables": [{"id": "27-2", "title": "EXPOSURE INORGANIC",
+                    "file": "tables/Exposure_(table_27-2).json", "rowCount": 1}],
+    }), encoding="utf-8")
+
+    _, _, counts, _, _, created, issues_log, created_log = attach_yaws1999([], root)
+    assert counts["yaws1999Created"] == 1
+    assert counts["yaws1999CreatedTableOnly"] == 1
+    assert counts["yaws1999Filled"] >= 1
+    assert counts["yaws1999TableOnlyCas"] == 0
+    assert not any(r["kind"] == "tableOnlyCas" for r in issues_log)
+    assert not any(r["kind"] == "noRecord" for r in issues_log)
+    assert len(created) == 1
+    record = created[0]
+    assert record.cas == "7782-42-5" and record.formula == "C"
+    assert record.name == "graphite"
+    assert "Plumbago" in record.synonyms
+    assert created_log[0]["source"] == "yaws1999TableOnly"
+    assert counts["yaws1999NoRecord"] == 0
+    assert record.properties  # at least one exposure limit / property attached
+
+
+def test_cas_typo_vinyl_fluoride_corrected_to_official(tmp_path: Path):
+    """Known typo 72-02-5 → official vinyl fluoride CAS 75-02-5 (not table-only)."""
+    root = tmp_path / "yaws"
+    appendix = root / "appendix"
+    tables = root / "tables"
+    appendix.mkdir(parents=True)
+    tables.mkdir(parents=True)
+    (appendix / "CAS_Compound_Index.json").write_text(json.dumps({
+        "id": "CAS", "rows": [
+            {"id": 1, "cas": "75-02-5", "name": "VINYL FLUORIDE", "formula": "C2H3F"},
+        ],
+    }), encoding="utf-8")
+    (appendix / "Name_and_Synonym_Index.json").write_text(json.dumps({"id": "SYN", "rows": []}), encoding="utf-8")
+    (tables / "Exposure_(table_27-1).json").write_text(json.dumps({
+        "id": "27-1", "title": "EXPOSURE", "rows": [
+            {
+                "id": 80, "formula": "C2H3F", "name": "VINYL FLUORIDE",
+                "CAS_No": "72-02-5", "TLV_ACGIH_ppm": 1.0,
+            },
+        ],
+    }), encoding="utf-8")
+    (root / "index.json").write_text(json.dumps({
+        "tables": [{"id": "27-1", "title": "EXPOSURE", "file": "tables/Exposure_(table_27-1).json", "rowCount": 1}],
+    }), encoding="utf-8")
+
+    records = [CompoundRecord(
+        id="75-02-5", cas="75-02-5", formula="C2H3F", hill="C2H3F", display_formula="C2H3F",
+        elements=["C", "H", "F"], name="vinyl fluoride",
+        compound_class="organic", group="halogenated", families=["halogenated"],
+    )]
+    _, replace_log, counts, _, _, created, issues_log, _ = attach_yaws1999(records, root)
+    assert created == [] and replace_log == []
+    assert counts["yaws1999Filled"] >= 1
+    assert counts["yaws1999TableOnlyCas"] == 0
+    assert not any(r["kind"] == "tableOnlyCas" for r in issues_log)
+    assert not any(r["kind"] == "noRecord" for r in issues_log)
+
+
+def test_table_only_cas_matched_in_appendix_by_name(tmp_path: Path):
+    """Valid-but-wrong table CAS missing from appendix can still resolve via the printed name."""
+    root = tmp_path / "yaws"
+    appendix = root / "appendix"
+    tables = root / "tables"
+    appendix.mkdir(parents=True)
+    tables.mkdir(parents=True)
+    (appendix / "CAS_Compound_Index.json").write_text(json.dumps({
+        "id": "CAS", "rows": [
+            {"id": 1, "cas": "75-02-5", "name": "VINYL FLUORIDE", "formula": "C2H3F"},
+        ],
+    }), encoding="utf-8")
+    (appendix / "Name_and_Synonym_Index.json").write_text(json.dumps({"id": "SYN", "rows": []}), encoding="utf-8")
+    # 74-85-1 is ethylene — valid CAS, wrong compound, not in CAS_TYPO_FIXES.
+    (tables / "Exposure_(table_27-1).json").write_text(json.dumps({
+        "id": "27-1", "title": "EXPOSURE", "rows": [
+            {
+                "id": 80, "formula": "C2H3F", "name": "VINYL FLUORIDE",
+                "CAS_No": "74-85-1", "TLV_ACGIH_ppm": 1.0,
+            },
+        ],
+    }), encoding="utf-8")
+    (root / "index.json").write_text(json.dumps({
+        "tables": [{"id": "27-1", "title": "EXPOSURE", "file": "tables/Exposure_(table_27-1).json", "rowCount": 1}],
+    }), encoding="utf-8")
+
+    records = [CompoundRecord(
+        id="75-02-5", cas="75-02-5", formula="C2H3F", hill="C2H3F", display_formula="C2H3F",
+        elements=["C", "H", "F"], name="vinyl fluoride",
+        compound_class="organic", group="halogenated", families=["halogenated"],
+    )]
+    _, replace_log, counts, _, _, created, issues_log, _ = attach_yaws1999(records, root)
+    assert created == [] and replace_log == []
+    assert counts["yaws1999Filled"] >= 1
+    table_only = next(r for r in issues_log if r["kind"] == "tableOnlyCas")
+    assert table_only["cas"] == "74-85-1"
+    assert table_only["appendixCas"] == "75-02-5"
+    assert table_only["appendixNameStatus"] == "matched"
+    assert table_only["appendixInCompoundData"] is True
+    assert not any(r["kind"] == "noRecord" for r in issues_log)
 
 
 def test_parse_emits_new_yaws_equation_types(tmp_path: Path):

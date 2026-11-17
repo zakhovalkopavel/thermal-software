@@ -28,6 +28,7 @@ from compound_data.parsers.yaws1999_identity import (
 )
 from pubchem.cas_number import is_cas
 from references import RefKey
+from yaws1999.constants import correct_cas, correct_name, correct_name_formula
 
 logger = logging.getLogger(__name__)
 
@@ -71,9 +72,12 @@ def parse_yaws1999_tables(processed_dir: Path) -> Yaws1999Tables:
     identity = load_yaws1999_identity(
         processed_dir / "appendix" / "CAS_Compound_Index.json",
         processed_dir / "appendix" / "Name_and_Synonym_Index.json",
+        processed_dir / "appendix" / "CAS_TableMatched_Index.json",
     )
     out.identity = identity
     out.issues.extend(identity.issues)
+
+    skip_keys = _load_table_row_skips(processed_dir / "appendix" / "Table_Row_Skips.json")
 
     index = json.loads(index_path.read_text(encoding="utf-8"))
     counts = {
@@ -82,6 +86,7 @@ def parse_yaws1999_tables(processed_dir: Path) -> Yaws1999Tables:
         "yaws1999Entries": 0,
         "yaws1999Matched": 0,
         "yaws1999Unmatched": 0,
+        "yaws1999SkippedRows": 0,
         "yaws1999SkippedUnsupported": 0,
     }
     for meta in index.get("tables", []):
@@ -111,6 +116,10 @@ def parse_yaws1999_tables(processed_dir: Path) -> Yaws1999Tables:
         counts["yaws1999Tables"] += 1
         for row in data.get("rows", []):
             counts["yaws1999Rows"] += 1
+            rid = row.get("id")
+            if (table_id, rid) in skip_keys:
+                counts["yaws1999SkippedRows"] += 1
+                continue
             entries, status = _row_entries(identity, emitter, spec, row)
             if status != "matched" and status != "formula_only":
                 counts["yaws1999Unmatched"] += 1
@@ -130,10 +139,25 @@ def parse_yaws1999_tables(processed_dir: Path) -> Yaws1999Tables:
             out.entries.extend(entries)
     out.counts = counts
     logger.info(
-        "[yaws1999] %d tables, %d rows → %d entries (%d matched rows, %d unmatched)",
+        "[yaws1999] %d tables, %d rows → %d entries (%d matched rows, %d unmatched, %d skipped)",
         counts["yaws1999Tables"], counts["yaws1999Rows"], counts["yaws1999Entries"],
-        counts["yaws1999Matched"], counts["yaws1999Unmatched"],
+        counts["yaws1999Matched"], counts["yaws1999Unmatched"], counts["yaws1999SkippedRows"],
     )
+    return out
+
+
+def _load_table_row_skips(path: Path) -> set[tuple[str, Any]]:
+    """Curated ``(tableId, rowId)`` pairs that must not enter compound-data."""
+    if not path.is_file():
+        return set()
+    data = json.loads(path.read_text(encoding="utf-8"))
+    out: set[tuple[str, Any]] = set()
+    for row in data.get("rows") or []:
+        tid = row.get("tableId")
+        rid = row.get("rowId")
+        if tid is None or rid is None:
+            continue
+        out.add((str(tid), rid))
     return out
 
 
@@ -153,22 +177,50 @@ def _row_entries(
     spec: TableSpec,
     row: dict[str, Any],
 ) -> tuple[list[SourceEntry], str]:
-    row_cas = row.get("CAS_No") or row.get("cas")
-    if row_cas and is_cas(str(row_cas)):
-        hill = hill_of(row.get("formula"))
-        if row.get("formula") and hill is None:
+    row_cas = correct_cas(row.get("CAS_No") or row.get("cas"))
+    name = correct_name(row.get("name"))
+    formula_raw = correct_name_formula(name, row.get("formula"))
+    printed = str(row_cas) if row_cas and is_cas(str(row_cas)) else None
+
+    if printed and printed in identity.by_cas:
+        # Printed CAS is in the appendix — trust it.
+        hill = hill_of(formula_raw)
+        if formula_raw and hill is None:
             return [], "bad_formula"
-        cas, status = str(row_cas), "matched"
+        cas, status = printed, "matched"
     else:
-        cas, hill, status = identity.resolve(row.get("name"), row.get("formula"))
+        # Invalid / appendix-unknown / missing CAS: name+Hill, then unique name/synonym.
+        cas, hill, status = identity.resolve(name, formula_raw)
+        if status == "matched":
+            pass
+        elif status == "formula_only" and not printed:
+            # Formula-only inorganic fallback only when the row had no CAS at all.
+            pass
+        else:
+            by_name, name_status = identity.lookup_by_name(name)
+            if name_status == "matched" and by_name and by_name.cas:
+                cas = by_name.cas
+                hill = by_name.hill or hill_of(formula_raw)
+                status = "matched"
+            elif printed:
+                # Keep the printed orphan CAS for attach / noRecord logging.
+                hill = hill_of(formula_raw)
+                if formula_raw and hill is None:
+                    return [], "bad_formula"
+                cas, status = printed, "matched"
+            elif status in {"bad_formula", "ambiguous"}:
+                return [], status
+            else:
+                return [], "no_match"
+
     if status in {"bad_formula", "no_match", "ambiguous"}:
         return [], status
-    formula = hill or row.get("formula")
+    formula = hill or formula_raw
     # Provenance in the dataset is only ``ref: [Yaws1999, rowId, fileKey]``.
     link = SourceLink(
         table=spec.name, key=spec.key, url="", ref=RefKey.Yaws1999,
         line=row.get("id") if isinstance(row.get("id"), int) else None,
-        label=row.get("name") or formula,
+        label=name or formula,
     )
     return emitter(row, link, formula, cas), status
 

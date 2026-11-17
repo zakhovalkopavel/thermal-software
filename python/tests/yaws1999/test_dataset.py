@@ -491,3 +491,23 @@ def test_expand_row_maps_trailing_density_not_value_extra():
     assert row["density_at_25_C"] == 1.02
     assert "value_extra_1" not in row
     assert row["A"] is None
+
+
+def test_to_dataset_table_applies_name_typo_fixes():
+    """Table OCR names are replaced with the appendix CAS-list spelling."""
+    parsed = {
+        "id": "1-1",
+        "title": "CRITICAL PROPERTIES",
+        "header": "NO FORMULA NAME MW",
+        "printedPages": {"first": 1, "last": 1},
+        "rows": [
+            {
+                "no": 1,
+                "formula": "C5H8N4O12",
+                "name": "PENTAEYRTHRITOL TETRANITRATE",
+                "values": [316.1],
+            }
+        ],
+    }
+    doc = to_dataset_table(parsed)
+    assert doc["rows"][0]["name"] == "PENTAERYTHRITOL TETRANITRATE"
