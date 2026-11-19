@@ -7,4 +7,4 @@ export { compoundNasa7 } from './compound-nasa7.util';
 export { compoundNasa9 } from './compound-nasa9.util';
 export { compoundNasaThermo } from './compound-nasa-thermo.util';
 export { evaluateNasaThermo } from './evaluate-nasa-thermo.util';
-export type { NasaThermoProperty } from './evaluate-nasa-thermo.util';
+export type { NasaThermoProperty } from './types/nasa-thermo-property.type';

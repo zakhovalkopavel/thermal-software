@@ -192,14 +192,14 @@ describe('CompoundData.toEquationValue preserves null ranges', () => {
 });
 
 describe('Sutherland ranges preserved on gas compounds', () => {
-  it('N2 sutherlandParams keeps min/max from the equation row', () => {
-    const p = N2.sutherlandParams;
-    expect(p).toBeDefined();
+  it('N2 Sutherland viscosity equation keeps min/max from the source row', () => {
+    const row = N2.viscosity.values.find(v => v.type === EquationTypeDto.sutherland);
+    expect(row).toBeDefined();
     // Source White3/NBS ranges are finite — not silently dropped
-    expect(p!.min == null || typeof p!.min === 'number').toBe(true);
-    expect(p!.max == null || typeof p!.max === 'number').toBe(true);
-    if (p!.min != null && p!.max != null) {
-      expect(p!.min).toBeLessThan(p!.max);
+    expect(row!.min == null || typeof row!.min === 'number').toBe(true);
+    expect(row!.max == null || typeof row!.max === 'number').toBe(true);
+    if (row!.min != null && row!.max != null) {
+      expect(row!.min).toBeLessThan(row!.max);
     }
   });
 });

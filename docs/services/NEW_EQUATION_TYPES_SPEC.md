@@ -218,7 +218,7 @@ Types without a closed-form antiderivative use `gaussLegendre20` from `backend/s
 ### `sutherland`
 
 - **Source:** White, *Viscous Fluid Flow* 3e, Eqs. (1-36) and (1-44b); Tables 1-2, 1-3 and A-6 (`shared/sources/transport-parameters.json`). Gas viscosity and thermal conductivity.
-- **Vars:** `{ y0, T0, S }`: y0 = μ0 [Pa s] or k0 [W/(m K)] at T0 [K], Sutherland constant S [K]. The backend gas compounds keep their own `sutherlandParams {mu0, T0, S}`; this type is the `EquationValue` form of the same law.
+- **Vars:** `{ y0, T0, S }`: y0 = μ0 [Pa s] or k0 [W/(m K)] at T0 [K], Sutherland constant S [K]. Stored only as an `EquationValue` in the viscosity (or conductivity) bucket — no parallel side-channel.
 - **Formula:** y = y0·(T/T0)^1.5·(T0 + S)/(T + S)
 - **Integral (closed form):** with u = √T,
   ∫y·dT = y0·(T0 + S)/T0^1.5 · 2·[T^1.5/3 − S·√T + S^1.5·atan(√(T/S))]

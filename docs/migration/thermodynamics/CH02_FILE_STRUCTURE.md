@@ -125,7 +125,7 @@ ThermodynamicsModule
     └── Nasa7EquationMethod    (from common/thermal/utils/ — for enthalpy/entropy/gibbs)
     └── Nasa9EquationMethod    (from common/thermal/utils/ — preferred modern format)
   TransportService
-    └── compound.sutherlandParams (from CompoundValue.sutherlandParams)
+    └── compound.viscosity.values (Sutherland EquationValue when present)
     └── Wilke mixing — own implementation (not in common/thermal)
   DiffusionService
     └── compound.collisionDiameter / epsilonToKb (from CompoundValue)

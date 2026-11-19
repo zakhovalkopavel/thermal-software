@@ -8,6 +8,7 @@ import { FluidCombustionService } from '../../../../src/modules/combustion/servi
 import { FuelPhase } from '../../../../src/modules/combustion/enums/fuel-phase.enum';
 import { FuelId } from '../../../../src/modules/combustion/enums/fuel-id.enum';
 import { GAS_REGISTRY } from '../../../../src/common/thermal/compound/gas';
+import { EquationTypeDto } from '../../../../src/common/thermal/dto/equation-type.dto';
 import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-properties';
 
 describe('Fuel gases (ethane … propylene) and MAP gas', () => {
@@ -45,12 +46,14 @@ describe('Fuel gases (ethane … propylene) and MAP gas', () => {
     }
   });
 
-  it('fuel gases have no Sutherland row, so viscosity is the compound-data equation', () => {
+  it('fuel gases viscosity matches CompoundPropertyResolver (compound-data def)', () => {
     for (const sp of [
       Species.C2H6, Species.C3H8, Species.C4H10, Species.iC4H10,
       Species.C2H2, Species.C3H4, Species.aC3H4, Species.C3H6,
     ]) {
-      expect(GAS_REGISTRY[sp].sutherlandParams).toBeUndefined();
+      expect(
+        GAS_REGISTRY[sp].viscosity.values.some(v => v.type === EquationTypeDto.sutherland),
+      ).toBe(false);
       const fromData = new CompoundPropertyResolver(GAS_REGISTRY[sp]).viscosity(300);
       expect(transport.viscosity(sp, 300)).toBeCloseTo(fromData, 10);
     }

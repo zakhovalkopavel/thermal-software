@@ -1,8 +1,7 @@
-import { EvaluationResult } from '../../interfaces/equation-validity.interface';
+import { EvaluationResult } from '../../types/evaluation-result.type';
 import { buildTemperatureValidity } from '../equation-validity.util';
 import { NasaThermo } from './interfaces/nasa-thermo.interface';
-
-export type NasaThermoProperty = 'cp' | 'enthalpy' | 'entropy' | 'gibbsEnergy';
+import { NasaThermoProperty } from './types/nasa-thermo-property.type';
 
 /**
  * Evaluate a NASA thermo property with boundary metadata.
