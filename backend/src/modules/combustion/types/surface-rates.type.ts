@@ -1,4 +1,4 @@
-export interface SurfaceRates {
+export type SurfaceRates = {
   /** C + O2 → CO2 */
   r1:  number;
   /** 2C + O2 → 2CO (per mol O2) */

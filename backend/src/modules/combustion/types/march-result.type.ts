@@ -1,8 +1,8 @@
 import { GasFlows } from '../types';
-import { GasStream } from './gas-stream.interface';
-import { LayerState } from './layer-state.interface';
+import { GasStream } from './gas-stream.type';
+import { LayerState } from './layer-state.type';
 
-export interface MarchResult {
+export type MarchResult = {
   layers: LayerState[];
   outlet: GasStream;
   fuel_kgs: number; carbon_mols: number; ash_kgs: number; ashEnthalpy_W: number;

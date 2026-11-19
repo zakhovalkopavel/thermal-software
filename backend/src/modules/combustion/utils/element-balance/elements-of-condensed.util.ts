@@ -1,6 +1,6 @@
 import { COMPOUND_LIBRARY } from '../../../../common/chemistry';
 import { ATOMIC_MASS } from '../../constants';
-import { ElementalComposition } from '../../interfaces';
+import { ElementalComposition } from '../../types';
 import { ElementFlows } from '../../types';
 
 const M_H2O = COMPOUND_LIBRARY.H2O.molarMass_kg_mol;

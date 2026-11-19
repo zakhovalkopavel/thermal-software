@@ -1,7 +1,7 @@
 import { CombustionMode } from '../enums/combustion-mode.enum';
 
 /** Flue gas leaving the last step of a combustion mode (input of heat exchangers) */
-export interface FlueGas {
+export type FlueGas = {
   mode:         CombustionMode;
   tFlame_K:     number;
   mFuel_kgs:    number;

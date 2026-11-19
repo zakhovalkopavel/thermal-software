@@ -1,7 +1,7 @@
 # 07 — Flue Gas for the Recuperator (`CombustionService.flueGas()`)
 
 **Consumer:** `RecuperatorService` (`POST /recuperator/calculate`) · **Input:** `CombustionModeInputDto` ([06 §6.8](06_API.md))
-**Output:** `FlueGas` (`interfaces/flue-gas.interface.ts`) · no own endpoint
+**Output:** `FlueGas` (`types/flue-gas.type.ts`) · no own endpoint
 
 The recuperator does not have its own fuel model. The request selects one of the four combustion
 modes and passes that mode's input; the recuperator takes the flue gas of the last reacting step.

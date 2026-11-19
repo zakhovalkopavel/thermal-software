@@ -1,5 +1,5 @@
 /** As-fired elemental analysis, mass fractions [-]; C + H + O + N + S + ash + moisture = 1 */
-export interface ElementalComposition {
+export type ElementalComposition = {
   C:   number;
   H:   number;
   O:   number;

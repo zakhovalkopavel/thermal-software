@@ -1,4 +1,4 @@
-export interface GasPhaseRates {
+export type GasPhaseRates = {
   /** 2CO + O2 → 2CO2 (per mol O2) */
   r4:  number;
   /** 2H2 + O2 → 2H2O (per mol O2) */

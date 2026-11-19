@@ -1,6 +1,6 @@
 import { Species } from '../../../thermodynamics/enums';
 import { FuelPhase } from '../../enums/fuel-phase.enum';
-import { GaseousFuel } from '../../interfaces';
+import { GaseousFuel } from '../../types';
 import { FuelId } from '../../enums/fuel-id.enum';
 
 /**

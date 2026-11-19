@@ -5,7 +5,7 @@ import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants';
 import { brentq } from '../../../common/utils/root-finding';
 import { COMBUSTION } from '../constants';
 import { ElementFlows, GasFlows } from '../types';
-import { EquilibriumProducts } from '../interfaces';
+import { EquilibriumProducts } from '../types';
 import { sumFlows } from '../utils/gas-flows';
 
 /**

@@ -9,7 +9,7 @@ import { COMBUSTION, MODE_INPUT_KEY } from '../constants';
 import { FUEL_REGISTRY } from '../data/fuels';
 import { FuelPhase } from '../enums/fuel-phase.enum';
 import { CombustionMode } from '../enums/combustion-mode.enum';
-import { FlueGas } from '../interfaces';
+import { FlueGas } from '../types';
 import { resolveFuelGas, summarizeCondensedFuel, summarizeGaseousFuel } from '../utils/fuel-resolver';
 import { CombustionEnthalpyService } from './combustion-enthalpy.service';
 import { SolidCombustionService } from './solid-combustion.service';

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { GasPropertiesService } from '../../thermodynamics/services/gas-properties.service';
 import { Species } from '../../thermodynamics/enums';
 import { ATOMIC_MASS, COMBUSTION } from '../constants';
-import { CondensedFuel, ElementalComposition } from '../interfaces';
+import { CondensedFuel, ElementalComposition } from '../types';
 import { ElementFlows, GasFlows } from '../types';
 import { elementsOfCondensed, elementsOfGas } from '../utils/element-balance';
 import { gasMassFlow } from '../utils/gas-flows';

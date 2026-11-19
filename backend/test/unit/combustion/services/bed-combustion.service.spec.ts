@@ -6,6 +6,7 @@ import { ProductEquilibriumService } from '../../../../src/modules/combustion/se
 import { FlameSolverService } from '../../../../src/modules/combustion/services/flame-solver.service';
 import { ChemicalKineticsService } from '../../../../src/modules/combustion/services/chemical-kinetics.service';
 import { BedCombustionService } from '../../../../src/modules/combustion/services/bed-combustion.service';
+import { BedMarchService } from '../../../../src/modules/combustion/services/bed-march.service';
 import { BedCombustionInputDto, BedCombustionResultDto } from '../../../../src/modules/combustion/dto/bed';
 import { CHARCOAL_BRIQUETTE } from '../../../../src/modules/combustion/data/fuels';
 import { COMBUSTION_EXAMPLES } from '../../../../src/modules/combustion/constants';
@@ -21,7 +22,7 @@ describe('BedCombustionService (mode 4)', () => {
       imports: [ThermodynamicsModule, ThermalExchangeModule],
       providers: [
         CombustionEnthalpyService, ProductEquilibriumService, FlameSolverService,
-        ChemicalKineticsService, BedCombustionService,
+        ChemicalKineticsService, BedMarchService, BedCombustionService,
       ],
     }).compile();
     bed = moduleRef.get(BedCombustionService);

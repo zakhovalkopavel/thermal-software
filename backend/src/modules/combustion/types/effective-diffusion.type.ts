@@ -1,4 +1,4 @@
-export interface EffectiveDiffusion {
+export type EffectiveDiffusion = {
   O2:  number;
   CO2: number;
   H2O: number;

@@ -2,7 +2,7 @@ import { Species } from '../../../thermodynamics/enums';
 import { ATOMIC_MASS } from '../../constants';
 import { CombustionStepResultDto } from '../../dto/common';
 import { GasFlows } from '../../types';
-import { ReactionStepOutcome } from '../../interfaces';
+import { ReactionStepOutcome } from '../../types';
 import { gasMassFlow, massFractions, moleFractions, speciesMolarMass } from '../gas-flows';
 import { toSpeciesValues } from './to-species-values.mapper';
 

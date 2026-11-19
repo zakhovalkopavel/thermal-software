@@ -1,4 +1,4 @@
-import { CondensedFuel } from '../../interfaces';
+import { CondensedFuel } from '../../types';
 import { FuelPhase } from '../../enums/fuel-phase.enum';
 import { FuelId } from '../../enums/fuel-id.enum';
 import { RefKey } from '../../../../common/thermal/enum/ref-key.enum';

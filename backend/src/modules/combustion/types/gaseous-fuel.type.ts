@@ -3,7 +3,7 @@ import { RefKey } from '../../../common/thermal/enum/ref-key.enum';
 import { FuelPhase } from '../enums/fuel-phase.enum';
 
 /** Gaseous fuel as a mixture of registered species, mole fractions [-] */
-export interface GaseousFuel {
+export type GaseousFuel = {
   id:    string;
   name:  string;
   phase: FuelPhase.Gas;

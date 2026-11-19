@@ -3,7 +3,7 @@ import { Species } from '../../thermodynamics/enums';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants';
 import { BED_KINETICS, BED_REACTIONS, COMBUSTION } from '../constants';
 import { GasFlows } from '../types';
-import { EffectiveDiffusion, SurfaceRates, GasPhaseRates } from '../interfaces';
+import { EffectiveDiffusion, SurfaceRates, GasPhaseRates } from '../types';
 
 /**
  * Char surface and gas-phase reaction rates — port of legacy

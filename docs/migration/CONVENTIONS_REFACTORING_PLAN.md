@@ -1,6 +1,7 @@
 # Conventions Refactoring Plan
 
-**Status:** In progress — Phase 3 complete (3.1–3.5); next Phase 4; Phase 2 committed  
+**Status:** In progress — Phase 4 done; next Phase 5; Phase 3 committed  
+
 
 
 **Branch:** `refactoring`  
@@ -167,9 +168,9 @@ Highest fan-out: every module imports this. Keep barrels stable; no export renam
 
 | Step | Action | Checkpoint |
 |------|--------|-----------|
-| 4.1 | `combustion`: 16 data-shape interfaces → `type` + one file each; `bed-combustion.service.ts` (491 lines) → split by responsibility (e.g. bed model vs flue-gas assembly) into services, not helpers; extend tests first if coverage < 80 %. | C1–C9; baseline −1 (V9). |
-| 4.2 | `thermal-exchange`: `layer.dto.ts` (class + type) → separate files. | V2 −1. |
-| 4.3 | `recuperator.service.ts` (322 lines, module-level function) → move function into a private method or static class; trim under 300. | V8 −1, V9 −1. |
+| 4.1 | `combustion`: 16 data-shape interfaces → `type` + one file each; `bed-combustion.service.ts` (491 lines) → split by responsibility (e.g. bed model vs flue-gas assembly) into services, not helpers; extend tests first if coverage < 80 %. | ✅ 17 shapes → `types/*.type.ts` (interfaces/ removed); `BedMarchService` + `BedSmoke`; `BedCombustionService` 205 lines; file-length baseline −1. |
+| 4.2 | `thermal-exchange`: `layer.dto.ts` (class + type) → separate files. | ✅ `WallMaterialKey` → `types/wall-material-key.type.ts`; V1/V2 −1 for `layer.dto.ts`. |
+| 4.3 | `recuperator.service.ts` (322 lines, module-level function) → move function into a private method or static class; trim under 300. | ✅ `RecuperatorSmoke` + `RecuperatorBalanceService`; service 177 lines; file-length baseline −1. |
 
 ### Phase 5 — `thermal-distribution` (numerically sensitive)
 

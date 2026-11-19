@@ -12,7 +12,7 @@ import { MultilayerWallResultDto, BetweenLayerDto } from '../dto/multilayer-wall
 import { AlphaResult } from '../interfaces/alpha-result.interface';
 import { WallBalance } from '../interfaces/wall-balance.interface';
 import { WallGeometry } from '../enums/wall-geometry.enum';
-import { WallMaterialKey } from '../dto/layer.dto';
+import { WallMaterialKey } from '../types/wall-material-key.type';
 import { SmokeCompositionDto } from '../dto/smoke-composition.dto';
 import { kelvinToCelsius } from '../../../common/thermal/utils/temperature';
 import { logMean } from '../../../common/utils/math';

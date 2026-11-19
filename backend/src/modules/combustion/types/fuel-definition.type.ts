@@ -1,3 +1,3 @@
-import { CondensedFuel, GaseousFuel } from '../interfaces';
+import { CondensedFuel, GaseousFuel } from '../types';
 
 export type FuelDefinition = CondensedFuel | GaseousFuel;

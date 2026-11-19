@@ -1,12 +1,12 @@
 import { RefKey } from '../../../common/thermal/enum/ref-key.enum';
 import { FuelPhase } from '../enums/fuel-phase.enum';
-import { ElementalComposition } from './elemental-composition.interface';
+import { ElementalComposition } from './elemental-composition.type';
 
 /**
  * Solid or liquid fuel. Field names follow legacy furnaceCombustion/classes/FuelDatabase.js.
  * Either `heatOfFormation_J_kg` or `lhv_J_kg` must be present — the other is derived.
  */
-export interface CondensedFuel {
+export type CondensedFuel = {
   id:    string;
   name:  string;
   phase: FuelPhase.Solid | FuelPhase.Liquid;

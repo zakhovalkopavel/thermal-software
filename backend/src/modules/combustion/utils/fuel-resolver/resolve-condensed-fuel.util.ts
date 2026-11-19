@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { COMBUSTION } from '../../constants';
-import { CondensedFuel } from '../../interfaces';
+import { CondensedFuel } from '../../types';
 import { FuelPhase } from '../../enums/fuel-phase.enum';
 import { FUEL_REGISTRY } from '../../data/fuels';
 import { FuelId } from '../../enums/fuel-id.enum';

@@ -1,4 +1,4 @@
-import { CondensedFuel } from '../../interfaces';
+import { CondensedFuel } from '../../types';
 import { FuelSummaryDto } from '../../dto/common';
 import { CombustionEnthalpyService } from '../../services/combustion-enthalpy.service';
 import { elementsOfCondensed, stoichiometricO2 } from '../element-balance';

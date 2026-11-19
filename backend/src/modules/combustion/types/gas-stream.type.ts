@@ -1,6 +1,6 @@
 import { GasFlows } from '../types';
 
-export interface GasStream {
+export type GasStream = {
   flows: GasFlows;
   T_K:   number;
 }

@@ -9,6 +9,7 @@ import { SolidCombustionService } from './services/solid-combustion.service';
 import { FluidCombustionService } from './services/fluid-combustion.service';
 import { ChemicalKineticsService } from './services/chemical-kinetics.service';
 import { BedCombustionService } from './services/bed-combustion.service';
+import { BedMarchService } from './services/bed-march.service';
 import { CombustionController } from './controllers/combustion.controller';
 
 @Module({
@@ -22,6 +23,7 @@ import { CombustionController } from './controllers/combustion.controller';
     SolidCombustionService,
     FluidCombustionService,
     ChemicalKineticsService,
+    BedMarchService,
     BedCombustionService,
   ],
   exports: [CombustionService, CombustionEnthalpyService, FlameSolverService],

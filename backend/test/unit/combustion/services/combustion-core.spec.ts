@@ -4,7 +4,7 @@ import { CombustionEnthalpyService } from '../../../../src/modules/combustion/se
 import { ProductEquilibriumService } from '../../../../src/modules/combustion/services/product-equilibrium.service';
 import { FlameSolverService } from '../../../../src/modules/combustion/services/flame-solver.service';
 import { CHARCOAL_BRIQUETTE, CHARCOAL_OAK, FUEL_REGISTRY } from '../../../../src/modules/combustion/data/fuels';
-import { CondensedFuel } from '../../../../src/modules/combustion/interfaces';
+import { CondensedFuel } from '../../../../src/modules/combustion/types';
 import { FuelPhase } from '../../../../src/modules/combustion/enums/fuel-phase.enum';
 import { airFlows, gasMassFlow } from '../../../../src/modules/combustion/utils/gas-flows';
 import { elementsOfCondensed, elementsOfGas, stoichiometricO2 } from '../../../../src/modules/combustion/utils/element-balance';

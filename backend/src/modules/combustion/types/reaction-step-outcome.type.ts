@@ -1,7 +1,7 @@
-import { EquilibriumProducts } from './equilibrium-products.interface';
+import { EquilibriumProducts } from './equilibrium-products.type';
 import { ElementFlows } from '../types';
 
-export interface ReactionStepOutcome {
+export type ReactionStepOutcome = {
   T_K:           number;
   products:      EquilibriumProducts;
   ash_kgs:       number;

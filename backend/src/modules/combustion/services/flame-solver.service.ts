@@ -2,7 +2,7 @@ import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { Species } from '../../thermodynamics/enums';
 import { brentq } from '../../../common/utils/root-finding';
 import { COMBUSTION } from '../constants';
-import { CondensedFuel, EquilibriumProducts, GasStream, ReactionStepInput, ReactionStepOutcome } from '../interfaces';
+import { CondensedFuel, EquilibriumProducts, GasStream, ReactionStepInput, ReactionStepOutcome } from '../types';
 import { ElementFlows, GasFlows } from '../types';
 import { addElements, elementResidual, elementsOfCondensed, elementsOfGas, emptyElements, stoichiometricO2 } from '../utils/element-balance';
 import { airFlows, sumFlows } from '../utils/gas-flows';

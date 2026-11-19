@@ -116,6 +116,12 @@ backend/src/modules/refractory/constants/
 └── mix-composition.constants.ts        ✅ MIX_COMPOSITION_CONSTANTS (key classification)
 ```
 
+### Combustion module — types (November 2026)
+
+Former `modules/combustion/interfaces/*.interface.ts` data shapes are `export type` under
+`modules/combustion/types/` (`CondensedFuel`, `GasStream`, `MarchResult`, …). Bed layer physics:
+`BedMarchService`; orchestration: `BedCombustionService`.
+
 ### Common thermal library — types vs interfaces (November 2026)
 
 Conventions Phase 3.4: plain data shapes are `export type` in `types/*.type.ts`. Behavioural
