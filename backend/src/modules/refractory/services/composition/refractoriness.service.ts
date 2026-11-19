@@ -1,13 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  RUL_TEST_LOAD_PA,
-  BASE_REFRACTORINESS_C,
-  MIN_TEMPERATURE_C,
-  MAX_TEMPERATURE_C,
-  LOW_DUTY_LIMIT_C,
-  INTERMEDIATE_DUTY_LIMIT_C,
-  HIGH_DUTY_LIMIT_C,
-} from '../../constants/calculation-constants';
+import { CALCULATION_CONSTANTS } from '../../constants/calculation.constants';
 import {
   RefractorinessInput,
   RefractorinessResult,
@@ -118,7 +110,7 @@ export class RefractorinessService {
     standard: string = 'ISO1893',
     testTemperature?: number,
   ) {
-    let refractorinessTemp = BASE_REFRACTORINESS_C;
+    let refractorinessTemp: number = CALCULATION_CONSTANTS.BASE_REFRACTORINESS_C;
 
     // Use helper function to calculate effect from all 33 components at once
     // This automatically loops through composition and applies effects
@@ -126,7 +118,7 @@ export class RefractorinessService {
     refractorinessTemp += effectFromComponents;
 
     // Ensure physically meaningful temperature
-    refractorinessTemp = Math.max(MIN_TEMPERATURE_C, Math.min(MAX_TEMPERATURE_C, refractorinessTemp));
+    refractorinessTemp = Math.max(CALCULATION_CONSTANTS.MIN_TEMPERATURE_C, Math.min(CALCULATION_CONSTANTS.MAX_TEMPERATURE_C, refractorinessTemp));
 
     const results: any = {
       composition,
@@ -205,9 +197,9 @@ export class RefractorinessService {
    * Classify refractoriness by duty level
    */
   private classifyRefractoriness(temp_C: number): string {
-    if (temp_C < LOW_DUTY_LIMIT_C) return 'Low duty refractory';
-    if (temp_C < INTERMEDIATE_DUTY_LIMIT_C) return 'Intermediate duty refractory';
-    if (temp_C < HIGH_DUTY_LIMIT_C) return 'High duty refractory';
+    if (temp_C < CALCULATION_CONSTANTS.LOW_DUTY_LIMIT_C) return 'Low duty refractory';
+    if (temp_C < CALCULATION_CONSTANTS.INTERMEDIATE_DUTY_LIMIT_C) return 'Intermediate duty refractory';
+    if (temp_C < CALCULATION_CONSTANTS.HIGH_DUTY_LIMIT_C) return 'High duty refractory';
     return 'Super duty refractory';
   }
 

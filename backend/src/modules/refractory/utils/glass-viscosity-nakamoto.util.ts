@@ -16,7 +16,7 @@
  * NOT for glasses below liquidus — no softening/annealing points.
  */
 
-import { NAKAMOTO_2007, MILLS_LIQUIDUS } from '../constants/viscosity-parameters';
+import { NAKAMOTO_2007, MILLS_LIQUIDUS } from '../data/viscosity-parameters.data';
 import { SlagViscosityResult } from '../interfaces/viscosity-parameters.interface';
 import { wtPctToMolPct } from './glass-composition.util';
 import { estimateLiquidusMills } from './glass-viscosity-iida.util';

@@ -106,8 +106,8 @@ backend/src/modules/refractory/interfaces/
 ### Constants Files
 ```
 backend/src/modules/refractory/constants/
-├── blend-optimizer.constants.ts        ✅ 180+ lines
-├── calculation-constants.ts            ✅ Existing
+├── blend-optimizer.constants.ts        ✅ single `BLEND_OPTIMIZER_CONSTANTS` (+ `utils/blend-optimizer-scenarios.ts`)
+├── calculation.constants.ts            ✅ single `CALCULATION_CONSTANTS`
 ├── component-effects.ts                ✅ Existing
 ├── material-group-routes.constants.ts  ✅ MATERIAL_GROUP_ROUTES (route → group → label)
 ├── mix-component-groups.constants.ts   ✅ MIX_COMPONENT_GROUPS

@@ -1,6 +1,6 @@
 # Conventions Refactoring Plan
 
-**Status:** In progress — Phase 5 done; next Phase 6 (`refractory`); Phase 4 committed  
+**Status:** In progress — Phase 6.1 done; next 6.2 (`refractory` enums); Phase 5 committed  
 
 
 
@@ -190,7 +190,7 @@ Do it as several PRs, in this order (each PR is one sub-step, each passes C1–C
 
 | Step | Scope | Notes / checkpoint |
 |------|-------|--------------------|
-| 6.1 | `constants/`: rename the 5 files to `*.constants.ts`; split `calculation-constants.ts` (25 exports) and `blend-optimizer.constants.ts` (const + function: move function out) | D3 per file; `viscosity-parameters.ts` → `data/` if dataset. |
+| 6.1 | `constants/`: rename the 5 files to `*.constants.ts`; split `calculation-constants.ts` (25 exports) and `blend-optimizer.constants.ts` (const + function: move function out) | ✅ `calculation.constants.ts` / `packing.constants.ts` / `water-demand.constants.ts`; `BLEND_OPTIMIZER_CONSTANTS` + `BlendOptimizerScenarios`; `viscosity-parameters.data.ts`; baselines shrunk. |
 | 6.2 | `enums/viscosity-model.enum.ts` (const + enum), DTO files with enums (`glass-viscosity.dto.ts`, `water-demand.dto.ts`) → enums into `enums/*.enum.ts` (old enums in `*.dto.ts` are tolerated legacy, so this is optional but cheap) | **C8 critical:** enum values and Swagger identical. |
 | 6.3 | `interfaces/` — 10 files with functions inside (22, 19, 18, 16, 15, 15, 14, 14, 10 exports …): move functions to static classes in `utils/`, split every declaration into its own file, convert data shapes to `type` (D1), move to `types/`. Do **one file per commit**. | Largest churn of the plan; commit-per-file keeps review and bisect feasible. Interfaces with real behaviour remain `interface`. |
 | 6.4 | `utils/`: `glass-viscosity-vtf.util.ts` (633 lines, 9 functions), `viable-range-formatter`, `glass-composition` (class + function), `composition-analyzer` (class + interface), `glass-viscosity-arrhenius/iida` → static classes ≤ 300 lines; numerical-regression guard as in Phase 5. | Golden values unchanged. |

@@ -3,7 +3,7 @@ import { WorkabilityType } from '../../enums/workability.enum';
 import {
   WORKABILITY_FACTORS,
   WATER_DEMAND_CONSTANTS,
-} from '../../constants/water-demand-constants';
+} from '../../constants/water-demand.constants';
 
 // Re-export enums for convenience
 export { WorkabilityType };

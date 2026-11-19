@@ -3,17 +3,8 @@ import { PSDCalculatorService } from './psd-calculator.service';
 import { PackingService } from './packing.service';
 import { ShrinkageService } from '../thermal/shrinkage.service';
 import { WaterDemandService } from './water-demand.service';
-import {
-  DEFAULT_Q_VALUES,
-  PSD_METHODS,
-  PACKING_MODELS,
-  COMPACTION_SCENARIOS,
-  DEFAULT_TEMPERATURE_PROFILE_C,
-  DEFAULT_WATER_CEMENT_RATIO,
-  DEFAULT_MATERIAL_DENSITY_KGM3,
-  getCompactionIndex,
-  getCompactionPressure,
-} from '../../constants/blend-optimizer.constants';
+import { BLEND_OPTIMIZER_CONSTANTS } from '../../constants/blend-optimizer.constants';
+import { BlendOptimizerScenarios } from '../../utils/blend-optimizer-scenarios';
 import {
   BlendOptimizationRequest,
   BlendOptimizationOptions,
@@ -69,12 +60,12 @@ export class BlendOptimizerService {
   optimize(request: BlendOptimizationRequest): BlendOptimizationResult[] {
     const { fractions, options = {} } = request;
     const {
-      qValues = DEFAULT_Q_VALUES,
-      methods = PSD_METHODS as any,
-      packingModels = PACKING_MODELS as any,
-      scenarios = COMPACTION_SCENARIOS as any,
-      temperatureProfile_C = DEFAULT_TEMPERATURE_PROFILE_C,
-      waterCementRatio = DEFAULT_WATER_CEMENT_RATIO,
+      qValues = [...BLEND_OPTIMIZER_CONSTANTS.DEFAULT_Q_VALUES],
+      methods = [...BLEND_OPTIMIZER_CONSTANTS.PSD_METHODS] as any,
+      packingModels = [...BLEND_OPTIMIZER_CONSTANTS.PACKING_MODELS] as any,
+      scenarios = [...BLEND_OPTIMIZER_CONSTANTS.COMPACTION_SCENARIOS] as any,
+      temperatureProfile_C = [...BLEND_OPTIMIZER_CONSTANTS.DEFAULT_TEMPERATURE_PROFILE_C],
+      waterCementRatio = BLEND_OPTIMIZER_CONSTANTS.DEFAULT_WATER_CEMENT_RATIO,
       optimizationGoal = 'balanced',
       topN,
       minPackingEfficiency,
@@ -97,7 +88,7 @@ export class BlendOptimizerService {
           }
 
           for (const packingModel of packingModels) {
-            const densities = fractions.map(f => f.density_kgm3 || DEFAULT_MATERIAL_DENSITY_KGM3);
+            const densities = fractions.map(f => f.density_kgm3 || BLEND_OPTIMIZER_CONSTANTS.DEFAULT_MATERIAL_DENSITY_KGM3);
             const diameters = fractions.map(f => (f.dMin_mm + f.dMax_mm) / 2);
 
             const packingResult = packingModel === 'CPM'
@@ -105,8 +96,8 @@ export class BlendOptimizerService {
                   massFractions: psdResult.massFractions,
                   densities_kgm3: densities,
                   diameters_mm: diameters,
-                  compactionPressure_MPa: getCompactionPressure(scenario),
-                }, { K: getCompactionIndex(scenario) })
+                  compactionPressure_MPa: BlendOptimizerScenarios.compactionPressure(scenario),
+                }, { K: BlendOptimizerScenarios.compactionIndex(scenario) })
               : this.packingService.calculateFurnas({
                   massFractions: psdResult.massFractions,
                   densities_kgm3: densities,
@@ -287,7 +278,7 @@ export class BlendOptimizerService {
         psdResult = this.psdCalculator.funkDingerDiscrete(fractions, q);
       }
 
-      const densities = fractions.map(f => f.density_kgm3 || DEFAULT_MATERIAL_DENSITY_KGM3);
+      const densities = fractions.map(f => f.density_kgm3 || BLEND_OPTIMIZER_CONSTANTS.DEFAULT_MATERIAL_DENSITY_KGM3);
       const diameters = fractions.map(f => (f.dMin_mm + f.dMax_mm) / 2);
 
       const packingResult = packingModel === 'CPM'
@@ -295,8 +286,8 @@ export class BlendOptimizerService {
             massFractions: psdResult.massFractions,
             densities_kgm3: densities,
             diameters_mm: diameters,
-            compactionPressure_MPa: getCompactionPressure(scenario),
-          }, { K: getCompactionIndex(scenario) })
+            compactionPressure_MPa: BlendOptimizerScenarios.compactionPressure(scenario),
+          }, { K: BlendOptimizerScenarios.compactionIndex(scenario) })
         : this.packingService.calculateFurnas({
             massFractions: psdResult.massFractions,
             densities_kgm3: densities,
@@ -324,8 +315,9 @@ export class BlendOptimizerService {
       const shrinkageResult = this.shrinkageService.calculateCompleteShrinkage({
         materials,
         massFractions: psdResult.massFractions,
-        temperatureProfile_C: request.options?.temperatureProfile_C || DEFAULT_TEMPERATURE_PROFILE_C,
-        waterCementRatio: request.options?.waterCementRatio || DEFAULT_WATER_CEMENT_RATIO,
+        temperatureProfile_C: request.options?.temperatureProfile_C
+          || [...BLEND_OPTIMIZER_CONSTANTS.DEFAULT_TEMPERATURE_PROFILE_C],
+        waterCementRatio: request.options?.waterCementRatio || BLEND_OPTIMIZER_CONSTANTS.DEFAULT_WATER_CEMENT_RATIO,
         cementContent: 0.1,
       });
 

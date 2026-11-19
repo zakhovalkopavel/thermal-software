@@ -10,7 +10,7 @@
  *   molPctToWtPct        — mol percent → weight percent
  */
 
-import { MOLAR_MASSES } from '../constants/viscosity-parameters';
+import { MOLAR_MASSES } from '../data/viscosity-parameters.data';
 
 // ─── Normalise ────────────────────────────────────────────────────────────────
 

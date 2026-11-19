@@ -14,14 +14,7 @@ import {
   calculateWeightedSpecificHeat,
   extractComponentsByCategory,
 } from '../../data/component-properties';
-import {
-  AIR_THERMAL_CONDUCTIVITY,
-  BASE_DENSITY_KGM3,
-  BASE_TEMPERATURE_C,
-  DEFAULT_POROSITY,
-  SPECIFIC_HEAT_TEMP_COEFF,
-  THERMAL_CONDUCTIVITY_TEMP_COEFF,
-} from '../../constants/calculation-constants';
+import { CALCULATION_CONSTANTS } from '../../constants/calculation.constants';
 
 /**
  * Thermal Performance Calculator Service
@@ -63,7 +56,7 @@ export class ThermalPerformanceService {
   calculateThermalConductivity(
     composition: Record<string, number>,
     temperature: number,
-    porosity: number = DEFAULT_POROSITY,
+    porosity: number = CALCULATION_CONSTANTS.DEFAULT_POROSITY,
   ) {
     // ====================================================
     // CALCULATE BASE CONDUCTIVITY VIA ITERATION
@@ -75,7 +68,7 @@ export class ThermalPerformanceService {
     // ====================================================
     // TEMPERATURE DEPENDENCE
     // ====================================================
-    const k_T = k_base * (1 + THERMAL_CONDUCTIVITY_TEMP_COEFF * (temperature - BASE_TEMPERATURE_C));
+    const k_T = k_base * (1 + CALCULATION_CONSTANTS.THERMAL_CONDUCTIVITY_TEMP_COEFF * (temperature - CALCULATION_CONSTANTS.BASE_TEMPERATURE_C));
 
     // ====================================================
     // POROSITY EFFECT (Maxwell-Eucken equation)
@@ -83,18 +76,18 @@ export class ThermalPerformanceService {
     const k_solid = k_T;
     const k_effective =
       k_solid * (1 - porosity) /
-      (1 + 0.5 * porosity * (k_solid / AIR_THERMAL_CONDUCTIVITY - 1));
+      (1 + 0.5 * porosity * (k_solid / CALCULATION_CONSTANTS.AIR_THERMAL_CONDUCTIVITY - 1));
 
     // ====================================================
     // SPECIFIC HEAT (J/kg·K)
     // ====================================================
     const cp_base = calculateWeightedSpecificHeat(composition);
-    const cp = cp_base + SPECIFIC_HEAT_TEMP_COEFF * temperature;
+    const cp = cp_base + CALCULATION_CONSTANTS.SPECIFIC_HEAT_TEMP_COEFF * temperature;
 
     // ====================================================
     // DENSITY (kg/m³)
     // ====================================================
-    const rho = BASE_DENSITY_KGM3 * (1 - porosity);
+    const rho = CALCULATION_CONSTANTS.BASE_DENSITY_KGM3 * (1 - porosity);
 
     // ====================================================
     // THERMAL DIFFUSIVITY (m²/s)

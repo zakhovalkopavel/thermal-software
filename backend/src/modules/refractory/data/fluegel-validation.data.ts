@@ -9,7 +9,7 @@
  *   shared/sources/fluegel_2007/Fluegel_table1.csv
  *   shared/sources/fluegel_2007/Fluegel_table12.csv
  *
- * Molar masses used — see MOLAR_MASSES in viscosity-parameters.ts.
+ * Molar masses used — see MOLAR_MASSES in viscosity-parameters.data.ts.
  *
  * Tolerance: 5°C — Fluegel regression SE is 10–17°C; implementation must
  *   reproduce model output (not experiment) to within 5°C.

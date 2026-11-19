@@ -11,7 +11,7 @@ import {
   BETA0_VALUES,
   MAX_PHI_VALUES,
   PACKING_DEFAULTS,
-} from '../../constants/packing-constants';
+} from '../../constants/packing.constants';
 import { CompositionAnalyzer } from '../../utils/composition-analyzer';
 
 // Re-export enums for convenience

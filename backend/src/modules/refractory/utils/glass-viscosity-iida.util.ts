@@ -13,7 +13,7 @@
  * NOT for glasses below liquidus — no softening/annealing points.
  */
 
-import { IIDA_MODEL, MILLS_LIQUIDUS, MOLAR_MASSES } from '../constants/viscosity-parameters';
+import { IIDA_MODEL, MILLS_LIQUIDUS, MOLAR_MASSES } from '../data/viscosity-parameters.data';
 import { SlagViscosityResult } from '../interfaces/viscosity-parameters.interface';
 import { wtPctToMolPct } from './glass-composition.util';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';

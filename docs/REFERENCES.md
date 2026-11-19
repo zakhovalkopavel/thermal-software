@@ -147,11 +147,11 @@ then `make references-generate`) and replace the free text with the key (+ page)
 - [ ] **Transport / radiation** — `modules/thermodynamics/services/diffusion.service.ts` (Neufeld et al. 1972;
   may be cited as `Poling5`), `transport.service.ts`, `radiation.service.ts`.
 - [ ] **Refractory** — `modules/refractory/**`: glass viscosity (Lakatos 1976, Fluegel 2007, Nakamoto,
-  Iida, VTF/Arrhenius — `constants/viscosity-parameters.ts`, `utils/glass-viscosity-*.util.ts`),
-  packing / PSD (de Larrard etc. — `constants/packing-constants.ts`, `services/packing.service.ts`),
+  Iida, VTF/Arrhenius — `data/viscosity-parameters.data.ts`, `utils/glass-viscosity-*.util.ts`),
+  packing / PSD (de Larrard etc. — `constants/packing.constants.ts`, `services/packing.service.ts`),
   Hetherington 1964 validation data, Mills 2011, phase equilibrium / eutectics, shrinkage,
   refractoriness, water demand, blend optimizer, Maxwell–Eucken (`services/thermal-performance.service.ts`),
-  `constants/calculation-constants.ts` ("Reference: NIST database").
+  `constants/calculation.constants.ts` ("Reference: NIST database").
 - [ ] **Numerics** — `common/utils/quadrature/` (`gauss-legendre-tables.constants.ts`,
   `gauss-legendre.util.ts`, `simpson.util.ts`; Abramowitz & Stegun).
 - [ ] **Chemistry** — `common/chemistry/elements/periodic-table.data.ts` (CIAAW Abridged Standard

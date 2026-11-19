@@ -36,7 +36,7 @@ import {
   FLUEGEL_2007_T6_6,
   FLUEGEL_2007_T12,
   FLUEGEL_2007_BOUNDS,
-} from '../constants/viscosity-parameters';
+} from '../data/viscosity-parameters.data';
 import { ViscosityModel } from '../enums/viscosity-model.enum';
 import { wtPctToMolPct } from './glass-composition.util';
 

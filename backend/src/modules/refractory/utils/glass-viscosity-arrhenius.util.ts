@@ -16,7 +16,7 @@
  *   ASTM C965-96: Standard Practice for Measuring Viscosity of Glass.
  */
 
-import { HETHERINGTON_1964 } from '../constants/viscosity-parameters';
+import { HETHERINGTON_1964 } from '../data/viscosity-parameters.data';
 import { celsiusToKelvin, kelvinToCelsius } from '../../../common/thermal/utils/temperature';
 import {
   GlassViscosityResult,

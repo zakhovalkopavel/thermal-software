@@ -1,9 +1,5 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import {
-  BASE_REFRACTORINESS_C,
-  MIN_TEMPERATURE_C,
-  MAX_TEMPERATURE_C,
-} from '../../constants/calculation-constants';
+import { CALCULATION_CONSTANTS } from '../../constants/calculation.constants';
 import { EUTECTIC_COMPOSITION, EUTECTIC_TEMPERATURE_C } from '../../constants/phase-equilibrium.constants';
 import {
   PhaseEquilibriumInput,
@@ -64,8 +60,8 @@ import {
 @Injectable()
 export class PhaseEquilibriumService {
   private readonly logger = new Logger(PhaseEquilibriumService.name);
-  private readonly MIN_TEMPERATURE = MIN_TEMPERATURE_C;
-  private readonly MAX_TEMPERATURE = MAX_TEMPERATURE_C;
+  private readonly MIN_TEMPERATURE = CALCULATION_CONSTANTS.MIN_TEMPERATURE_C;
+  private readonly MAX_TEMPERATURE = CALCULATION_CONSTANTS.MAX_TEMPERATURE_C;
   // Using shared liquidus effects from component-properties.ts - no private constants needed
 
   calculatePhaseEquilibrium(data: { composition: Record<string, number>; temperature: number; totalMass?: number; }) {
@@ -150,7 +146,7 @@ export class PhaseEquilibriumService {
    * Network formers increase, fluxes decrease
    */
   private estimateLiquidus(comp: Record<string, number>): number {
-    let liquidus = BASE_REFRACTORINESS_C;
+    let liquidus = CALCULATION_CONSTANTS.BASE_REFRACTORINESS_C;
 
     // Use helper function to calculate liquidus effect from all 33 components at once
     // This automatically loops through composition and applies effects

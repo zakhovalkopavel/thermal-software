@@ -10,7 +10,7 @@
  * - Pileggi et al. (2001): Refractory castable classification
  */
 
-import { COMPOSITION_ANALYSIS_CONSTANTS } from '../constants/packing-constants';
+import { COMPOSITION_ANALYSIS_CONSTANTS } from '../constants/packing.constants';
 
 /**
  * Detected composition characteristics

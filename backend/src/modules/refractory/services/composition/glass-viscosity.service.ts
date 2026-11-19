@@ -40,7 +40,7 @@ import {
 } from '../../utils/glass-viscosity-arrhenius.util';
 import { calcIidaViscosity } from '../../utils/glass-viscosity-iida.util';
 import { calcNakamotoViscosity } from '../../utils/glass-viscosity-nakamoto.util';
-import { IIDA_MODEL, NAKAMOTO_2007 } from '../../constants/viscosity-parameters';
+import { IIDA_MODEL, NAKAMOTO_2007 } from '../../data/viscosity-parameters.data';
 import { brentq } from '../../../../common/utils/root-finding';
 
 /**
