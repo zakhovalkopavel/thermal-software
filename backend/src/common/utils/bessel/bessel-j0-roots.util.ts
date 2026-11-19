@@ -8,8 +8,8 @@ import { besselJ1 } from './bessel-j1.util';
  * Uses McMahon's asymptotic expansion (AMS-55 §9.5.12) for the initial guess,
  * then refines each root with Newton's method (newtonPolish, J₀'(μ) = −J₁(μ)).
  *
- * Used by eigenvalues-bc1.util (cylinder BC I eigenvalues) and
- * eigenvalues-bc3.util (brackets for the cylinder BC III roots).
+ * Used by EigenvaluesBc1 (cylinder BC I eigenvalues) and
+ * EigenvaluesBc3 (brackets for the cylinder BC III roots).
  */
 export function besselJ0Roots(N: number): number[] {
   const roots: number[] = [];

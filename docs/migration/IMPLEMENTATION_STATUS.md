@@ -286,7 +286,8 @@ Spec: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md)
 Algorithm spec: [`docs/algorithms/thermal-distribution/`](../algorithms/thermal-distribution/) (12 spec files covering geometries, methods, API, calibration, validation, examples)
 
 - Root finding standardised (September 2026): hollow-cylinder BC III eigenvalues via `brentq` (grid-scan brackets), J₀ zeros (`besselJ0Roots`) via `newtonPolish`. Profile formulas unchanged.
-- Simpson's rule moved to `common/utils/simpson.util.ts` (`simpson`, re-exported from `quadrature.util.ts`); the two local copies in `series-bc3.util.ts` and `series-hollow-bc3.util.ts` removed. Results unchanged.
+- Simpson's rule moved to `common/utils/simpson.util.ts` (`simpson`, re-exported from `quadrature.util.ts`); the two local copies in the former series util files removed. Results unchanged.
+- Conventions Phase 5: series/eigenvalue helpers are static classes (`SeriesBc1`, `SeriesBc3Plate`/`Cylinder`/`Sphere`, `SeriesHollowBc3`, `EigenvaluesBc*`, `CharacteristicLength`); orchestration helpers `ThermalSeriesTemp` / `ThermalSeriesMean`; controller DTO adapter is `ThermalDistributionService.toProfileOptions`.
 
 ---
 
@@ -352,7 +353,8 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 - [x] **Phase 1** — `metals` pilot: split metal thermal shapes into `types/*.type.ts`.  
 - [x] **Phase 2** — `thermodynamics`: known-fluid split; `CompoundFluidPropsService` (V7=0); helpers → `utils/` (V6=0); controller split by resource; structure baselines shrunk.
 - [x] **Phase 3** — `common/`: V5→0; one-construct splits; `EquationValidity` static class; 40 data-shape interfaces → `types/*.type.ts` (kept `Equation` / `NasaThermo` / `NasaMethod`); docs updated.
-- [x] **Phase 4** — combustion types + `BedMarchService`; `WallMaterialKey` split; recuperator smoke/balance extract (V9 −2, V2 −1). Next: Phase 5 (`thermal-distribution`).
+- [x] **Phase 4** — combustion types + `BedMarchService`; `WallMaterialKey` split; recuperator smoke/balance extract (V9 −2, V2 −1).
+- [x] **Phase 5** — `thermal-distribution`: CP5.0 bit-identical goldens; eigenvalue/series/characteristic-length → static classes; BC3 series split by geometry; `toProfileOptions` on service; `ThermalSeriesTemp`/`ThermalSeriesMean` extract (service ≤300); structure + file-length baselines shrunk. Next: Phase 6 (`refractory`).
 - [x] **Huber 2019 viscosity-of-gases → compound-data** — OCR’d `shared/processed/viscosity-gases/crc-huber-2019/`; source `shared/sources/viscosity-gases-huber-2019.json`; parser `compound_data.parsers.viscosity_gases` joins 35 CAS rows as `raw` viscosity/gas (null μ cells omitted; Air skipped). RefKey `Huber2019` only (2011 table not retained). Tests: `python/tests/compound_data/test_viscosity_gases.py`. Spec: [`COMPOUND_DATA_SPEC.md`](../scripts/COMPOUND_DATA_SPEC.md).
 - [x] **Gas-viscosity equation precision order** — Huber2019 MAPE ranks sources Perry8 → Yaws1999 → VDI2010 → White3 (`VISCOSITY_GAS_SOURCE_PRIORITY`); per-CAS `def` from `shared/sources/viscosity-gas-defaults.json` (35 compounds). Huber `raw` stores `bestEquation`, `mape_pct`, `max_abs_pct` (2 decimal %), `nCompared`. Report: `tmp/reports/python/compound-data/viscosity-equation-precision.json`. Tests: `test_viscosity_gas_priority.py`, `test_viscosity_gases.py`.
 - [x] **Transport μ uses viscosity `def`** — removed Sutherland hard-preference in `TransportService` / `CompoundFluidPropsService`; both call `CompoundPropertyResolver` so Huber-ranked defaults apply.

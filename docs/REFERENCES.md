@@ -158,6 +158,6 @@ then `make references-generate`) and replace the free text with the key (+ page)
   Atomic Weights 2024, https://www.ciaaw.org/abridged-atomic-weights.htm).
 - [ ] **Other** — `modules/metals/data/materials/metal-thermal.data.ts`,
   `common/thermal/compound/composition/air.composition.ts`,
-  `modules/thermal-distribution/utils/characteristic-length.util.ts`,
+  `modules/thermal-distribution/utils/characteristic-length.ts`,
   `modules/recuperator/services/*.ts`, `modules/thermal-exchange/services/*.ts` (check each citation).
 

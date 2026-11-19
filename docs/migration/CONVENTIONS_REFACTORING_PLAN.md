@@ -1,6 +1,6 @@
 # Conventions Refactoring Plan
 
-**Status:** In progress — Phase 4 done; next Phase 5; Phase 3 committed  
+**Status:** In progress — Phase 5 done; next Phase 6 (`refractory`); Phase 4 committed  
 
 
 
@@ -180,9 +180,9 @@ variants, not just shapes). If not, add them first.
 
 | Step | Action | Checkpoint |
 |------|--------|-----------|
-| 5.1 | `eigenvalues-bc1/bc3`, `eigenvalues-hollow-bc3`, `characteristic-length` (function + type): split the type out; group functions into static classes per concern (D4). | Golden values **bit-identical** (compare with tolerance 0 where the old tests used exact equality). |
-| 5.2 | `series-bc1.util.ts` (12 functions) / `series-bc3.util.ts` (24 functions, 426 lines) / hollow variants → static classes, e.g. `SeriesBc3` split into ≤ 300-line classes by concern. | C2 identical pass count; no tolerance loosened anywhere (reviewer checks the diff of `test/`). |
-| 5.3 | `thermal-distribution.controller.ts` module-level function → service; `thermal-distribution.service.ts` (465 lines) → split; `type/` legacy folder stays. | V8 −1, V9 −2. |
+| 5.1 | `eigenvalues-bc1/bc3`, `eigenvalues-hollow-bc3`, `characteristic-length` (function + type): split the type out; group functions into static classes per concern (D4). | ✅ `EigenvaluesBc1` / `EigenvaluesBc3` / `EigenvaluesHollowBc3` / `CharacteristicLength`; types in `types/`; goldens exact. |
+| 5.2 | `series-bc1.util.ts` (12 functions) / `series-bc3.util.ts` (24 functions, 426 lines) / hollow variants → static classes, e.g. `SeriesBc3` split into ≤ 300-line classes by concern. | ✅ `SeriesBc1`, `SeriesBc3Plate` / `Cylinder` / `Sphere`, `SeriesHollowBc3`; CP5.0 goldens bit-identical. |
+| 5.3 | `thermal-distribution.controller.ts` module-level function → service; `thermal-distribution.service.ts` (465 lines) → split; `type/` legacy folder stays. | ✅ `toProfileOptions` on service; `ThermalSeriesTemp` / `ThermalSeriesMean`; service 158 lines; file-length + structure baselines shrunk; `type/` stays. |
 
 ### Phase 6 — `refractory` (largest: 33 of the 55 V1 files, 126 data interfaces)
 

@@ -10,14 +10,17 @@ import { besselJ0, besselJ1, besselY0, besselY1 } from '../../../common/utils/be
 import { brentq } from '../../../common/utils/root-finding';
 import { EIGENVALUE_TOL_HOLLOW_BC3 } from '../constants/thermal-distribution.constants';
 
-/** Evaluate the hollow-cylinder characteristic function F(p). */
-function hollowCylF(
+/** Stateless EigenvaluesHollowBc3 helpers — no DI. */
+export class EigenvaluesHollowBc3 {
+
+  /** Evaluate the hollow-cylinder characteristic function F(p). */
+  private static hollowCylF(
   p: number,
   R1: number,
   R2: number,
   H1: number, // α₁/λ
   H2: number, // α₂/λ
-): number {
+  ): number {
   const j0r1 = besselJ0(p * R1), j1r1 = besselJ1(p * R1);
   const y0r1 = besselY0(p * R1), y1r1 = besselY1(p * R1);
   const j0r2 = besselJ0(p * R2), j1r2 = besselJ1(p * R2);
@@ -28,35 +31,35 @@ function hollowCylF(
   const C = H2 * j0r2 - p * j1r2;
   const D = H1 * y0r1 + p * y1r1;
   return A * B - C * D;
-}
+  }
 
-/**
- * Find N positive roots of the hollow cylinder BC III eigenvalue equation.
- *
- * Roots are sought in the interval (0, maxP]. Brackets come from sign changes
- * on a uniform grid (no closed-form brackets exist); each bracket is refined
- * with Brent's method (brentq).
- *
- * @param R1   Inner radius (m)
- * @param R2   Outer radius (m)
- * @param H1   α₁/λ (inner surface)
- * @param H2   α₂/λ (outer surface)
- * @param N    Number of roots required
- */
-export function hollowCylinderEigenvaluesBC3(
+  /**
+   * Find N positive roots of the hollow cylinder BC III eigenvalue equation.
+   *
+   * Roots are sought in the interval (0, maxP]. Brackets come from sign changes
+   * on a uniform grid (no closed-form brackets exist); each bracket is refined
+   * with Brent's method (brentq).
+   *
+   * @param R1   Inner radius (m)
+   * @param R2   Outer radius (m)
+   * @param H1   α₁/λ (inner surface)
+   * @param H2   α₂/λ (outer surface)
+   * @param N    Number of roots required
+   */
+  static hollowCylinderEigenvaluesBC3(
   R1: number,
   R2: number,
   H1: number,
   H2: number,
   N: number,
   tol = EIGENVALUE_TOL_HOLLOW_BC3,
-): number[] {
+  ): number[] {
   // Roots lie roughly π/(R2-R1) apart; scan with fine step
   const step = Math.PI / (R2 - R1) / 4;
   const maxP = (N + 5) * Math.PI / (R2 - R1);
 
   const roots: number[] = [];
-  const f = (p: number) => hollowCylF(p, R1, R2, H1, H2);
+  const f = (p: number) => EigenvaluesHollowBc3.hollowCylF(p, R1, R2, H1, H2);
 
   let pPrev = 1e-6;
   let fPrev = f(pPrev);
@@ -80,21 +83,22 @@ export function hollowCylinderEigenvaluesBC3(
   }
 
   return roots.slice(0, N);
-}
+  }
 
-/**
- * Spatial basis function W₀(pₙ, r) for hollow cylinder BC III.
- * Luikov, Ch. VI §7, p. 255, Eq. 7.
- */
-export function hollowCylW0(
+  /**
+   * Spatial basis function W₀(pₙ, r) for hollow cylinder BC III.
+   * Luikov, Ch. VI §7, p. 255, Eq. 7.
+   */
+  static hollowCylW0(
   p: number,
   r: number,
   R1: number,
   H1: number, // α₁/λ
-): number {
+  ): number {
   const j0r1 = besselJ0(p * R1), j1r1 = besselJ1(p * R1);
   const y0r1 = besselY0(p * R1), y1r1 = besselY1(p * R1);
   const factorY = -(H1 * y0r1 + p * y1r1);
   const factorJ =   H1 * j0r1 + p * j1r1;
   return factorY * besselJ0(p * r) + factorJ * besselY0(p * r);
+  }
 }
