@@ -33,7 +33,10 @@ export class ThermodynamicsFluidController {
   }
 
   @Post('fluid/density')
-  @ApiOperation({ summary: 'Ideal-gas density ρ = P·M/(R·T) [kg/m³] for a pure species or gas mixture' })
+  @ApiOperation({
+    summary:
+      'Mass density [kg/m³] — Helmholtz EOS when CoolProp-linked; else ideal gas ρ = P·M/(R·T)',
+  })
   @ApiCreatedResponse({ type: FluidDensityResultDto })
   getDensity(@Body() dto: FluidBaseInputDto): FluidDensityResultDto {
     return this.fluidProps.getDensity(dto);

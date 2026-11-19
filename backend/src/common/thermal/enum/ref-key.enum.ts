@@ -105,4 +105,12 @@ export enum RefKey {
   NISTMoltenSalts = 'NISTMoltenSalts',
   /** [49] Hirschfelder, Curtiss, Bird — Molecular Theory of Gases and Liquids (1954) */
   Hirschfelder1954 = 'Hirschfelder1954',
+  /** [50] Huber — Viscosity of Gases (CRC Handbook) (2019) */
+  Huber2019 = 'Huber2019',
+  /** [51] Chung et al. — Generalized multiparameter corresponding-states correlation for viscosity and thermal conductivity (1988) */
+  Chung1988 = 'Chung1988',
+  /** [52] CoolProp — open-source thermophysical property library (Helmholtz EOS JSON) (2026) */
+  CoolProp = 'CoolProp',
+  /** [53] Huber — NIST IR 8209 REFPROP v10 viscosity, thermal conductivity, and surface tension models (2018) */
+  NISTIR8209 = 'NISTIR8209',
 }

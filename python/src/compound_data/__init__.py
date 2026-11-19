@@ -23,14 +23,15 @@ Sub-modules
   compound_data.molten_salt_links    — attach_molten_salts (liquid density, surface tension, viscosity)
   compound_data.molten_salt_mixtures — read_molten_salt_mixtures (mixtures, no CAS, outside compound data)
   compound_data.parsers.book_gas_equations — parse_book_gas_equations (hand-moved book gas equations)
+  compound_data.parsers.viscosity_gases  — parse_viscosity_gases (Huber 2019 dilute-gas μ(T) as raw)
   compound_data.parsers.yaws1999_tables  — parse processed Yaws 1999 tables
   compound_data.yaws1999_links           — fill/replace Yaws-linked compound values + replace log
   compound_data.equation_check       — check_equations (report sanity check)
   compound_data.writers              — compound files, unresolved.json, index.json, units.json, sources.json,
                                        interactions.json, missing-cas.txt
-  compound_data.parsers.*            — JANAF CAS index, transport-parameters.json
-  compound_data.constants.*          — formula overrides, source priority, PubChem table, JANAF CAS index path,
-                                       transport tables, units
+  compound_data.parsers.*            — JANAF CAS index, transport-parameters.json, viscosity-gases
+  compound_data.constants.*          — formula overrides, source priority, viscosity gas priority/defaults,
+                                       PubChem table, JANAF CAS index path, transport tables, viscosity gases, units
 
 Spec
 ----

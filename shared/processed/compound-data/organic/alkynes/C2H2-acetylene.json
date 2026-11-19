@@ -836,6 +836,22 @@
                 "max": 600
               },
               {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  72,
+                  "yaws1999Table21_1"
+                ],
+                "vars": {
+                  "a": -11.557,
+                  "b": 0.42363,
+                  "c": -0.00014174
+                },
+                "min": 193.0,
+                "max": 500.0,
+                "k": 1e-07
+              },
+              {
                 "type": "quartic",
                 "ref": [
                   "VDI2010",
@@ -851,22 +867,6 @@
                 },
                 "min": null,
                 "max": null
-              },
-              {
-                "type": "quadratic",
-                "ref": [
-                  "Yaws1999",
-                  72,
-                  "yaws1999Table21_1"
-                ],
-                "vars": {
-                  "a": -11.557,
-                  "b": 0.42363,
-                  "c": -0.00014174
-                },
-                "min": 193.0,
-                "max": 500.0,
-                "k": 1e-07
               }
             ]
           },
@@ -954,6 +954,45 @@
             "Yaws1999",
             47,
             "yaws1999Table19_1"
+          ]
+        },
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 300,
+                "mu": 1.04e-05
+              },
+              {
+                "T": 400,
+                "mu": 1.35e-05
+              },
+              {
+                "T": 500,
+                "mu": 1.65e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": false,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              5
+            ],
+            "bestEquation": {
+              "ref": "Perry8",
+              "type": "dipprN102"
+            },
+            "mape_pct": 0.45,
+            "max_abs_pct": 1.15,
+            "nCompared": 3
+          },
+          "ref": [
+            "Huber2019",
+            824,
+            "huber2019Viscosity"
           ]
         }
       ],

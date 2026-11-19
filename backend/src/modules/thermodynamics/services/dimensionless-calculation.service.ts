@@ -16,6 +16,7 @@ import { RayleighInputDto } from '../dto/dimensionless/rayleigh-input.dto';
 import { ReynoldsInputDto } from '../dto/dimensionless/reynolds-input.dto';
 import { PrandtlInputDto } from '../dto/dimensionless/prandtl-input.dto';
 import { KnownFluids } from '../utils/known-fluids';
+import { GasDensity } from '../utils/density/gas-density';
 import { FLUID_REGISTRY } from '../../../common/thermal/compound/gas';
 import { CompoundValueBuilder } from '../../../common/thermal/utils/compound-data';
 import { FlatFluidInput } from '../types/flat-fluid-input.type';
@@ -178,8 +179,8 @@ export class DimensionlessCalculationService {
     const cpBySp = Object.fromEntries(
       (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T)]),
     ) as Partial<Record<Species, number>>;
-    const lamR = this.transport.thermalConductivityMixResult(mole, T, cpBySp);
-    const rho  = this.gasProps.density(M, T, P);
+    const lamR = this.transport.thermalConductivityMixResult(mole, T, cpBySp, P);
+    const rho  = GasDensity.forMixture(mole, T, P);
     const validity = !cpR.mixtureValidity.allInRange ? cpR.validity
       : !muR.mixtureValidity.allInRange ? muR.validity
         : lamR.validity;

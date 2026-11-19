@@ -1011,6 +1011,22 @@
                 "max": 3000
               },
               {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  126,
+                  "yaws1999Table21_2"
+                ],
+                "vars": {
+                  "a": 27.758,
+                  "b": 0.212,
+                  "c": -3.28e-05
+                },
+                "min": 150.0,
+                "max": 1500.0,
+                "k": 1e-07
+              },
+              {
                 "type": "quartic",
                 "ref": [
                   "VDI2010",
@@ -1026,23 +1042,6 @@
                 },
                 "min": null,
                 "max": null
-              },
-              {
-                "type": "powerLaw",
-                "ref": [
-                  "White3",
-                  206,
-                  "white12"
-                ],
-                "vars": {
-                  "y0": 8.411e-06,
-                  "T0": 273,
-                  "n": 0.68
-                },
-                "min": 80,
-                "max": 1100,
-                "error": 2,
-                "originalRef": "NBS1955"
               },
               {
                 "type": "sutherland",
@@ -1062,20 +1061,21 @@
                 "originalRef": "NBS1955"
               },
               {
-                "type": "quadratic",
+                "type": "powerLaw",
                 "ref": [
-                  "Yaws1999",
-                  126,
-                  "yaws1999Table21_2"
+                  "White3",
+                  206,
+                  "white12"
                 ],
                 "vars": {
-                  "a": 27.758,
-                  "b": 0.212,
-                  "c": -3.28e-05
+                  "y0": 8.411e-06,
+                  "T0": 273,
+                  "n": 0.68
                 },
-                "min": 150.0,
-                "max": 1500.0,
-                "k": 1e-07
+                "min": 80,
+                "max": 1100,
+                "error": 2,
+                "originalRef": "NBS1955"
               }
             ]
           },
@@ -1180,6 +1180,63 @@
       ],
       "nasa9": [
         "H2"
+      ],
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 100,
+                "mu": 4.1e-06
+              },
+              {
+                "T": 200,
+                "mu": 6.8e-06
+              },
+              {
+                "T": 300,
+                "mu": 8.9e-06
+              },
+              {
+                "T": 400,
+                "mu": 1.09e-05
+              },
+              {
+                "T": 500,
+                "mu": 1.28e-05
+              },
+              {
+                "T": 600,
+                "mu": 1.45e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": true,
+            "moreAccurate": true,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              3,
+              7
+            ],
+            "bestEquation": {
+              "ref": "Perry8",
+              "type": "dipprN102"
+            },
+            "mape_pct": 0.76,
+            "max_abs_pct": 1.92,
+            "nCompared": 6
+          },
+          "ref": [
+            "Huber2019",
+            137,
+            "huber2019Viscosity"
+          ]
+        }
+      ],
+      "coolprop": [
+        "Hydrogen"
       ]
     },
     "7782-39-0": {
@@ -1842,21 +1899,6 @@
                 "max": 480
               },
               {
-                "type": "powerLaw",
-                "ref": [
-                  "White3",
-                  526,
-                  "whiteA6"
-                ],
-                "vars": {
-                  "y0": 1.29543e-05,
-                  "T0": 303.167,
-                  "n": 0.699
-                },
-                "min": null,
-                "max": null
-              },
-              {
                 "type": "quadratic",
                 "ref": [
                   "Yaws1999",
@@ -1871,6 +1913,21 @@
                 "min": 60.0,
                 "max": 480.0,
                 "k": 1e-07
+              },
+              {
+                "type": "powerLaw",
+                "ref": [
+                  "White3",
+                  526,
+                  "whiteA6"
+                ],
+                "vars": {
+                  "y0": 1.29543e-05,
+                  "T0": 303.167,
+                  "n": 0.699
+                },
+                "min": null,
+                "max": null
               }
             ]
           },
@@ -1929,7 +1986,63 @@
             ]
           }
         ]
-      }
+      },
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 100,
+                "mu": 5.9e-06
+              },
+              {
+                "T": 200,
+                "mu": 9.6e-06
+              },
+              {
+                "T": 300,
+                "mu": 1.26e-05
+              },
+              {
+                "T": 400,
+                "mu": 1.54e-05
+              },
+              {
+                "T": 500,
+                "mu": 1.79e-05
+              },
+              {
+                "T": 600,
+                "mu": 2.03e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": true,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              8
+            ],
+            "bestEquation": {
+              "ref": "Perry8",
+              "type": "dipprN102"
+            },
+            "mape_pct": 0.23,
+            "max_abs_pct": 0.69,
+            "nCompared": 4
+          },
+          "ref": [
+            "Huber2019",
+            175,
+            "huber2019Viscosity"
+          ]
+        }
+      ],
+      "coolprop": [
+        "Deuterium"
+      ]
     },
     "10028-17-8": {
       "compoundId": "tritium",

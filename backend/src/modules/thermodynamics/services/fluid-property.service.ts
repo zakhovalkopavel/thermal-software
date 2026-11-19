@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { GasPropertiesService } from './gas-properties.service';
 import { TransportService } from './transport.service';
 import { CompoundFluidPropsService } from './compound-fluid-props.service';
-import { Species, FlowGeometry, CorrelationName } from '../enums';
+import { Species, CorrelationName } from '../enums';
 import { PHYSICAL_CONSTANTS, STANDARD_CONDITIONS } from '../../../common/thermal';
 import { FLUID_REGISTRY } from '../../../common/thermal/compound/gas';
 import { CompoundValue } from '../../../common/thermal/interfaces/compound-value.interface';
@@ -14,12 +14,14 @@ import { FluidDensityResultDto } from '../dto/fluid/fluid-density-result.dto';
 import { FluidThermalConductivityResultDto } from '../dto/fluid/fluid-thermal-conductivity-result.dto';
 import { FlowRegime, KnownFluids } from '../types';
 import { CORRELATION_VALIDITY } from '../constants/correlation-validity.constants';
+import { GEOMETRY_LIST } from '../data/geometry-list.data';
 import {
   FlowModeEntry,
   FluidListEntry,
   GeometryListEntry,
   CorrelationListEntry,
 } from '../interfaces/fluid-property.interfaces';
+import { GasDensity } from '../utils/density/gas-density';
 
 /**
  * FluidPropertyService — orchestration for /thermodynamics/fluid/*.
@@ -91,9 +93,8 @@ export class FluidPropertyService {
     }
 
     const mole = this._requireComposition(dto.composition);
-    const M    = this.gasProps.molecularWeight(mole);
     const r    = this.transport.viscosityMixResult(mole, T);
-    const rho  = this.gasProps.density(M, T, P);
+    const rho  = GasDensity.forMixture(mole, T, P);
     return {
       mu_Pa_s: r.value,
       nu_m2s: r.value / rho,
@@ -111,16 +112,17 @@ export class FluidPropertyService {
     const T = this._requireT(dto.T_fluid_K);
     const P = dto.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
     const named = this._resolveNamedCompound(dto);
-
-    let M: number;
     if (named) {
-      M = named.compound.Mr;
-    } else {
-      M = this.gasProps.molecularWeight(this._requireComposition(dto.composition));
+      return {
+        rho_kg_m3: GasDensity.forCompound(named.compound, T, P),
+        molecularWeight_kg_mol: named.compound.Mr, T_K: T, P_Pa: P,
+      };
     }
-
-    const rho = this.gasProps.density(M, T, P);
-    return { rho_kg_m3: rho, molecularWeight_kg_mol: M, T_K: T, P_Pa: P };
+    const mole = this._requireComposition(dto.composition);
+    return {
+      rho_kg_m3: GasDensity.forMixture(mole, T, P),
+      molecularWeight_kg_mol: this.gasProps.molecularWeight(mole), T_K: T, P_Pa: P,
+    };
   }
 
   // ── Thermal conductivity ──────────────────────────────────────────────────
@@ -128,29 +130,18 @@ export class FluidPropertyService {
   getThermalConductivity(dto: FluidBaseInputDto): FluidThermalConductivityResultDto {
     this._validateNoCompositionConflict(dto);
     const T = this._requireT(dto.T_fluid_K);
+    const P = dto.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
     const named = this._resolveNamedCompound(dto);
-
     if (named) {
-      const props = this.compoundFluidProps.resolve(named.compound, T);
-      return {
-        lambda: props.lambda,
-        T_K: T,
-        validity: props.lambdaValidity,
-        mixtureValidity: props.mixtureValidity,
-      };
+      const props = this.compoundFluidProps.resolve(named.compound, T, P);
+      return { lambda: props.lambda, T_K: T, validity: props.lambdaValidity, mixtureValidity: props.mixtureValidity };
     }
-
-    const mole   = this._requireComposition(dto.composition);
+    const mole = this._requireComposition(dto.composition);
     const cpBySp = Object.fromEntries(
       (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T)]),
     ) as Partial<Record<Species, number>>;
-    const r = this.transport.thermalConductivityMixResult(mole, T, cpBySp);
-    return {
-      lambda: r.value,
-      T_K: T,
-      validity: r.validity,
-      mixtureValidity: r.mixtureValidity,
-    };
+    const r = this.transport.thermalConductivityMixResult(mole, T, cpBySp, P);
+    return { lambda: r.value, T_K: T, validity: r.validity, mixtureValidity: r.mixtureValidity };
   }
 
   // ── Flow modes list ───────────────────────────────────────────────────────
@@ -181,51 +172,7 @@ export class FluidPropertyService {
   // ── Geometry list ─────────────────────────────────────────────────────────
 
   getGeometryList(): GeometryListEntry[] {
-    return [
-      { key: FlowGeometry.PIPE_CIRCULAR,             description: 'Circular pipe (internal flow)',            requiredDims: ['a'],       optionalDims: ['L'] },
-      { key: FlowGeometry.PIPE_ANNULUS,              description: 'Annular gap between concentric cylinders', requiredDims: ['a', 'b'],   optionalDims: ['L'] },
-      { key: FlowGeometry.DUCT_SQUARE,               description: 'Square duct (internal flow)',              requiredDims: ['a'],       optionalDims: ['L'] },
-      { key: FlowGeometry.DUCT_RECTANGULAR,          description: 'Rectangular duct (internal flow)',         requiredDims: ['a', 'b'],  optionalDims: ['L'] },
-      { key: FlowGeometry.DUCT_TRIANGULAR,           description: 'Equilateral triangular duct',             requiredDims: ['a'],       optionalDims: ['L'] },
-      { key: FlowGeometry.DUCT_TRIANGULAR_SCALENE,   description: 'Scalene triangular duct',                 requiredDims: ['a', 'b', 'c'] },
-      { key: FlowGeometry.DUCT_ELLIPTICAL,           description: 'Elliptical duct',                         requiredDims: ['a', 'b'] },
-      { key: FlowGeometry.DUCT_TRAPEZOIDAL,          description: 'Trapezoidal duct',                        requiredDims: ['a', 'b', 'c'] },
-      { key: FlowGeometry.PARALLEL_PLATES,           description: 'Parallel-plate channel',                  requiredDims: ['a', 'b'] },
-      { key: FlowGeometry.HELICAL_COIL,              description: 'Helical coil (internal flow)',            requiredDims: ['D', 'D_c'] },
-      { key: FlowGeometry.CORRUGATED_PIPE,           description: 'Corrugated pipe',                         requiredDims: ['a'] },
-      { key: FlowGeometry.RIBBED_CHANNEL,            description: 'Ribbed channel',                          requiredDims: ['a', 'b', 'e', 'p'] },
-      { key: FlowGeometry.FLAT_PLATE,                description: 'Flat plate (external flow)',              requiredDims: ['c'],       optionalDims: ['a'] },
-      { key: FlowGeometry.FLAT_PLATE_ROUGH,          description: 'Rough flat plate (external flow)',        requiredDims: ['c'] },
-      { key: FlowGeometry.CYLINDER_CROSSFLOW,        description: 'Cylinder in external crossflow',         requiredDims: ['a'] },
-      { key: FlowGeometry.SPHERE_FORCED,             description: 'Sphere in forced external flow',         requiredDims: ['a'] },
-      { key: FlowGeometry.TUBE_BANK_INLINE,          description: 'Inline tube bank',                       requiredDims: ['a', 'S_T', 'S_L'] },
-      { key: FlowGeometry.TUBE_BANK_STAGGERED,       description: 'Staggered tube bank',                    requiredDims: ['a', 'S_T', 'S_L'] },
-      { key: FlowGeometry.CONE_CROSSFLOW,            description: 'Cone in external crossflow',             requiredDims: ['a'] },
-      { key: FlowGeometry.ELLIPTICAL_CYLINDER,       description: 'Elliptical cylinder in external flow',   requiredDims: ['a', 'b'] },
-      { key: FlowGeometry.VERTICAL_PLATE,            description: 'Vertical plate (natural convection)',    requiredDims: ['b'],       optionalDims: ['a'] },
-      { key: FlowGeometry.VERTICAL_CYLINDER,         description: 'Vertical cylinder (natural convection)', requiredDims: ['b'],       optionalDims: ['a'] },
-      { key: FlowGeometry.HORIZONTAL_CYLINDER,       description: 'Horizontal cylinder (natural)',          requiredDims: ['a'] },
-      { key: FlowGeometry.HORIZONTAL_PLATE_HOT_UP,   description: 'Horizontal plate, hot side up',         requiredDims: ['a', 'b'] },
-      { key: FlowGeometry.HORIZONTAL_PLATE_HOT_DOWN, description: 'Horizontal plate, hot side down',       requiredDims: ['a', 'b'] },
-      { key: FlowGeometry.INCLINED_PLATE,            description: 'Inclined plate (natural convection)',   requiredDims: ['b'],       optionalDims: ['angle_deg'] },
-      { key: FlowGeometry.SPHERE_NATURAL,            description: 'Sphere (natural convection)',            requiredDims: ['a'] },
-      { key: FlowGeometry.CONCENTRIC_CYLINDERS,      description: 'Concentric cylinders (natural)',        requiredDims: ['a', 'b'] },
-      { key: FlowGeometry.CONCENTRIC_SPHERES,        description: 'Concentric spheres (natural)',          requiredDims: ['a', 'b'] },
-      { key: FlowGeometry.HORIZONTAL_CAVITY,         description: 'Horizontal cavity (natural)',           requiredDims: ['a', 'b'] },
-      { key: FlowGeometry.VERTICAL_CAVITY,           description: 'Vertical cavity (natural)',             requiredDims: ['a', 'b'] },
-      { key: FlowGeometry.MIXED_PIPE_VERTICAL,       description: 'Vertical pipe (mixed convection)',      requiredDims: ['a'] },
-      { key: FlowGeometry.MIXED_PLATE_VERTICAL,      description: 'Vertical plate (mixed convection)',     requiredDims: ['b'] },
-      { key: FlowGeometry.PACKED_BED,                description: 'Packed bed (sphere particles)',         requiredDims: ['a'],       optionalDims: ['epsilon'] },
-      { key: FlowGeometry.PACKED_BED_CYLINDER,       description: 'Packed bed (cylinder particles)',       requiredDims: ['a'],       optionalDims: ['epsilon'] },
-      { key: FlowGeometry.FLUIDIZED_BED,             description: 'Fluidized bed',                         requiredDims: ['a'] },
-      { key: FlowGeometry.CONDENSATION_VERTICAL_PLATE,  description: 'Condensation on vertical plate',    requiredDims: ['b'] },
-      { key: FlowGeometry.CONDENSATION_HORIZONTAL_TUBE, description: 'Condensation on horizontal tube',   requiredDims: ['a'] },
-      { key: FlowGeometry.POOL_BOILING,              description: 'Pool boiling',                          requiredDims: [] },
-      { key: FlowGeometry.ROTATING_DISK,             description: 'Rotating disk',                         requiredDims: ['a'],       optionalDims: ['omega'] },
-      { key: FlowGeometry.ROTATING_CYLINDER,         description: 'Rotating cylinder',                     requiredDims: ['a'],       optionalDims: ['omega'] },
-      { key: FlowGeometry.IMPINGING_JET_SINGLE,      description: 'Single impinging jet',                  requiredDims: ['d_jet', 'H', 'r'] },
-      { key: FlowGeometry.IMPINGING_JET_ARRAY,       description: 'Array of impinging jets',               requiredDims: ['d_jet', 'H', 'f_jet'] },
-    ];
+    return [...GEOMETRY_LIST];
   }
 
   // ── Correlation list ──────────────────────────────────────────────────────

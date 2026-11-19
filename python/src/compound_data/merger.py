@@ -39,6 +39,7 @@ from compound_data.constants.class_overrides import CLASS_OVERRIDES
 from compound_data.constants.formula_overrides import FORMULA_OVERRIDES
 from compound_data.constants.name_overrides import NAME_OVERRIDES
 from compound_data.constants.source_priority import SOURCE_PRIORITY, property_rank
+from compound_data.constants.viscosity_gas_priority import viscosity_gas_rank
 from compound_data.formula_override import FormulaOverride
 from compound_data.label_normalize import normalize_label
 from compound_data.name_to_formula import name_to_formula
@@ -340,16 +341,21 @@ def _equation_priority(value: Any) -> int:
 
 
 def order_values(record: CompoundRecord) -> None:
-    """Put each property and equation list in source order. See ``property_rank`` and ``SOURCE_PRIORITY``."""
+    """Put each property and equation list in source order.
+
+    Scalar properties use ``property_rank``. Most equations use ``SOURCE_PRIORITY``.
+    Gas viscosity uses ``viscosity_gas_rank`` (Huber2019 MAPE order: Perry8, Yaws1999, VDI2010, White3).
+    """
     _sort_by_priority(record)
 
 
 def _sort_by_priority(record: CompoundRecord) -> None:
     for prop, values in record.properties.items():
         record.properties[prop] = sorted(values, key=property_rank)
-    for phases in record.equations.values():
+    for prop, phases in record.equations.items():
         for phase, values in phases.items():
-            phases[phase] = sorted(values, key=_equation_priority)
+            key = viscosity_gas_rank if prop == "viscosity" and phase == "gas" else _equation_priority
+            phases[phase] = sorted(values, key=key)
 
 
 def _record_name(cas: Optional[str], identifier: Optional[Identifier], group: list[SourceEntry]) -> Optional[str]:

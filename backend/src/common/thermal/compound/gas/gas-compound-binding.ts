@@ -3,6 +3,7 @@
  * The formula is the chemical formula (Hill lookup). The NASA keys pick the
  * isomer when one formula has several records, and skip a NASA-9 key that
  * belongs to a different species (CO2, O2, NO2).
+ * CoolProp fluid names come from compound-data `coolprop` (CAS match), not here.
  */
 export const GAS_COMPOUND_BINDING = {
   Ar:     { formula: 'Ar',    nasa7Key: 'Ar',              nasa9Key: 'Ar' },

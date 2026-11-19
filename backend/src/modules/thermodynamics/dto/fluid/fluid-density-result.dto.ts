@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class FluidDensityResultDto {
-  @ApiProperty({ description: 'Ideal-gas density ρ = P·M / (R·T) [kg/m³]' })
+  @ApiProperty({
+    description:
+      'Mass density [kg/m³]: Helmholtz EOS when CoolProp keys are linked for all species; else ideal gas ρ = P·M/(R·T)',
+  })
   rho_kg_m3: number;
 
   @ApiProperty({ description: 'Mixture molar mass [kg/mol]' })

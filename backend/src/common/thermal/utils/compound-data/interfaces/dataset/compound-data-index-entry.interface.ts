@@ -40,6 +40,8 @@ export interface CompoundDataIndexEntry {
   nasa7?: string[];
   /** NASA-9 species keys, as in `CompoundDataRecord.nasa9` */
   nasa9?: string[];
+  /** CoolProp fluid names, as in `CompoundDataRecord.coolprop` */
+  coolprop?: string[];
   /** As in `CompoundDataRecord.otherCas` */
   otherCas?: string[];
 }

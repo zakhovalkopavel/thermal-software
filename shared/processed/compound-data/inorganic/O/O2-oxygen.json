@@ -1075,7 +1075,7 @@
         },
         "viscosity": {
           "gas": {
-            "def": 0,
+            "def": 3,
             "values": [
               {
                 "type": "dipprN102",
@@ -1092,6 +1092,22 @@
                 },
                 "min": 54.35,
                 "max": 1500
+              },
+              {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  206,
+                  "yaws1999Table21_2"
+                ],
+                "vars": {
+                  "a": 44.224,
+                  "b": 0.562,
+                  "c": -0.000113
+                },
+                "min": 150.0,
+                "max": 1500.0,
+                "k": 1e-07
               },
               {
                 "type": "quartic",
@@ -1111,23 +1127,6 @@
                 "max": null
               },
               {
-                "type": "powerLaw",
-                "ref": [
-                  "White3",
-                  188,
-                  "white12"
-                ],
-                "vars": {
-                  "y0": 1.919e-05,
-                  "T0": 273,
-                  "n": 0.69
-                },
-                "min": 230,
-                "max": 2000,
-                "error": 2,
-                "originalRef": "NBS1955"
-              },
-              {
                 "type": "sutherland",
                 "ref": [
                   "White3",
@@ -1145,20 +1144,21 @@
                 "originalRef": "NBS1955"
               },
               {
-                "type": "quadratic",
+                "type": "powerLaw",
                 "ref": [
-                  "Yaws1999",
-                  206,
-                  "yaws1999Table21_2"
+                  "White3",
+                  188,
+                  "white12"
                 ],
                 "vars": {
-                  "a": 44.224,
-                  "b": 0.562,
-                  "c": -0.000113
+                  "y0": 1.919e-05,
+                  "T0": 273,
+                  "n": 0.69
                 },
-                "min": 150.0,
-                "max": 1500.0,
-                "k": 1e-07
+                "min": 230,
+                "max": 2000,
+                "error": 2,
+                "originalRef": "NBS1955"
               }
             ]
           },
@@ -1281,6 +1281,62 @@
       ],
       "nasa7": [
         "O2"
+      ],
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 100,
+                "mu": 7.7e-06
+              },
+              {
+                "T": 200,
+                "mu": 1.47e-05
+              },
+              {
+                "T": 300,
+                "mu": 2.07e-05
+              },
+              {
+                "T": 400,
+                "mu": 2.58e-05
+              },
+              {
+                "T": 500,
+                "mu": 3.05e-05
+              },
+              {
+                "T": 600,
+                "mu": 3.47e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": false,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              1
+            ],
+            "bestEquation": {
+              "ref": "White3",
+              "type": "sutherland"
+            },
+            "mape_pct": 0.52,
+            "max_abs_pct": 0.83,
+            "nCompared": 5
+          },
+          "ref": [
+            "Huber2019",
+            548,
+            "huber2019Viscosity"
+          ]
+        }
+      ],
+      "coolprop": [
+        "Oxygen"
       ]
     }
   }

@@ -17,6 +17,7 @@ from chemicals_tables.property_value import PropertyValue
 from chemicals_tables.raw_value import RawValue
 from chemicals_tables.source_link import SourceLink
 from chemicals_tables.transport_value import TransportValue
+from compound_data.constants.viscosity_gas_priority import preferred_viscosity_gas_index
 from references import RefKey
 
 
@@ -29,6 +30,8 @@ class CompoundRecord:
     table ids with the same Hill formula; the tables themselves are in ``shared/processed/JANAF/``.
     ``nasa7`` / ``nasa9`` list the species keys of ``shared/processed/NASA/nasa7.json`` / ``nasa9.json``
     (all phases) whose formula and ΔfH°(298.15) match the record (see nasa_links).
+    ``coolprop`` lists CoolProp fluid ``INFO.NAME`` keys matched by CAS (see coolprop_links);
+    Helmholtz JSON stays under ``shared/sources/coolprop/fluids/``.
     ``transport`` holds, per property (viscosity, thermalConductivity), how a source obtained it
     (Svehla 1995 methods, see transport_parameters).
     ``other_cas`` are source CAS numbers whose rows were moved onto this record (unknown CAS, see merger).
@@ -64,6 +67,7 @@ class CompoundRecord:
     janaf: list[str] = field(default_factory=list)
     nasa7: list[str] = field(default_factory=list)
     nasa9: list[str] = field(default_factory=list)
+    coolprop: list[str] = field(default_factory=list)
     other_cas: list[str] = field(default_factory=list)
     pubchem_cas: Optional[str] = None
     pubchem_cas_source: Optional[SourceLink] = None
@@ -80,6 +84,8 @@ class CompoundRecord:
             keys.add(RefKey.NASA7.value)
         if self.nasa9:
             keys.add(RefKey.NASA9.value)
+        if self.coolprop:
+            keys.add(RefKey.CoolProp.value)
         return sorted(keys)
 
     def equation_phases(self) -> dict[str, list[str]]:
@@ -117,7 +123,14 @@ class CompoundRecord:
                 prop: [v.to_dict() for v in values] for prop, values in sorted(self.properties.items())
             },
             "equations": {
-                prop: {phase: _equation_list(values) for phase, values in sorted(phases.items())}
+                prop: {
+                    phase: _equation_list(
+                        values,
+                        preferred_viscosity_gas_index(values, self.cas)
+                        if prop == "viscosity" and phase == "gas" else None,
+                    )
+                    for phase, values in sorted(phases.items())
+                }
                 for prop, phases in sorted(self.equations.items())
             },
             "raw": [r.to_dict() for r in self.raw],
@@ -127,6 +140,7 @@ class CompoundRecord:
             "janaf": self.janaf,
             "nasa7": self.nasa7,
             "nasa9": self.nasa9,
+            "coolprop": self.coolprop,
         }
         return {k: v for k, v in out.items() if v is not None and v != [] and v != {}}
 
@@ -140,9 +154,14 @@ class CompoundRecord:
         return self.id.replace(":", "_")
 
 
-def _equation_list(values: list[EquationValue]) -> dict:
-    default = next(
-        (i for i, v in enumerate(values) if v.type.value not in PLANNED_EQUATION_TYPES),
-        None,
-    )
+def _equation_list(
+    values: list[EquationValue], preferred_def: Optional[int] = None,
+) -> dict:
+    if preferred_def is not None and 0 <= preferred_def < len(values):
+        default = preferred_def
+    else:
+        default = next(
+            (i for i, v in enumerate(values) if v.type.value not in PLANNED_EQUATION_TYPES),
+            None,
+        )
     return {"def": default, "values": [v.to_dict() for v in values]}

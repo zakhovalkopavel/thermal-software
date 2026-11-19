@@ -957,7 +957,7 @@
         },
         "viscosity": {
           "gas": {
-            "def": 0,
+            "def": 2,
             "values": [
               {
                 "type": "dipprN102",
@@ -976,6 +976,22 @@
                 "max": 1000
               },
               {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  321,
+                  "yaws1999Table21_1"
+                ],
+                "vars": {
+                  "a": -4.946,
+                  "b": 0.29001,
+                  "c": -6.9665e-05
+                },
+                "min": 150.0,
+                "max": 1200.0,
+                "k": 1e-07
+              },
+              {
                 "type": "quartic",
                 "ref": [
                   "VDI2010",
@@ -991,22 +1007,6 @@
                 },
                 "min": null,
                 "max": null
-              },
-              {
-                "type": "quadratic",
-                "ref": [
-                  "Yaws1999",
-                  321,
-                  "yaws1999Table21_1"
-                ],
-                "vars": {
-                  "a": -4.946,
-                  "b": 0.29001,
-                  "c": -6.9665e-05
-                },
-                "min": 150.0,
-                "max": 1200.0,
-                "k": 1e-07
               }
             ]
           },
@@ -1095,6 +1095,49 @@
             213,
             "yaws1999Table19_1"
           ]
+        },
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 300,
+                "mu": 7.4e-06
+              },
+              {
+                "T": 400,
+                "mu": 9.9e-06
+              },
+              {
+                "T": 500,
+                "mu": 1.22e-05
+              },
+              {
+                "T": 600,
+                "mu": 1.45e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": false,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              28
+            ],
+            "bestEquation": {
+              "ref": "VDI2010",
+              "type": "quartic"
+            },
+            "mape_pct": 0.92,
+            "max_abs_pct": 2.68,
+            "nCompared": 4
+          },
+          "ref": [
+            "Huber2019",
+            1006,
+            "huber2019Viscosity"
+          ]
         }
       ],
       "nasa7": [
@@ -1102,6 +1145,9 @@
       ],
       "nasa9": [
         "C4H10,n-butane"
+      ],
+      "coolprop": [
+        "n-Butane"
       ]
     }
   }

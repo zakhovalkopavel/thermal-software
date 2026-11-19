@@ -107,6 +107,11 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--no-nasa", action="store_true", help="Do not attach NASA-7 / NASA-9 keys")
     p.add_argument(
+        "--coolprop-dir", metavar="DIR", type=Path, default=Path("shared/sources/coolprop/fluids"),
+        help="CoolProp fluid JSON (INFO.NAME attached by CAS) (default: %(default)s)",
+    )
+    p.add_argument("--no-coolprop", action="store_true", help="Do not attach CoolProp fluid keys")
+    p.add_argument(
         "--pubchem-dir", metavar="DIR", type=Path, default=Path("shared/sources/compound-data/pubchem"),
         help="PubChem files pubchem-<class>.jsonl from fetch_pubchem_identifiers.py (default: %(default)s)",
     )
@@ -121,6 +126,15 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Hand-moved book gas equations kept across rebuilds (default: %(default)s)",
     )
     p.add_argument("--no-book-gas", action="store_true", help="Do not read the hand-moved book gas equations")
+    p.add_argument(
+        "--viscosity-gases-file", metavar="FILE", type=Path,
+        default=Path("shared/sources/viscosity-gases-huber-2019.json"),
+        help="Huber 2019 dilute-gas viscosity μ(T) as raw viscosity/gas (default: %(default)s)",
+    )
+    p.add_argument(
+        "--no-viscosity-gases", action="store_true",
+        help="Do not read the Huber 2019 viscosity-of-gases table",
+    )
     p.add_argument(
         "--yaws1999-dir", metavar="DIR", type=Path, default=Path("shared/processed/yaws1999"),
         help="Processed Yaws 1999 tables (fill + replace Yaws-linked values) (default: %(default)s)",
@@ -183,6 +197,8 @@ def main(argv: list[str] | None = None) -> int:
             None if args.no_nbs else args.nbs_file, None if args.no_molten else args.molten_dir,
             None if args.no_book_gas else args.book_gas_file,
             None if args.no_yaws1999 else args.yaws1999_dir,
+            None if args.no_viscosity_gases else args.viscosity_gases_file,
+            None if args.no_coolprop else args.coolprop_dir,
         )
         generated_at = datetime.now(timezone.utc).isoformat()
         # compound_id is assigned in build_compound_data before interactions are resolved.
@@ -194,7 +210,7 @@ def main(argv: list[str] | None = None) -> int:
         write_compound_units(args.out_dir)
         write_compound_sources(args.out_dir, result.chem, generated_at, result.janaf, result.pubchem_tables, result.nasa,
                                result.transport_tables, result.nbs_tables, result.molten_tables, result.book_gas_tables,
-                               result.yaws1999_tables)
+                               result.yaws1999_tables, result.viscosity_gases_tables, coolprop=result.coolprop)
         write_interactions(args.out_dir, result.interactions, generated_at)
         if not args.no_molten and args.molten_dir.is_dir():
             write_molten_salt_mixtures(

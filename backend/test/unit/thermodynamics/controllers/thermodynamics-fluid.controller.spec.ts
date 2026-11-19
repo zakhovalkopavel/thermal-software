@@ -119,7 +119,7 @@ describe('POST /thermodynamics/fluid/viscosity', () => {
   it('should return μ and ν for N2 at 500 K', () => {
     const svc = buildService();
     const result = svc.getViscosity({ fluid: 'N2', T_fluid_K: 500 });
-    // Sutherland: μ0=1.663e-5, T0=273, S=107 → μ(500 K) ≈ 2.6e-5 Pa·s
+    // N2 viscosity.def is White3 Sutherland → μ(500 K) ≈ 2.6e-5 Pa·s
     expect(result.mu_Pa_s).toBeGreaterThan(1e-5);
     expect(result.mu_Pa_s).toBeLessThan(5e-5);
     expect(result.nu_m2s).toBeGreaterThan(0);

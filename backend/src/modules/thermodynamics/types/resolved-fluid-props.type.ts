@@ -1,7 +1,7 @@
 import {
   EquationValidity,
   MixtureValidity,
-} from '../../../common/thermal/interfaces/equation-validity.interface';
+} from '../../../common/thermal/types';
 
 /** Resolved fluid transport properties — output of Mode B resolution. */
 export type ResolvedFluidProps = {

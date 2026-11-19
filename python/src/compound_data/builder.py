@@ -1,8 +1,10 @@
 """
-compound_data.builder — Run all parsers, merge by CAS, check the equations and attach JANAF table ids and NASA keys.
+compound_data.builder — Run all parsers, merge by CAS, check the equations and attach JANAF, NASA and CoolProp keys.
 
 Besides the chemicals tables, the hand-transcribed transport parameters (``shared/sources/transport-parameters.json``)
 are parsed into the same entries; their pair rows are resolved to record ids for ``interactions.json``.
+Huber 2019 dilute-gas viscosity tables (``shared/sources/viscosity-gases-huber-2019.json``) join as ``raw``
+viscosity / gas rows.
 
 The build is offline: PubChem answers come only from the files that the second step
 (``make compound-data-pubchem``) fills from ``BuildResult.missing_cas`` and the records without CAS
@@ -27,8 +29,10 @@ from chemicals_tables.source_entries import parse_source_entries
 from chemicals_tables.table_spec import TableSpec
 from compound_data.compound_record import CompoundRecord
 from compound_data.constants.janaf_cas_index import JANAF_CAS_INDEX
+from compound_data.constants.coolprop_source import COOLPROP_DATASET
 from compound_data.constants.nasa_source import NASA7_DATASET, NASA7_FILE, NASA9_DATASET, NASA9_FILES
 from compound_data.constants.nbs_source import nbs_table
+from compound_data.coolprop_links import attach_coolprop, load_coolprop_fluids
 from compound_data.equation_check import check_equations
 from compound_data.molten_salt_links import attach_molten_salts
 from compound_data.molten_salt_mixtures import read_molten_salt_mixtures
@@ -39,6 +43,7 @@ from compound_data.nbs_links import attach_nbs
 from compound_data.parsers.book_gas_equations import BookGasEquations, parse_book_gas_equations
 from compound_data.parsers.janaf_cas_index import read_janaf_cas_index
 from compound_data.parsers.transport_parameters import TransportParameters, parse_transport_parameters
+from compound_data.parsers.viscosity_gases import ViscosityGases, parse_viscosity_gases
 from compound_data.pubchem_formula_links import attach_pubchem_formulas
 from compound_data.pubchem_identifiers import load_pubchem_identifiers
 from compound_data.pubchem_properties import attach_pubchem_properties
@@ -59,13 +64,15 @@ class BuildResult:
     """Provenance, merged records and the report payload.
 
     ``janaf`` is None when JANAF was not read; ``nasa`` is the ``sources.json`` block of the NASA files
-    when they were read; ``pubchem_tables`` are the PubChem class files that were read;
+    when they were read; ``coolprop`` is the ``sources.json`` block of CoolProp fluid keys when attached;
+    ``pubchem_tables`` are the PubChem class files that were read;
     ``missing_cas`` are the CAS numbers the chemicals identifier files do not have (input of the PubChem step).
     ``transport_tables`` are the tables of the transport-parameters file that were read (for ``sources.json``),
     ``interactions`` its pair rows with the record ids of their species (``interactions.json``).
     ``nbs_tables`` is the corrected NBS CSV. ``molten_tables`` are the pure-salt files that were read.
     ``molten_mixtures`` are the salt mixtures (no CAS), written apart from the compound files.
     ``book_gas_tables`` are the hand-moved book gas equation tables.
+    ``viscosity_gases_tables`` are the Huber 2019 dilute-gas viscosity tables.
     ``yaws1999_tables`` are the processed Yaws 1999 tables that were applied.
     ``yaws1999_replace_log`` lists Yaws-linked values replaced by processed Yaws 1999.
     ``yaws1999_issues_log`` lists table-only CAS and noRecord attach misses.
@@ -77,6 +84,7 @@ class BuildResult:
     report: dict[str, Any]
     janaf: Optional[JanafSource] = None
     nasa: Optional[dict[str, Any]] = None
+    coolprop: Optional[dict[str, Any]] = None
     pubchem_tables: list[TableSpec] = field(default_factory=list)
     missing_cas: list[str] = field(default_factory=list)
     transport_tables: list[TableSpec] = field(default_factory=list)
@@ -86,6 +94,7 @@ class BuildResult:
     molten_mixtures: list[dict[str, Any]] = field(default_factory=list)
     molten_mixture_tables: list[TableSpec] = field(default_factory=list)
     book_gas_tables: list[TableSpec] = field(default_factory=list)
+    viscosity_gases_tables: list[TableSpec] = field(default_factory=list)
     yaws1999_tables: list[TableSpec] = field(default_factory=list)
     yaws1999_replace_log: list[dict[str, Any]] = field(default_factory=list)
     yaws1999_issues_log: list[dict[str, Any]] = field(default_factory=list)
@@ -98,6 +107,8 @@ def build_compound_data(
     nbs_file: Optional[Path] = None, molten_dir: Optional[Path] = None,
     book_gas_file: Optional[Path] = None,
     yaws1999_dir: Optional[Path] = None,
+    viscosity_gases_file: Optional[Path] = None,
+    coolprop_dir: Optional[Path] = None,
 ) -> BuildResult:
     """Parse every table under ``source_dir`` (the chemicals copy with ``PROVENANCE.txt``).
 
@@ -117,8 +128,10 @@ def build_compound_data(
     is kept on ``BuildResult.molten_mixtures`` and is not given a compound record.
     ``book_gas_file`` is the hand-moved book gas equations (Perry 7, Borgnakke, Yaws 1999, Incropera,
     Szargut) so a rebuild does not drop them.
+    ``viscosity_gases_file`` is Huber 2019 dilute-gas μ(T) (raw viscosity / gas; null cells omitted).
     ``yaws1999_dir`` is ``shared/processed/yaws1999``; mappable tables fill compounds and replace
     Yaws-linked values that differ from the processed rows.
+    ``coolprop_dir`` is ``shared/sources/coolprop/fluids``; CoolProp ``INFO.NAME`` keys are attached by CAS.
     """
     from compound_data.yaws1999_links import attach_yaws1999
 
@@ -130,6 +143,9 @@ def build_compound_data(
     book_gas = _parse_book_gas(book_gas_file)
     entries += book_gas.entries
     issues += book_gas.issues
+    viscosity_gases = _parse_viscosity_gases(viscosity_gases_file)
+    entries += viscosity_gases.entries
+    issues += viscosity_gases.issues
 
     wanted = {e.cas for e in entries if e.cas}
     identifiers = load_identifiers(source_dir, chem, wanted)
@@ -173,6 +189,11 @@ def build_compound_data(
     if nasa_dir is not None:
         nasa_block, nasa_issues, nasa_counts = _attach_nasa(nasa_dir, merge)
         issues += nasa_issues
+
+    coolprop_block, coolprop_counts = None, {}
+    if coolprop_dir is not None:
+        coolprop_block, coolprop_issues, coolprop_counts = _attach_coolprop(coolprop_dir, merge)
+        issues += coolprop_issues
 
     if pubchem_dir is not None:
         formula_issues, formula_counts = attach_pubchem_formulas(merge.records.values(), pubchem)
@@ -252,6 +273,9 @@ def build_compound_data(
     book_gas_counts = {
         "bookGasEntries": len(book_gas.entries),
     } if book_gas_file is not None else {}
+    viscosity_gases_counts = {
+        "viscosityGasesEntries": len(viscosity_gases.entries),
+    } if viscosity_gases_file is not None else {}
 
     grouped: dict[str, list[dict[str, Any]]] = {}
     for issue in issues:
@@ -282,10 +306,12 @@ def build_compound_data(
             "equationIssues": len(equation_issues),
             **janaf_counts,
             **nasa_counts,
+            **coolprop_counts,
             **nbs_counts,
             **molten_counts,
             **transport_counts,
             **book_gas_counts,
+            **viscosity_gases_counts,
             **yaws1999_counts,
             **{kind: len(items) for kind, items in sorted(grouped.items())},
         },
@@ -306,13 +332,30 @@ def build_compound_data(
         "yaws1999CreatedLogCount": len(yaws1999_created_log),
     }
     return BuildResult(chem=chem, merge=merge, report=report, janaf=janaf_source, nasa=nasa_block,
+                       coolprop=coolprop_block,
                        pubchem_tables=list(pubchem.tables.values()), missing_cas=missing_cas, transport_tables=transport.tables,
                        interactions=interactions, nbs_tables=nbs_tables, molten_tables=molten_tables,
                        molten_mixtures=molten_mixtures, molten_mixture_tables=molten_mixture_tables,
-                       book_gas_tables=book_gas.tables, yaws1999_tables=yaws1999_tables,
+                       book_gas_tables=book_gas.tables, viscosity_gases_tables=viscosity_gases.tables,
+                       yaws1999_tables=yaws1999_tables,
                        yaws1999_replace_log=yaws1999_replace_log,
                        yaws1999_issues_log=yaws1999_issues_log,
                        yaws1999_created_log=yaws1999_created_log)
+
+
+def _parse_viscosity_gases(viscosity_gases_file: Optional[Path]) -> ViscosityGases:
+    """Parse Huber 2019 viscosity tables; empty with a warning when the file is missing."""
+    if viscosity_gases_file is None:
+        return ViscosityGases()
+    if not viscosity_gases_file.is_file():
+        logger.warning(
+            "[viscosity-gases] Not found: %s — Huber 2019 viscosity tables skipped",
+            viscosity_gases_file,
+        )
+        return ViscosityGases()
+    parsed = parse_viscosity_gases(viscosity_gases_file)
+    logger.info("[parse] %-32s %6d values", "Viscosity of gases (Huber 2019)", len(parsed.entries))
+    return parsed
 
 
 def _parse_book_gas(book_gas_file: Optional[Path]) -> BookGasEquations:
@@ -413,3 +456,22 @@ def _attach_nasa(
         "nasa9": {"ref": RefKey.NASA9.value, "dataset": NASA9_DATASET, "sources": [str(p) for p in nasa9_paths]},
     }
     return block, issues7 + issues9, {**counts7, **counts9}
+
+
+def _attach_coolprop(
+    coolprop_dir: Path, merge: MergeResult,
+) -> tuple[Optional[dict[str, Any]], list[dict[str, Any]], dict[str, int]]:
+    """Attach CoolProp fluid names by CAS; skipped with a warning when the folder is missing."""
+    if not coolprop_dir.is_dir():
+        logger.warning("[coolprop] Not found: %s — CoolProp links skipped", coolprop_dir)
+        return None, [], {}
+    fluids = load_coolprop_fluids(coolprop_dir)
+    issues, counts = attach_coolprop(merge.records, fluids)
+    logger.info("[coolprop] %d fluids → %d records (%d linked)",
+                counts["coolpropFluids"], counts["coolpropRecords"], counts["coolpropLinked"])
+    block = {
+        "ref": RefKey.CoolProp.value,
+        "dataset": COOLPROP_DATASET,
+        "sources": [str(coolprop_dir)],
+    }
+    return block, issues, counts

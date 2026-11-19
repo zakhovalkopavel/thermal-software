@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 import { STANDARD_CONDITIONS } from '../../../common/thermal/constants/standard-conditions.constants';
 import { heatCapacityEntries } from '../../../common/thermal/utils/compound-properties/heat-capacity-entries.util';
 import { CompoundPropertyResolver } from '../../../common/thermal/utils/compound-properties/compound-property-resolver';
@@ -21,9 +20,10 @@ import {
   EquationValidity,
   EvaluationResult,
   MixtureValidity,
-} from '../../../common/thermal/interfaces/equation-validity.interface';
+} from '../../../common/thermal/types';
 import { Common } from '../../../common/thermal/utils/common';
 import { Species } from '../enums/species.enum';
+import { GasDensity } from '../utils/density/gas-density';
 import { CpComparisonEntryDto } from '../dto/gas-properties/cp-comparison-entry.dto';
 import { GasPropertiesResultDto } from '../dto/gas-properties/gas-properties-result.dto';
 
@@ -250,9 +250,9 @@ export class GasPropertiesService {
     return M;
   }
 
-  /** Ideal-gas density [kg/m³] */
+  /** Ideal-gas density [kg/m³]. Helmholtz-aware density: `GasDensity`. */
   density(M_kg_mol: number, T_K: number, P_Pa = STANDARD_CONDITIONS.PRESSURE_PA): number {
-    return (P_Pa * M_kg_mol) / (PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK * T_K);
+    return GasDensity.ideal(M_kg_mol, T_K, P_Pa);
   }
 
   /** Mixture basic properties (Cp, H, ρ, M) — transport comes from TransportService */
@@ -265,7 +265,9 @@ export class GasPropertiesService {
     const cpResult  = this.cpMixtureResult(moleFractions, T_K);
     const Cp_J_kgK  = cpResult.value / M;
     const H_J_mol   = this.enthalpyMixture(moleFractions, T_K);
-    const rho_kg_m3 = this.density(M, T_K, P_atm * STANDARD_CONDITIONS.PRESSURE_PA);
+    const rho_kg_m3 = GasDensity.forMixture(
+      moleFractions, T_K, P_atm * STANDARD_CONDITIONS.PRESSURE_PA,
+    );
     return {
       Cp_J_kgK,
       H_J_mol,
@@ -276,10 +278,7 @@ export class GasPropertiesService {
     };
   }
 
-  /**
-   * Full mixture thermophysical properties including transport.
-   * Pr is calculated via μ·Cp/λ — the standard definition.
-   */
+  /** Full mixture props including transport; Pr = μ·Cp/λ. */
   getFullMixtureProperties(
     moleFractions: Partial<Record<Species, number>>,
     T_K: number,

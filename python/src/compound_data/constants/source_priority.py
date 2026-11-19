@@ -2,7 +2,9 @@
 compound_data.constants.source_priority — Which source wins when a property has several values.
 
 Equations keep ``SOURCE_PRIORITY`` (Perry, then Poling, then VDI, then CRC). The first value whose
-type the backend implements becomes ``def``.
+type the backend implements becomes ``def``. Gas viscosity is an exception: list order follows
+``VISCOSITY_GAS_SOURCE_PRIORITY`` (Perry8 → Yaws1999 → VDI2010 → White3, from Huber2019 MAPE), and
+``def`` may be overridden per CAS by ``viscosity-gas-defaults.json``.
 
 Scalar properties use ``property_rank``: NIST-JANAF, then the NIST WebBook, then a PubChem
 experimental value (``pubchem`` + catalog number), then the other sources in ``SOURCE_PRIORITY``,

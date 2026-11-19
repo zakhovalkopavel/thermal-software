@@ -60,4 +60,8 @@ export const REFERENCES_META: Record<RefKey, {
   [RefKey.NBS1982]:          { index: 47, name: 'Wagman et al. — NBS Tables of Chemical Thermodynamic Properties', year: '1982', url: 'https://data.nist.gov/pdr/metrics/mds2-2124' },
   [RefKey.NISTMoltenSalts]:  { index: 48, name: 'NIST Properties of Molten Salts Database (formerly SRD 27)', year: '1991', url: 'https://data.nist.gov/pdr/lps/ark:/88434/mds2-2298' },
   [RefKey.Hirschfelder1954]: { index: 49, name: 'Hirschfelder, Curtiss, Bird — Molecular Theory of Gases and Liquids', year: '1954', url: 'https://wwwcourses.sens.buffalo.edu/ce407/notes/ce407_notes_Lennard_Jones.pdf' },
+  [RefKey.Huber2019]:        { index: 50, name: 'Huber — Viscosity of Gases (CRC Handbook)', year: '2019', url: 'https://www.nist.gov/publications/viscosity-gases-0' },
+  [RefKey.Chung1988]:        { index: 51, name: 'Chung et al. — Generalized multiparameter corresponding-states correlation for viscosity and thermal conductivity', year: '1988', url: 'https://doi.org/10.1021/ie00076a024' },
+  [RefKey.CoolProp]:         { index: 52, name: 'CoolProp — open-source thermophysical property library (Helmholtz EOS JSON)', year: '2026', url: 'https://github.com/CoolProp/CoolProp' },
+  [RefKey.NISTIR8209]:       { index: 53, name: 'Huber — NIST IR 8209 REFPROP v10 viscosity, thermal conductivity, and surface tension models', year: '2018', url: 'https://doi.org/10.6028/NIST.IR.8209' },
 };

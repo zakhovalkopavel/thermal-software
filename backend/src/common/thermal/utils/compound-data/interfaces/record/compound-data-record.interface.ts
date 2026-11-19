@@ -55,4 +55,9 @@ export interface CompoundDataRecord {
   nasa7?: string[];
   /** NASA-9 species keys, as `nasa7` (ref NASA9); dataset: `sources.json` → `nasa.nasa9.dataset` */
   nasa9?: string[];
+  /**
+   * CoolProp fluid `INFO.NAME` keys matched by CAS, e.g. ["Argon"] (ref CoolProp).
+   * Fluids: `sources.json` → `coolprop.dataset` → `<NAME>.json`.
+   */
+  coolprop?: string[];
 }

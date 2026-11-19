@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery } from '@nestjs/swagger';
+import { STANDARD_CONDITIONS } from '../../../common/thermal/constants/standard-conditions.constants';
 import { GasPropertiesService } from '../services/gas-properties.service';
 import { TransportService } from '../services/transport.service';
 import { DiffusionService } from '../services/diffusion.service';
@@ -39,11 +40,12 @@ export class ThermodynamicsGasController {
   getMixtureProperties(@Body() dto: GasMixtureInputDto): GasPropertiesResultDto {
     const { composition, T_K, P_atm = 1.0 } = dto;
     const mole   = composition as Partial<Record<Species, number>>;
+    const P_Pa   = P_atm * STANDARD_CONDITIONS.PRESSURE_PA;
     const mu     = this.transport.viscosityMix(mole, T_K);
     const cpBySp = Object.fromEntries(
       (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T_K)]),
     ) as Partial<Record<Species, number>>;
-    const lambda = this.transport.thermalConductivityMix(mole, T_K, cpBySp);
+    const lambda = this.transport.thermalConductivityMix(mole, T_K, cpBySp, P_Pa);
     const D      = this.diffusion.getAllDiffusionCoefficients(mole, T_K, P_atm);
     return this.gasProps.getFullMixtureProperties(mole, T_K, P_atm, mu, lambda, D);
   }

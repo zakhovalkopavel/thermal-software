@@ -883,7 +883,7 @@
         },
         "viscosity": {
           "gas": {
-            "def": 0,
+            "def": 1,
             "values": [
               {
                 "type": "dipprN102",
@@ -902,6 +902,22 @@
                 "max": 5000
               },
               {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  251,
+                  "yaws1999Table21_2"
+                ],
+                "vars": {
+                  "a": -12.176,
+                  "b": 0.598,
+                  "c": -0.000178
+                },
+                "min": 205.0,
+                "max": 1000.0,
+                "k": 1e-07
+              },
+              {
                 "type": "quartic",
                 "ref": [
                   "VDI2010",
@@ -917,22 +933,6 @@
                 },
                 "min": null,
                 "max": null
-              },
-              {
-                "type": "quadratic",
-                "ref": [
-                  "Yaws1999",
-                  251,
-                  "yaws1999Table21_2"
-                ],
-                "vars": {
-                  "a": -12.176,
-                  "b": 0.598,
-                  "c": -0.000178
-                },
-                "min": 205.0,
-                "max": 1000.0,
-                "k": 1e-07
               }
             ]
           },
@@ -1058,6 +1058,54 @@
       ],
       "nasa9": [
         "SF6"
+      ],
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 300,
+                "mu": 1.53e-05
+              },
+              {
+                "T": 400,
+                "mu": 1.97e-05
+              },
+              {
+                "T": 500,
+                "mu": 2.38e-05
+              },
+              {
+                "T": 600,
+                "mu": 2.76e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": false,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              6
+            ],
+            "bestEquation": {
+              "ref": "Yaws1999",
+              "type": "quadratic"
+            },
+            "mape_pct": 1.54,
+            "max_abs_pct": 2.37,
+            "nCompared": 4
+          },
+          "ref": [
+            "Huber2019",
+            108,
+            "huber2019Viscosity"
+          ]
+        }
+      ],
+      "coolprop": [
+        "SulfurHexafluoride"
       ]
     }
   }

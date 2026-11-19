@@ -4,7 +4,7 @@ import {
   EvaluationResult,
   MixtureValidity,
   ValidityAction,
-} from '../interfaces/equation-validity.interface';
+} from '../types';
 import { Common } from './common';
 
 /** Numeric clamp limits: null range → ±Infinity (no clamp), flagged separately as rangeUnknown. */

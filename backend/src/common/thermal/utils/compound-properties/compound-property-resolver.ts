@@ -1,6 +1,6 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationValue } from '../../interfaces/equation-value.interface';
-import { EvaluationResult } from '../../interfaces/equation-validity.interface';
+import { EvaluationResult } from '../../types/evaluation-result.type';
 import {
   evaluateEquation,
   evaluateEquationAverage,

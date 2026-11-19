@@ -1,3 +1,4 @@
+import { CompoundDataCoolpropSource } from './compound-data-coolprop-source.interface';
 import { CompoundDataJanafSource } from './compound-data-janaf-source.interface';
 import { CompoundDataNasaSource } from './compound-data-nasa-source.interface';
 import { CompoundDataPubchemSource } from './compound-data-pubchem-source.interface';
@@ -17,6 +18,8 @@ export interface CompoundDataSourcesFile {
   janaf?: CompoundDataJanafSource;
   /** Absent when the build ran without the NASA sources */
   nasa?: CompoundDataNasaSource;
+  /** Absent when the build ran without CoolProp fluid keys */
+  coolprop?: CompoundDataCoolpropSource;
   /** Absent when the build ran without the PubChem files */
   pubchem?: CompoundDataPubchemSource;
 }

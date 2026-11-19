@@ -1043,6 +1043,22 @@
                 "max": 1000
               },
               {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  211,
+                  "yaws1999Table21_1"
+                ],
+                "vars": {
+                  "a": -5.462,
+                  "b": 0.32722,
+                  "c": -0.00010672
+                },
+                "min": 193.0,
+                "max": 750.0,
+                "k": 1e-07
+              },
+              {
                 "type": "quartic",
                 "ref": [
                   "VDI2010",
@@ -1058,22 +1074,6 @@
                 },
                 "min": null,
                 "max": null
-              },
-              {
-                "type": "quadratic",
-                "ref": [
-                  "Yaws1999",
-                  211,
-                  "yaws1999Table21_1"
-                ],
-                "vars": {
-                  "a": -5.462,
-                  "b": 0.32722,
-                  "c": -0.00010672
-                },
-                "min": 193.0,
-                "max": 750.0,
-                "k": 1e-07
               }
             ]
           },
@@ -1162,6 +1162,49 @@
             139,
             "yaws1999Table19_1"
           ]
+        },
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 300,
+                "mu": 8.2e-06
+              },
+              {
+                "T": 400,
+                "mu": 1.08e-05
+              },
+              {
+                "T": 500,
+                "mu": 1.33e-05
+              },
+              {
+                "T": 600,
+                "mu": 1.56e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": false,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              27
+            ],
+            "bestEquation": {
+              "ref": "Perry8",
+              "type": "dipprN102"
+            },
+            "mape_pct": 0.8,
+            "max_abs_pct": 2.18,
+            "nCompared": 4
+          },
+          "ref": [
+            "Huber2019",
+            977,
+            "huber2019Viscosity"
+          ]
         }
       ],
       "nasa7": [
@@ -1169,6 +1212,9 @@
       ],
       "nasa9": [
         "C3H8"
+      ],
+      "coolprop": [
+        "n-Propane"
       ]
     }
   }

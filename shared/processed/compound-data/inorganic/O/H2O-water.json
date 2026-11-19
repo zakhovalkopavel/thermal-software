@@ -1102,7 +1102,7 @@
         },
         "viscosity": {
           "gas": {
-            "def": 0,
+            "def": 2,
             "values": [
               {
                 "type": "dipprN102",
@@ -1121,21 +1121,20 @@
                 "max": 1073.15
               },
               {
-                "type": "powerLaw",
+                "type": "quadratic",
                 "ref": [
-                  "White3",
-                  224,
-                  "white12"
+                  "Yaws1999",
+                  127,
+                  "yaws1999Table21_2"
                 ],
                 "vars": {
-                  "y0": 1.12e-05,
-                  "T0": 350,
-                  "n": 1.15
+                  "a": -36.826,
+                  "b": 0.429,
+                  "c": -1.62e-05
                 },
-                "min": 280,
-                "max": 1500,
-                "error": 3,
-                "originalRef": "NBS1955"
+                "min": 280.0,
+                "max": 1073.0,
+                "k": 1e-07
               },
               {
                 "type": "sutherland",
@@ -1155,20 +1154,21 @@
                 "originalRef": "NBS1955"
               },
               {
-                "type": "quadratic",
+                "type": "powerLaw",
                 "ref": [
-                  "Yaws1999",
-                  127,
-                  "yaws1999Table21_2"
+                  "White3",
+                  224,
+                  "white12"
                 ],
                 "vars": {
-                  "a": -36.826,
-                  "b": 0.429,
-                  "c": -1.62e-05
+                  "y0": 1.12e-05,
+                  "T0": 350,
+                  "n": 1.15
                 },
-                "min": 280.0,
-                "max": 1073.0,
-                "k": 1e-07
+                "min": 280,
+                "max": 1500,
+                "error": 3,
+                "originalRef": "NBS1955"
               }
             ]
           },
@@ -1313,6 +1313,54 @@
         "H2O",
         "H2O(L)",
         "H2O(s)"
+      ],
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 300,
+                "mu": 9.8e-06
+              },
+              {
+                "T": 400,
+                "mu": 1.34e-05
+              },
+              {
+                "T": 500,
+                "mu": 1.73e-05
+              },
+              {
+                "T": 600,
+                "mu": 2.14e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": true,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              9
+            ],
+            "bestEquation": {
+              "ref": "White3",
+              "type": "sutherland"
+            },
+            "mape_pct": 0.54,
+            "max_abs_pct": 1.37,
+            "nCompared": 3
+          },
+          "ref": [
+            "Huber2019",
+            212,
+            "huber2019Viscosity"
+          ]
+        }
+      ],
+      "coolprop": [
+        "Water"
       ]
     },
     "7789-20-0": {
@@ -2056,7 +2104,55 @@
             ]
           }
         ]
-      }
+      },
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 300,
+                "mu": 1.01e-05
+              },
+              {
+                "T": 400,
+                "mu": 1.38e-05
+              },
+              {
+                "T": 500,
+                "mu": 1.79e-05
+              },
+              {
+                "T": 600,
+                "mu": 2.21e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": true,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              10
+            ],
+            "bestEquation": {
+              "ref": "Yaws1999",
+              "type": "quadratic"
+            },
+            "mape_pct": 3.63,
+            "max_abs_pct": 5.12,
+            "nCompared": 4
+          },
+          "ref": [
+            "Huber2019",
+            241,
+            "huber2019Viscosity"
+          ]
+        }
+      ],
+      "coolprop": [
+        "HeavyWater"
+      ]
     },
     "14314-42-2": {
       "compoundId": "water-18o",

@@ -1022,7 +1022,7 @@
         },
         "viscosity": {
           "gas": {
-            "def": 0,
+            "def": 2,
             "values": [
               {
                 "type": "dipprN102",
@@ -1041,6 +1041,22 @@
                 "max": 1000
               },
               {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  122,
+                  "yaws1999Table21_2"
+                ],
+                "vars": {
+                  "a": -9.118,
+                  "b": 0.555,
+                  "c": -0.000111
+                },
+                "min": 200.0,
+                "max": 1000.0,
+                "k": 1e-07
+              },
+              {
                 "type": "quartic",
                 "ref": [
                   "VDI2010",
@@ -1053,21 +1069,6 @@
                   "c": -1.2126e-11,
                   "d": 0,
                   "e": 0
-                },
-                "min": null,
-                "max": null
-              },
-              {
-                "type": "powerLaw",
-                "ref": [
-                  "White3",
-                  574,
-                  "whiteA6"
-                ],
-                "vars": {
-                  "y0": 1.36991e-05,
-                  "T0": 273.111,
-                  "n": 1.03
                 },
                 "min": null,
                 "max": null
@@ -1088,20 +1089,19 @@
                 "max": null
               },
               {
-                "type": "quadratic",
+                "type": "powerLaw",
                 "ref": [
-                  "Yaws1999",
-                  122,
-                  "yaws1999Table21_2"
+                  "White3",
+                  574,
+                  "whiteA6"
                 ],
                 "vars": {
-                  "a": -9.118,
-                  "b": 0.555,
-                  "c": -0.000111
+                  "y0": 1.36991e-05,
+                  "T0": 273.111,
+                  "n": 1.03
                 },
-                "min": 200.0,
-                "max": 1000.0,
-                "k": 1e-07
+                "min": null,
+                "max": null
               }
             ]
           },
@@ -1212,6 +1212,50 @@
       ],
       "nasa9": [
         "HCL"
+      ],
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 300,
+                "mu": 1.46e-05
+              },
+              {
+                "T": 400,
+                "mu": 1.97e-05
+              },
+              {
+                "T": 500,
+                "mu": 2.43e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": false,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              5
+            ],
+            "bestEquation": {
+              "ref": "VDI2010",
+              "type": "quartic"
+            },
+            "mape_pct": 0.81,
+            "max_abs_pct": 0.9,
+            "nCompared": 3
+          },
+          "ref": [
+            "Huber2019",
+            83,
+            "huber2019Viscosity"
+          ]
+        }
+      ],
+      "coolprop": [
+        "HydrogenChloride"
       ]
     },
     "7698-05-7": {

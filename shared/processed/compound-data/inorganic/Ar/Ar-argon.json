@@ -906,6 +906,22 @@
                 "max": 3273.1
               },
               {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  12,
+                  "yaws1999Table21_2"
+                ],
+                "vars": {
+                  "a": 44.997,
+                  "b": 0.63892,
+                  "c": -0.00012455
+                },
+                "min": 150.0,
+                "max": 1500.0,
+                "k": 1e-07
+              },
+              {
                 "type": "quartic",
                 "ref": [
                   "VDI2010",
@@ -921,23 +937,6 @@
                 },
                 "min": null,
                 "max": null
-              },
-              {
-                "type": "powerLaw",
-                "ref": [
-                  "White3",
-                  116,
-                  "white12"
-                ],
-                "vars": {
-                  "y0": 2.125e-05,
-                  "T0": 273,
-                  "n": 0.72
-                },
-                "min": 200,
-                "max": 1500,
-                "error": 3,
-                "originalRef": "NBS1955"
               },
               {
                 "type": "sutherland",
@@ -957,20 +956,21 @@
                 "originalRef": "NBS1955"
               },
               {
-                "type": "quadratic",
+                "type": "powerLaw",
                 "ref": [
-                  "Yaws1999",
-                  12,
-                  "yaws1999Table21_2"
+                  "White3",
+                  116,
+                  "white12"
                 ],
                 "vars": {
-                  "a": 44.997,
-                  "b": 0.63892,
-                  "c": -0.00012455
+                  "y0": 2.125e-05,
+                  "T0": 273,
+                  "n": 0.72
                 },
-                "min": 150.0,
-                "max": 1500.0,
-                "k": 1e-07
+                "min": 200,
+                "max": 1500,
+                "error": 3,
+                "originalRef": "NBS1955"
               }
             ]
           },
@@ -1056,6 +1056,59 @@
             204,
             "perry151"
           ]
+        },
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 100,
+                "mu": 8.1e-06
+              },
+              {
+                "T": 200,
+                "mu": 1.59e-05
+              },
+              {
+                "T": 300,
+                "mu": 2.27e-05
+              },
+              {
+                "T": 400,
+                "mu": 2.86e-05
+              },
+              {
+                "T": 500,
+                "mu": 3.39e-05
+              },
+              {
+                "T": 600,
+                "mu": 3.88e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": true,
+            "moreAccurate": true,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              2,
+              3,
+              4
+            ],
+            "bestEquation": {
+              "ref": "Perry8",
+              "type": "dipprN102"
+            },
+            "mape_pct": 0.46,
+            "max_abs_pct": 1.07,
+            "nCompared": 6
+          },
+          "ref": [
+            "Huber2019",
+            11,
+            "huber2019Viscosity"
+          ]
         }
       ],
       "transport": {
@@ -1098,6 +1151,9 @@
       ],
       "nasa9": [
         "Ar"
+      ],
+      "coolprop": [
+        "Argon"
       ]
     }
   }

@@ -62,3 +62,7 @@ class RefKey(str, Enum):
     NBS1982          = 'NBS1982'  # [47] Wagman et al. — NBS Tables of Chemical Thermodynamic Properties (1982)
     NISTMoltenSalts  = 'NISTMoltenSalts'  # [48] NIST Properties of Molten Salts Database (formerly SRD 27) (1991)
     Hirschfelder1954 = 'Hirschfelder1954'  # [49] Hirschfelder, Curtiss, Bird — Molecular Theory of Gases and Liquids (1954)
+    Huber2019        = 'Huber2019'  # [50] Huber — Viscosity of Gases (CRC Handbook) (2019)
+    Chung1988        = 'Chung1988'  # [51] Chung et al. — Generalized multiparameter corresponding-states correlation for viscosity and thermal conductivity (1988)
+    CoolProp         = 'CoolProp'  # [52] CoolProp — open-source thermophysical property library (Helmholtz EOS JSON) (2026)
+    NISTIR8209       = 'NISTIR8209'  # [53] Huber — NIST IR 8209 REFPROP v10 viscosity, thermal conductivity, and surface tension models (2018)

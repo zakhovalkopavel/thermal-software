@@ -9,7 +9,8 @@ plus ``unresolved.json``, ``index.json``, ``units.json``, ``sources.json`` and `
 Values cite their row as ``ref: [RefKey, line, fileKey]``, except a PubChem experimental value,
 which cites ``pubchem`` + the catalog number (``pubchem151``). ``sources.json`` maps the file keys to
 the pinned repository files, explains that PubChem citation, and gives the URL templates of the JANAF
-table ids (``janaf``) and the NASA datasets of the ``nasa7`` / ``nasa9`` keys (``nasa``).
+table ids (``janaf``), the NASA datasets of the ``nasa7`` / ``nasa9`` keys (``nasa``), and the
+CoolProp fluid folder of the ``coolprop`` keys (``coolprop``).
 Units are listed once, in ``units.json``. Compound files carry no ``generatedAt``, so a rebuild only
 changes the files whose data changed.
 
@@ -45,6 +46,8 @@ def write_compound_sources(
     molten_tables: Iterable[TableSpec] = (),
     book_gas_tables: Iterable[TableSpec] = (),
     yaws1999_tables: Iterable[TableSpec] = (),
+    viscosity_gases_tables: Iterable[TableSpec] = (),
+    coolprop: Optional[dict[str, Any]] = None,
 ) -> Path:
     """Write ``sources.json``: repository, commit, license, the file-key → file map, the JANAF and NASA links.
 
@@ -55,6 +58,8 @@ def write_compound_sources(
     ``molten_tables`` add the molten-salt density, surface-tension and viscosity files.
     ``book_gas_tables`` add the hand-moved book gas equation tables.
     ``yaws1999_tables`` add the processed Yaws 1999 property tables.
+    ``viscosity_gases_tables`` add the Huber 2019 dilute-gas viscosity table.
+    ``coolprop`` is the ``sources.json`` block for CoolProp fluid keys on records.
     """
     payload: dict[str, Any] = {
         "generatedAt": generated_at,
@@ -81,6 +86,8 @@ def write_compound_sources(
         }
     if nasa is not None:
         payload["nasa"] = nasa
+    if coolprop is not None:
+        payload["coolprop"] = coolprop
     pubchem_tables = list(pubchem_tables)
     for table in pubchem_tables:
         payload["files"][table.key] = {"name": table.name, "path": table.path, "ref": None, "url": None}
@@ -97,7 +104,10 @@ def write_compound_sources(
                        "(pubchem-inorganic.jsonl or pubchem-organic.jsonl). "
                        "It is not a key of the main references database.",
         }
-    for table in (*transport_tables, *nbs_tables, *molten_tables, *book_gas_tables, *yaws1999_tables):
+    for table in (
+        *transport_tables, *nbs_tables, *molten_tables, *book_gas_tables, *yaws1999_tables,
+        *viscosity_gases_tables,
+    ):
         payload["files"][table.key] = {"name": table.name, "path": table.path, "ref": table.ref.value if table.ref else None, "url": None}
     path = _write(out_dir / "sources.json", payload)
     logger.info("[output] Written → %s  (%d files)", path, len(payload["files"]))
@@ -182,6 +192,7 @@ def write_compound_index(files: Iterable[CompoundFile], out_dir: Path, generated
             "janaf": record.janaf,
             "nasa7": record.nasa7,
             "nasa9": record.nasa9,
+            "coolprop": record.coolprop,
             "otherCas": record.other_cas,
         }
         compounds[compound_id] = {k: v for k, v in entry.items() if v is not None and v != [] and v != {}}
