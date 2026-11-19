@@ -48,9 +48,18 @@ describe('CoolpropConductivity (NIST IR 8209)', () => {
     expect(lamHigh).toBeGreaterThan(lamAtm);
   });
 
-  it('Nitrogen expression residual is unsupported', () => {
-    expect(CoolpropConductivity.hasResidual('Nitrogen')).toBe(false);
+  it('Nitrogen skips expression model and uses polynomial_and_exponential residual', () => {
+    expect(CoolpropConductivity.hasResidual('Nitrogen')).toBe(true);
+    const model = CoolpropConductivity.tryModel('Nitrogen');
+    expect(model?.residual?.type).toBe('polynomial_and_exponential');
+    // First JSON model is expression dilute — we do not evaluate that form.
     expect(CoolpropConductivity.diluteIfAvailable('Nitrogen', T)).toBeUndefined();
+    const dilute = 0.025;
+    const rhoLow = GasDensity.forCompound(GAS_REGISTRY.N2, T, P_atm);
+    const rhoHigh = GasDensity.forCompound(GAS_REGISTRY.N2, T, 5e6);
+    const lamLow = CoolpropConductivity.conductivity('Nitrogen', T, rhoLow, dilute, mu);
+    const lamHigh = CoolpropConductivity.conductivity('Nitrogen', T, rhoHigh, dilute, mu);
+    expect(lamHigh).toBeGreaterThan(lamLow);
   });
 
   it('CO2 critical enhancement is negligible at 300 K / 1 atm', () => {

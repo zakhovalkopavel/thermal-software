@@ -81,12 +81,12 @@ return the sensible enthalpy H(T) − H(298.15 K); `absoluteEnthalpy()` the form
 
 ### Public methods
 
-#### `viscosity(species, T_K) → number` [Pa·s]
-Stored viscosity `def` via `CompoundPropertyResolver` when
-`viscosity.values` is non-empty (Huber2019 MAPE winner / Perry8 → Yaws1999 →
-VDI2010 → White3 list-head; Sutherland only when it is that `def`). Else
-Chapman–Enskog LJ or Stockmayer when \(\sigma\) and \(\varepsilon/k\) exist
-([`CHAPMAN_ENSKOG_VISCOSITY.md`](../algorithms/thermodynamics/CHAPMAN_ENSKOG_VISCOSITY.md)).
+#### `viscosity(species, T_K, P_Pa?) → number` [Pa·s]
+`GasViscosity.forCompound`: dilute `def` / CE, plus CoolProp Δη(T,ρ) when an
+evaluable `TRANSPORT.viscosity` residual exists. Mixture: Wilke + Chung Δη at
+low Chung \(y\), full Chung dense μ at high \(y\)
+([`COOLPROP_CHUNG_VISCOSITY.md`](../algorithms/thermodynamics/COOLPROP_CHUNG_VISCOSITY.md),
+[`CHAPMAN_ENSKOG_VISCOSITY.md`](../algorithms/thermodynamics/CHAPMAN_ENSKOG_VISCOSITY.md)).
 
 #### `thermalConductivity(species, T_K, Cp_J_molK, P_Pa?) → number` [W/(m·K)]
 Dilute \(\lambda^0\): stored k(T) → CoolProp `ratio_of_polynomials` → Eucken from
@@ -110,14 +110,15 @@ Property algorithm utils are split by concern:
 - `utils/density/` — `GasDensity` (Helmholtz → Peng–Robinson → limited ideal)
 - `utils/conductivity/` — CoolProp NIST IR 8209, Chung, HE, Eucken
 - `utils/chapman-enskog/` — Neufeld Ω, LJ combining (shared by μ and D)
-- `utils/viscosity/` — CE μ/D, Wilke mix
+- `utils/viscosity/` — CoolProp dense μ, Chung μ, CE μ/D, Wilke, `GasViscosity`
 
 Used by `FluidPropertyService`, `CompoundFluidPropsService`,
 `getMixtureBasicProperties`, and dimensionless fluid resolution. Algorithms:
 [`GAS_DENSITY.md`](../algorithms/thermodynamics/GAS_DENSITY.md),
 [`HELMHOLTZ_DENSITY.md`](../algorithms/thermodynamics/HELMHOLTZ_DENSITY.md),
 [`NISTIR_8209_THERMAL_CONDUCTIVITY.md`](../algorithms/thermodynamics/NISTIR_8209_THERMAL_CONDUCTIVITY.md),
-[`CHAPMAN_ENSKOG_VISCOSITY.md`](../algorithms/thermodynamics/CHAPMAN_ENSKOG_VISCOSITY.md).
+[`CHAPMAN_ENSKOG_VISCOSITY.md`](../algorithms/thermodynamics/CHAPMAN_ENSKOG_VISCOSITY.md),
+[`COOLPROP_CHUNG_VISCOSITY.md`](../algorithms/thermodynamics/COOLPROP_CHUNG_VISCOSITY.md).
 
 ---
 

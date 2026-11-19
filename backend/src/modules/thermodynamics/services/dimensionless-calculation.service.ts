@@ -173,7 +173,7 @@ export class DimensionlessCalculationService {
 
     const mole   = input.composition as Partial<Record<Species, number>>;
     const M      = this.gasProps.molecularWeight(mole);
-    const muR    = this.transport.viscosityMixResult(mole, T);
+    const muR    = this.transport.viscosityMixResult(mole, T, P);
     const cpR    = this.gasProps.cpMixtureResult(mole, T);
     const Cp     = cpR.value / M;
     const cpBySp = Object.fromEntries(

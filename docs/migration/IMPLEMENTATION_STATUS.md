@@ -361,6 +361,7 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 - [x] **Transport utils layout** — algorithm realisations split by property: `utils/density/`, `utils/conductivity/`, `utils/viscosity/`, plus shared `utils/chapman-enskog/` (Neufeld Ω, LJ combining).
 - [x] **Peng–Robinson density fallback** — when no CoolProp fluid, use PR from \(T_c,P_c,\omega\) (`criticalPressure` on `CompoundValue`); ideal gas only inside `IDEAL_GAS_DENSITY_LIMITS` (else throw); PR + Helmholtz/ideal-gas density constants live under `modules/thermodynamics/`. Algorithm: `docs/algorithms/thermodynamics/GAS_DENSITY.md`.
 - [x] **Chapman–Enskog μ + Eucken λ + Stockmayer** — shared Neufeld \(\Omega_D/\Omega_v\) + LJ combining in `utils/chapman-enskog/`; CE \(\mu\) (LJ/Stockmayer) and Poling `1.858e-3` binary \(D\) under `utils/viscosity/`; `stockmayerDelta` on `CompoundValue`; `TransportService` CE viscosity fallback and Eucken dilute \(\lambda\) after CE \(\mu\); `DiffusionService` thin orchestrator. Algorithm: `docs/algorithms/thermodynamics/CHAPMAN_ENSKOG_VISCOSITY.md`.
+- [x] **CoolProp dense μ + Chung mixture μ** — evaluable CoolProp `TRANSPORT.viscosity` (collision_integral / Rainwater–Friend / Batschinski–Hildebrand) via `GasViscosity`; mixture Wilke + Chung Δη below \(y\) switch, full Chung dense μ above; Poling Ch.9 E-table (not 10-3). `POST /thermodynamics/properties` passes `P_Pa` into `viscosityMix`. Algorithm: `docs/algorithms/thermodynamics/COOLPROP_CHUNG_VISCOSITY.md`.
 
 ### Medium priority
 

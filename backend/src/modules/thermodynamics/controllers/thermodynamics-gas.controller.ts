@@ -41,7 +41,7 @@ export class ThermodynamicsGasController {
     const { composition, T_K, P_atm = 1.0 } = dto;
     const mole   = composition as Partial<Record<Species, number>>;
     const P_Pa   = P_atm * STANDARD_CONDITIONS.PRESSURE_PA;
-    const mu     = this.transport.viscosityMix(mole, T_K);
+    const mu     = this.transport.viscosityMix(mole, T_K, P_Pa);
     const cpBySp = Object.fromEntries(
       (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T_K)]),
     ) as Partial<Record<Species, number>>;

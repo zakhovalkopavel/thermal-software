@@ -47,8 +47,8 @@ Binary pairs use Lorentz–Berthelot combining:
 \(\delta=\mu_{\mathrm{dipole}}^2/(2\varepsilon\sigma^3)\) in SI when
 \(|\mu|\) ≥ `POLAR_DIPOLE_DEBYE_MIN` (0.1 D).
 
-Dilute CE \(\mu\) is pressure-independent to first order. Dense-gas Chung \(\mu\)
-is out of scope for this pass.
+Dilute CE \(\mu\) is pressure-independent to first order. Density-dependent μ:
+CoolProp TRANSPORT and Chung mix — [`COOLPROP_CHUNG_VISCOSITY.md`](./COOLPROP_CHUNG_VISCOSITY.md).
 
 ## Binary diffusivity \(D_{12}\)
 
@@ -64,6 +64,8 @@ Returned as \(\mathrm{m^2/s}\) (\(D_{\mathrm{cm^2/s}}\times 10^{-4}\)).
 Do **not** use the incomplete legacy \(0.00266\) form that omitted molar mass.
 
 ## Method selection (viscosity)
+
+Dilute fallback only (after CoolProp dense — see CoolProp/Chung doc):
 
 | Priority | Condition | Model |
 |----------|-----------|--------|

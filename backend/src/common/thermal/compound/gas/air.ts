@@ -27,6 +27,8 @@ export const Air: CompoundValue = {
   gibbsEnergy298: 0,
   collisionDiameter: 3.6,
   epsilonToKb: 103.3,
+  /** CoolProp fluid for Helmholtz ρ and TRANSPORT residual λ */
+  coolpropKey: 'Air',
   /** NASA RP-1311 set; N2 78.084, O2 20.9476, Ar 0.9365, CO2 0.0319 % (nasa7.json has no Air) */
   nasa9Key: 'Air',
   heatCapacity: {

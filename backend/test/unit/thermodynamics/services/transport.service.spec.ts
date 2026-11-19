@@ -106,10 +106,15 @@ describe('TransportService pure NIST IR 8209 λ', () => {
 describe('TransportService Chapman–Enskog viscosity fallback', () => {
   const transport = new TransportService();
 
-  it('uses CE LJ when viscosity.values is empty but LJ params exist', () => {
-    const original = GAS_REGISTRY.N2.viscosity;
+  it('uses CE LJ when viscosity.values and CoolProp dense μ are unavailable', () => {
+    const originalVisc = GAS_REGISTRY.N2.viscosity;
+    const originalKey = GAS_REGISTRY.N2.coolpropKey;
     Object.defineProperty(GAS_REGISTRY.N2, 'viscosity', {
       value: { def: 0, values: [] },
+      configurable: true,
+    });
+    Object.defineProperty(GAS_REGISTRY.N2, 'coolpropKey', {
+      value: undefined,
       configurable: true,
     });
     try {
@@ -120,17 +125,33 @@ describe('TransportService Chapman–Enskog viscosity fallback', () => {
       expect(r.validity.message).toMatch(/Lennard-Jones/);
     } finally {
       Object.defineProperty(GAS_REGISTRY.N2, 'viscosity', {
-        value: original,
+        value: originalVisc,
+        configurable: true,
+      });
+      Object.defineProperty(GAS_REGISTRY.N2, 'coolpropKey', {
+        value: originalKey,
         configurable: true,
       });
     }
   });
 
-  it('uses CE Stockmayer when stockmayerDelta is set', () => {
+  it('adds CoolProp Δη for N2 so μ rises with pressure', () => {
+    const low = transport.viscosityResult(Species.N2, 300, STANDARD_CONDITIONS.PRESSURE_PA);
+    const high = transport.viscosityResult(Species.N2, 300, 5e6);
+    expect(high.validity.message).toMatch(/CoolProp/);
+    expect(high.value).toBeGreaterThan(low.value);
+  });
+
+  it('uses CE Stockmayer when stockmayerDelta is set and CoolProp dense μ is off', () => {
     const originalVisc = GAS_REGISTRY.NH3.viscosity;
     const originalDelta = GAS_REGISTRY.NH3.stockmayerDelta;
+    const originalKey = GAS_REGISTRY.NH3.coolpropKey;
     Object.defineProperty(GAS_REGISTRY.NH3, 'viscosity', {
       value: { def: 0, values: [] },
+      configurable: true,
+    });
+    Object.defineProperty(GAS_REGISTRY.NH3, 'coolpropKey', {
+      value: undefined,
       configurable: true,
     });
     Object.defineProperty(GAS_REGISTRY.NH3, 'stockmayerDelta', {
@@ -144,6 +165,10 @@ describe('TransportService Chapman–Enskog viscosity fallback', () => {
     } finally {
       Object.defineProperty(GAS_REGISTRY.NH3, 'viscosity', {
         value: originalVisc,
+        configurable: true,
+      });
+      Object.defineProperty(GAS_REGISTRY.NH3, 'coolpropKey', {
+        value: originalKey,
         configurable: true,
       });
       Object.defineProperty(GAS_REGISTRY.NH3, 'stockmayerDelta', {

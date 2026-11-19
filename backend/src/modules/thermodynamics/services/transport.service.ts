@@ -14,7 +14,7 @@ import { ChungThermalConductivity } from '../utils/conductivity/chung-thermal-co
 import { CoolpropConductivity } from '../utils/conductivity/coolprop-conductivity';
 import { EuckenThermalConductivity } from '../utils/conductivity/eucken-thermal-conductivity';
 import { GasDensity } from '../utils/density/gas-density';
-import { ChapmanEnskogViscosity } from '../utils/viscosity/chapman-enskog-viscosity';
+import { GasViscosity } from '../utils/viscosity/gas-viscosity';
 import { WilkeViscosity } from '../utils/viscosity/wilke-viscosity';
 import { ChungSpeciesParams } from '../types/chung-species-params.type';
 import { HirschfelderEuckenSpecies } from '../types/hirschfelder-eucken-species.type';
@@ -24,79 +24,46 @@ export class TransportService {
 
   /**
    * Dynamic viscosity of a pure species [Pa·s].
-   * Stored viscosity `def` when present; else Chapman–Enskog (LJ / Stockmayer)
-   * when σ and ε/k exist on the compound.
+   * CoolProp η(T,ρ) when evaluable; else stored `def` / Chapman–Enskog.
    */
-  viscosity(species: Species, T_K: number): number {
-    return this.viscosityResult(species, T_K).value;
+  viscosity(
+    species: Species,
+    T_K: number,
+    P_Pa: number = STANDARD_CONDITIONS.PRESSURE_PA,
+  ): number {
+    return this.viscosityResult(species, T_K, P_Pa).value;
   }
 
-  viscosityResult(species: Species, T_K: number): EvaluationResult {
+  viscosityResult(
+    species: Species,
+    T_K: number,
+    P_Pa: number = STANDARD_CONDITIONS.PRESSURE_PA,
+  ): EvaluationResult {
     const compound = GAS_REGISTRY[species];
     if (!compound) throw new Error(`Unknown species: ${species}`);
-    if (compound.viscosity.values.length > 0) {
-      return new CompoundPropertyResolver(compound).viscosityResult(T_K);
-    }
-    const ce = ChapmanEnskogViscosity.fromCompound(compound, T_K);
-    return {
-      value: ce.value,
-      validity: {
-        requestedT: T_K,
-        effectiveT: T_K,
-        min: null,
-        max: null,
-        inRange: true,
-        rangeUnknown: true,
-        action: 'none',
-        message: ce.message,
-      },
-    };
+    return GasViscosity.forCompound(compound, T_K, P_Pa);
   }
 
   /**
-   * Mixture dynamic viscosity via Wilke's mixing rule [Pa·s]
-   * Source: [Leg] furnaceCombustion/classes/TransportProperties.js
+   * Mixture dynamic viscosity [Pa·s]: Wilke + Chung Δη when y is low; Chung dense μ otherwise.
    */
-  viscosityMix(moleFractions: Partial<Record<Species, number>>, T_K: number): number {
-    return this.viscosityMixResult(moleFractions, T_K).value;
+  viscosityMix(
+    moleFractions: Partial<Record<Species, number>>,
+    T_K: number,
+    P_Pa: number = STANDARD_CONDITIONS.PRESSURE_PA,
+  ): number {
+    return this.viscosityMixResult(moleFractions, T_K, P_Pa).value;
   }
 
   viscosityMixResult(
     moleFractions: Partial<Record<Species, number>>,
     T_K: number,
-  ): EvaluationResult & { mixtureValidity: ReturnType<typeof aggregateMixtureValidity> } {
-    const species = (Object.keys(moleFractions) as Species[])
-      .filter(sp => (moleFractions[sp] ?? 0) > 0 && GAS_REGISTRY[sp]);
-    const mu_i: Record<string, number> = {};
-    const components: Record<string, EvaluationResult['validity']> = {};
-    for (const sp of species) {
-      const r = this.viscosityResult(sp, T_K);
-      mu_i[sp] = r.value;
-      components[sp] = r.validity;
-    }
-
-    const mu_mix = WilkeViscosity.mix(species, moleFractions, mu_i);
-
-    const mixtureValidity = aggregateMixtureValidity(components);
-    const anyClamped = Object.values(components).some(v => v.action === 'clamped');
-    const anyExtrapolated = Object.values(components).some(v => v.action === 'extrapolated');
-    const anyUnknown = Object.values(components).some(v => v.rangeUnknown);
-    return {
-      value: mu_mix,
-      validity: {
-        requestedT: T_K,
-        effectiveT: T_K,
-        min: null,
-        max: null,
-        inRange: mixtureValidity.allInRange,
-        rangeUnknown: anyUnknown,
-        action: anyExtrapolated ? 'extrapolated' : anyClamped ? 'clamped' : 'none',
-        message: mixtureValidity.allInRange
-          ? undefined
-          : 'One or more mixture components are outside their viscosity correlation range.',
-      },
-      mixtureValidity,
-    };
+    P_Pa: number = STANDARD_CONDITIONS.PRESSURE_PA,
+  ): EvaluationResult & {
+    mixtureValidity: ReturnType<typeof aggregateMixtureValidity>;
+    method: 'Wilke' | 'Chung1988';
+  } {
+    return GasViscosity.forMixture(moleFractions, T_K, P_Pa);
   }
 
   /**
@@ -127,7 +94,7 @@ export class TransportService {
     if (!key || !CoolpropConductivity.hasResidual(key)) return dilute;
 
     const rho = GasDensity.forCompound(compound, T_K, P_Pa);
-    const mu = this.viscosityResult(species, T_K).value;
+    const mu = this.viscosityResult(species, T_K, P_Pa).value;
     const value = CoolpropConductivity.conductivity(key, T_K, rho, dilute.value, mu);
     return {
       value,
@@ -178,9 +145,10 @@ export class TransportService {
       const compound = GAS_REGISTRY[sp];
       const Cp = cpBySpecies[sp] ?? 30.0;
       const lamR = this.thermalConductivityResult(sp, T_K, Cp, P_Pa);
-      const muR = this.viscosityResult(sp, T_K);
+      // HE / Chung-λ η⁰ use dilute μ (not CoolProp dense).
+      const muDil = GasViscosity.diluteResult(compound, T_K);
       components[sp] = lamR.validity;
-      heSpecies.push({ y, lambda: lamR.value, eta: muR.value, M: compound.Mr });
+      heSpecies.push({ y, lambda: lamR.value, eta: muDil.value, M: compound.Mr });
       chungSpecies.push(ChungThermalConductivity.speciesParams({
         label: sp,
         y,
@@ -275,12 +243,11 @@ export class TransportService {
         };
       }
     }
-    const muResult = this.viscosityResult(species, T_K);
+    const muResult = GasViscosity.diluteResult(compound, T_K);
     const value = EuckenThermalConductivity.modifiedFromViscosity(
       Cp_J_molK,
       muResult.value,
       compound.Mr,
-      // Svehla modified-Eucken Z is not yet on CompoundValue; classical Eucken.
       undefined,
     );
     return {

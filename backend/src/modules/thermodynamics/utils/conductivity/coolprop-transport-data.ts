@@ -1,11 +1,17 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { OLCHOWY_SENGERS } from '../../constants/olchowy-sengers.constants';
+import { CoolpropConductivityBlockJson } from '../../types/coolprop-conductivity-block-json.type';
 import { CoolpropConductivityCritical } from '../../types/coolprop-conductivity-critical.type';
+import { CoolpropConductivityCriticalJson } from '../../types/coolprop-conductivity-critical-json.type';
 import { CoolpropConductivityDilute } from '../../types/coolprop-conductivity-dilute.type';
+import { CoolpropConductivityDiluteJson } from '../../types/coolprop-conductivity-dilute-json.type';
 import { CoolpropConductivityModel } from '../../types/coolprop-conductivity-model.type';
 import { CoolpropConductivityResidual } from '../../types/coolprop-conductivity-residual.type';
+import { CoolpropConductivityResidualJson } from '../../types/coolprop-conductivity-residual-json.type';
+import { CoolpropFluidTransportJson } from '../../types/coolprop-fluid-transport-json.type';
 import { CoolpropHelmholtzData } from '../density/coolprop-helmholtz-data';
+import { CoolpropConductivityJsonGuard } from './coolprop-conductivity-json-guard';
 
 /**
  * Cached CoolProp `TRANSPORT.conductivity` models from fluid JSON.
@@ -31,24 +37,44 @@ export class CoolpropTransportData {
       CoolpropTransportData.cache.set(coolpropKey, null);
       return null;
     }
-    const doc = JSON.parse(fs.readFileSync(file, 'utf8')) as {
-      TRANSPORT?: { conductivity?: unknown };
-    };
-    const parsed = CoolpropTransportData.parseConductivity(doc.TRANSPORT?.conductivity);
+    const doc = JSON.parse(fs.readFileSync(file, 'utf8')) as CoolpropFluidTransportJson;
+    const wire = CoolpropConductivityJsonGuard.asJson(doc.TRANSPORT?.conductivity);
+    const parsed = wire
+      ? CoolpropTransportData.selectModel(CoolpropConductivityJsonGuard.blocks(wire))
+      : null;
     CoolpropTransportData.cache.set(coolpropKey, parsed);
     return parsed;
   }
 
-  private static parseConductivity(raw: unknown): CoolpropConductivityModel | null {
-    if (!raw || typeof raw !== 'object') return null;
-    const block = Array.isArray(raw) ? raw[0] : raw;
-    if (!block || typeof block !== 'object' || Array.isArray(block)) return null;
-    const row = block as Record<string, unknown>;
-    if (typeof row.hardcoded === 'string') return null;
+  /**
+   * Prefer the first block with an evaluable residual; else first dilute-only model.
+   */
+  private static selectModel(
+    blocks: CoolpropConductivityBlockJson[],
+  ): CoolpropConductivityModel | null {
+    let fallback: CoolpropConductivityModel | null = null;
+    for (const block of blocks) {
+      const model = CoolpropTransportData.toEvaluatedModel(block);
+      if (!model) continue;
+      if (model.residual) return model;
+      if (!fallback) fallback = model;
+    }
+    return fallback;
+  }
 
-    const dilute = CoolpropTransportData.parseDilute(row.dilute);
-    const residual = CoolpropTransportData.parseResidual(row.residual);
-    const critical = CoolpropTransportData.parseCritical(row.critical);
+  private static toEvaluatedModel(
+    block: CoolpropConductivityBlockJson,
+  ): CoolpropConductivityModel | null {
+    if (typeof block.hardcoded === 'string') return null;
+    const dilute = block.dilute
+      ? CoolpropTransportData.toEvaluatedDilute(block.dilute)
+      : undefined;
+    const residual = block.residual
+      ? CoolpropTransportData.toEvaluatedResidual(block.residual)
+      : undefined;
+    const critical = block.critical
+      ? CoolpropTransportData.toEvaluatedCritical(block.critical)
+      : undefined;
     if (!dilute && !residual) return null;
     return {
       ...(dilute ? { dilute } : {}),
@@ -57,10 +83,50 @@ export class CoolpropTransportData {
     };
   }
 
-  private static parseCritical(raw: unknown): CoolpropConductivityCritical | undefined {
-    if (!raw || typeof raw !== 'object') return undefined;
-    const c = raw as Record<string, unknown>;
-    if (c.type !== 'simplified_Olchowy_Sengers') return undefined;
+  private static toEvaluatedDilute(
+    d: CoolpropConductivityDiluteJson,
+  ): CoolpropConductivityDilute | undefined {
+    if (!('type' in d) || d.type !== 'ratio_of_polynomials') return undefined;
+    return {
+      type: 'ratio_of_polynomials',
+      T_reducing: d.T_reducing,
+      A: d.A,
+      n: d.n,
+      B: d.B,
+      m: d.m,
+    };
+  }
+
+  private static toEvaluatedResidual(
+    r: CoolpropConductivityResidualJson,
+  ): CoolpropConductivityResidual | undefined {
+    if (r.type === 'polynomial') {
+      return {
+        type: 'polynomial',
+        B: r.B,
+        t: r.t,
+        d: r.d,
+        T_reducing: r.T_reducing,
+        rhomass_reducing: r.rhomass_reducing,
+      };
+    }
+    if (r.type === 'polynomial_and_exponential') {
+      return {
+        type: 'polynomial_and_exponential',
+        A: r.A,
+        t: r.t,
+        d: r.d,
+        gamma: r.gamma,
+        l: r.l,
+      };
+    }
+    return undefined;
+  }
+
+  private static toEvaluatedCritical(
+    c: CoolpropConductivityCriticalJson,
+  ): CoolpropConductivityCritical | undefined {
+    if (!('type' in c) || c.type !== 'simplified_Olchowy_Sengers') return undefined;
     const R0 = typeof c.R0 === 'number' ? c.R0 : OLCHOWY_SENGERS.R0;
     const gamma = typeof c.gamma === 'number' ? c.gamma : OLCHOWY_SENGERS.GAMMA_EXPONENT;
     const nu = typeof c.nu === 'number' ? c.nu : OLCHOWY_SENGERS.NU;
@@ -68,7 +134,6 @@ export class CoolpropTransportData {
     const zeta0 = typeof c.zeta0 === 'number' ? c.zeta0 : OLCHOWY_SENGERS.ZETA0_M;
     const qD = typeof c.qD === 'number' ? c.qD : OLCHOWY_SENGERS.QD_PER_M;
     if (![R0, gamma, nu, GAMMA, zeta0, qD].every(Number.isFinite)) return undefined;
-    const T_ref = typeof c.T_ref === 'number' ? c.T_ref : undefined;
     return {
       type: 'simplified_Olchowy_Sengers',
       R0,
@@ -77,51 +142,7 @@ export class CoolpropTransportData {
       GAMMA,
       zeta0,
       qD,
-      ...(T_ref !== undefined ? { T_ref } : {}),
+      ...(typeof c.T_ref === 'number' ? { T_ref: c.T_ref } : {}),
     };
-  }
-
-  private static parseDilute(raw: unknown): CoolpropConductivityDilute | undefined {
-    if (!raw || typeof raw !== 'object') return undefined;
-    const d = raw as Record<string, unknown>;
-    if (d.type !== 'ratio_of_polynomials') return undefined;
-    const A = d.A as number[] | undefined;
-    const B = d.B as number[] | undefined;
-    const n = d.n as number[] | undefined;
-    const m = d.m as number[] | undefined;
-    const T_reducing = d.T_reducing as number | undefined;
-    if (!A?.length || !B?.length || !n?.length || !m?.length || T_reducing === undefined) {
-      return undefined;
-    }
-    return { type: 'ratio_of_polynomials', T_reducing, A, n, B, m };
-  }
-
-  private static parseResidual(raw: unknown): CoolpropConductivityResidual | undefined {
-    if (!raw || typeof raw !== 'object') return undefined;
-    const r = raw as Record<string, unknown>;
-    if (r.type === 'polynomial') {
-      const B = r.B as number[] | undefined;
-      const t = r.t as number[] | undefined;
-      const d = r.d as number[] | undefined;
-      const T_reducing = r.T_reducing as number | undefined;
-      const rhomass_reducing = r.rhomass_reducing as number | undefined;
-      if (!B?.length || !t?.length || !d?.length
-        || T_reducing === undefined || rhomass_reducing === undefined) {
-        return undefined;
-      }
-      return { type: 'polynomial', B, t, d, T_reducing, rhomass_reducing };
-    }
-    if (r.type === 'polynomial_and_exponential') {
-      const A = r.A as number[] | undefined;
-      const t = r.t as number[] | undefined;
-      const d = r.d as number[] | undefined;
-      const gamma = r.gamma as number[] | undefined;
-      const l = r.l as number[] | undefined;
-      if (!A?.length || !t?.length || !d?.length || !gamma?.length || !l?.length) {
-        return undefined;
-      }
-      return { type: 'polynomial_and_exponential', A, t, d, gamma, l };
-    }
-    return undefined;
   }
 }

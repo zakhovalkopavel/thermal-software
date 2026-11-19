@@ -16,8 +16,10 @@ CoolProp fluid JSON (`TRANSPORT.conductivity`):
 \lambda(T,\rho) = \lambda^0(T) + \lambda^r(T,\rho) + \lambda^{\mathrm{crit}}(T,\rho)
 \]
 
-CoolProp `expression` / `hardcoded` residual forms are not evaluated; those fluids
-keep dilute \(\lambda^0\) only. Hardcoded critical blocks (R123, ammonia) are skipped
+CoolProp `expression` / `hardcoded` residual forms are not evaluated. When
+`TRANSPORT.conductivity` is a list (e.g. Nitrogen), the first block with an
+evaluable residual (`polynomial` / `polynomial_and_exponential`) is used.
+Hardcoded critical blocks (R123, ammonia) are skipped
 (only `simplified_Olchowy_Sengers` is implemented).
 
 Mixture \(\lambda\) stays **Hirschfelder–Eucken / Chung 1988**
@@ -92,4 +94,6 @@ If \(X-X_{\mathrm{ref}}\) is not positive, \(\lambda^{\mathrm{crit}}=0\).
 | Path | Role |
 |------|------|
 | `shared/sources/coolprop/fluids/<NAME>.json` | `TRANSPORT.conductivity` coefficients |
-| `types/coolprop-conductivity-*.type.ts` | Parsed dilute / residual / critical shapes |
+| `types/coolprop-conductivity-*.type.ts` | Evaluated dilute / residual / critical shapes |
+| `types/coolprop-conductivity-*-json.type.ts` | Wire JSON shapes for CoolProp TRANSPORT.conductivity |
+| `utils/conductivity/coolprop-conductivity-json-guard.ts` | Narrow `unknown` JSON → wire types |

@@ -93,7 +93,7 @@ export class FluidPropertyService {
     }
 
     const mole = this._requireComposition(dto.composition);
-    const r    = this.transport.viscosityMixResult(mole, T);
+    const r    = this.transport.viscosityMixResult(mole, T, P);
     const rho  = GasDensity.forMixture(mole, T, P);
     return {
       mu_Pa_s: r.value,
