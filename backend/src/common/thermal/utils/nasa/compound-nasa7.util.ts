@@ -1,5 +1,5 @@
-import { CompoundValue } from '../../interfaces/compound-value.interface';
-import { Nasa7Species } from './interfaces/nasa7-species.interface';
+import { CompoundValue } from '../../types/compound-value.type';
+import { Nasa7Species } from './types/nasa7-species.type';
 import { nasa7Species } from './nasa7-species.util';
 
 /** NASA-7 record of a compound, or undefined when it has no `nasa7Key` */

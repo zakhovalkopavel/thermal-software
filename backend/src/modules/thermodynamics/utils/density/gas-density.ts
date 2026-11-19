@@ -1,7 +1,7 @@
 import { PHYSICAL_CONSTANTS } from '../../../../common/thermal/constants/physical.constants';
 import { STANDARD_CONDITIONS } from '../../../../common/thermal/constants/standard-conditions.constants';
 import { GAS_REGISTRY } from '../../../../common/thermal/compound/gas/registry';
-import { CompoundValue } from '../../../../common/thermal/interfaces/compound-value.interface';
+import { CompoundValue } from '../../../../common/thermal/types/compound-value.type';
 import { Species } from '../../enums/species.enum';
 import { PengRobinsonFluidParams } from '../../types/peng-robinson-fluid-params.type';
 import { HelmholtzDensity } from './helmholtz-density';

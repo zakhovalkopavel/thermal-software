@@ -1,15 +1,15 @@
 import { STANDARD_CONDITIONS } from '../../constants/standard-conditions.constants';
-import { EquationValue } from '../../interfaces/equation-value.interface';
+import { EquationValue } from '../../types/equation-value.type';
 import { GAS_COMPOUND_BINDING } from '../../compound/gas/gas-compound-binding';
 import { Common } from '../common';
 import { EquationValidity } from '../equation-validity';
 import { BOILING_TEMPERATURE } from './constants/boiling-temperature.constants';
 import { CompoundText } from './compound-text';
-import { GasTemperatureBounds } from './interfaces/bounds/gas-temperature-bounds.interface';
-import { CompoundDataCompoundFile } from './interfaces/record/compound-data-compound-file.interface';
-import { CompoundDataRecord } from './interfaces/record/compound-data-record.interface';
+import { GasTemperatureBounds } from './types/bounds/gas-temperature-bounds.type';
+import { CompoundDataCompoundFile } from './types/record/compound-data-compound-file.type';
+import { CompoundDataRecord } from './types/record/compound-data-record.type';
 import { CompoundData } from './compound-data';
-import { CompoundDataEquationList } from './interfaces/equation/compound-data-equation-list.interface';
+import { CompoundDataEquationList } from './types/equation/compound-data-equation-list.type';
 
 /**
  * Gas-phase temperature bounds and boiling temperature at pressure for compound-data records.

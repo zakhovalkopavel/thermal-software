@@ -1,5 +1,5 @@
-import { CompoundValue } from '../../interfaces/compound-value.interface';
-import { EquationValue } from '../../interfaces/equation-value.interface';
+import { CompoundValue } from '../../types/compound-value.type';
+import { EquationValue } from '../../types/equation-value.type';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
 import { compoundNasa7, compoundNasa9 } from '../nasa';

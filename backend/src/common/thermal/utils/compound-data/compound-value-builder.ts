@@ -1,12 +1,12 @@
-import { CompoundValue } from '../../interfaces/compound-value.interface';
-import { EquationValue } from '../../interfaces/equation-value.interface';
+import { CompoundValue } from '../../types/compound-value.type';
+import { EquationValue } from '../../types/equation-value.type';
 import { CompoundText } from './compound-text';
 import { GasCompoundQuery } from './types/gas-compound-query.type';
-import { CompoundDataIndexEntry } from './interfaces/dataset/compound-data-index-entry.interface';
-import { CompoundDataEquationList } from './interfaces/equation/compound-data-equation-list.interface';
-import { CompoundDataPropertyValue } from './interfaces/property/compound-data-property-value.interface';
-import { CompoundDataCompoundFile } from './interfaces/record/compound-data-compound-file.interface';
-import { CompoundDataRecord } from './interfaces/record/compound-data-record.interface';
+import { CompoundDataIndexEntry } from './types/dataset/compound-data-index-entry.type';
+import { CompoundDataEquationList } from './types/equation/compound-data-equation-list.type';
+import { CompoundDataPropertyValue } from './types/property/compound-data-property-value.type';
+import { CompoundDataCompoundFile } from './types/record/compound-data-compound-file.type';
+import { CompoundDataRecord } from './types/record/compound-data-record.type';
 import { CompoundData } from './compound-data';
 
 /**

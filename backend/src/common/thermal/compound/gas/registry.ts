@@ -1,4 +1,4 @@
-import { CompoundValue } from '../../interfaces/compound-value.interface';
+import { CompoundValue } from '../../types/compound-value.type';
 import { CompoundValueBuilder } from '../../utils/compound-data/compound-value-builder';
 import { GAS_COMPOUND_BINDING } from './gas-compound-binding';
 import { Air } from './air';

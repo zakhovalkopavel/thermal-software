@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { JanafRow } from '../../../src/common/thermal/utils/janaf/interfaces/janaf-row.interface';
+import { JanafRow } from '../../../src/common/thermal/utils/janaf/types/janaf-row.type';
 
 interface JanafIndexEntry {
   formula: string;

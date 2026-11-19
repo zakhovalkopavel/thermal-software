@@ -116,6 +116,21 @@ backend/src/modules/refractory/constants/
 └── mix-composition.constants.ts        ✅ MIX_COMPOSITION_CONSTANTS (key classification)
 ```
 
+### Common thermal library — types vs interfaces (November 2026)
+
+Conventions Phase 3.4: plain data shapes are `export type` in `types/*.type.ts`. Behavioural
+contracts stay `export interface` in `interfaces/*.interface.ts`. See
+[`COMMON_THERMAL_LIBRARY.md`](services/COMMON_THERMAL_LIBRARY.md).
+
+| Kind | Path | Constructs |
+|------|------|------------|
+| Data shapes | `common/thermal/types/` | `CompoundValue`, `EquationValue`, `EquationValidity`, `EvaluationResult`, `MixtureValidity`, `ValidityAction` |
+| Behaviour | `common/thermal/interfaces/` | `Equation<T>` |
+| Data shapes | `common/thermal/utils/compound-data/types/` | compound-data JSON / search / bounds records (formerly `interfaces/`) |
+| Data shapes | `common/thermal/utils/janaf/types/` | JANAF table / row / file shapes |
+| Data shapes | `common/thermal/utils/nasa/types/` | `Nasa7Species`, `Nasa9Species`, `NasaDatabase` |
+| Behaviour | `common/thermal/utils/nasa/interfaces/` | `NasaThermo`, `NasaMethod<V>` |
+
 ### Material catalogue and mix composition (September 2026)
 
 One construct per file. API: [`REFRACTORY_API_SPEC.md`](api/REFRACTORY_API_SPEC.md) §13–14, [`METALS_API_SPEC.md`](api/METALS_API_SPEC.md).

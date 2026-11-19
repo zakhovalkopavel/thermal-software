@@ -11,8 +11,8 @@
 
 import { EquationTypeDto } from '../../../../src/common/thermal/dto/equation-type.dto';
 import { RefKey } from '../../../../src/common/thermal/enum/ref-key.enum';
-import { EquationValue } from '../../../../src/common/thermal/interfaces/equation-value.interface';
-import { CompoundValue } from '../../../../src/common/thermal/interfaces/compound-value.interface';
+import { EquationValue } from '../../../../src/common/thermal/types/equation-value.type';
+import { CompoundValue } from '../../../../src/common/thermal/types/compound-value.type';
 import { LinearEquationMethod } from '../../../../src/common/thermal/utils/equation-methods/linear-equation-method';
 import { DipprEquation107Method } from '../../../../src/common/thermal/utils/equation-methods/dippr-equation-107-method';
 import { SutherlandEquationMethod } from '../../../../src/common/thermal/utils/equation-methods/sutherland-equation-method';
@@ -23,7 +23,7 @@ import { compoundNasaThermo } from '../../../../src/common/thermal/utils/nasa';
 import { N2, CO2 } from '../../../../src/common/thermal/compound/gas';
 import { GasPropertiesService } from '../../../../src/modules/thermodynamics/services/gas-properties.service';
 import { CompoundData } from '../../../../src/common/thermal/utils/compound-data';
-import { CompoundDataEquationValue } from '../../../../src/common/thermal/utils/compound-data/interfaces/equation/compound-data-equation-value.interface';
+import { CompoundDataEquationValue } from '../../../../src/common/thermal/utils/compound-data/types/equation/compound-data-equation-value.type';
 
 const linearEntry: EquationValue = {
   type: EquationTypeDto.linear,

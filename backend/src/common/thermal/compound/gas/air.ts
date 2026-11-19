@@ -1,4 +1,4 @@
-import { CompoundValue } from '../../interfaces/compound-value.interface';
+import { CompoundValue } from '../../types/compound-value.type';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
 import { COMPOUND_LIBRARY } from '../../../chemistry';

@@ -1,7 +1,8 @@
 # Common Thermal Library — Reference
 
 **Path:** `backend/src/common/thermal/`  
-**Last Updated:** May 2026  
+**Last Updated:** November 2026  
+
 **Purpose:** Shared, framework-agnostic thermophysical data and utilities used by
 the thermodynamics module and any future modules that need gas-phase property data.
 
@@ -26,9 +27,8 @@ backend/src/common/thermal/
 │       ├── air.composition.ts  ← AIR_MOLE_COMPOSITION (dry air mole fractions)
 │       └── index.ts
 ├── interfaces/
-│   ├── compound-value.interface.ts   ← CompoundValue (core data shape)
-│   └── equation-value.interface.ts  ← EquationValue (one correlation entry)
-├── types/                      ← data shapes (EquationValidity, EvaluationResult, …)
+│   └── equation.interface.ts   ← Equation<T> (behavioural contract only)
+├── types/                      ← data shapes (CompoundValue, EquationValue, EquationValidity, …)
 ├── type/                       ← coefficient type aliases (one per file; legacy singular)
 │   ├── nasa7-equation.ts
 │   ├── nasa9-equation.ts
@@ -48,10 +48,10 @@ backend/src/common/thermal/
     ├── common.ts               ← Common helper methods (static)
     ├── equation-validity.ts    ← EquationValidity (warn-and-clamp boundary helpers)
     ├── equation-methods/       ← one class per correlation (NASA-7/9, DIPPR, …)
-    ├── nasa/                   ← NASA database loader, nasa7Species / nasa9Species, compoundNasa*
+    ├── nasa/                   ← loader + NasaThermo/NasaMethod interfaces; species shapes in types/
     ├── compound-properties/    ← CompoundPropertyResolver, heatCapacityEntries
     └── compound-data/          ← loaders + static helper classes (CompoundText, CompoundValueBuilder,
-                                   CompoundSearch, CompoundGasBounds); shapes in interfaces/
+                                   CompoundSearch, CompoundGasBounds); JSON shapes in types/
 
 backend/src/common/chemistry/   ← elements, formulas, compound molar masses (see below)
 backend/src/common/utils/       ← numerics: bessel/, root-finding/, optimization/, regression/,
@@ -103,12 +103,12 @@ all except CO2, O2 and NO2 have a `nasa9Key` (in `nasa9.json` those keys hold ot
 
 ---
 
-## CompoundValue Interface
+## CompoundValue
 
-**File:** `interfaces/compound-value.interface.ts`
+**File:** `types/compound-value.type.ts` (data shape — `export type`, not `interface`)
 
 ```typescript
-export interface CompoundValue {
+export type CompoundValue = {
   name: string;
   chemicalFormula: string;
   Mr: number;                           // kg/mol
@@ -130,7 +130,7 @@ export interface CompoundValue {
   };
   viscosity: { def: number; values: EquationValue[] };
   thermalConductivity: { def: number; values: EquationValue[] };
-}
+};
 ```
 
 `coolpropKey` is compound-data `coolprop[0]` (CoolProp `INFO.NAME` matched by CAS)
@@ -164,21 +164,21 @@ The NASA-7 validity range comes from the record (`Tmin`/`Tmax`, 200–6000 K for
 
 ---
 
-## EquationValue Interface
+## EquationValue
 
-**File:** `interfaces/equation-value.interface.ts`
+**File:** `types/equation-value.type.ts` (data shape — `export type`)
 
 One correlation entry inside `heatCapacity.values[]`:
 
 ```typescript
-export interface EquationValue {
+export type EquationValue = {
   type: EquationTypeDto;        // equation family (see below)
   ref: RefKey;                  // literature key — never a raw number
   page?: number;                // page in the reference
   vars: object;                 // coefficient shape depends on `type`
   min: number;                  // valid range lower bound [K]
   max: number;                  // valid range upper bound [K]
-}
+};
 ```
 
 ### Supported equation types (`EquationTypeDto`)

@@ -1,5 +1,5 @@
 import { PHYSICAL_CONSTANTS } from '../../../../common/thermal/constants/physical.constants';
-import { CompoundValue } from '../../../../common/thermal/interfaces/compound-value.interface';
+import { CompoundValue } from '../../../../common/thermal/types/compound-value.type';
 import { CHAPMAN_ENSKOG } from '../../constants/chapman-enskog.constants';
 import { CHUNG_THERMAL_CONDUCTIVITY } from '../../constants/chung-thermal-conductivity.constants';
 import { NeufeldCollisionIntegrals } from '../chapman-enskog/neufeld-collision-integrals';

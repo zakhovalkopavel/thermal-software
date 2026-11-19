@@ -8,8 +8,8 @@ import {
   NasaThermo,
 } from '../../../common/thermal/utils/nasa';
 import { GAS_REGISTRY } from '../../../common/thermal/compound/gas/registry';
-import { CompoundValue } from '../../../common/thermal/interfaces/compound-value.interface';
-import { EquationValue } from '../../../common/thermal/interfaces/equation-value.interface';
+import { CompoundValue } from '../../../common/thermal/types/compound-value.type';
+import { EquationValue } from '../../../common/thermal/types/equation-value.type';
 import type {
   EquationValidity as EquationValidityStatus,
   EvaluationResult,

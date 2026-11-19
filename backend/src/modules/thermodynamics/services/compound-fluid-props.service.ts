@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GAS_REGISTRY } from '../../../common/thermal/compound/gas/registry';
-import { CompoundValue } from '../../../common/thermal/interfaces/compound-value.interface';
+import { CompoundValue } from '../../../common/thermal/types/compound-value.type';
 import {
   EquationValidity,
   EvaluationResult,

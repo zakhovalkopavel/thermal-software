@@ -1,7 +1,7 @@
-import { CompoundDataEquationValue } from '../../interfaces/equation/compound-data-equation-value.interface';
+import { CompoundDataEquationValue } from '../../types/equation/compound-data-equation-value.type';
 import { CompoundDataPhase } from '../property/compound-data-phase.type';
-import { CompoundDataPropertyValue } from '../../interfaces/property/compound-data-property-value.interface';
-import { CompoundDataRawValue } from '../../interfaces/property/compound-data-raw-value.interface';
+import { CompoundDataPropertyValue } from '../../types/property/compound-data-property-value.type';
+import { CompoundDataRawValue } from '../../types/property/compound-data-raw-value.type';
 
 export type CompoundDataUnresolvedValue = { property: string; phase: CompoundDataPhase | null } & (
   | CompoundDataPropertyValue

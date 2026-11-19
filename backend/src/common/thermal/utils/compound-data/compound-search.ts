@@ -1,10 +1,10 @@
 import { COMPOUND_SEARCH_LIMITS } from './constants/compound-search-limits.constants';
 import { COMPOUND_SEARCH_RANK } from './constants/compound-search-rank.constants';
 import { CompoundText } from './compound-text';
-import { CompoundDataIndexEntry } from './interfaces/dataset/compound-data-index-entry.interface';
-import { CompoundSearchDoc } from './interfaces/search/compound-search-doc.interface';
-import { CompoundSearchHit } from './interfaces/search/compound-search-hit.interface';
-import { CompoundSearchOptions } from './interfaces/search/compound-search-options.interface';
+import { CompoundDataIndexEntry } from './types/dataset/compound-data-index-entry.type';
+import { CompoundSearchDoc } from './types/search/compound-search-doc.type';
+import { CompoundSearchHit } from './types/search/compound-search-hit.type';
+import { CompoundSearchOptions } from './types/search/compound-search-options.type';
 import { CompoundData } from './compound-data';
 
 /**

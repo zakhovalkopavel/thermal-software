@@ -1,5 +1,5 @@
-import { CompoundValue } from '../../interfaces/compound-value.interface';
-import { EquationValue } from '../../interfaces/equation-value.interface';
+import { CompoundValue } from '../../types/compound-value.type';
+import { EquationValue } from '../../types/equation-value.type';
 import { EvaluationResult } from '../../types/evaluation-result.type';
 import { EquationValidity } from '../equation-validity';
 import { compoundNasaThermo, evaluateNasaThermo } from '../nasa';

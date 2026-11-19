@@ -1,6 +1,6 @@
 import { STANDARD_CONDITIONS } from '../../../../common/thermal/constants/standard-conditions.constants';
 import { GAS_REGISTRY } from '../../../../common/thermal/compound/gas/registry';
-import { CompoundValue } from '../../../../common/thermal/interfaces/compound-value.interface';
+import { CompoundValue } from '../../../../common/thermal/types/compound-value.type';
 import { EvaluationResult } from '../../../../common/thermal/types/evaluation-result.type';
 import { CompoundPropertyResolver } from '../../../../common/thermal/utils/compound-properties/compound-property-resolver';
 import { MixtureValidity } from '../../../../common/thermal/types/mixture-validity.type';

@@ -5,7 +5,7 @@ import { CompoundFluidPropsService } from './compound-fluid-props.service';
 import { Species, CorrelationName } from '../enums';
 import { PHYSICAL_CONSTANTS, STANDARD_CONDITIONS } from '../../../common/thermal';
 import { FLUID_REGISTRY } from '../../../common/thermal/compound/gas';
-import { CompoundValue } from '../../../common/thermal/interfaces/compound-value.interface';
+import { CompoundValue } from '../../../common/thermal/types/compound-value.type';
 import { CompoundValueBuilder } from '../../../common/thermal/utils/compound-data';
 import { FluidBaseInputDto } from '../dto/fluid/fluid-base-input.dto';
 import { FluidCpResultDto } from '../dto/fluid/fluid-cp-result.dto';

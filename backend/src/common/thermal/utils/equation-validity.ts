@@ -1,4 +1,4 @@
-import { EquationValue } from '../interfaces/equation-value.interface';
+import { EquationValue } from '../types/equation-value.type';
 import {
   EquationValidity as EquationValidityStatus,
   EvaluationResult,

@@ -2,11 +2,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
-import { EquationValue } from '../../interfaces/equation-value.interface';
-import { CompoundDataIndexFile } from './interfaces/dataset/compound-data-index-file.interface';
-import { CompoundDataEquationValue } from './interfaces/equation/compound-data-equation-value.interface';
+import { EquationValue } from '../../types/equation-value.type';
+import { CompoundDataIndexFile } from './types/dataset/compound-data-index-file.type';
+import { CompoundDataEquationValue } from './types/equation/compound-data-equation-value.type';
 import { CompoundDataRef } from './types/property/compound-data-ref.type';
-import { CompoundDataCompoundFile } from './interfaces/record/compound-data-compound-file.interface';
+import { CompoundDataCompoundFile } from './types/record/compound-data-compound-file.type';
 
 const REF_KEYS = new Set<string>(Object.values(RefKey));
 const EQUATION_TYPES = new Set<string>(Object.values(EquationTypeDto));

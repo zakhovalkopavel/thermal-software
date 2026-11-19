@@ -1,4 +1,4 @@
-import { CompoundValue } from '../../interfaces/compound-value.interface';
+import { CompoundValue } from '../../types/compound-value.type';
 import { RefKey } from '../../enum/ref-key.enum';
 import { Nasa7EquationMethod } from '../equation-methods/nasa7-equation-method';
 import { Nasa9EquationMethod } from '../equation-methods/nasa9-equation-method';

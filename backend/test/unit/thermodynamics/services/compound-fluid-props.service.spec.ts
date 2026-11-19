@@ -1,6 +1,6 @@
 import { EquationTypeDto } from '../../../../src/common/thermal/dto/equation-type.dto';
 import { RefKey } from '../../../../src/common/thermal/enum/ref-key.enum';
-import { CompoundValue } from '../../../../src/common/thermal/interfaces/compound-value.interface';
+import { CompoundValue } from '../../../../src/common/thermal/types/compound-value.type';
 import { FLUID_REGISTRY } from '../../../../src/common/thermal/compound/gas';
 import { PHYSICAL_CONSTANTS } from '../../../../src/common/thermal/constants/physical.constants';
 import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-properties/compound-property-resolver';

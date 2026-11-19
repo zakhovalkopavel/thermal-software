@@ -1,5 +1,5 @@
-export type { Nasa7Species } from './interfaces/nasa7-species.interface';
-export type { Nasa9Species } from './interfaces/nasa9-species.interface';
+export type { Nasa7Species } from './types/nasa7-species.type';
+export type { Nasa9Species } from './types/nasa9-species.type';
 export type { NasaThermo } from './interfaces/nasa-thermo.interface';
 export { nasa7Species } from './nasa7-species.util';
 export { nasa9Species } from './nasa9-species.util';

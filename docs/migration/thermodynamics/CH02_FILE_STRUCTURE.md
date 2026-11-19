@@ -48,9 +48,10 @@ backend/src/common/thermal/
 ├── enum/
 │   └── ref-key.enum.ts                   ← enum RefKey — 23 entries (Szargut … NASA9)
 ├── interfaces/
-│   ├── equation.interface.ts             ← interface Equation<T> { calculate, calculateAverage, integral }
-│   ├── equation-value.interface.ts       ← interface EquationValue { type, ref: RefKey, page?, vars, min, max, k? }
-│   ├── compound-value.interface.ts       ← interface CompoundValue (name, Mr, nasa7?, nasa9?, heatCapacity, viscosity, thermalConductivity, …)
+│   └── equation.interface.ts             ← interface Equation<T> { calculate, calculateAverage, integral }
+├── types/
+│   ├── equation-value.type.ts            ← type EquationValue { type, ref: RefKey, page?, vars, min, max, k? }
+│   ├── compound-value.type.ts            ← type CompoundValue (name, Mr, nasa7Key?, nasa9Key?, heatCapacity, …)
 │   └── index.ts
 ├── type/
 │   ├── linear-equation.ts                ← type LinearEquation { a, b }

@@ -33,7 +33,7 @@ The JSON format is described by the backend interfaces in [utils/compound-data/]
   - hydroxides put H after O: NaOH, Ba(OH)2 → BaO2H2.
 
   Examples: TiO2, TiI, TiF4, ZnB4O9, Al2SiO5, Al6Si2O13, MgAl2O4, NH3, N2H4, SiC, XeF2. Element counts carry no structure, so hydrates and double salts are not rebuilt (LiCl·H2O → LiH2OCl).
-- **Coefficients:** every coefficient row is stored in the backend form `EquationValue` = `{type, ref, page?, vars, min, max, k?}` (see [equation-value.interface.ts](../../backend/src/common/thermal/interfaces/equation-value.interface.ts)).
+- **Coefficients:** every coefficient row is stored in the backend form `EquationValue` = `{type, ref, page?, vars, min, max, k?}` (see [equation-value.type.ts](../../backend/src/common/thermal/types/equation-value.type.ts)).
   - `vars` hold the source's verbatim numbers.
   - `k` converts the result to the backend unit, as the existing entries do (e.g. CO2 Perry7 DIPPR 107 uses `k: 1e-3`).
 - **Molten density:** stored as a backend `linear` equation, plus the verbatim row in `raw`.
