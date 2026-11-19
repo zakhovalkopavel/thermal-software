@@ -2,7 +2,7 @@ import { STANDARD_CONDITIONS } from '../../constants/standard-conditions.constan
 import { EquationValue } from '../../interfaces/equation-value.interface';
 import { GAS_COMPOUND_BINDING } from '../../compound/gas/gas-compound-binding';
 import { Common } from '../common';
-import { clampLimits } from '../equation-validity.util';
+import { EquationValidity } from '../equation-validity';
 import { BOILING_TEMPERATURE } from './constants/boiling-temperature.constants';
 import { CompoundText } from './compound-text';
 import { GasTemperatureBounds } from './interfaces/bounds/gas-temperature-bounds.interface';
@@ -85,7 +85,7 @@ export class CompoundGasBounds {
   ): number | null {
     if (!(P_Pa > 0)) return null;
     if (entry.min == null || entry.max == null) return null;
-    const { lo, hi } = clampLimits(entry.min, entry.max);
+    const { lo, hi } = EquationValidity.clampLimits(entry.min, entry.max);
     if (!(hi > lo) || !Number.isFinite(lo) || !Number.isFinite(hi)) return null;
 
     const method = Common.equation(entry.type);

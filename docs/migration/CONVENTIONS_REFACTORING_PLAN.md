@@ -1,6 +1,7 @@
 # Conventions Refactoring Plan
 
-**Status:** In progress — Phase 3.1 (`common/` V5 folder moves) underway; Phase 2 committed  
+**Status:** In progress — Phase 3.3 done; next 3.4–3.5; Phase 2 committed  
+
 **Branch:** `refactoring`  
 **Goal:** bring the backend in line with [`CONVENTIONS.md`](../CONVENTIONS.md) (one construct per file,
 folder-per-construct, service / static-class / function rules, file-length limits) **without changing behaviour**.  
@@ -157,7 +158,7 @@ Highest fan-out: every module imports this. Keep barrels stable; no export renam
 |------|--------|-----------|
 | 3.1 | Move 26 `.interface.ts` / 13 `.type.ts` / 3 `.constants.ts` into their construct folders (e.g. `common/utils/quadrature/*.interface.ts` → `common/utils/quadrature/interfaces/`); `gas-compound-query.type.ts` out of `interfaces/` into `types/`. Pure moves + import rewrites. | ✅ V5 → 0 for `common/`; plain data shapes moved as `types/*.type.ts` (D1). |
 | 3.2 | `equation-validity.interface.ts` (interface + type) and `evaluate-nasa-thermo.util.ts` (function + type) → one construct per file. | ✅ Also split `janaf-index-file` V1; data shapes → `types/*.type.ts`. |
-| 3.3 | `equation-validity.util.ts` (6 free functions) → static class `EquationValidity` (keep thin function re-exports **only** if needed for a deprecation window; remove at the end of the phase). Update callers (`CompoundGasBounds`, `compound-fluid-props`, etc.). | **CP3.3:** common thermal tests (188-line spec today) extended to cover the 6 functions *before* the move; V3 −1. |
+| 3.3 | `equation-validity.util.ts` (6 free functions) → static class `EquationValidity` (keep thin function re-exports **only** if needed for a deprecation window; remove at the end of the phase). Update callers (`CompoundGasBounds`, `compound-fluid-props`, etc.). | ✅ `utils/equation-validity.ts`; no free-function re-exports; callers + `equation-validity.spec.ts` updated (incl. `clampLimits` / `buildAverageValidity`); V3 −1 / V1 −1 for this file. Type stays `types/equation-validity.type.ts` (import class from `utils/`, status from `types/`). |
 | 3.4 | `common/thermal` data-shape interfaces (45) → `type` (D1) as part of 3.1–3.2 where files are touched. Compound/equation `type/` and `enum/` folders stay. | **CP3:** V4 for `common/` reduced to interfaces with real behaviour (`Equation<T>` etc.). |
 | 3.5 | `docs/services/COMMON_THERMAL_LIBRARY.md` + `docs/INTERFACES_IMPLEMENTATION_INDEX.md` updated. | C9. |
 

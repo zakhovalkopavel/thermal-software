@@ -1,10 +1,7 @@
 import { CompoundValue } from '../../interfaces/compound-value.interface';
 import { EquationValue } from '../../interfaces/equation-value.interface';
 import { EvaluationResult } from '../../types/evaluation-result.type';
-import {
-  evaluateEquation,
-  evaluateEquationAverage,
-} from '../equation-validity.util';
+import { EquationValidity } from '../equation-validity';
 import { compoundNasaThermo, evaluateNasaThermo } from '../nasa';
 import { heatCapacityEntries } from './heat-capacity-entries.util';
 import { PreferredApprox } from './types/preferred-approx.type';
@@ -73,7 +70,7 @@ export class CompoundPropertyResolver {
 
   heatCapacityResult(T: number, preferred?: PreferredApprox): EvaluationResult {
     const entry = resolveEntry(heatCapacityEntries(this.compound), preferred, T);
-    return evaluateEquation(entry, T);
+    return EquationValidity.evaluateEquation(entry, T);
   }
 
   /**
@@ -87,7 +84,7 @@ export class CompoundPropertyResolver {
   heatCapacityAverageResult(T1: number, T2: number, preferred?: PreferredApprox): EvaluationResult {
     const mid = 0.5 * (T1 + T2);
     const entry = resolveEntry(heatCapacityEntries(this.compound), preferred, mid);
-    return evaluateEquationAverage(entry, T1, T2);
+    return EquationValidity.evaluateEquationAverage(entry, T1, T2);
   }
 
   // ─── Enthalpy ───────────────────────────────────────────────────────────────
@@ -192,7 +189,7 @@ export class CompoundPropertyResolver {
 
   viscosityResult(T: number, preferred?: PreferredApprox): EvaluationResult {
     const entry = resolveEntry(this.compound.viscosity, preferred, T);
-    return evaluateEquation(entry, T);
+    return EquationValidity.evaluateEquation(entry, T);
   }
 
   // ─── Thermal conductivity ───────────────────────────────────────────────────
@@ -207,6 +204,6 @@ export class CompoundPropertyResolver {
 
   thermalConductivityResult(T: number, preferred?: PreferredApprox): EvaluationResult {
     const entry = resolveEntry(this.compound.thermalConductivity, preferred, T);
-    return evaluateEquation(entry, T);
+    return EquationValidity.evaluateEquation(entry, T);
   }
 }

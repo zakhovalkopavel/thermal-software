@@ -39,7 +39,7 @@ export class Common {
     return data.reduce((a, b) => a + b, 0) / data.length;
   }
 
-  /** Clamp x into [min, max]. Callers that need boundary metadata should use `buildTemperatureValidity`. */
+  /** Clamp x into [min, max]. Callers that need boundary metadata should use `EquationValidity.buildTemperatureValidity`. */
   static validInterval(x: number, min: number, max: number): number {
     return x < min ? min : x > max ? max : x;
   }

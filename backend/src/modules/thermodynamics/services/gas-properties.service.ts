@@ -7,21 +7,16 @@ import {
   evaluateNasaThermo,
   NasaThermo,
 } from '../../../common/thermal/utils/nasa';
-import {
-  aggregateMixtureValidity,
-  clampLimits,
-  evaluateEquation,
-  evaluateEquationAverage,
-} from '../../../common/thermal/utils/equation-validity.util';
 import { GAS_REGISTRY } from '../../../common/thermal/compound/gas/registry';
 import { CompoundValue } from '../../../common/thermal/interfaces/compound-value.interface';
 import { EquationValue } from '../../../common/thermal/interfaces/equation-value.interface';
-import {
-  EquationValidity,
+import type {
+  EquationValidity as EquationValidityStatus,
   EvaluationResult,
   MixtureValidity,
 } from '../../../common/thermal/types';
 import { Common } from '../../../common/thermal/utils/common';
+import { EquationValidity } from '../../../common/thermal/utils/equation-validity';
 import { Species } from '../enums/species.enum';
 import { GasDensity } from '../utils/density/gas-density';
 import { CpComparisonEntryDto } from '../dto/gas-properties/cp-comparison-entry.dto';
@@ -118,7 +113,7 @@ export class GasPropertiesService {
     }
     const { def, values } = heatCapacityEntries(compound);
     const entry = values[def];
-    const { lo, hi } = clampLimits(entry.min, entry.max);
+    const { lo, hi } = EquationValidity.clampLimits(entry.min, entry.max);
     const eq = Common.equation(entry.type);
     const k = entry.k ?? 1;
     const value =
@@ -126,7 +121,7 @@ export class GasPropertiesService {
       - eq.integral(Tref, entry.vars as never, lo, hi, k);
     return {
       value,
-      validity: evaluateEquation(entry, T_K).validity,
+      validity: EquationValidity.evaluateEquation(entry, T_K).validity,
     };
   }
 
@@ -200,14 +195,14 @@ export class GasPropertiesService {
     T0_K?: number,
   ): EvaluationResult & { mixtureValidity: MixtureValidity } {
     let cp = 0;
-    const components: Record<string, EquationValidity> = {};
+    const components: Record<string, EquationValidityStatus> = {};
     for (const [sp, y] of Object.entries(moleFractions) as [Species, number][]) {
       if (!y || y <= 0) continue;
       const r = this.cpSpeciesResult(sp, T_K, T0_K);
       cp += y * r.value;
       components[sp] = r.validity;
     }
-    const mixtureValidity = aggregateMixtureValidity(components);
+    const mixtureValidity = EquationValidity.aggregateMixtureValidity(components);
     const anyClamped = Object.values(components).some(v => v.action === 'clamped');
     const anyExtrapolated = Object.values(components).some(v => v.action === 'extrapolated');
     const anyUnknown = Object.values(components).some(v => v.rangeUnknown);
@@ -296,7 +291,7 @@ export class GasPropertiesService {
 
   private _evalEntryResult(entry: EquationValue, T_K: number, T0_K?: number): EvaluationResult {
     return T0_K !== undefined
-      ? evaluateEquationAverage(entry, T0_K, T_K)
-      : evaluateEquation(entry, T_K);
+      ? EquationValidity.evaluateEquationAverage(entry, T0_K, T_K)
+      : EquationValidity.evaluateEquation(entry, T_K);
   }
 }

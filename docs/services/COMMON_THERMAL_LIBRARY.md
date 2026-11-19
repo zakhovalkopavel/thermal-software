@@ -28,7 +28,8 @@ backend/src/common/thermal/
 ├── interfaces/
 │   ├── compound-value.interface.ts   ← CompoundValue (core data shape)
 │   └── equation-value.interface.ts  ← EquationValue (one correlation entry)
-├── type/                       ← coefficient type aliases (one per file)
+├── types/                      ← data shapes (EquationValidity, EvaluationResult, …)
+├── type/                       ← coefficient type aliases (one per file; legacy singular)
 │   ├── nasa7-equation.ts
 │   ├── nasa9-equation.ts
 │   ├── dippr-n107-equation.ts
@@ -45,6 +46,7 @@ backend/src/common/thermal/
 │   └── index.ts
 └── utils/                      ← one export per file, each folder has an index.ts
     ├── common.ts               ← Common helper methods (static)
+    ├── equation-validity.ts    ← EquationValidity (warn-and-clamp boundary helpers)
     ├── equation-methods/       ← one class per correlation (NASA-7/9, DIPPR, …)
     ├── nasa/                   ← NASA database loader, nasa7Species / nasa9Species, compoundNasa*
     ├── compound-properties/    ← CompoundPropertyResolver, heatCapacityEntries
@@ -216,9 +218,31 @@ export interface EquationValue {
 
 ---
 
+## EquationValidity
+
+**File:** `utils/equation-validity.ts`  
+**Data shape:** `types/equation-validity.type.ts` (same name in the type space — import the class
+from `utils/`, the status object from `types/`).
+
+Static helpers for warn-and-clamp boundary metadata on compound equation evaluations:
+
+| Method | Role |
+|--------|------|
+| `clampLimits(min, max)` | Null range → ±Infinity + `rangeUnknown` |
+| `buildTemperatureValidity(T, min, max, opts?)` | Single-T status (`none` / `clamped` / `extrapolated`) |
+| `buildAverageValidity(T1, T2, min, max)` | Endpoint merge for averages |
+| `evaluateEquation(entry, T)` | Value + validity at T |
+| `evaluateEquationAverage(entry, T1, T2)` | Average over effective interval |
+| `aggregateMixtureValidity(components)` | Mixture `allInRange` roll-up |
+
+Used by `CompoundPropertyResolver`, `CompoundGasBounds`, NASA thermo evaluation, and gas/transport
+services. Policy: empirical equations clamp; NASA H/S/G may extrapolate with boundary Cp.
+
+---
+
 ## CompoundPropertyResolver
 
-**File:** `utils/compound-property-resolver.ts`  
+**File:** `utils/compound-properties/compound-property-resolver.ts`  
 **Usage:** All property evaluations **must** go through this class — never call equation-method
 classes directly from business logic (see [CONVENTIONS.md §7](../CONVENTIONS.md)).
 
@@ -274,9 +298,9 @@ The objects are not `as const`: a literal type would break default parameters su
 
 `Common` (`utils/common.ts`) keeps only the helper methods (`logarithmicAverage`, `average`, `validInterval`, `isValidInterval`, `equation`).
 
-Compound-data domain helpers follow the same **static utility class** pattern (not free-function
-`*.util.ts` files): `CompoundText`, `CompoundValueBuilder`, `CompoundSearch`, `CompoundGasBounds`.
-See [CONVENTIONS.md §1](../CONVENTIONS.md).
+Compound-data and boundary helpers follow the same **static utility class** pattern (not free-function
+`*.util.ts` files): `CompoundText`, `CompoundValueBuilder`, `CompoundSearch`, `CompoundGasBounds`,
+`EquationValidity`. See [CONVENTIONS.md §1](../CONVENTIONS.md).
 
 ---
 

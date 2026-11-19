@@ -3,7 +3,8 @@ import { GAS_REGISTRY } from '../../../../common/thermal/compound/gas/registry';
 import { CompoundValue } from '../../../../common/thermal/interfaces/compound-value.interface';
 import { EvaluationResult } from '../../../../common/thermal/types/evaluation-result.type';
 import { CompoundPropertyResolver } from '../../../../common/thermal/utils/compound-properties/compound-property-resolver';
-import { aggregateMixtureValidity } from '../../../../common/thermal/utils/equation-validity.util';
+import { MixtureValidity } from '../../../../common/thermal/types/mixture-validity.type';
+import { EquationValidity } from '../../../../common/thermal/utils/equation-validity';
 import { MIXTURE_VISCOSITY } from '../../constants/mixture-viscosity.constants';
 import { Species } from '../../enums/species.enum';
 import { GasDensity } from '../density/gas-density';
@@ -96,7 +97,7 @@ export class GasViscosity {
     T_K: number,
     P_Pa: number = STANDARD_CONDITIONS.PRESSURE_PA,
   ): EvaluationResult & {
-    mixtureValidity: ReturnType<typeof aggregateMixtureValidity>;
+    mixtureValidity: MixtureValidity;
     method: 'Wilke' | 'Chung1988';
   } {
     const species = (Object.keys(moleFractions) as Species[])
@@ -146,7 +147,7 @@ export class GasViscosity {
       methodMsg = `Wilke dilute μ_mix + Chung Δη(y=${yDens.toExponential(2)}, V from GasDensity).`;
     }
 
-    const mixtureValidity = aggregateMixtureValidity(components);
+    const mixtureValidity = EquationValidity.aggregateMixtureValidity(components);
     const anyClamped = Object.values(components).some((v) => v.action === 'clamped');
     const anyExtrapolated = Object.values(components).some((v) => v.action === 'extrapolated');
     const anyUnknown = Object.values(components).some((v) => v.rangeUnknown);

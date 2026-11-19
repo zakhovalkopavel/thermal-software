@@ -4,9 +4,8 @@ import { STANDARD_CONDITIONS } from '../../../common/thermal/constants/standard-
 import { GAS_REGISTRY } from '../../../common/thermal/compound/gas/registry';
 import { EvaluationResult } from '../../../common/thermal/types/evaluation-result.type';
 import { CompoundPropertyResolver } from '../../../common/thermal/utils/compound-properties/compound-property-resolver';
-import {
-  aggregateMixtureValidity,
-} from '../../../common/thermal/utils/equation-validity.util';
+import { MixtureValidity } from '../../../common/thermal/types/mixture-validity.type';
+import { EquationValidity } from '../../../common/thermal/utils/equation-validity';
 import { Species } from '../enums/species.enum';
 import { MIXTURE_THERMAL_CONDUCTIVITY } from '../constants/mixture-thermal-conductivity.constants';
 import { HirschfelderEucken } from '../utils/conductivity/hirschfelder-eucken';
@@ -60,7 +59,7 @@ export class TransportService {
     T_K: number,
     P_Pa: number = STANDARD_CONDITIONS.PRESSURE_PA,
   ): EvaluationResult & {
-    mixtureValidity: ReturnType<typeof aggregateMixtureValidity>;
+    mixtureValidity: MixtureValidity;
     method: 'Wilke' | 'Chung1988';
   } {
     return GasViscosity.forMixture(moleFractions, T_K, P_Pa);
@@ -129,7 +128,7 @@ export class TransportService {
     cpBySpecies: Partial<Record<Species, number>>,
     P_Pa: number = STANDARD_CONDITIONS.PRESSURE_PA,
   ): EvaluationResult & {
-    mixtureValidity: ReturnType<typeof aggregateMixtureValidity>;
+    mixtureValidity: MixtureValidity;
     method: 'HirschfelderEucken' | 'Chung1988';
   } {
     const species = (Object.keys(moleFractions) as Species[])
@@ -184,7 +183,7 @@ export class TransportService {
       method = 'HirschfelderEucken';
     }
 
-    const mixtureValidity = aggregateMixtureValidity(components);
+    const mixtureValidity = EquationValidity.aggregateMixtureValidity(components);
     const anyClamped = Object.values(components).some(v => v.action === 'clamped');
     const anyExtrapolated = Object.values(components).some(v => v.action === 'extrapolated');
     const anyUnknown = Object.values(components).some(v => v.rangeUnknown);

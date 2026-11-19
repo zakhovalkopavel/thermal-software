@@ -16,12 +16,7 @@ import { CompoundValue } from '../../../../src/common/thermal/interfaces/compoun
 import { LinearEquationMethod } from '../../../../src/common/thermal/utils/equation-methods/linear-equation-method';
 import { DipprEquation107Method } from '../../../../src/common/thermal/utils/equation-methods/dippr-equation-107-method';
 import { SutherlandEquationMethod } from '../../../../src/common/thermal/utils/equation-methods/sutherland-equation-method';
-import {
-  aggregateMixtureValidity,
-  buildTemperatureValidity,
-  evaluateEquation,
-  evaluateEquationAverage,
-} from '../../../../src/common/thermal/utils/equation-validity.util';
+import { EquationValidity } from '../../../../src/common/thermal/utils/equation-validity';
 import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-properties/compound-property-resolver';
 import { evaluateNasaThermo } from '../../../../src/common/thermal/utils/nasa/evaluate-nasa-thermo.util';
 import { compoundNasaThermo } from '../../../../src/common/thermal/utils/nasa';
@@ -38,9 +33,25 @@ const linearEntry: EquationValue = {
   max: 1500,
 };
 
-describe('buildTemperatureValidity', () => {
+describe('EquationValidity.clampLimits', () => {
+  it('finite range → lo/hi as given, rangeUnknown false', () => {
+    const lim = EquationValidity.clampLimits(200, 1500);
+    expect(lim.lo).toBe(200);
+    expect(lim.hi).toBe(1500);
+    expect(lim.rangeUnknown).toBe(false);
+  });
+
+  it('null range → ±Infinity and rangeUnknown', () => {
+    const lim = EquationValidity.clampLimits(null, null);
+    expect(lim.lo).toBe(Number.NEGATIVE_INFINITY);
+    expect(lim.hi).toBe(Number.POSITIVE_INFINITY);
+    expect(lim.rangeUnknown).toBe(true);
+  });
+});
+
+describe('EquationValidity.buildTemperatureValidity', () => {
   it('in-range → action none, effectiveT = requestedT', () => {
-    const v = buildTemperatureValidity(500, 200, 1500);
+    const v = EquationValidity.buildTemperatureValidity(500, 200, 1500);
     expect(v.inRange).toBe(true);
     expect(v.action).toBe('none');
     expect(v.effectiveT).toBe(500);
@@ -48,7 +59,7 @@ describe('buildTemperatureValidity', () => {
   });
 
   it('below min → clamped + effectiveT = min', () => {
-    const v = buildTemperatureValidity(100, 200, 1500);
+    const v = EquationValidity.buildTemperatureValidity(100, 200, 1500);
     expect(v.inRange).toBe(false);
     expect(v.action).toBe('clamped');
     expect(v.effectiveT).toBe(200);
@@ -56,7 +67,7 @@ describe('buildTemperatureValidity', () => {
   });
 
   it('null range → rangeUnknown, action none, min/max null in metadata', () => {
-    const v = buildTemperatureValidity(500, null, null);
+    const v = EquationValidity.buildTemperatureValidity(500, null, null);
     expect(v.rangeUnknown).toBe(true);
     expect(v.inRange).toBe(false);
     expect(v.action).toBe('none');
@@ -66,10 +77,29 @@ describe('buildTemperatureValidity', () => {
   });
 });
 
-describe('evaluateEquation — warn-and-clamp', () => {
+describe('EquationValidity.buildAverageValidity', () => {
+  it('both ends in range → action none', () => {
+    const v = EquationValidity.buildAverageValidity(300, 400, 200, 1500);
+    expect(v.inRange).toBe(true);
+    expect(v.action).toBe('none');
+    expect(v.effectiveT).toBe(300);
+    expect(v.effectiveT2).toBe(400);
+  });
+
+  it('one end OOR → clamped + effective endpoints', () => {
+    const v = EquationValidity.buildAverageValidity(100, 400, 200, 1500);
+    expect(v.inRange).toBe(false);
+    expect(v.action).toBe('clamped');
+    expect(v.effectiveT).toBe(200);
+    expect(v.effectiveT2).toBe(400);
+    expect(v.message).toMatch(/Average interval/);
+  });
+});
+
+describe('EquationValidity.evaluateEquation — warn-and-clamp', () => {
   it('out-of-range returns clamped value + action clamped + effectiveT', () => {
-    const r = evaluateEquation(linearEntry, 100);
-    const atMin = evaluateEquation(linearEntry, 200);
+    const r = EquationValidity.evaluateEquation(linearEntry, 100);
+    const atMin = EquationValidity.evaluateEquation(linearEntry, 200);
     expect(r.value).toBeCloseTo(atMin.value, 10);
     expect(r.validity.action).toBe('clamped');
     expect(r.validity.effectiveT).toBe(200);
@@ -79,14 +109,14 @@ describe('evaluateEquation — warn-and-clamp', () => {
 
   it('null min/max → rangeUnknown, value evaluated at requested T (no clamp)', () => {
     const unknown: EquationValue = { ...linearEntry, min: null, max: null };
-    const r = evaluateEquation(unknown, 100);
+    const r = EquationValidity.evaluateEquation(unknown, 100);
     expect(r.validity.rangeUnknown).toBe(true);
     expect(r.validity.action).toBe('none');
     expect(r.value).toBeCloseTo(25 + 0.01 * 100, 10);
   });
 });
 
-describe('evaluateEquationAverage — denominator uses effective interval', () => {
+describe('EquationValidity.evaluateEquationAverage — denominator uses effective interval', () => {
   const vars = { a: 10, b: 2 };
   const m = new LinearEquationMethod();
 
@@ -103,7 +133,7 @@ describe('evaluateEquationAverage — denominator uses effective interval', () =
   });
 
   it('validity for average marks clamped when an endpoint is OOR', () => {
-    const r = evaluateEquationAverage(linearEntry, 100, 400);
+    const r = EquationValidity.evaluateEquationAverage(linearEntry, 100, 400);
     expect(r.validity.action).toBe('clamped');
     expect(r.validity.effectiveT).toBe(200);
     expect(r.validity.effectiveT2).toBe(400);
@@ -169,10 +199,16 @@ describe('Mixture with one OOR component', () => {
   });
 
   it('aggregateMixtureValidity requires every component inRange', () => {
-    const ok = buildTemperatureValidity(300, 200, 1500);
-    const bad = buildTemperatureValidity(100, 200, 1500);
-    const agg = aggregateMixtureValidity({ N2: ok, CO2: bad });
+    const ok = EquationValidity.buildTemperatureValidity(300, 200, 1500);
+    const bad = EquationValidity.buildTemperatureValidity(100, 200, 1500);
+    const agg = EquationValidity.aggregateMixtureValidity({ N2: ok, CO2: bad });
     expect(agg.allInRange).toBe(false);
+  });
+
+  it('aggregateMixtureValidity allInRange when every component is in range', () => {
+    const ok = EquationValidity.buildTemperatureValidity(300, 200, 1500);
+    const agg = EquationValidity.aggregateMixtureValidity({ N2: ok, CO2: ok });
+    expect(agg.allInRange).toBe(true);
   });
 });
 

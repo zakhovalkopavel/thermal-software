@@ -1,5 +1,5 @@
 import { EvaluationResult } from '../../types/evaluation-result.type';
-import { buildTemperatureValidity } from '../equation-validity.util';
+import { EquationValidity } from '../equation-validity';
 import { NasaThermo } from './interfaces/nasa-thermo.interface';
 import { NasaThermoProperty } from './types/nasa-thermo-property.type';
 
@@ -18,7 +18,7 @@ export function evaluateNasaThermo(
   if (property === 'cp') {
     return {
       value,
-      validity: buildTemperatureValidity(T, nasa.Tmin, nasa.Tmax),
+      validity: EquationValidity.buildTemperatureValidity(T, nasa.Tmin, nasa.Tmax),
     };
   }
 
@@ -27,7 +27,7 @@ export function evaluateNasaThermo(
   const effectiveT = Math.min(Math.max(T, nasa.Tmin), nasa.Tmax);
   return {
     value,
-    validity: buildTemperatureValidity(T, nasa.Tmin, nasa.Tmax, {
+    validity: EquationValidity.buildTemperatureValidity(T, nasa.Tmin, nasa.Tmax, {
       action,
       message: inRange
         ? undefined
