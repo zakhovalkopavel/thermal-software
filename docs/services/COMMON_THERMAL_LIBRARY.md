@@ -86,9 +86,12 @@ Sixteen pure-species compounds, keyed by the `Species` enum from the thermodynam
 Each compound object (`CompoundValue`) carries:
 - `Mr` — molar mass [kg/mol]
 - `enthalpyFormation298?`, `gibbsEnergy298?` — formation data [J/mol]; optional with a NASA key
-- `collisionDiameter?` [Å], `epsilonToKb?` [K] — Lennard-Jones parameters for Chapman-Enskog; absent when
-  no published value exists (`DiffusionService` then throws)
-- `sutherlandParams?: { mu0, T0, S }` — Sutherland viscosity parameters
+- `collisionDiameter?` [Å], `epsilonToKb?` [K] — Lennard-Jones parameters for Chapman–Enskog; absent when
+  no published value exists (`DiffusionService` / CE \(\mu\) then throw)
+- `stockmayerDelta?` [-] — Stockmayer polar parameter when published (CE Stockmayer branch)
+- `viscosity: { def, values }` — gas viscosity equations; `def` is the Huber2019 MAPE winner when that
+  table covers the species (else the Perry8 → Yaws1999 → VDI2010 → White3 list head). Sutherland is a
+  normal `EquationValue` row, used only when it is `def`.
 - `nasa7Key?` — exact species key in `shared/processed/NASA/nasa7.json` (e.g. `"N2"`, `"C4H10,isobutane"`)
 - `nasa9Key?` — exact species key in `shared/processed/NASA/nasa9.json` (e.g. `"N2"`, `"Air"`)
 - `heatCapacity?: { def, values: EquationValue[] }` — tabulated Cp correlations; optional when a NASA key is given
@@ -111,15 +114,30 @@ export interface CompoundValue {
   gibbsEnergy298?: number;              // J/mol (optional when a NASA key is present)
   collisionDiameter?: number;           // Å (Lennard-Jones σ; absent without a published value)
   epsilonToKb?: number;                 // K  (Lennard-Jones ε/k)
-  sutherlandParams?: { mu0: number; T0: number; S: number };
+  stockmayerDelta?: number;             // [-] Stockmayer δ (polar CE)
+  criticalTemperature?: number;         // K
+  criticalPressure?: number;            // Pa (Peng–Robinson fallback)
+  criticalVolume?: number;              // m³/mol
+  acentricFactor?: number;              // [-]
+  coolpropKey?: string;                 // CoolProp fluid NAME → Helmholtz ρ + TRANSPORT λ
   nasa7Key?: string;                    // key in shared/processed/NASA/nasa7.json
   nasa9Key?: string;                    // key in shared/processed/NASA/nasa9.json
   heatCapacity?: {                      // optional when a NASA key is present
     def: number;                        // index of default equation
     values: EquationValue[];
   };
+  viscosity: { def: number; values: EquationValue[] };
+  thermalConductivity: { def: number; values: EquationValue[] };
 }
 ```
+
+`coolpropKey` is compound-data `coolprop[0]` (CoolProp `INFO.NAME` matched by CAS)
+and links `shared/sources/coolprop/fluids/<NAME>.json` for Helmholtz \(\rho(T,P)\)
+and NIST IR 8209 `TRANSPORT.conductivity` residual \(\lambda^r\)
+(`docs/algorithms/thermodynamics/NISTIR_8209_THERMAL_CONDUCTIVITY.md`).
+Density solvers live in `modules/thermodynamics/utils/density/`;
+conductivity in `utils/conductivity/`; viscosity mixers in `utils/viscosity/`
+(see [`HELMHOLTZ_DENSITY.md`](../algorithms/thermodynamics/HELMHOLTZ_DENSITY.md)).
 
 ### NASA databases (`utils/nasa-database.ts`)
 

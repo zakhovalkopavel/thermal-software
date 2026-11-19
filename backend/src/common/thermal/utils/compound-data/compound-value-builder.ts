@@ -4,7 +4,6 @@ import { CompoundText } from './compound-text';
 import { GasCompoundQuery } from './types/gas-compound-query.type';
 import { CompoundDataIndexEntry } from './interfaces/dataset/compound-data-index-entry.interface';
 import { CompoundDataEquationList } from './interfaces/equation/compound-data-equation-list.interface';
-import { CompoundDataEquationValue } from './interfaces/equation/compound-data-equation-value.interface';
 import { CompoundDataPropertyValue } from './interfaces/property/compound-data-property-value.interface';
 import { CompoundDataCompoundFile } from './interfaces/record/compound-data-compound-file.interface';
 import { CompoundDataRecord } from './interfaces/record/compound-data-record.interface';
@@ -20,9 +19,8 @@ export class CompoundValueBuilder {
    * Lennard-Jones σ is converted from metres to angstroms.
    */
   static forGas(key: string, query: GasCompoundQuery): CompoundValue {
-    const { doc, record } = CompoundValueBuilder.matchingRecord(key, query);
+    const { doc, record, meta } = CompoundValueBuilder.matchingRecord(key, query);
     const properties = record.properties ?? {};
-    const gasViscosity = record.equations?.viscosity?.gas?.values ?? [];
     const viscosity = CompoundValueBuilder.equationBucket(
       record.equations?.viscosity?.gas,
       `${key} viscosity`,
@@ -38,16 +36,17 @@ export class CompoundValueBuilder {
 
     const molarMass = record.Mr;
     if (molarMass === undefined) throw new Error(`Compound data record for ${key} has no molar mass`);
-    const sigma = CompoundValueBuilder.lennardJones(properties.collisionDiameter);
-    const epsilon = CompoundValueBuilder.lennardJones(properties.epsilonToKb);
+    const sigma = CompoundValueBuilder.collisionPotential(properties.collisionDiameter);
+    const epsilon = CompoundValueBuilder.collisionPotential(properties.epsilonToKb);
+    const critical = CompoundValueBuilder.criticalScalars(properties);
     const rawName = record.name ?? doc.displayFormula;
     const enthalpy = CompoundValueBuilder.gasPhase(properties.enthalpyFormation298);
     const gibbs = CompoundValueBuilder.gasPhase(properties.gibbsEnergy298);
-    const sutherland = CompoundValueBuilder.sutherlandParams(gasViscosity);
     const heatCapacity = CompoundValueBuilder.equationBucket(
       record.equations?.heatCapacity?.gas,
       `${key} heat capacity`,
     );
+    const coolpropKey = record.coolprop?.[0] ?? meta.coolprop?.[0];
     return {
       name: rawName.charAt(0).toUpperCase() + rawName.slice(1),
       chemicalFormula: doc.displayFormula,
@@ -56,9 +55,10 @@ export class CompoundValueBuilder {
       ...(gibbs !== undefined ? { gibbsEnergy298: gibbs } : {}),
       ...(sigma ? { collisionDiameter: sigma.value * 1e10 } : {}),
       ...(epsilon ? { epsilonToKb: epsilon.value } : {}),
-      ...(sutherland ? { sutherlandParams: sutherland } : {}),
+      ...critical,
       nasa7Key: query.nasa7Key,
       ...(query.nasa9Key ? { nasa9Key: query.nasa9Key } : {}),
+      ...(coolpropKey ? { coolpropKey } : {}),
       ...(heatCapacity ? { heatCapacity } : {}),
       viscosity,
       thermalConductivity,
@@ -81,7 +81,6 @@ export class CompoundValueBuilder {
     }
 
     const properties = record.properties ?? {};
-    const gasViscosity = record.equations?.viscosity?.gas?.values ?? [];
     const viscosity = CompoundValueBuilder.equationBucket(
       record.equations?.viscosity?.gas,
       `${resolved.id} viscosity`,
@@ -101,16 +100,17 @@ export class CompoundValueBuilder {
     );
     const nasa7Key = meta.nasa7?.[0];
     const nasa9Key = meta.nasa9?.[0];
+    const coolpropKey = record.coolprop?.[0] ?? meta.coolprop?.[0];
     if (!heatCapacity && !nasa7Key && !nasa9Key) {
       throw new Error(`Compound data has no gas heat capacity or NASA keys for ${resolved.id}`);
     }
 
     const rawName = record.name ?? meta.name ?? doc.displayFormula;
-    const sigma = CompoundValueBuilder.lennardJones(properties.collisionDiameter);
-    const epsilon = CompoundValueBuilder.lennardJones(properties.epsilonToKb);
+    const sigma = CompoundValueBuilder.collisionPotential(properties.collisionDiameter);
+    const epsilon = CompoundValueBuilder.collisionPotential(properties.epsilonToKb);
+    const critical = CompoundValueBuilder.criticalScalars(properties);
     const enthalpy = CompoundValueBuilder.gasPhase(properties.enthalpyFormation298);
     const gibbs = CompoundValueBuilder.gasPhase(properties.gibbsEnergy298);
-    const sutherland = CompoundValueBuilder.sutherlandParams(gasViscosity);
 
     return {
       name: rawName.charAt(0).toUpperCase() + rawName.slice(1),
@@ -120,9 +120,10 @@ export class CompoundValueBuilder {
       ...(gibbs !== undefined ? { gibbsEnergy298: gibbs } : {}),
       ...(sigma ? { collisionDiameter: sigma.value * 1e10 } : {}),
       ...(epsilon ? { epsilonToKb: epsilon.value } : {}),
-      ...(sutherland ? { sutherlandParams: sutherland } : {}),
+      ...critical,
       ...(nasa7Key ? { nasa7Key } : {}),
       ...(nasa9Key ? { nasa9Key } : {}),
+      ...(coolpropKey ? { coolpropKey } : {}),
       ...(heatCapacity ? { heatCapacity } : {}),
       viscosity,
       thermalConductivity,
@@ -133,10 +134,52 @@ export class CompoundValueBuilder {
     return rows?.find((row) => row.phase === 'gas')?.value;
   }
 
-  private static lennardJones(
+  /**
+   * Prefer Lennard-Jones, then Stockmayer, then corresponding-states σ / ε/k rows.
+   */
+  private static collisionPotential(
     rows: CompoundDataPropertyValue[] | undefined,
   ): CompoundDataPropertyValue | undefined {
-    return rows?.find((row) => row.potential === 'lennardJones');
+    if (!rows?.length) return undefined;
+    return rows.find((row) => row.potential === 'lennardJones')
+      ?? rows.find((row) => row.potential === 'stockmayer')
+      ?? rows.find((row) => row.potential === 'correspondingStates')
+      ?? rows[0];
+  }
+
+  /**
+   * First listed SI scalar for each critical / polarity field used by Chung / CE.
+   */
+  private static criticalScalars(properties: {
+    criticalTemperature?: CompoundDataPropertyValue[];
+    criticalPressure?: CompoundDataPropertyValue[];
+    criticalVolume?: CompoundDataPropertyValue[];
+    acentricFactor?: CompoundDataPropertyValue[];
+    dipoleMoment?: CompoundDataPropertyValue[];
+    stockmayerDelta?: CompoundDataPropertyValue[];
+  }): Partial<Pick<
+    CompoundValue,
+    | 'criticalTemperature'
+    | 'criticalPressure'
+    | 'criticalVolume'
+    | 'acentricFactor'
+    | 'dipoleMoment'
+    | 'stockmayerDelta'
+  >> {
+    const criticalTemperature = properties.criticalTemperature?.[0]?.value;
+    const criticalPressure = properties.criticalPressure?.[0]?.value;
+    const criticalVolume = properties.criticalVolume?.[0]?.value;
+    const acentricFactor = properties.acentricFactor?.[0]?.value;
+    const dipoleMoment = properties.dipoleMoment?.[0]?.value;
+    const stockmayerDelta = properties.stockmayerDelta?.[0]?.value;
+    return {
+      ...(criticalTemperature !== undefined ? { criticalTemperature } : {}),
+      ...(criticalPressure !== undefined ? { criticalPressure } : {}),
+      ...(criticalVolume !== undefined ? { criticalVolume } : {}),
+      ...(acentricFactor !== undefined ? { acentricFactor } : {}),
+      ...(dipoleMoment !== undefined ? { dipoleMoment } : {}),
+      ...(stockmayerDelta !== undefined ? { stockmayerDelta } : {}),
+    };
   }
 
   private static equationBucket(
@@ -152,18 +195,6 @@ export class CompoundValueBuilder {
     return { def, values };
   }
 
-  private static sutherlandParams(
-    rows: CompoundDataEquationValue[],
-  ): CompoundValue['sutherlandParams'] {
-    const row = rows.find((equation) => equation.type === 'sutherland');
-    if (!row) return undefined;
-    const vars = row.vars as { y0?: number; T0?: number; S?: number };
-    if (typeof vars.y0 !== 'number' || typeof vars.T0 !== 'number' || typeof vars.S !== 'number') {
-      throw new Error('Compound-data Sutherland equation is missing y0, T0 or S');
-    }
-    return { mu0: vars.y0, T0: vars.T0, S: vars.S, min: row.min, max: row.max };
-  }
-
   /**
    * Isotopic / mass-labelled records (D2O, H2[18O], …) often share the parent's NASA keys.
    * Detected from the display name — not from `formula`.
@@ -177,7 +208,7 @@ export class CompoundValueBuilder {
   private static matchingRecord(
     key: string,
     query: GasCompoundQuery,
-  ): { doc: CompoundDataCompoundFile; record: CompoundDataRecord } {
+  ): { doc: CompoundDataCompoundFile; record: CompoundDataRecord; meta: CompoundDataIndexEntry } {
     const hill = CompoundText.hillFormula(query.formula);
     const index = CompoundData.loadIndex();
     const ids = index.byFormula[hill] ?? [];
@@ -197,11 +228,12 @@ export class CompoundValueBuilder {
         `Compound data has ${hits.length} records for ${key} (${hill}, NASA-7 "${query.nasa7Key}")`,
       );
     }
-    const doc = CompoundData.loadFile(hits[0].file);
-    const record = doc.entries[hits[0].entry];
-    if (!record) throw new Error(`Compound data file ${hits[0].file} has no entry "${hits[0].entry}"`);
+    const meta = hits[0];
+    const doc = CompoundData.loadFile(meta.file);
+    const record = doc.entries[meta.entry];
+    if (!record) throw new Error(`Compound data file ${meta.file} has no entry "${meta.entry}"`);
     if (record.Mr === undefined) throw new Error(`Compound data record for ${key} has no molar mass`);
-    return { doc, record };
+    return { doc, record, meta };
   }
 
   private static resolveMeta(id: string) {

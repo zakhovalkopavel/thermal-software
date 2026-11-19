@@ -34,23 +34,28 @@ export interface CompoundValue {
   readonly enthalpyFormation298?: number;
   /** Standard Gibbs energy at 298 K [J/mol]; optional like `enthalpyFormation298` */
   readonly gibbsEnergy298?: number;
-  /** Lennard-Jones collision diameter σ [Å] — ref Poling5; absent when no published value exists */
+  /** Lennard-Jones / Stockmayer collision diameter σ [Å] — ref Poling5; absent when no published value exists */
   readonly collisionDiameter?: number;
   /** ε/kB [K] — LJ energy depth / Boltzmann constant — ref Poling5; absent like `collisionDiameter` */
   readonly epsilonToKb?: number;
+  /** Stockmayer polar parameter δ [-] (Itean1961 / Svehla1995); absent when nonpolar or unknown */
+  readonly stockmayerDelta?: number;
+  /** Critical temperature [K]; first listed compound-data source */
+  readonly criticalTemperature?: number;
+  /** Critical pressure [Pa]; first listed compound-data source */
+  readonly criticalPressure?: number;
+  /** Critical molar volume [m³/mol]; first listed compound-data source */
+  readonly criticalVolume?: number;
+  /** Acentric factor [-]; first listed compound-data source */
+  readonly acentricFactor?: number;
+  /** Dipole moment [C·m]; first listed compound-data source */
+  readonly dipoleMoment?: number;
   /**
-   * Sutherland viscosity parameters: μ = μ0·(T/T0)^1.5·(T0+S)/(T+S)
-   * mu0 [Pa·s] at reference temperature T0 [K], S [K] Sutherland constant.
-   * Optional min/max [K] from the source equation row (null = unknown).
-   * ref White3 unless the compound file cites another source
+   * CoolProp fluid `INFO.NAME` for Helmholtz EOS density
+   * (`shared/sources/coolprop/fluids/<NAME>.json`), from compound-data `coolprop[0]`.
+   * Absent → Peng–Robinson when \(T_c,P_c,\omega\) exist, else limited ideal gas.
    */
-  readonly sutherlandParams?: {
-    mu0: number;
-    T0: number;
-    S: number;
-    min: number | null;
-    max: number | null;
-  };
+  readonly coolpropKey?: string;
 
   /**
    * Exact species key in `shared/processed/NASA/nasa7.json` (ref NASA7), e.g. "N2", "C4H10,isobutane".

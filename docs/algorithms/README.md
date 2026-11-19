@@ -28,10 +28,10 @@ Common library reference:
 | **NASA-7 polynomial** | `GasPropertiesService` | `Cp/R = a1 + a2T + a3T² + a4T³ + a5T⁴`; two ranges at `Tswitch` |
 | **NASA-9 polynomial** | `GasPropertiesService` | 9-coefficient, variable T ranges; preferred format |
 | **DIPPR 107 (Aly–Lee)** | `GasPropertiesService` | `c1 + c2[c3/T/sinh(c3/T)]² + c4[c5/T/cosh(c5/T)]²` |
-| **Sutherland viscosity** | `TransportService` | `μ = μ₀(T/T₀)^(3/2)(T₀+S)/(T+S)` |
-| **Eucken conductivity** | `TransportService` | `λ = μ(Cp + 5R/4M)` |
-| **Ideal gas density** | `TransportService` | `ρ = PM/(RT)` |
-| **Chapman-Enskog diffusion** | `DiffusionService` | `D = 1.858e-3·T^(3/2)·√(1/M_A+1/M_B) / (P·σ_AB²·Ω_D)` |
+| **Viscosity (def / CE)** | `TransportService` | Stored `def`, else CE LJ/Stockmayer — [CHAPMAN_ENSKOG_VISCOSITY.md](./thermodynamics/CHAPMAN_ENSKOG_VISCOSITY.md) |
+| **Eucken / mixture λ** | `TransportService` | Dilute Eucken after μ; mix HE/Chung — [MIXTURE_THERMAL_CONDUCTIVITY.md](./thermodynamics/MIXTURE_THERMAL_CONDUCTIVITY.md) |
+| **Gas density** | `GasDensity` | Helmholtz → Peng–Robinson → limited ideal — [GAS_DENSITY.md](./thermodynamics/GAS_DENSITY.md), [HELMHOLTZ_DENSITY.md](./thermodynamics/HELMHOLTZ_DENSITY.md) |
+| **Chapman–Enskog D** | `DiffusionService` | Poling `1.858e-3` atm form — [CHAPMAN_ENSKOG_VISCOSITY.md](./thermodynamics/CHAPMAN_ENSKOG_VISCOSITY.md) |
 | **Mixture Cp** | `GasPropertiesService` | `Cp_mix = Σ xᵢ·Cpᵢ(T)` (mole fractions) |
 
 ### Dimensionless Numbers

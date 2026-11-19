@@ -16,13 +16,13 @@ This document covers the **actual computation** each service performs.
 ThermodynamicsModule
 ├── FluidPropertyService          ← orchestration: resolves species/mixture, delegates maths
 ├── GasPropertiesService          ← Cp (NASA-7, DIPPR 107, polynomial), mixture Cp, enthalpy
-├── TransportService              ← μ (Sutherland), λ (Eucken), ρ (ideal gas), ν
+├── TransportService              ← μ (def / CE), λ (Eucken + NISTIR8209), mix HE/Chung
 ├── DimensionlessCalculationService ← orchestration: re/pr/gr/ra/Nu/HTC from flat fluid input
 ├── DimensionlessNumbersService   ← pure formulas: Re, Pr, Gr, Ra, Nu (correlations), HTC
 ├── RadiationService              ← gas emissivity (Hottel–Mikheev), radiation HTC
 ├── AerodynamicsService           ← drag coefficient, terminal velocity
-├── DiffusionService              ← binary diffusion coefficient (Chapman-Enskog)
-└── TransportService              ← combined viscosity + conductivity + density
+├── DiffusionService              ← binary D₁₂ (Chapman–Enskog / Poling form)
+└── CompoundFluidPropsService     ← per-compound μ/λ/ρ with CE + Eucken fallbacks
 ```
 
 ---
@@ -82,23 +82,42 @@ return the sensible enthalpy H(T) − H(298.15 K); `absoluteEnthalpy()` the form
 ### Public methods
 
 #### `viscosity(species, T_K) → number` [Pa·s]
-Sutherland's formula:
-```
-μ = μ₀ · (T/T₀)^(3/2) · (T₀ + S) / (T + S)
-```
-Parameters `{μ₀, T₀, S}` come from `compound.sutherlandParams` (ref: White 2006, Appendix A).
+Stored viscosity `def` via `CompoundPropertyResolver` when
+`viscosity.values` is non-empty (Huber2019 MAPE winner / Perry8 → Yaws1999 →
+VDI2010 → White3 list-head; Sutherland only when it is that `def`). Else
+Chapman–Enskog LJ or Stockmayer when \(\sigma\) and \(\varepsilon/k\) exist
+([`CHAPMAN_ENSKOG_VISCOSITY.md`](../algorithms/thermodynamics/CHAPMAN_ENSKOG_VISCOSITY.md)).
 
-#### `thermalConductivity(species, T_K) → number` [W/(m·K)]
-Modified Eucken approximation:
-```
-λ = μ · (Cp + 5R/4·M⁻¹)    for monatomic: λ = 5/2 · μ · Cv/M
-```
+#### `thermalConductivity(species, T_K, Cp_J_molK, P_Pa?) → number` [W/(m·K)]
+Dilute \(\lambda^0\): stored k(T) → CoolProp `ratio_of_polynomials` → Eucken from
+\(\mu\) (CE \(\mu\) allowed). When CoolProp has a residual model, adds NIST IR 8209
+\(\lambda^r(T,\rho)\) and simplified Olchowy–Sengers \(\lambda^{\mathrm{crit}}\)
+with \(\rho\) from `GasDensity` and \(\mu\) from the viscosity selection
+([`NISTIR_8209_THERMAL_CONDUCTIVITY.md`](../algorithms/thermodynamics/NISTIR_8209_THERMAL_CONDUCTIVITY.md)).
 
-#### `density(M_kg_mol, T_K, P_Pa?) → number` [kg/m³]
-Ideal gas law: `ρ = P·M / (R·T)`.  Default P = 101 325 Pa.
+#### `thermalConductivityMix(mole, T_K, cpBySpecies, P_Pa?) → number` [W/(m·K)]
+Mixture λ via density switch on Chung \(y = V_{c,m}/(6V)\) with
+\(V=M/\rho\) from `GasDensity.forMixture`:
+- **\(y < 0.01\)** — Hirschfelder–Eucken Form A (`HirschfelderEucken`: Mason–Saxena
+  mix of \(\lambda_{\mathrm{tr}}\) and \(\lambda_{\mathrm{int}}\)).
+- **\(y \ge 0.01\)** — Chung et al. 1988 (`ChungThermalConductivity`, Poling Eq. 10-5.5)
+  with Chung mixing rules; \(\eta^0\) = Wilke \(\mu_{\mathrm{mix}}\) (`WilkeViscosity`);
+  \(C_{v,m}=\sum y_i C_{p,i}-R\).
 
-#### `kinematicViscosity(species, T_K, P_Pa?) → number` [m²/s]
-`ν = μ/ρ`
+See `docs/algorithms/thermodynamics/MIXTURE_THERMAL_CONDUCTIVITY.md`.
+
+Property algorithm utils are split by concern:
+- `utils/density/` — `GasDensity` (Helmholtz → Peng–Robinson → limited ideal)
+- `utils/conductivity/` — CoolProp NIST IR 8209, Chung, HE, Eucken
+- `utils/chapman-enskog/` — Neufeld Ω, LJ combining (shared by μ and D)
+- `utils/viscosity/` — CE μ/D, Wilke mix
+
+Used by `FluidPropertyService`, `CompoundFluidPropsService`,
+`getMixtureBasicProperties`, and dimensionless fluid resolution. Algorithms:
+[`GAS_DENSITY.md`](../algorithms/thermodynamics/GAS_DENSITY.md),
+[`HELMHOLTZ_DENSITY.md`](../algorithms/thermodynamics/HELMHOLTZ_DENSITY.md),
+[`NISTIR_8209_THERMAL_CONDUCTIVITY.md`](../algorithms/thermodynamics/NISTIR_8209_THERMAL_CONDUCTIVITY.md),
+[`CHAPMAN_ENSKOG_VISCOSITY.md`](../algorithms/thermodynamics/CHAPMAN_ENSKOG_VISCOSITY.md).
 
 ---
 
@@ -123,7 +142,8 @@ Returns `{ Cp_J_kgK, Cv_J_kgK, gamma, molecularWeight_kg_mol, species, T_K }`.
 Returns `{ mu_Pa_s, nu_m2s, species, T_K }`.
 
 #### `getDensity(dto) → FluidDensityResultDto`
-Returns `{ rho_kg_m3, T_K, P_Pa }`.
+Returns `{ rho_kg_m3, molecularWeight_kg_mol, T_K, P_Pa }`.
+Helmholtz EOS when CoolProp-linked; else Peng–Robinson / limited ideal gas (`utils/density/`).
 
 #### `getThermalConductivity(dto) → FluidThermalConductivityResultDto`
 Returns `{ lambda_W_mK, species, T_K }`.
@@ -252,15 +272,15 @@ Linearised form for combined convection-radiation: `α_lin = ε·σ·(T_h²+T_c�
 **File:** `services/diffusion.service.ts`  
 **Purpose:** Binary mass diffusion coefficient for gas pairs.
 
-#### `binaryDiffusivity(speciesA, speciesB, T_K, P_Pa?) → number` [m²/s]
-Chapman-Enskog equation:
+#### `binaryDiffusion(A, B, T_K, P_atm?) → number` [m²/s]
+Delegates to `ChapmanEnskogDiffusion.binary` (Poling atm form, M in g/mol,
+σ in Å, Neufeld \(\Omega_D\)):
 ```
-D_AB = 1.858e-3 · T^(3/2) · √(1/M_A + 1/M_B)
-       / (P · σ_AB² · Ω_D(T*))
+D_AB [cm²/s] = 1.858e-3 · T^(3/2) · √(1/M_A + 1/M_B)
+               / (P_atm · σ_AB² · Ω_D(T*))
 ```
-where `σ_AB = (σ_A + σ_B)/2`, `ε_AB/k = √(ε_A/k · ε_B/k)`,
-`T* = kT/ε_AB`, and `Ω_D` is the collision integral (Neufeld 1972 fit).  
-Lennard-Jones parameters from compound data (`collisionDiameter`, `epsilonToKb`).
+then ×10⁻⁴ → m²/s. Combining rules and Ω shared with CE viscosity
+([`CHAPMAN_ENSKOG_VISCOSITY.md`](../algorithms/thermodynamics/CHAPMAN_ENSKOG_VISCOSITY.md)).
 
 ---
 

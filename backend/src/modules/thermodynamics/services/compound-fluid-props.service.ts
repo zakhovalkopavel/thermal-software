@@ -1,20 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { GAS_REGISTRY } from '../../../common/thermal/compound/gas/registry';
 import { CompoundValue } from '../../../common/thermal/interfaces/compound-value.interface';
 import {
   EquationValidity,
   EvaluationResult,
   MixtureValidity,
-} from '../../../common/thermal/interfaces/equation-validity.interface';
+} from '../../../common/thermal/types';
 import { CompoundPropertyResolver } from '../../../common/thermal/utils/compound-properties/compound-property-resolver';
-import { evaluateEquation } from '../../../common/thermal/utils/equation-validity.util';
-import { EquationTypeDto } from '../../../common/thermal/dto/equation-type.dto';
-import { EquationValue } from '../../../common/thermal/interfaces/equation-value.interface';
-import { RefKey } from '../../../common/thermal/enum/ref-key.enum';
-import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 import { STANDARD_CONDITIONS } from '../../../common/thermal/constants/standard-conditions.constants';
 import { Species } from '../enums/species.enum';
-import { EUCKEN_FACTOR } from '../constants/eucken-factor.constants';
 import { CompoundFluidProps } from '../types/compound-fluid-props.type';
+import { EuckenThermalConductivity } from '../utils/conductivity/eucken-thermal-conductivity';
+import { GasDensity } from '../utils/density/gas-density';
+import { ChapmanEnskogViscosity } from '../utils/viscosity/chapman-enskog-viscosity';
 import { GasPropertiesService } from './gas-properties.service';
 import { TransportService } from './transport.service';
 
@@ -40,9 +38,9 @@ export class CompoundFluidPropsService {
 
     const cpR = this.heatCapacityOf(compound, mole, T_K);
     const muR = this.viscosityOf(compound, mole, T_K);
-    const lamR = this.conductivityOf(compound, mole, T_K, cpR.value);
+    const lamR = this.conductivityOf(compound, mole, T_K, cpR.value, P_Pa);
 
-    const rho_kg_m3 = this.gasProps.density(M, T_K, P_Pa);
+    const rho_kg_m3 = GasDensity.forCompound(compound, T_K, P_Pa);
     const mixtureValidity = muR.mixtureValidity ?? lamR.mixtureValidity;
 
     return {
@@ -92,28 +90,27 @@ export class CompoundFluidPropsService {
     T_K: number,
   ): EvaluationResult & { mixtureValidity?: MixtureValidity } {
     if (compound.viscosity.values.length > 0) {
-      const sutherlandRow = compound.viscosity.values.find(
-        v => v.type === EquationTypeDto.sutherland,
-      );
-      if (sutherlandRow) return evaluateEquation(sutherlandRow, T_K);
-
-      const p = compound.sutherlandParams;
-      if (p) {
-        const entry: EquationValue = {
-          type: EquationTypeDto.sutherland,
-          ref: RefKey.White3,
-          vars: { y0: p.mu0, T0: p.T0, S: p.S },
-          min: p.min,
-          max: p.max,
-        };
-        return evaluateEquation(entry, T_K);
-      }
-
       return new CompoundPropertyResolver(compound).viscosityResult(T_K);
     }
     if (mole) {
       const r = this.transport.viscosityMixResult(mole, T_K);
       return { value: r.value, validity: r.validity, mixtureValidity: r.mixtureValidity };
+    }
+    if (compound.collisionDiameter !== undefined && compound.epsilonToKb !== undefined) {
+      const ce = ChapmanEnskogViscosity.fromCompound(compound, T_K);
+      return {
+        value: ce.value,
+        validity: {
+          requestedT: T_K,
+          effectiveT: T_K,
+          min: null,
+          max: null,
+          inRange: true,
+          rangeUnknown: true,
+          action: 'none',
+          message: ce.message,
+        },
+      };
     }
     throw new Error(`No viscosity data for ${compound.name}`);
   }
@@ -123,7 +120,15 @@ export class CompoundFluidPropsService {
     mole: Partial<Record<Species, number>> | undefined,
     T_K: number,
     Cp_J_molK: number,
+    P_Pa: number,
   ): EvaluationResult & { mixtureValidity?: MixtureValidity } {
+    // Pure gas with CoolProp residual λʳ, or stored dilute + residual when linked.
+    if (compound.coolpropKey && !mole) {
+      const sp = Object.entries(GAS_REGISTRY).find(([, c]) => c === compound)?.[0] as Species | undefined;
+      if (sp) {
+        return this.transport.thermalConductivityResult(sp, T_K, Cp_J_molK, P_Pa);
+      }
+    }
     if (compound.thermalConductivity.values.length > 0) {
       return new CompoundPropertyResolver(compound).thermalConductivityResult(T_K);
     }
@@ -131,15 +136,15 @@ export class CompoundFluidPropsService {
       const cpBySp = Object.fromEntries(
         (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T_K)]),
       ) as Partial<Record<Species, number>>;
-      const r = this.transport.thermalConductivityMixResult(mole, T_K, cpBySp);
+      const r = this.transport.thermalConductivityMixResult(mole, T_K, cpBySp, P_Pa);
       return { value: r.value, validity: r.validity, mixtureValidity: r.mixtureValidity };
     }
 
-    // Pure compound with no stored k(T): Eucken λ = (Cp + EUCKEN_FACTOR·R)·μ / M
+    // Pure compound with no stored k(T): Eucken λ from μ (CE μ when no viscosity eqs).
     const muR = this.viscosityOf(compound, undefined, T_K);
-    const value =
-      (Cp_J_molK + EUCKEN_FACTOR * PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK)
-      * muR.value / compound.Mr;
+    const value = EuckenThermalConductivity.modifiedFromViscosity(
+      Cp_J_molK, muR.value, compound.Mr, undefined,
+    );
     return {
       value,
       validity: {
