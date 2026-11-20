@@ -16,3 +16,15 @@ export type { PackingValidationResult } from './packing-validation-result.type';
 export type { PackingValidationError } from './packing-validation-error.type';
 export type { PackingValidationWarning } from './packing-validation-warning.type';
 export type { SortedFractions } from './sorted-fractions.type';
+
+export type { ShrinkageMaterial } from './shrinkage-material.type';
+export type { CementType } from './cement-type.type';
+export type { ShrinkageInput } from './shrinkage-input.type';
+export type { ShrinkageStage } from './shrinkage-stage.type';
+export type { DryingShrinkage } from './drying-shrinkage.type';
+export type { FiringShrinkage } from './firing-shrinkage.type';
+export type { ShrinkageResult } from './shrinkage-result.type';
+export type { ShrinkageMetadata } from './shrinkage-metadata.type';
+export type { ShrinkageValidationResult } from './shrinkage-validation-result.type';
+export type { ShrinkageValidationError } from './shrinkage-validation-error.type';
+export type { ShrinkageValidationWarning } from './shrinkage-validation-warning.type';

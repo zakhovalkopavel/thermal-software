@@ -56,9 +56,9 @@ export type {
 export { PackingTypeGuards } from '../utils/packing-type-guards';
 
 // ============================================================
-// SHRINKAGE CALCULATOR INTERFACES
+// SHRINKAGE CALCULATOR (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   ShrinkageMaterial,
   CementType,
   ShrinkageInput,
@@ -70,11 +70,8 @@ export {
   ShrinkageValidationResult,
   ShrinkageValidationError,
   ShrinkageValidationWarning,
-  isShrinkageMaterial,
-  isShrinkageInput,
-  isShrinkageStage,
-  isShrinkageResult,
-} from './shrinkage-calculator.interface';
+} from '../types';
+export { ShrinkageTypeGuards } from '../utils/shrinkage-type-guards';
 
 // ============================================================
 // PHASE EQUILIBRIUM INTERFACES

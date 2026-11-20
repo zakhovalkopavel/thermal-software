@@ -94,16 +94,16 @@ Phase 6.3 moves data shapes to `types/*.type.ts` and type guards to static class
 
 ```
 backend/src/modules/refractory/
-├── types/                              ✅ PSD + packing shapes (Phase 6.3)
+├── types/                              ✅ PSD + packing + shrinkage (Phase 6.3)
 │   ├── index.ts
-│   ├── psd-*.type.ts                   ✅
-│   └── packing-*/cpm-*/furnas-*/sorted-fractions.type.ts ✅
+│   ├── psd-*.type.ts / packing-* / cpm-* / furnas-* / sorted-fractions ✅
+│   └── shrinkage-* / drying-shrinkage / firing-shrinkage / cement-type ✅
 ├── utils/psd-type-guards.ts            ✅ PsdTypeGuards
 ├── utils/packing-type-guards.ts        ✅ PackingTypeGuards
+├── utils/shrinkage-type-guards.ts      ✅ ShrinkageTypeGuards
 └── interfaces/
     ├── index.ts                        ✅ Central export (re-exports types + guards)
     ├── blend-optimizer.interface.ts    ⏳ multi-export (6.3 pending)
-    ├── shrinkage-calculator.interface.ts ⏳
     ├── phase-equilibrium.interface.ts  ⏳
     ├── thermal-performance.interface.ts ⏳
     ├── refractoriness.interface.ts     ⏳

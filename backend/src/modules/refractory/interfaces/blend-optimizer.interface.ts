@@ -7,7 +7,7 @@
  * Date: February 2, 2026
  */
 
-import { ShrinkageResult } from './shrinkage-calculator.interface';
+import type { ShrinkageResult } from '../types/shrinkage-result.type';
 
 // ============================================================
 // FRACTION INTERFACES

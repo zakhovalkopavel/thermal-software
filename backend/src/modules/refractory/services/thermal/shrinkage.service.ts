@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PHYSICAL_CONSTANTS } from '../../../../common/thermal/constants/physical.constants';
 import { celsiusToKelvin } from '../../../../common/thermal/utils/temperature';
-import { ShrinkageStage, DryingShrinkage, FiringShrinkage, } from '../../interfaces';
+import type { ShrinkageStage, DryingShrinkage, FiringShrinkage } from '../../types';
 
 /**
  * Shrinkage Prediction Service
