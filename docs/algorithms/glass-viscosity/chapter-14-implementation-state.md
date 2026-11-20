@@ -34,13 +34,16 @@ backend/src/modules/refractory/
 ├── utils/
 │   ├── glass-composition.util.ts        ← wtPctToMolPct, molPctToWtPct,
 │   │                                        normalizeComposition
-│   ├── glass-viscosity-vtf.util.ts      ← predictVtfDirectLakatos  [PRODUCTION: Lakatos Table 6]
-│   │                                        predictIsokomsLakatos   [ILLUSTRATION: Lakatos Table 7]
-│   │                                        predictIsokomsFluegel,
+│   ├── glass-viscosity-lakatos.ts       ← GlassViscosityLakatos
+│   │                                        predictVtfDirectLakatos [PRODUCTION: Table 6]
+│   │                                        checkLakatosValidity
+│   ├── glass-viscosity-lakatos-isokoms.ts ← GlassViscosityLakatosIsokoms
+│   │                                        predictIsokomsLakatos [ILLUSTRATION: Table 7]
+│   ├── glass-viscosity-fluegel.ts       ← GlassViscosityFluegel.predictIsokomsFluegel
+│   ├── glass-viscosity-vtf.ts           ← GlassViscosityVtf
 │   │                                        buildVtf, fitVtfThreePoints, evalVtf,
 │   │                                        temperatureAtLogViscosity,
-│   │                                        calculateFixedPointsFromVtf,
-│   │                                        checkLakatosValidity
+│   │                                        calculateFixedPointsFromVtf
 │   └── glass-viscosity-arrhenius.util.ts ← calcHetheringtonLogEta,
 │                                            hetheringtonTemperatureAtLogEta,
 │                                            buildHetheringtonResult
@@ -108,18 +111,19 @@ Display names live in `constants/viscosity-model-names.constants.ts` (`VISCOSITY
 | `wtPctToMolPct` | ✅ Complete | Ch. 6 |
 | `molPctToWtPct` | ✅ Complete | Ch. 6 |
 
-### `glass-viscosity-vtf.util.ts`
+### Static VTF / isokom classes (Phase 6.4)
 
-| Function | Status | Spec Chapter |
+| Class / method | Status | Spec Chapter |
 |----------|--------|--------------|
-| `checkLakatosValidity` | ✅ Complete | Ch. 3, 4 |
-| `predictIsokomsLakatos` | ✅ Complete | Ch. 4 |
-| `predictIsokomsFluegel` | ✅ Complete | Ch. 5 |
-| `buildVtf` | ✅ Complete | Ch. 7 — fits VTF from isokom output |
-| `fitVtfThreePoints` | ✅ Complete | Ch. 7 — analytical 3-point solve |
-| `evalVtf` | ✅ Complete | Ch. 7 |
-| `temperatureAtLogViscosity` | ✅ Complete | Ch. 7 |
-| `calculateFixedPointsFromVtf` | ✅ Complete | Ch. 8 — thin VTF adapter over `calculateFixedPoints` |
+| `GlassViscosityLakatos.checkLakatosValidity` | ✅ Complete | Ch. 3, 4 |
+| `GlassViscosityLakatos.predictVtfDirectLakatos` | ✅ Complete | Ch. 4 |
+| `GlassViscosityLakatosIsokoms.predictIsokomsLakatos` | ✅ Complete | Ch. 4 |
+| `GlassViscosityFluegel.predictIsokomsFluegel` | ✅ Complete | Ch. 5 |
+| `GlassViscosityVtf.buildVtf` | ✅ Complete | Ch. 7 — fits VTF from isokom output |
+| `GlassViscosityVtf.fitVtfThreePoints` | ✅ Complete | Ch. 7 — analytical 3-point solve |
+| `GlassViscosityVtf.evalVtf` | ✅ Complete | Ch. 7 |
+| `GlassViscosityVtf.temperatureAtLogViscosity` | ✅ Complete | Ch. 7 |
+| `GlassViscosityVtf.calculateFixedPointsFromVtf` | ✅ Complete | Ch. 8 — thin VTF adapter over `calculateFixedPoints` |
 | `calculateFixedPoints` | ✅ Complete | Shared ASTM fixed points; log η in `ASTM_FIXED_POINT_LOG_ETA` |
 
 ### `glass-viscosity-arrhenius.util.ts`
@@ -188,8 +192,8 @@ Swagger UI: `GET /api/docs`
 | File | Status | Covers |
 |------|--------|--------|
 | `test/unit/refractory/utils/glass-composition.util.spec.ts` | ✅ Complete | `wtPctToMolPct`, `molPctToWtPct` |
-| `test/unit/refractory/utils/glass-viscosity-vtf.util.spec.ts` | ✅ Complete | `fitVtfThreePoints`, `evalVtf`, `temperatureAtLogViscosity` |
-| `test/unit/refractory/utils/glass-viscosity-isokom.spec.ts` | ✅ Complete | `predictIsokomsLakatos`, `predictIsokomsFluegel`, Hetherington self-check |
+| `test/unit/refractory/utils/glass-viscosity-vtf.spec.ts` | ✅ Complete | `GlassViscosityVtf.fitVtfThreePoints`, `evalVtf`, `temperatureAtLogViscosity` |
+| `test/unit/refractory/utils/glass-viscosity-isokom.spec.ts` | ✅ Complete | Lakatos direct VTF, Fluegel isokoms, Hetherington self-check |
 | `test/unit/refractory/services/composition/glass-viscosity-model-selection.spec.ts` | ✅ Complete | `selectModel` — all routing cases (Fluegel default, Lakatos reserve, slag/fluoride logic verified) |
 | `test/unit/refractory/services/composition/glass-viscosity.service.spec.ts` | ✅ Complete | `calculateViscosity` integration — explicit-preference flow covered |
 

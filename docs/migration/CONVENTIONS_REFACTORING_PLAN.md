@@ -1,6 +1,6 @@
 # Conventions Refactoring Plan
 
-**Status:** In progress — Phase 6.3 interface multi-exports done; next 6.4 (`utils/`); optional leftover `component-property.interface.ts`  
+**Status:** In progress — Phase 6.4 started (`glass-viscosity-vtf.util.ts` → static classes done); remaining utils still open; optional leftover `component-property.interface.ts`  
 
 
 

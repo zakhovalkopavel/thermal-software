@@ -24,13 +24,9 @@
  *   Lakatos, T.; Johansson, L-G.; Simmingskőld, B. (1976). Tables 6 & 7.
  */
 
-import {
-  predictIsokomsLakatos,
-  predictVtfDirectLakatos,
-  fitVtfThreePoints,
-  temperatureAtLogViscosity,
-  calculateFixedPointsFromVtf,
-} from '../../../../src/modules/refractory/utils/glass-viscosity-vtf.util';
+import { GlassViscosityLakatosIsokoms } from '../../../../src/modules/refractory/utils/glass-viscosity-lakatos-isokoms';
+import { GlassViscosityLakatos } from '../../../../src/modules/refractory/utils/glass-viscosity-lakatos';
+import { GlassViscosityVtf } from '../../../../src/modules/refractory/utils/glass-viscosity-vtf';
 import { LAKATOS_VALIDATION_GLASSES } from '../../../../src/modules/refractory/data/glass-viscosity-validation.data';
 import type { VtfParameters } from '../../../../src/modules/refractory/types';
 
@@ -38,8 +34,8 @@ import type { VtfParameters } from '../../../../src/modules/refractory/types';
 
 /** Component viscosity effects approach (Table 7): isokom regression → analytical VTF fit */
 function runComponentEffects(comp: Record<string, number>): VtfParameters {
-  const iso = predictIsokomsLakatos(comp);
-  return fitVtfThreePoints(
+  const iso = GlassViscosityLakatosIsokoms.predictIsokomsLakatos(comp);
+  return GlassViscosityVtf.fitVtfThreePoints(
     { T_celsius: iso.T_logEta1, logEtaPaS: 1 },
     { T_celsius: iso.T_logEta3, logEtaPaS: 3 },
     { T_celsius: iso.T_logEta5, logEtaPaS: 5 },
@@ -48,15 +44,15 @@ function runComponentEffects(comp: Record<string, number>): VtfParameters {
 
 /** Direct temperature-viscosity equation determination approach (Table 6): direct VTF regression */
 function runDirectVtf(comp: Record<string, number>): VtfParameters {
-  return predictVtfDirectLakatos(comp).vtf;
+  return GlassViscosityLakatos.predictVtfDirectLakatos(comp).vtf;
 }
 
 /** Isokom temperatures from a VTF triple at Lakatos poise levels (converted to Pa·s) */
 function isokomsFromVtf(vtf: VtfParameters) {
   return {
-    T_logEta1: temperatureAtLogViscosity(vtf, 1),
-    T_logEta3: temperatureAtLogViscosity(vtf, 3),
-    T_logEta5: temperatureAtLogViscosity(vtf, 5),
+    T_logEta1: GlassViscosityVtf.temperatureAtLogViscosity(vtf, 1),
+    T_logEta3: GlassViscosityVtf.temperatureAtLogViscosity(vtf, 3),
+    T_logEta5: GlassViscosityVtf.temperatureAtLogViscosity(vtf, 5),
   };
 }
 

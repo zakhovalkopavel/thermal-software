@@ -18,7 +18,7 @@ import {
   HETHERINGTON_VALIDATION_GLASSES,
 } from '../../../../../src/modules/refractory/data/glass-viscosity-validation.data';
 import type { VtfParameters } from '../../../../../src/modules/refractory/types';
-import { temperatureAtLogViscosity } from '../../../../../src/modules/refractory/utils/glass-viscosity-vtf.util';
+import { GlassViscosityVtf } from '../../../../../src/modules/refractory/utils/glass-viscosity-vtf';
 import { kelvinToCelsius } from '../../../../../src/common/thermal/utils/temperature';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ describe('GlassViscosityService — calculateViscosity', () => {
         const vtf: VtfParameters = { A: r.model.parameters.A, B: r.model.parameters.B!, T0: r.model.parameters.T0! };
         for (const pt of glass.isokoms) {
           if (pt.T_measured_C !== undefined) {
-            const T_pred = temperatureAtLogViscosity(vtf, pt.logEta);
+            const T_pred = GlassViscosityVtf.temperatureAtLogViscosity(vtf, pt.logEta);
             expect(Math.abs(T_pred - pt.T_measured_C)).toBeLessThan(15);
           }
         }

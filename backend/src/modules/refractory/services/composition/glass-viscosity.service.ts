@@ -22,13 +22,8 @@ import {
   molPctToWtPct,
   InvalidCompositionError,
 } from '../../utils/glass-composition.util';
-import {
-  buildVtf,
-  evalVtf,
-  temperatureAtLogViscosity,
-  calculateFixedPointsFromVtf,
-  checkLakatosValidity,
-} from '../../utils/glass-viscosity-vtf.util';
+import { GlassViscosityLakatos } from '../../utils/glass-viscosity-lakatos';
+import { GlassViscosityVtf } from '../../utils/glass-viscosity-vtf';
 import {
   buildHetheringtonResult,
   calcHetheringtonLogEta,
@@ -52,7 +47,7 @@ import { brentq } from '../../../../common/utils/root-finding';
  * All calculation is delegated to:
  *   utils/glass-composition.util.ts         — normalisation, wt%↔mol%
  *   utils/glass-viscosity-arrhenius.util.ts — Hetherington 1964
- *   utils/glass-viscosity-vtf.util.ts       — Lakatos 1976, Fluegel 2007, VTF
+ *   utils/glass-viscosity-{lakatos,lakatos-isokoms,fluegel,vtf}.ts — static classes
  */
 @Injectable()
 export class GlassViscosityService {
@@ -90,7 +85,7 @@ export class GlassViscosityService {
 
     // ── Lakatos ───────────────────────────────────────────────────────────────
     if (preferredModel === ViscosityModel.LAKATOS_1976) {
-      const validity = checkLakatosValidity(comp);
+      const validity = GlassViscosityLakatos.checkLakatosValidity(comp);
       if (validity.valid) {
         return { primary: ViscosityModel.LAKATOS_1976, reason: 'Preferred by caller', warnings: validity.warnings };
       }
@@ -163,10 +158,10 @@ export class GlassViscosityService {
       return { ...result, composition: comp, secondaryModel: selection.secondary } as any;
     }
 
-    const { vtf, modelRef, isokomWarnings } = buildVtf(comp, selection);
-    const logViscosity  = evalVtf(vtf, temperature);
+    const { vtf, modelRef, isokomWarnings } = GlassViscosityVtf.buildVtf(comp, selection);
+    const logViscosity  = GlassViscosityVtf.evalVtf(vtf, temperature);
     const viscosity_Pas = Math.max(1e-3, Math.min(1e15, Math.pow(10, logViscosity)));
-    const fp            = calculateFixedPointsFromVtf(vtf);
+    const fp            = GlassViscosityVtf.calculateFixedPointsFromVtf(vtf);
     const allWarnings   = [...selection.warnings, ...isokomWarnings, ...this.validateFixedPointOrdering(fp)];
     const validation    = this.buildValidationStatus(modelType, allWarnings);
 
@@ -248,13 +243,13 @@ export class GlassViscosityService {
       return { model: VISCOSITY_MODEL_NAMES[modelType], points, fixedPoints: null, validation };
     }
 
-    const { vtf, modelRef, isokomWarnings } = buildVtf(comp, selection);
-    const fp         = calculateFixedPointsFromVtf(vtf);
+    const { vtf, modelRef, isokomWarnings } = GlassViscosityVtf.buildVtf(comp, selection);
+    const fp         = GlassViscosityVtf.calculateFixedPointsFromVtf(vtf);
     const allWarnings = [...selection.warnings, ...isokomWarnings, ...this.validateFixedPointOrdering(fp)];
     const validation  = this.buildValidationStatus(modelType, allWarnings);
 
     const points = temperatures_C.map(T => {
-      const logEta = evalVtf(vtf, T);
+      const logEta = GlassViscosityVtf.evalVtf(vtf, T);
       return {
         temperature_C: T,
         logViscosity:  Number(logEta.toFixed(3)),
@@ -324,8 +319,8 @@ export class GlassViscosityService {
       };
     }
 
-    const { vtf, modelRef, isokomWarnings } = buildVtf(comp, selection);
-    const temperature_C = temperatureAtLogViscosity(vtf, targetLogEta);
+    const { vtf, modelRef, isokomWarnings } = GlassViscosityVtf.buildVtf(comp, selection);
+    const temperature_C = GlassViscosityVtf.temperatureAtLogViscosity(vtf, targetLogEta);
     const allWarnings   = [...selection.warnings, ...isokomWarnings];
     const validation    = this.buildValidationStatus(modelType, allWarnings);
 
@@ -422,7 +417,7 @@ export class GlassViscosityService {
     // ── Silicate glass path ──────────────────────────────────────────────────
     // Default: Fluegel 2007 (more complete component coverage).
     // Lakatos 1976 is available as a reserve model via preferredModel parameter.
-    const lakatosResult = checkLakatosValidity(comp);
+    const lakatosResult = GlassViscosityLakatos.checkLakatosValidity(comp);
     return {
       primary: ViscosityModel.FLUEGEL_2007,
       secondary: lakatosResult.valid ? ViscosityModel.LAKATOS_1976 : undefined,
