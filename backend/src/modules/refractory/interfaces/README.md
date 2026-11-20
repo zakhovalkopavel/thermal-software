@@ -12,7 +12,6 @@ refractory/
 ├── interfaces/          ✅ TypeScript Interfaces (NEW)
 │   ├── index.ts        ← Central export point
 │   ├── thermal-performance.interface.ts
-│   ├── refractoriness.interface.ts
 │   └── glass-viscosity.interface.ts
 │
 ├── types/               ✅ PSD + packing + shrinkage + blend shapes (Phase 6.3)
@@ -22,6 +21,7 @@ refractory/
 ├── utils/blend-optimizer-type-guards.ts      ✅ BlendOptimizerTypeGuards
 ├── utils/phase-equilibrium-type-guards.ts    ✅ PhaseEquilibriumTypeGuards
 ├── utils/mineral-phase-type-guards.ts        ✅ MineralPhaseTypeGuards
+├── utils/refractoriness-type-guards.ts       ✅ RefractorinessTypeGuards
 │
 └── dto/                ✅ NestJS DTOs (Validation)
     ├── blend-optimization.dto.ts
@@ -54,10 +54,10 @@ import type { BlendOptimizationRequest } from '../types/blend-optimization-reque
 ### Option 3: Type Guards
 ```typescript
 import { PsdTypeGuards } from '../utils/psd-type-guards';
-// remaining domains still export free is* guards from '../interfaces' until Phase 6.3 finishes
-import { isRefractorinessInput } from '../interfaces';
+import { RefractorinessTypeGuards } from '../utils/refractoriness-type-guards';
 
 if (!PsdTypeGuards.isPSDCalculationRequest(data)) { /* … */ }
+if (!RefractorinessTypeGuards.isRefractorinessInput(data)) { /* … */ }
 ```
 
 ---
@@ -197,7 +197,8 @@ PhaseEquilibriumTypeGuards.isMineralPhase()
 PhaseEquilibriumTypeGuards.isPhaseEquilibriumResult()
 isThermalInput()
 isThermalConductivityInput()
-isRefractorinessInput()
+RefractorinessTypeGuards.isRefractorinessInput()
+RefractorinessTypeGuards.isRefractorinessResult()
 isGlassViscosityInput()
 MineralPhaseTypeGuards.isMineralPhaseInput()
 MineralPhaseTypeGuards.isMineralPhaseData()

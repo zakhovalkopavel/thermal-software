@@ -120,9 +120,9 @@ export {
 } from './thermal-performance.interface';
 
 // ============================================================
-// REFRACTORINESS INTERFACES
+// REFRACTORINESS (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   RefractorinessInput,
   RefractorinessStandard,
   ISO1893Result,
@@ -136,12 +136,8 @@ export {
   RefractorinessValidationError,
   RefractorinessValidationWarning,
   RefractorinessComparison,
-  isRefractorinessInput,
-  isRefractorinessResult,
-  isISO1893Result,
-  isASTMC24Result,
-  isGOST4069Result,
-} from './refractoriness.interface';
+} from '../types';
+export { RefractorinessTypeGuards } from '../utils/refractoriness-type-guards';
 
 // ============================================================
 // VISCOSITY INTERFACES

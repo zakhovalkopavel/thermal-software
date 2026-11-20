@@ -65,3 +65,17 @@ export type { MineralPhaseValidationResult } from './mineral-phase-validation-re
 export type { MineralPhaseValidationError } from './mineral-phase-validation-error.type';
 export type { MineralPhaseValidationWarning } from './mineral-phase-validation-warning.type';
 export type { PhaseTemperatureComparison } from './phase-temperature-comparison.type';
+
+export type { RefractorinessStandard } from './refractoriness-standard.type';
+export type { RefractorinessInput } from './refractoriness-input.type';
+export type { ISO1893Result } from './iso1893-result.type';
+export type { ASTMC24Result } from './astm-c24-result.type';
+export type { GOST4069Result } from './gost-4069-result.type';
+export type { DutyClassification } from './duty-classification.type';
+export type { RefractorinessResult } from './refractoriness-result.type';
+export type { ComponentRefractorinesEffect } from './component-refractorines-effect.type';
+export type { RefractorinessMetadata } from './refractoriness-metadata.type';
+export type { RefractorinessValidationResult } from './refractoriness-validation-result.type';
+export type { RefractorinessValidationError } from './refractoriness-validation-error.type';
+export type { RefractorinessValidationWarning } from './refractoriness-validation-warning.type';
+export type { RefractorinessComparison } from './refractoriness-comparison.type';

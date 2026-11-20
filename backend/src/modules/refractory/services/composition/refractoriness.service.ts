@@ -7,7 +7,7 @@ import {
   ASTMC24Result,
   GOST4069Result,
   ComponentRefractorinesEffect,
-} from '../../interfaces/refractoriness.interface';
+} from '../../types';
 import {
   calculateRefractorinessEffect,
 } from '../../data/component-properties';
