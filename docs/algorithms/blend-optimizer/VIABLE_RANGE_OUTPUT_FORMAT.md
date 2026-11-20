@@ -390,7 +390,7 @@ const materialIds = ['fondu', 'fine_chamotte', 'coarse_chamotte'];
 ✅ **Example:** `[15±1% cement, 40±2% fine, 45±5% coarse]`  
 ✅ **Meaning:** Use avg value with ±tol variation acceptable  
 ✅ **Benefits:** Clear, actionable, production-ready specs  
-✅ **Implementation:** Via `viable-range-formatter.util.ts`  
+✅ **Implementation:** Via `ViableRangeFormatter` in `viable-range-formatter.ts`  
 
 **Status:** ✅ Complete  
 **Date:** February 3, 2026  
