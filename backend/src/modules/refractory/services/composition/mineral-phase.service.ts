@@ -4,7 +4,7 @@ import {
   MineralPhaseResult,
   MineralPhaseData,
   MineralPhaseMetadata,
-} from '../../interfaces/mineral-phase.interface';
+} from '../../types';
 
 /**
  * Mineral Phase Identifier Service

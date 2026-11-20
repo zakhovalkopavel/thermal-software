@@ -54,3 +54,14 @@ export type { PhaseEquilibriumValidationError } from './phase-equilibrium-valida
 export type { PhaseEquilibriumValidationWarning } from './phase-equilibrium-validation-warning.type';
 export type { EutecticPoint } from './eutectic-point.type';
 export type { LiquidusResult } from './liquidus-result.type';
+
+export type { MineralPhaseData } from './mineral-phase-data.type';
+export type { MineralPhaseInput } from './mineral-phase-input.type';
+export type { MineralPhaseResult } from './mineral-phase-result.type';
+export type { MineralPhaseMetadata } from './mineral-phase-metadata.type';
+export type { PhaseDistribution } from './phase-distribution.type';
+export type { PhaseStability } from './phase-stability.type';
+export type { MineralPhaseValidationResult } from './mineral-phase-validation-result.type';
+export type { MineralPhaseValidationError } from './mineral-phase-validation-error.type';
+export type { MineralPhaseValidationWarning } from './mineral-phase-validation-warning.type';
+export type { PhaseTemperatureComparison } from './phase-temperature-comparison.type';

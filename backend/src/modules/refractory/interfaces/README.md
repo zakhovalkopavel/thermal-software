@@ -13,8 +13,7 @@ refractory/
 │   ├── index.ts        ← Central export point
 │   ├── thermal-performance.interface.ts
 │   ├── refractoriness.interface.ts
-│   ├── glass-viscosity.interface.ts
-│   └── mineral-phase.interface.ts
+│   └── glass-viscosity.interface.ts
 │
 ├── types/               ✅ PSD + packing + shrinkage + blend shapes (Phase 6.3)
 ├── utils/psd-type-guards.ts              ✅ PsdTypeGuards
@@ -22,6 +21,7 @@ refractory/
 ├── utils/shrinkage-type-guards.ts        ✅ ShrinkageTypeGuards
 ├── utils/blend-optimizer-type-guards.ts      ✅ BlendOptimizerTypeGuards
 ├── utils/phase-equilibrium-type-guards.ts    ✅ PhaseEquilibriumTypeGuards
+├── utils/mineral-phase-type-guards.ts        ✅ MineralPhaseTypeGuards
 │
 └── dto/                ✅ NestJS DTOs (Validation)
     ├── blend-optimization.dto.ts
@@ -199,7 +199,9 @@ isThermalInput()
 isThermalConductivityInput()
 isRefractorinessInput()
 isGlassViscosityInput()
-isMineralPhaseInput()
+MineralPhaseTypeGuards.isMineralPhaseInput()
+MineralPhaseTypeGuards.isMineralPhaseData()
+MineralPhaseTypeGuards.isMineralPhaseResult()
 // ... remaining free is* guards migrate to static classes in Phase 6.3
 ```
 

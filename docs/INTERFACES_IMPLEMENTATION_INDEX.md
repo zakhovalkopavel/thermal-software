@@ -94,16 +94,14 @@ Phase 6.3 moves data shapes to `types/*.type.ts` and type guards to static class
 
 ```
 backend/src/modules/refractory/
-├── types/                              ✅ + phase-equilibrium (Phase 6.3)
-│   ├── index.ts
-│   └── … + phase-* / solid-phase-data / eutectic-point / liquidus-result / mineral-phase
-├── utils/*-type-guards.ts              ✅ + PhaseEquilibriumTypeGuards
+├── types/                              ✅ + mineral-phase identification (Phase 6.3)
+│   └── … + mineral-phase-data/input/result/metadata / phase-distribution / phase-stability
+├── utils/*-type-guards.ts              ✅ + MineralPhaseTypeGuards
 └── interfaces/
     ├── index.ts                        ✅ Central export (re-exports types + guards)
     ├── thermal-performance.interface.ts ⏳
     ├── refractoriness.interface.ts     ⏳
     ├── glass-viscosity.interface.ts    ⏳
-    ├── mineral-phase.interface.ts      ⏳
     ├── viscosity-parameters.interface.ts ⏳
     ├── component-property.interface.ts ✅ single export
     └── README.md

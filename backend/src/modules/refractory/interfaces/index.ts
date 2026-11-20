@@ -166,9 +166,9 @@ export {
 } from './glass-viscosity.interface';
 
 // ============================================================
-// MINERAL PHASE INTERFACES
+// MINERAL PHASE (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   MineralPhaseData,
   MineralPhaseInput,
   MineralPhaseResult,
@@ -179,10 +179,6 @@ export {
   MineralPhaseValidationError,
   MineralPhaseValidationWarning,
   PhaseTemperatureComparison,
-  isMineralPhaseInput,
-  isMineralPhaseData,
-  isMineralPhaseResult,
-  isPhaseDistribution,
-  isPhaseStability,
-} from './mineral-phase.interface';
+} from '../types';
+export { MineralPhaseTypeGuards } from '../utils/mineral-phase-type-guards';
 
