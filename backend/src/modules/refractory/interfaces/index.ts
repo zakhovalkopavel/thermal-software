@@ -92,9 +92,9 @@ export type {
 export { PhaseEquilibriumTypeGuards } from '../utils/phase-equilibrium-type-guards';
 
 // ============================================================
-// THERMAL PERFORMANCE INTERFACES
+// THERMAL PERFORMANCE (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   ThermalInput,
   ThermalConductivityInput,
   SpecificHeatInput,
@@ -111,13 +111,8 @@ export {
   ThermalValidationWarning,
   TemperatureDependentProperty,
   PropertyCurve,
-  isThermalInput,
-  isThermalConductivityInput,
-  isThermalConductivityResult,
-  isSpecificHeatResult,
-  isThermalExpansionResult,
-  isThermalPerformanceResult,
-} from './thermal-performance.interface';
+} from '../types';
+export { ThermalPerformanceTypeGuards } from '../utils/thermal-performance-type-guards';
 
 // ============================================================
 // REFRACTORINESS (types + guards; Phase 6.3)

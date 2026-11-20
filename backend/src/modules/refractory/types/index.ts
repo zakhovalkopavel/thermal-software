@@ -79,3 +79,20 @@ export type { RefractorinessValidationResult } from './refractoriness-validation
 export type { RefractorinessValidationError } from './refractoriness-validation-error.type';
 export type { RefractorinessValidationWarning } from './refractoriness-validation-warning.type';
 export type { RefractorinessComparison } from './refractoriness-comparison.type';
+
+export type { ThermalInput } from './thermal-input.type';
+export type { ThermalConductivityInput } from './thermal-conductivity-input.type';
+export type { SpecificHeatInput } from './specific-heat-input.type';
+export type { ThermalExpansionInput } from './thermal-expansion-input.type';
+export type { ComponentThermalProperties } from './component-thermal-properties.type';
+export type { WeightedThermalProperty } from './weighted-thermal-property.type';
+export type { ThermalConductivityResult } from './thermal-conductivity-result.type';
+export type { SpecificHeatResult } from './specific-heat-result.type';
+export type { ThermalExpansionResult } from './thermal-expansion-result.type';
+export type { ThermalPerformanceResult } from './thermal-performance-result.type';
+export type { ThermalPerformanceMetadata } from './thermal-performance-metadata.type';
+export type { ThermalValidationResult } from './thermal-validation-result.type';
+export type { ThermalValidationError } from './thermal-validation-error.type';
+export type { ThermalValidationWarning } from './thermal-validation-warning.type';
+export type { TemperatureDependentProperty } from './temperature-dependent-property.type';
+export type { PropertyCurve } from './property-curve.type';

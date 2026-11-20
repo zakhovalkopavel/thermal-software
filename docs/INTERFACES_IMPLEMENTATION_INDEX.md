@@ -94,12 +94,11 @@ Phase 6.3 moves data shapes to `types/*.type.ts` and type guards to static class
 
 ```
 backend/src/modules/refractory/
-├── types/                              ✅ + refractoriness (Phase 6.3)
-│   └── … + ISO/ASTM/GOST results / duty-classification / ComponentRefractorinesEffect
-├── utils/*-type-guards.ts              ✅ + RefractorinessTypeGuards
+├── types/                              ✅ + thermal-performance (Phase 6.3)
+│   └── … + conductivity/specific-heat/expansion inputs & results / PropertyCurve
+├── utils/*-type-guards.ts              ✅ + ThermalPerformanceTypeGuards
 └── interfaces/
     ├── index.ts                        ✅ Central export (re-exports types + guards)
-    ├── thermal-performance.interface.ts ⏳
     ├── glass-viscosity.interface.ts    ⏳
     ├── viscosity-parameters.interface.ts ⏳
     ├── component-property.interface.ts ✅ single export

@@ -8,7 +8,7 @@ import {
   SpecificHeatResult,
   ThermalExpansionResult,
   ThermalPerformanceResult,
-} from '../../interfaces/thermal-performance.interface';
+} from '../../types';
 import {
   calculateWeightedThermalConductivity,
   calculateWeightedSpecificHeat,
