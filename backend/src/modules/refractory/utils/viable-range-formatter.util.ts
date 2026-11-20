@@ -7,7 +7,7 @@
  * Date: February 3, 2026
  */
 
-import { ViableCompositionRange, BlendOptimizationResult } from '../interfaces/blend-optimizer.interface';
+import type { ViableCompositionRange, BlendOptimizationResult } from '../types';
 
 /**
  * Format a single component range

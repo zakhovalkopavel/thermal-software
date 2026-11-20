@@ -28,3 +28,16 @@ export type { ShrinkageMetadata } from './shrinkage-metadata.type';
 export type { ShrinkageValidationResult } from './shrinkage-validation-result.type';
 export type { ShrinkageValidationError } from './shrinkage-validation-error.type';
 export type { ShrinkageValidationWarning } from './shrinkage-validation-warning.type';
+
+export type { Fraction } from './fraction.type';
+export type { BlendOptimizationOptions } from './blend-optimization-options.type';
+export type { BlendOptimizationRequest } from './blend-optimization-request.type';
+export type { BlendOptimizationResult } from './blend-optimization-result.type';
+export type { BlendOptimizationResults } from './blend-optimization-results.type';
+export type { ViableCompositionRange } from './viable-composition-range.type';
+export type { ValidationResult } from './validation-result.type';
+export type { ValidationError } from './validation-error.type';
+export type { ValidationWarning } from './validation-warning.type';
+// Blend-local PSDResult / PackingResult: import from
+// ./blend-optimizer-psd-result.type and ./blend-optimizer-packing-result.type
+// (same names as calculator types; not re-exported here to avoid collision).

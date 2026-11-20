@@ -8,21 +8,20 @@
  */
 
 // ============================================================
-// BLEND OPTIMIZER INTERFACES
+// BLEND OPTIMIZER (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   Fraction,
   BlendOptimizationOptions,
   BlendOptimizationRequest,
   BlendOptimizationResult,
   BlendOptimizationResults,
+  ViableCompositionRange,
   ValidationResult,
   ValidationError,
   ValidationWarning,
-  isFraction,
-  isBlendOptimizationOptions,
-  isBlendOptimizationRequest,
-} from './blend-optimizer.interface';
+} from '../types';
+export { BlendOptimizerTypeGuards } from '../utils/blend-optimizer-type-guards';
 
 // ============================================================
 // PSD CALCULATOR (types + guards; Phase 6.3)

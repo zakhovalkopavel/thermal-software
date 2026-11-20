@@ -11,17 +11,17 @@
 refractory/
 ├── interfaces/          ✅ TypeScript Interfaces (NEW)
 │   ├── index.ts        ← Central export point
-│   ├── blend-optimizer.interface.ts
 │   ├── phase-equilibrium.interface.ts
 │   ├── thermal-performance.interface.ts
 │   ├── refractoriness.interface.ts
 │   ├── glass-viscosity.interface.ts
 │   └── mineral-phase.interface.ts
 │
-├── types/               ✅ PSD + packing + shrinkage shapes (Phase 6.3)
-├── utils/psd-type-guards.ts        ✅ PsdTypeGuards
-├── utils/packing-type-guards.ts    ✅ PackingTypeGuards
-├── utils/shrinkage-type-guards.ts  ✅ ShrinkageTypeGuards
+├── types/               ✅ PSD + packing + shrinkage + blend shapes (Phase 6.3)
+├── utils/psd-type-guards.ts              ✅ PsdTypeGuards
+├── utils/packing-type-guards.ts          ✅ PackingTypeGuards
+├── utils/shrinkage-type-guards.ts        ✅ ShrinkageTypeGuards
+├── utils/blend-optimizer-type-guards.ts  ✅ BlendOptimizerTypeGuards
 │
 └── dto/                ✅ NestJS DTOs (Validation)
     ├── blend-optimization.dto.ts
@@ -48,7 +48,7 @@ import {
 
 ### Option 2: Specific File
 ```typescript
-import { BlendOptimizationRequest } from '../interfaces/blend-optimizer.interface';
+import type { BlendOptimizationRequest } from '../types/blend-optimization-request.type';
 ```
 
 ### Option 3: Type Guards
@@ -188,8 +188,9 @@ ShrinkageTypeGuards.isShrinkageMaterial()
 ShrinkageTypeGuards.isShrinkageInput()
 ShrinkageTypeGuards.isShrinkageStage()
 ShrinkageTypeGuards.isShrinkageResult()
-isFraction()
-isBlendOptimizationRequest()
+BlendOptimizerTypeGuards.isFraction()
+BlendOptimizerTypeGuards.isBlendOptimizationOptions()
+BlendOptimizerTypeGuards.isBlendOptimizationRequest()
 isPhaseEquilibriumInput()
 isThermalInput()
 isThermalConductivityInput()

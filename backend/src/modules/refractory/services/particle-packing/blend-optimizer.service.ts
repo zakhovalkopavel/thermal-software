@@ -11,7 +11,7 @@ import {
   Fraction,
   BlendOptimizationResult,
   BlendOptimizationResults,
-} from '../../interfaces/blend-optimizer.interface';
+} from '../../types';
 
 /**
  * Blend Optimizer Service
