@@ -1,11 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import {
-  PackingInput,
-  CPMInput,
-  FurnasInput,
-  PackingResult,
-  PackingResultDetailed,
-} from '../../interfaces/packing-calculator.interface';
 import { Beta0Model, MaxPhiModel } from '../../enums/packing-models.enum';
 import {
   BETA0_VALUES,

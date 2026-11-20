@@ -12,7 +12,6 @@ refractory/
 ├── interfaces/          ✅ TypeScript Interfaces (NEW)
 │   ├── index.ts        ← Central export point
 │   ├── blend-optimizer.interface.ts
-│   ├── packing-calculator.interface.ts
 │   ├── shrinkage-calculator.interface.ts
 │   ├── phase-equilibrium.interface.ts
 │   ├── thermal-performance.interface.ts
@@ -20,8 +19,9 @@ refractory/
 │   ├── glass-viscosity.interface.ts
 │   └── mineral-phase.interface.ts
 │
-├── types/               ✅ PSD data shapes (Phase 6.3 → ../types/psd-*.type.ts)
-├── utils/psd-type-guards.ts  ✅ PsdTypeGuards
+├── types/               ✅ PSD + packing data shapes (Phase 6.3)
+├── utils/psd-type-guards.ts      ✅ PsdTypeGuards
+├── utils/packing-type-guards.ts  ✅ PackingTypeGuards
 │
 └── dto/                ✅ NestJS DTOs (Validation)
     ├── blend-optimization.dto.ts
@@ -180,10 +180,12 @@ All interfaces have corresponding type guards:
 PsdTypeGuards.isPSDFraction()
 PsdTypeGuards.isPSDCalculationRequest()
 PsdTypeGuards.isPSDResult()
+PackingTypeGuards.isPackingInput()
+PackingTypeGuards.isCPMInput()
+PackingTypeGuards.isFurnasInput()
+PackingTypeGuards.isPackingResult()
 isFraction()
 isBlendOptimizationRequest()
-isCPMInput()
-isFurnasInput()
 isShrinkageInput()
 isPhaseEquilibriumInput()
 isThermalInput()

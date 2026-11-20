@@ -39,9 +39,9 @@ export type {
 export { PsdTypeGuards } from '../utils/psd-type-guards';
 
 // ============================================================
-// PACKING CALCULATOR INTERFACES
+// PACKING CALCULATOR (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   PackingInput,
   CPMCalibration,
   CPMInput,
@@ -52,11 +52,8 @@ export {
   PackingValidationError,
   PackingValidationWarning,
   SortedFractions,
-  isPackingInput,
-  isCPMInput,
-  isFurnasInput,
-  isPackingResult,
-} from './packing-calculator.interface';
+} from '../types';
+export { PackingTypeGuards } from '../utils/packing-type-guards';
 
 // ============================================================
 // SHRINKAGE CALCULATOR INTERFACES
