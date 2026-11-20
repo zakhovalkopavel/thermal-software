@@ -1,4 +1,4 @@
 import { RefractoryThermalMaterial } from '../../refractory/enums/refractory-thermal-material.enum';
-import { MetalMaterial } from '../../metals/enums/metal-material.enum';
 
-export type WallMaterialKey = RefractoryThermalMaterial | MetalMaterial;
+/** Refractory catalogue key or any metal material id (poly grade or synthesized alloy). */
+export type WallMaterialKey = RefractoryThermalMaterial | string;

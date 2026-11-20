@@ -4,7 +4,6 @@ import { DimensionlessCalculationService } from '../../thermodynamics/services/d
 import { RefractoryThermalService } from '../../refractory/services/catalog/refractory-thermal.service';
 import { RefractoryThermalMaterial } from '../../refractory/enums/refractory-thermal-material.enum';
 import { MetalThermalService } from '../../metals/services/metal-thermal.service';
-import { MetalMaterial } from '../../metals/enums/metal-material.enum';
 import { FlowGeometry } from '../../thermodynamics/enums/flow-geometry.enum';
 import { Species } from '../../thermodynamics/enums/species.enum';
 import { MultilayerWallInputDto } from '../dto/multilayer-wall-input.dto';
@@ -238,13 +237,13 @@ export class MultilayerWallService {
     if (REFRACTORY_KEYS.has(material)) {
       return this.refractoryThermal.lambda(material as RefractoryThermalMaterial, T_K);
     }
-    return this.metalThermal.lambda(material as MetalMaterial, T_K);
+    return this.metalThermal.lambda(material, T_K);
   }
 
   getEmissivity(material: WallMaterialKey, T_K: number): number {
     if (REFRACTORY_KEYS.has(material)) {
       return this.refractoryThermal.emissivity(material as RefractoryThermalMaterial, T_K);
     }
-    return this.metalThermal.emissivity(material as MetalMaterial, T_K);
+    return this.metalThermal.emissivity(material, T_K);
   }
 }
