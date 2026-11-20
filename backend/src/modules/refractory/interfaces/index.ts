@@ -25,9 +25,9 @@ export {
 } from './blend-optimizer.interface';
 
 // ============================================================
-// PSD CALCULATOR INTERFACES
+// PSD CALCULATOR (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   PSDFraction,
   PSDCalculationOptions,
   PSDCalculationRequest,
@@ -35,10 +35,8 @@ export {
   PSDValidationResult,
   PSDValidationError,
   PSDValidationWarning,
-  isPSDFraction,
-  isPSDCalculationRequest,
-  isPSDResult,
-} from './psd-calculator.interface';
+} from '../types';
+export { PsdTypeGuards } from '../utils/psd-type-guards';
 
 // ============================================================
 // PACKING CALCULATOR INTERFACES

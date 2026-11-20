@@ -1,10 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import {
+import type {
   PSDFraction,
   PSDCalculationRequest,
   PSDResult,
   PSDValidationResult,
-} from '../../interfaces/psd-calculator.interface';
+} from '../../types';
 
 /**
  * Particle Size Distribution Calculator Service

@@ -87,20 +87,30 @@
 
 ## 📂 CREATED FILES
 
-### Interface Files (10 files)
+### Interface / type files (refractory)
+
+Phase 6.3 moves data shapes to `types/*.type.ts` and type guards to static classes in `utils/`.
+`interfaces/index.ts` remains the central barrel (re-exports).
+
 ```
-backend/src/modules/refractory/interfaces/
-├── index.ts                            ✅ Central export
-├── blend-optimizer.interface.ts        ✅ 9 interfaces
-├── psd-calculator.interface.ts         ✅ 6 interfaces
-├── packing-calculator.interface.ts     ✅ 10 interfaces
-├── shrinkage-calculator.interface.ts   ✅ 10 interfaces
-├── phase-equilibrium.interface.ts      ✅ 11 interfaces
-├── thermal-performance.interface.ts    ✅ 14 interfaces
-├── refractoriness.interface.ts         ✅ 13 interfaces
-├── viscosity.interface.ts              ✅ 5 interfaces
-├── glass-viscosity.interface.ts        ✅ 6 interfaces
-└── README.md                           ✅ Quick reference
+backend/src/modules/refractory/
+├── types/                              ✅ PSD shapes (Phase 6.3)
+│   ├── index.ts
+│   └── psd-*.type.ts                   ✅ PSDFraction, request, result, validation…
+├── utils/psd-type-guards.ts            ✅ PsdTypeGuards
+└── interfaces/
+    ├── index.ts                        ✅ Central export (re-exports types + guards)
+    ├── blend-optimizer.interface.ts    ⏳ multi-export (6.3 pending)
+    ├── packing-calculator.interface.ts ⏳
+    ├── shrinkage-calculator.interface.ts ⏳
+    ├── phase-equilibrium.interface.ts  ⏳
+    ├── thermal-performance.interface.ts ⏳
+    ├── refractoriness.interface.ts     ⏳
+    ├── glass-viscosity.interface.ts    ⏳
+    ├── mineral-phase.interface.ts      ⏳
+    ├── viscosity-parameters.interface.ts ⏳
+    ├── component-property.interface.ts ✅ single export
+    └── README.md
 ```
 
 ### Constants Files

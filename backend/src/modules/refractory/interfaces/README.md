@@ -12,7 +12,6 @@ refractory/
 ├── interfaces/          ✅ TypeScript Interfaces (NEW)
 │   ├── index.ts        ← Central export point
 │   ├── blend-optimizer.interface.ts
-│   ├── psd-calculator.interface.ts
 │   ├── packing-calculator.interface.ts
 │   ├── shrinkage-calculator.interface.ts
 │   ├── phase-equilibrium.interface.ts
@@ -20,6 +19,9 @@ refractory/
 │   ├── refractoriness.interface.ts
 │   ├── glass-viscosity.interface.ts
 │   └── mineral-phase.interface.ts
+│
+├── types/               ✅ PSD data shapes (Phase 6.3 → ../types/psd-*.type.ts)
+├── utils/psd-type-guards.ts  ✅ PsdTypeGuards
 │
 └── dto/                ✅ NestJS DTOs (Validation)
     ├── blend-optimization.dto.ts
@@ -51,10 +53,11 @@ import { BlendOptimizationRequest } from '../interfaces/blend-optimizer.interfac
 
 ### Option 3: Type Guards
 ```typescript
-import {
-  isBlendOptimizationRequest,
-  isRefractorinessInput,
-} from '../interfaces';
+import { PsdTypeGuards } from '../utils/psd-type-guards';
+// remaining domains still export free is* guards from '../interfaces' until Phase 6.3 finishes
+import { isRefractorinessInput } from '../interfaces';
+
+if (!PsdTypeGuards.isPSDCalculationRequest(data)) { /* … */ }
 ```
 
 ---
@@ -174,9 +177,11 @@ PhaseTemperatureComparison
 All interfaces have corresponding type guards:
 
 ```typescript
+PsdTypeGuards.isPSDFraction()
+PsdTypeGuards.isPSDCalculationRequest()
+PsdTypeGuards.isPSDResult()
 isFraction()
 isBlendOptimizationRequest()
-isPSDCalculationRequest()
 isCPMInput()
 isFurnasInput()
 isShrinkageInput()
@@ -184,10 +189,9 @@ isPhaseEquilibriumInput()
 isThermalInput()
 isThermalConductivityInput()
 isRefractorinessInput()
-isViscosityInput()
 isGlassViscosityInput()
 isMineralPhaseInput()
-// ... and more
+// ... remaining free is* guards migrate to static classes in Phase 6.3
 ```
 
 ---
