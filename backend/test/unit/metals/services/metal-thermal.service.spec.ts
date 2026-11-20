@@ -94,10 +94,20 @@ describe('MetalThermalService', () => {
       expect(result.emissivity).toBeUndefined();
     });
 
-    it('dataset alloy outside table range - throws BadRequestException', () => {
-      expect(() =>
-        service.getThermalProperties({ material: 'sae-1008', T_K: 50 }),
-      ).toThrow(BadRequestException);
+    it('dataset alloy outside table range - omits λ and notes the domain', () => {
+      const result = service.getThermalProperties({ material: 'sae-1008', T_K: 50 });
+      expect(result.lambda_WmK).toBeUndefined();
+      expect(result.notes?.some((n) => /outside table domain/i.test(n))).toBe(true);
+    });
+
+    it('donor-filled alloy returns λ, Cp, α and resistivity when in domain', () => {
+      const result = service.getThermalProperties({ material: '4340', T_K: 500 });
+      expect(result.lambda_WmK).toBeGreaterThan(0);
+      expect(result.specificHeat_JkgK).toBeGreaterThan(0);
+      expect(result.thermalExpansion_1e6K).toBeGreaterThan(0);
+      expect(result.electricalResistivity_OhmM).toBeGreaterThan(0);
+      expect(result.emissivity).toBeUndefined();
+      expect(result.donors).toBeDefined();
     });
 
     it('lambdaModel=kCT56 uses composition.C Chebyshev alternative', () => {

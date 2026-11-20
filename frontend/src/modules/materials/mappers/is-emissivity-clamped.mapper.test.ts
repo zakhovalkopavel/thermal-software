@@ -14,4 +14,8 @@ describe('materials › is-emissivity-clamped', () => {
     expect(isEmissivityClamped(599, RANGE)).toBe(true);
     expect(isEmissivityClamped(1401, RANGE)).toBe(true);
   });
+
+  it('is false when the grade has no ε range', () => {
+    expect(isEmissivityClamped(1000, undefined)).toBe(false);
+  });
 });

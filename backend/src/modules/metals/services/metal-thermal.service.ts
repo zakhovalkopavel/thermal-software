@@ -18,6 +18,7 @@ const TABLE_PROPS = [
   'specificHeat',
   'thermalExpansion',
   'density',
+  'electricalResistivity',
 ] as const;
 
 /**
@@ -150,18 +151,45 @@ export class MetalThermalService {
     const result: MetalThermalResultDto = {
       material,
       T_K,
-      lambda_WmK: this.lambda(material, T_K),
       lambdaModel: MetalLambdaModel.TABLE,
     };
 
     if (poly) {
+      result.lambda_WmK = this.lambda(material, T_K);
       result.emissivity = this.emissivity(material, T_K);
     } else if (alloy) {
+      this.addTableLambda(result, alloy, T_K);
       this.addOptionalTableProps(result, alloy, T_K);
       this.addDonorNotes(result, alloy);
     }
 
     return result;
+  }
+
+  /**
+   * Table λ at T_K when inside the effective knot domain; otherwise omit λ and
+   * note the valid range so wide sweeps can keep in-range points without failing.
+   */
+  private addTableLambda(
+    result: MetalThermalResultDto,
+    alloy: MetalAlloyRecord,
+    T_K: number,
+  ): void {
+    const knots = MetalSeriesPoints.effective(alloy, 'thermalConductivity');
+    if (!knots.length) return;
+    try {
+      result.lambda_WmK = this.splineEvaluate(knots, T_K);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const tMin = knots[0].T_K;
+      const tMax = knots[knots.length - 1].T_K;
+      result.notes = [
+        ...(result.notes ?? []),
+        message.includes('outside domain')
+          ? `λ omitted: T=${T_K} K outside table domain [${tMin}, ${tMax}] K`
+          : message,
+      ];
+    }
   }
 
   private addOptionalTableProps(
@@ -178,6 +206,7 @@ export class MetalThermalService {
         if (prop === 'specificHeat') result.specificHeat_JkgK = value;
         if (prop === 'thermalExpansion') result.thermalExpansion_1e6K = value;
         if (prop === 'density') result.density_kgm3 = value;
+        if (prop === 'electricalResistivity') result.electricalResistivity_OhmM = value;
       } catch {
         // Property present but T outside range — omit rather than fail the whole response
       }

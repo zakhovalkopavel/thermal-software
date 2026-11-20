@@ -4,8 +4,11 @@ import { MetalLambdaModel } from '../enums/metal-lambda-model.enum';
 export class MetalThermalResultDto {
   @ApiProperty() material: string;
   @ApiProperty() T_K: number;
-  @ApiProperty({ description: 'Thermal conductivity [W/(m·K)]' })
-  lambda_WmK: number;
+  @ApiPropertyOptional({
+    description:
+      'Thermal conductivity [W/(m·K)]. Omitted when T is outside the table domain for this grade.',
+  })
+  lambda_WmK?: number;
 
   @ApiPropertyOptional({
     description: 'λ evaluation model used for this response',
@@ -29,6 +32,9 @@ export class MetalThermalResultDto {
 
   @ApiPropertyOptional({ description: 'Density [kg/m³]' })
   density_kgm3?: number;
+
+  @ApiPropertyOptional({ description: 'Electrical resistivity [Ω·m] from table spline' })
+  electricalResistivity_OhmM?: number;
 
   @ApiPropertyOptional({ description: 'Donor provenance when a series was composition-filled' })
   donors?: Record<string, unknown>;

@@ -52,7 +52,14 @@ export function MetalConditionsForm({
             </Stack>
             {metal && (
               <Typography variant="caption" color="text.secondary">
-                {metal.description} ε valid {metal.emissivityRange_K.min}–{metal.emissivityRange_K.max} K.
+                {metal.description}
+                {metal.availableProperties?.length
+                  ? ` · ${metal.availableProperties.join(', ')}`
+                  : ''}
+                {metal.emissivityRange_K
+                  ? ` · ε valid ${metal.emissivityRange_K.min}–${metal.emissivityRange_K.max} K`
+                  : ''}
+                {metal.hasDonorFill ? ' · donor-filled series' : ''}
               </Typography>
             )}
           </Stack>

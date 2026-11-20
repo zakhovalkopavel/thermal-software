@@ -37,7 +37,12 @@ export function MetalsSection() {
       return;
     }
     try {
-      setRequest({ mode: sweep.mode, materials, temperatures_K: toTemperatureGrid(sweep) });
+      setRequest({
+        mode: sweep.mode,
+        materials,
+        temperatures_K: toTemperatureGrid(sweep),
+        unit: sweep.unit,
+      });
       setFormError(null);
     } catch (error) {
       setFormError((error as Error).message);
@@ -47,7 +52,7 @@ export function MetalsSection() {
   return (
     <CalculatorPage
       title="Metals"
-      description="Temperature-dependent thermal conductivity λ and emissivity ε of known metal grades."
+      description="Temperature-dependent properties of known metal grades (λ, Cp, α, ρ, ρₑ, and ε when available)."
       inputs={
         <>
           {unknownParam && (
@@ -73,7 +78,15 @@ export function MetalsSection() {
           error={result.error ?? metals.error}
           hasResult={Boolean(request) && result.isComplete}
         >
-          {request && <MetalResults request={request} metals={catalog} byMaterial={result.byMaterial} />}
+          {request && (
+            <MetalResults
+              request={request}
+              metals={catalog}
+              byMaterial={result.byMaterial}
+              temperatureUnit={sweep.unit}
+              skippedOutsideDomain={result.skippedOutsideDomain}
+            />
+          )}
         </ResultPanel>
       }
     />

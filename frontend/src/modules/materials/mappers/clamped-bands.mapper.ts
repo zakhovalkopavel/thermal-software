@@ -4,12 +4,13 @@ import type { TemperatureRange } from '../types/temperature-range.type';
 
 /** Shaded x-bands where ε is clamped, limited to the plotted range [xMin, xMax] (chart x unit). */
 export function toClampedBands(
-  range: TemperatureRange,
+  range: TemperatureRange | undefined,
   xMin: number,
   xMax: number,
   label: string,
   toX: (T_K: number) => number = (T_K) => T_K,
 ): PlotBand[] {
+  if (!range) return [];
   const bands: PlotBand[] = [];
   const low = toX(range.min);
   const high = toX(range.max);

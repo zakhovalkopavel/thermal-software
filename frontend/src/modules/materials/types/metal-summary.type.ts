@@ -4,5 +4,10 @@ export type MetalSummary = {
   materialId: string;
   name: string;
   description: string;
-  emissivityRange_K: TemperatureRange;
+  group?: string;
+  family?: string;
+  availableProperties?: string[];
+  hasDonorFill?: boolean;
+  /** Present only for poly grades that define ε. */
+  emissivityRange_K?: TemperatureRange;
 };
