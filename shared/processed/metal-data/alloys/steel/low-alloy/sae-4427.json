@@ -1,0 +1,115 @@
+{
+  "materialId": "sae-4427",
+  "name": "4427",
+  "group": "steel",
+  "family": "low-alloy",
+  "aliases": {
+    "uns": "G44270",
+    "sae": "4427"
+  },
+  "composition": {
+    "C": 0.265,
+    "Mn": 0.8,
+    "P": 0.0175,
+    "S": 0.02,
+    "Si": 0.25,
+    "Mo": 0.4
+  },
+  "condition": "Unknown",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "thermal_conductivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 293.15,
+          "value": 36.8
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 12.6
+        },
+        {
+          "T_K": 573.15,
+          "value": 13.8
+        },
+        {
+          "T_K": 873.15,
+          "value": 15.1
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 9.648,
+            "b": 0.009154,
+            "c": -3.333e-06
+          },
+          "min": 373.15,
+          "max": 873.15
+        },
+        "meanRelPct": 0.0,
+        "maxRelPct": 0.0
+      }
+    }
+  },
+  "sourceFiles": [
+    "low-alloy_steel.json",
+    "steel_thermal_expansion.json",
+    "thermal_conductivity.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 995,
+    "Ac3_K": 1102,
+    "Ac1_C": 722,
+    "Ac3_C": 829,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-5132",
+        "mode": "full-series",
+        "why": "sae-4427 doesn't have electricalResistivity points; link sae-5132 series (same family low-alloy; ElMD=0.155265, L1=1.435 wt% [ΔCr=0.875%; ΔMo=0.4%; ΔMn=0.1%; ΔC=0.06%])",
+        "compositionDistance": 0.155265,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-5132",
+        "mode": "full-series",
+        "why": "sae-4427 doesn't have specificHeat points; link sae-5132 series (same family low-alloy; ElMD=0.155265, L1=1.435 wt% [ΔCr=0.875%; ΔMo=0.4%; ΔMn=0.1%; ΔC=0.06%])",
+        "compositionDistance": 0.155265,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "sae-5132",
+        "mode": "full-series",
+        "why": "only 1 thermalConductivity point; link sae-5132 series (same family low-alloy; ElMD=0.155265, L1=1.435 wt% [ΔCr=0.875%; ΔMo=0.4%; ΔMn=0.1%; ΔC=0.06%])",
+        "compositionDistance": 0.155265,
+        "distanceMetric": "ElMD-mod_petti"
+      }
+    }
+  }
+}

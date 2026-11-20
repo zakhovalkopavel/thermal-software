@@ -1,0 +1,99 @@
+{
+  "materialId": "aisi-o7",
+  "name": "O7",
+  "group": "steel",
+  "family": "tool",
+  "aliases": {
+    "uns": "T31507",
+    "sae": "O7"
+  },
+  "composition": {
+    "C": 1.2000000000000002,
+    "Mn": 0.5,
+    "Si": 0.3,
+    "Cr": 0.6,
+    "Ni": 0.15,
+    "Mo": 0.15,
+    "W": 1.5,
+    "V": 0.2
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "tool_steel_thermal_expansion_and_density.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 7800.0
+        }
+      ]
+    },
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [],
+      "points": []
+    }
+  },
+  "sourceFiles": [
+    "tool_steel_composition.json",
+    "tool_steel_thermal_expansion_and_density.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1017,
+    "Ac3_K": 1017,
+    "Ac1_C": 744,
+    "Ac3_C": 744,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-4140",
+        "mode": "full-series",
+        "why": "aisi-o7 doesn't have electricalResistivity points; link sae-4140 series (same group steel; ElMD=0.609114, L1=3.5075 wt% [ΔW=1.5%; ΔC=0.795%; ΔMn=0.375%; ΔCr=0.35%; ΔV=0.2%; ΔNi=0.15%; ΔMo=0.05%; ΔSi=0.05%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 0.609114,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-5140",
+        "mode": "full-series",
+        "why": "aisi-o7 doesn't have specificHeat points; link sae-5140 series (same group steel; ElMD=0.645546, L1=3.3825 wt% [ΔW=1.5%; ΔC=0.795%; ΔMn=0.3%; ΔCr=0.2%; ΔV=0.2%; ΔMo=0.15%; ΔNi=0.15%; ΔSi=0.05%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 0.645546,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "aisi-w1",
+        "mode": "full-series",
+        "why": "aisi-o7 doesn't have thermalConductivity points; link aisi-w1 series (same family tool; ElMD=0.274336, L1=2.65 wt% [ΔW=1.425%; ΔCr=0.525%; ΔMn=0.25%; ΔV=0.15%; ΔC=0.1%; ΔMo=0.1%; ΔNi=0.05%; ΔSi=0.05%])",
+        "compositionDistance": 0.274336,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalExpansion": {
+        "materialId": "aisi-w1",
+        "mode": "full-series",
+        "why": "aisi-o7 doesn't have thermalExpansion points; link aisi-w1 series (same family tool; ElMD=0.274336, L1=2.65 wt% [ΔW=1.425%; ΔCr=0.525%; ΔMn=0.25%; ΔV=0.15%; ΔC=0.1%; ΔMo=0.1%; ΔNi=0.05%; ΔSi=0.05%])",
+        "compositionDistance": 0.274336,
+        "distanceMetric": "ElMD-mod_petti"
+      }
+    }
+  }
+}

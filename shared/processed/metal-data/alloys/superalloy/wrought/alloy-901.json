@@ -1,0 +1,127 @@
+{
+  "materialId": "alloy-901",
+  "name": "Alloy 901",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "Alloy 901",
+    "form": "Sheet",
+    "base": "Iron base"
+  },
+  "composition": {
+    "Ni": 42.5,
+    "Cr": 12.5,
+    "Mo": 5.7,
+    "Al": 0.2,
+    "Ti": 2.8,
+    "Fe": 36.0,
+    "Mn": 0.1,
+    "Si": 0.1,
+    "C": 0.05,
+    "B": 0.015
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8210.0
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 206.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 167.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 153.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 13.3
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 811.15,
+          "value": 15.3
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "super_alloys_composition.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "Alloy 901",
+      "group": "Iron base",
+      "form": "Sheet",
+      "rupture_strength_1000h": {
+        "650": 525,
+        "760": 205
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "Alloy 901",
+      "group": "Iron base",
+      "form": "Bar",
+      "values": {
+        "21": 206,
+        "540": 167,
+        "650": 153
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "Alloy 901",
+      "group": "Iron base",
+      "form": "Bar",
+      "yield_strength_0.2_offset": {
+        "21": 895,
+        "540": 780,
+        "650": 760,
+        "760": 635
+      },
+      "tensile_elongation": {
+        "540": 14,
+        "650": 14,
+        "760": 13,
+        "870": 19
+      }
+    }
+  }
+}

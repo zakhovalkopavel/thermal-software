@@ -1,0 +1,217 @@
+{
+  "materialId": "sae-1016",
+  "name": "1016",
+  "group": "steel",
+  "family": "carbon",
+  "aliases": {
+    "uns": "G10160",
+    "sae": "1016"
+  },
+  "composition": {
+    "C": 0.155,
+    "Mn": 0.75,
+    "P": 0.02,
+    "S": 0.025
+  },
+  "condition": "Annealed",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [
+        "electrical_resistivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 273.15,
+          "value": 1.6e-07
+        },
+        {
+          "T_K": 373.15,
+          "value": 2.1999999999999998e-07
+        },
+        {
+          "T_K": 473.15,
+          "value": 2.9e-07
+        }
+      ],
+      "approximation": {
+        "Tswitch": 1103,
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 4.707e-08,
+            "b": 2.768e-10,
+            "c": 5e-13
+          },
+          "min": 273.15,
+          "max": 473.15
+        },
+        "meanRelPct": 0.01,
+        "maxRelPct": 0.01,
+        "joinContinuous": true
+      }
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [
+        "specific_heat.json"
+      ],
+      "points": [
+        {
+          "T_K": 348.15,
+          "value": 481.0
+        },
+        {
+          "T_K": 448.15,
+          "value": 515.0
+        },
+        {
+          "T_K": 648.15,
+          "value": 595.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "thermal_conductivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 273.15,
+          "value": 51.9
+        },
+        {
+          "T_K": 373.15,
+          "value": 50.2
+        },
+        {
+          "T_K": 473.15,
+          "value": 47.6
+        }
+      ],
+      "approximation": {
+        "Tswitch": 1103,
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 51.96,
+            "b": 0.01208,
+            "c": -4.5e-05
+          },
+          "min": 273.15,
+          "max": 473.15
+        },
+        "meanRelPct": 0.0,
+        "maxRelPct": 0.0,
+        "joinContinuous": true
+      }
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 12.0
+        },
+        {
+          "T_K": 673.15,
+          "value": 13.5
+        },
+        {
+          "T_K": 873.15,
+          "value": 14.4
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 9.883,
+            "b": 0.006046,
+            "c": -1e-06
+          },
+          "min": 373.15,
+          "max": 873.15
+        },
+        "meanRelPct": 0.0,
+        "maxRelPct": 0.0
+      }
+    }
+  },
+  "sourceFiles": [
+    "carbon_steel.json",
+    "carbon_steel2.json",
+    "electrical_resistivity.json",
+    "specific_heat.json",
+    "steel_thermal_expansion.json",
+    "thermal_conductivity.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 988,
+    "Ac3_K": 1103,
+    "Ac1_C": 715,
+    "Ac3_C": 830,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-1025",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 273–473 K; link scaled sae-1025 outside (same family carbon; ElMD=0.066543, L1=0.395 wt% [ΔMn=0.3%; ΔC=0.095%])",
+        "compositionDistance": 0.066543,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.99870036,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.0,
+          "maxRelPct": 0.754151
+        }
+      },
+      "specificHeat": {
+        "materialId": "sae-1025",
+        "mode": "scaled-series",
+        "why": "only 3 own points; link scaled sae-1025 curve (same family carbon; ElMD=0.066543, L1=0.395 wt% [ΔMn=0.3%; ΔC=0.095%])",
+        "compositionDistance": 0.066543,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.99201488,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.79303647,
+          "maxRelPct": 0.232689
+        }
+      },
+      "thermalConductivity": {
+        "materialId": "sae-1025",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 273–473 K; link scaled sae-1025 outside (same family carbon; ElMD=0.066543, L1=0.395 wt% [ΔMn=0.3%; ΔC=0.095%])",
+        "compositionDistance": 0.066543,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.98512942,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.59609295,
+          "maxRelPct": 1.487058
+        }
+      },
+      "thermalExpansion": {
+        "materialId": "sae-1022",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 373–873 K; link scaled sae-1022 outside (same family carbon; ElMD=0.037672, L1=0.15 wt% [ΔMn=0.1%; ΔC=0.05%])",
+        "compositionDistance": 0.037672,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.99546847,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.09822267,
+          "maxRelPct": 1.205962
+        }
+      }
+    }
+  }
+}

@@ -146,7 +146,21 @@ backend/src/common/thermal/dto/
 └── temperature-range.dto.ts                 TemperatureRangeDto
 
 backend/src/modules/metals/dto/
-└── metal-summary.dto.ts                     MetalSummaryDto
+├── metal-summary.dto.ts                     MetalSummaryDto
+├── metal-thermal-query.dto.ts               MetalThermalQueryDto (`lambdaModel?`)
+└── metal-thermal-result.dto.ts              MetalThermalResultDto
+
+backend/src/modules/metals/enums/
+├── metal-material.enum.ts                   MetalMaterial
+└── metal-lambda-model.enum.ts               MetalLambdaModel (`table` \| `kCT56`)
+
+backend/src/modules/metals/types/
+├── metal-property-approximation.type.ts     MetalPropertyApproximation
+├── metal-property-donor.type.ts             MetalPropertyDonor
+├── metal-property-series.type.ts            MetalPropertySeries
+├── metal-alloy-record.type.ts               MetalAlloyRecord
+├── metal-dataset-index-entry.type.ts        MetalDatasetIndexEntry
+└── kct56-conductivity-model.type.ts         Kct56ConductivityModel
 
 backend/src/modules/refractory/enums/
 ├── material-group.enum.ts                   MaterialGroup (17)

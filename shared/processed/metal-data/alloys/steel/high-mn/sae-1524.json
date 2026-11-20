@@ -1,0 +1,286 @@
+{
+  "materialId": "sae-1524",
+  "name": "1524",
+  "group": "steel",
+  "family": "high-mn",
+  "aliases": {
+    "uns": "G15240",
+    "sae": "1524"
+  },
+  "composition": {
+    "C": 0.215,
+    "Mn": 1.475,
+    "P": 0.02,
+    "S": 0.025
+  },
+  "condition": "Unknown",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [
+        "electrical_resistivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 273.15,
+          "value": 1.6e-07
+        },
+        {
+          "T_K": 293.15,
+          "value": 2.0799999999999998e-07
+        },
+        {
+          "T_K": 373.15,
+          "value": 2.59e-07
+        },
+        {
+          "T_K": 473.15,
+          "value": 3.33e-07
+        },
+        {
+          "T_K": 673.15,
+          "value": 5.23e-07
+        },
+        {
+          "T_K": 873.15,
+          "value": 7.86e-07
+        },
+        {
+          "T_K": 973.15,
+          "value": 9.459999999999999e-07
+        },
+        {
+          "T_K": 1073.15,
+          "value": 1.1029999999999999e-06
+        },
+        {
+          "T_K": 1173.15,
+          "value": 1.143e-06
+        },
+        {
+          "T_K": 1273.15,
+          "value": 1.174e-06
+        },
+        {
+          "T_K": 1373.15,
+          "value": 1.2019999999999999e-06
+        },
+        {
+          "T_K": 1473.15,
+          "value": 1.227e-06
+        },
+        {
+          "T_K": 1573.15,
+          "value": 1.2499999999999999e-06
+        }
+      ]
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [
+        "specific_heat.json"
+      ],
+      "points": [
+        {
+          "T_K": 348.15,
+          "value": 477.0
+        },
+        {
+          "T_K": 448.15,
+          "value": 511.0
+        },
+        {
+          "T_K": 498.15,
+          "value": 528.0
+        },
+        {
+          "T_K": 548.15,
+          "value": 544.0
+        },
+        {
+          "T_K": 598.15,
+          "value": 565.0
+        },
+        {
+          "T_K": 648.15,
+          "value": 590.0
+        },
+        {
+          "T_K": 748.15,
+          "value": 649.0
+        },
+        {
+          "T_K": 848.15,
+          "value": 741.0
+        },
+        {
+          "T_K": 948.15,
+          "value": 837.0
+        },
+        {
+          "T_K": 998.15,
+          "value": 1449.0
+        },
+        {
+          "T_K": 1048.15,
+          "value": 821.0
+        },
+        {
+          "T_K": 1148.15,
+          "value": 536.0
+        }
+      ],
+      "approximation": {
+        "Tswitch": 997,
+        "low": {
+          "type": "indenCp",
+          "vars": {
+            "a": 223.1,
+            "b": 0.8715,
+            "c": -0.0006451,
+            "Al": 146.9,
+            "Ah": 172.1,
+            "Tc": 997
+          },
+          "min": 348.15,
+          "max": 1148.15
+        },
+        "meanRelPct": 2.18,
+        "maxRelPct": 4.39
+      }
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "thermal_conductivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 273.15,
+          "value": 51.9
+        },
+        {
+          "T_K": 373.15,
+          "value": 50.1
+        },
+        {
+          "T_K": 473.15,
+          "value": 48.4
+        }
+      ],
+      "approximation": {
+        "Tswitch": 1089,
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 57.33,
+            "b": -0.02123,
+            "c": 5e-06
+          },
+          "min": 273.15,
+          "max": 473.15
+        },
+        "meanRelPct": 0.01,
+        "maxRelPct": 0.01,
+        "joinContinuous": true
+      }
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 11.9
+        },
+        {
+          "T_K": 473.15,
+          "value": 12.7
+        },
+        {
+          "T_K": 673.15,
+          "value": 13.9
+        },
+        {
+          "T_K": 873.15,
+          "value": 14.7
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 8.042,
+            "b": 0.0124,
+            "c": -5.477e-06
+          },
+          "min": 373.15,
+          "max": 873.15
+        },
+        "meanRelPct": 0.07,
+        "maxRelPct": 0.12
+      }
+    }
+  },
+  "sourceFiles": [
+    "High-manganese carbon steel 2.json",
+    "High-manganese carbon steel.json",
+    "electrical_resistivity.json",
+    "specific_heat.json",
+    "steel_thermal_expansion.json",
+    "thermal_conductivity.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 980,
+    "Ac3_K": 1089,
+    "Ac1_C": 707,
+    "Ac3_C": 816,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "specificHeat": {
+        "materialId": "steel-13mn",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 348–1148 K; link scaled steel-13mn outside (same family high-mn; ElMD=6.22618, L1=12.995 wt% [ΔMn=11.525%; ΔC=1.005%; ΔSi=0.22%; ΔCu=0.07%; ΔNi=0.07%; ΔAs=0.038%; ΔCr=0.03%; ΔP=0.018%; ΔS=0.015%; ΔAl=0.004%])",
+        "compositionDistance": 6.226179,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 1.16487779,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 246.55987284,
+          "maxRelPct": 51.202152
+        }
+      },
+      "thermalConductivity": {
+        "materialId": "steel-13mn",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 273–473 K; link scaled steel-13mn outside (same family high-mn; ElMD=6.22618, L1=12.995 wt% [ΔMn=11.525%; ΔC=1.005%; ΔSi=0.22%; ΔCu=0.07%; ΔNi=0.07%; ΔAs=0.038%; ΔCr=0.03%; ΔP=0.018%; ΔS=0.015%; ΔAl=0.004%])",
+        "compositionDistance": 6.226179,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 3.33608078,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 5.94846567,
+          "maxRelPct": 15.151703
+        }
+      },
+      "thermalExpansion": {
+        "materialId": "steel-13mn",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 373–873 K; link scaled steel-13mn outside (same family high-mn; ElMD=6.22618, L1=12.995 wt% [ΔMn=11.525%; ΔC=1.005%; ΔSi=0.22%; ΔCu=0.07%; ΔNi=0.07%; ΔAs=0.038%; ΔCr=0.03%; ΔP=0.018%; ΔS=0.015%; ΔAl=0.004%])",
+        "compositionDistance": 6.226179,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.677805,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.47127027,
+          "maxRelPct": 5.268681
+        }
+      }
+    }
+  }
+}

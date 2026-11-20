@@ -1,0 +1,209 @@
+{
+  "materialId": "sae-4140",
+  "name": "4140",
+  "group": "steel",
+  "family": "low-alloy",
+  "aliases": {
+    "sae": "4140",
+    "uns": "G41400"
+  },
+  "composition": {
+    "C": 0.405,
+    "Mn": 0.875,
+    "P": 0.0175,
+    "S": 0.02,
+    "Si": 0.25,
+    "Cr": 0.9500000000000001,
+    "Mo": 0.2
+  },
+  "condition": "Hardened and tempered",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [
+        "electrical_resistivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 293.15,
+          "value": 2.1999999999999998e-07
+        },
+        {
+          "T_K": 373.15,
+          "value": 2.6e-07
+        },
+        {
+          "T_K": 473.15,
+          "value": 3.3e-07
+        },
+        {
+          "T_K": 673.15,
+          "value": 4.8e-07
+        },
+        {
+          "T_K": 873.15,
+          "value": 6.5e-07
+        }
+      ],
+      "approximation": {
+        "Tswitch": 1071,
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 7.614e-08,
+            "b": 3.908e-10,
+            "c": 3.063e-13
+          },
+          "min": 293.15,
+          "max": 873.15
+        },
+        "meanRelPct": 0.76,
+        "maxRelPct": 1.78,
+        "joinContinuous": true
+      }
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [
+        "specific_heat.json"
+      ],
+      "points": [
+        {
+          "T_K": 383.15,
+          "value": 473.0
+        },
+        {
+          "T_K": 483.15,
+          "value": 519.0
+        },
+        {
+          "T_K": 583.15,
+          "value": 561.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "thermal_conductivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 42.7
+        },
+        {
+          "T_K": 473.15,
+          "value": 42.3
+        },
+        {
+          "T_K": 673.15,
+          "value": 37.7
+        },
+        {
+          "T_K": 873.15,
+          "value": 33.1
+        }
+      ],
+      "approximation": {
+        "Tswitch": 1071,
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 44.57,
+            "b": 0.002569,
+            "c": -1.814e-05
+          },
+          "min": 373.15,
+          "max": 873.15
+        },
+        "meanRelPct": 0.86,
+        "maxRelPct": 1.36,
+        "joinContinuous": true
+      }
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 12.3
+        },
+        {
+          "T_K": 473.15,
+          "value": 12.7
+        },
+        {
+          "T_K": 673.15,
+          "value": 13.7
+        },
+        {
+          "T_K": 873.15,
+          "value": 14.5
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 10.33,
+            "b": 0.005511,
+            "c": -8.291e-07
+          },
+          "min": 373.15,
+          "max": 873.15
+        },
+        "meanRelPct": 0.24,
+        "maxRelPct": 0.42
+      }
+    }
+  },
+  "sourceFiles": [
+    "electrical_resistivity.json",
+    "low-alloy_steel.json",
+    "specific_heat.json",
+    "steel_thermal_expansion.json",
+    "thermal_conductivity.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1010,
+    "Ac3_K": 1071,
+    "Ac1_C": 737,
+    "Ac3_C": 798,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "specificHeat": {
+        "materialId": "sae-5140",
+        "mode": "scaled-series",
+        "why": "only 3 own points; link scaled sae-5140 curve (same family low-alloy; ElMD=0.043606, L1=0.425 wt% [ΔMo=0.2%; ΔCr=0.15%; ΔMn=0.075%])",
+        "compositionDistance": 0.043606,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 1.0,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.0,
+          "maxRelPct": 0.0
+        }
+      },
+      "thermalExpansion": {
+        "materialId": "sae-5140",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 373–873 K; link scaled sae-5140 outside (same family low-alloy; ElMD=0.043606, L1=0.425 wt% [ΔMo=0.2%; ΔCr=0.15%; ΔMn=0.075%])",
+        "compositionDistance": 0.043606,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.99066156,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.14737043,
+          "maxRelPct": 1.713892
+        }
+      }
+    }
+  }
+}

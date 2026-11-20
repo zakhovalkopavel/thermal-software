@@ -1,0 +1,138 @@
+{
+  "materialId": "aisi-m1",
+  "name": "M1",
+  "group": "steel",
+  "family": "tool",
+  "aliases": {
+    "uns": "T11301",
+    "sae": "M1"
+  },
+  "composition": {
+    "C": 0.8300000000000001,
+    "Mn": 0.275,
+    "Si": 0.35,
+    "Cr": 3.75,
+    "Ni": 0.15,
+    "Mo": 8.7,
+    "W": 1.75,
+    "V": 1.125
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "tool_steel_thermal_expansion_and_density.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 7890.0
+        }
+      ]
+    },
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "tool_steel_thermal_expansion_and_density.json"
+      ],
+      "points": [
+        {
+          "T_K": 533.15,
+          "value": 10.6
+        },
+        {
+          "T_K": 698.15,
+          "value": 11.3
+        },
+        {
+          "T_K": 813.15,
+          "value": 12.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 12.4
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 7.982,
+            "b": 0.00496,
+            "c": -1.519e-07
+          },
+          "min": 533.15,
+          "max": 923.15
+        },
+        "meanRelPct": 0.44,
+        "maxRelPct": 0.71
+      }
+    }
+  },
+  "sourceFiles": [
+    "tool_steel_composition.json",
+    "tool_steel_thermal_expansion_and_density.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1075,
+    "Ac3_K": 1426,
+    "Ac1_C": 802,
+    "Ac3_C": 1152,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-4140",
+        "mode": "full-series",
+        "why": "aisi-m1 doesn't have electricalResistivity points; link sae-4140 series (same group steel; ElMD=1.87772, L1=15.4875 wt% [ΔMo=8.5%; ΔCr=2.8%; ΔW=1.75%; ΔV=1.125%; ΔMn=0.6%; ΔC=0.425%; ΔNi=0.15%; ΔSi=0.1%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 1.877717,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-5140",
+        "mode": "full-series",
+        "why": "aisi-m1 doesn't have specificHeat points; link sae-5140 series (same group steel; ElMD=1.92132, L1=15.7625 wt% [ΔMo=8.7%; ΔCr=2.95%; ΔW=1.75%; ΔV=1.125%; ΔMn=0.525%; ΔC=0.425%; ΔNi=0.15%; ΔSi=0.1%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 1.921318,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "aisi-t1",
+        "mode": "full-series",
+        "why": "aisi-m1 doesn't have thermalConductivity points; link aisi-t1 series (same family tool; ElMD=0.264314, L1=25.53 wt% [ΔW=16.25%; ΔMo=8.7%; ΔCr=0.375%; ΔC=0.105%; ΔSi=0.05%; ΔMn=0.025%; ΔV=0.025%])",
+        "compositionDistance": 0.264314,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalExpansion": {
+        "materialId": "aisi-t1",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 533–923 K; link scaled aisi-t1 outside (same family tool; ElMD=0.264314, L1=25.53 wt% [ΔW=16.25%; ΔMo=8.7%; ΔCr=0.375%; ΔC=0.105%; ΔSi=0.05%; ΔMn=0.025%; ΔV=0.025%])",
+        "compositionDistance": 0.264314,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 1.03089238,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.17113744,
+          "maxRelPct": 2.176944
+        }
+      }
+    }
+  }
+}

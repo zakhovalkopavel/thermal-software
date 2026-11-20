@@ -1,0 +1,113 @@
+{
+  "materialId": "incoloy-903",
+  "name": "Incoloy 903",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "Incoloy 903",
+    "form": "Bar",
+    "base": "Iron base"
+  },
+  "composition": {
+    "Ni": 38.0,
+    "Co": 15.0,
+    "Nb": 3.0,
+    "Al": 0.7,
+    "Ti": 1.4,
+    "Fe": 41.0
+  },
+  "condition": "Annealed",
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8140.000000000001
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 147.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 16.8
+        },
+        {
+          "T_K": 811.15,
+          "value": 20.9
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 811.15,
+          "value": 8.6
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "super_alloys_composition.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "Incoloy 903",
+      "group": "Iron base",
+      "form": "Bar",
+      "rupture_strength_1000h": {
+        "650": 510
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "Incoloy 903",
+      "group": "Iron base",
+      "form": "Bar",
+      "condition": "Annealed",
+      "values": {
+        "21": 147
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "Incoloy 903",
+      "group": "Iron base",
+      "form": "Bar",
+      "yield_strength_0.2_offset": {
+        "21": 1105,
+        "650": 895
+      },
+      "tensile_elongation": {
+        "540": 14,
+        "760": 18
+      }
+    }
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "materialId": "haynes-230",
+  "name": "Haynes 230",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "Haynes 230",
+    "base": "Nickel base",
+    "form": "Bar"
+  },
+  "composition": {},
+  "condition": "Cold-rolled and solution-annealed sheet",
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8800.0
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 211.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 184.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 177.0
+        },
+        {
+          "T_K": 1033.15,
+          "value": 171.0
+        },
+        {
+          "T_K": 1143.15,
+          "value": 164.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 8.9
+        },
+        {
+          "T_K": 811.15,
+          "value": 18.4
+        },
+        {
+          "T_K": 1144.15,
+          "value": 24.4
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 811.15,
+          "value": 14.0
+        },
+        {
+          "T_K": 1144.15,
+          "value": 15.2
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "Haynes 230",
+      "group": "Nickel base",
+      "rupture_strength_1000h": {
+        "760": 125,
+        "870": 18,
+        "980": 15
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "Haynes 230",
+      "group": "Nickel base",
+      "condition": "Cold-rolled and solution-annealed sheet",
+      "values": {
+        "21": 211,
+        "540": 184,
+        "650": 177,
+        "760": 171,
+        "870": 164
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "Haynes 230",
+      "group": "Nickel base",
+      "condition": "Cold-rolled and solution-annealed sheet (1.2-1.6 mm)",
+      "yield_strength_0.2_offset": {
+        "21": 390,
+        "540": 275,
+        "650": 270,
+        "760": 285,
+        "870": 225
+      },
+      "tensile_elongation": {
+        "21": 48,
+        "540": 56,
+        "650": 55,
+        "760": 46,
+        "870": 59
+      }
+    }
+  }
+}

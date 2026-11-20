@@ -1,0 +1,91 @@
+{
+  "materialId": "52100",
+  "name": "52100",
+  "group": "steel",
+  "family": "ultrahigh-strength",
+  "aliases": {
+    "sae": "52100"
+  },
+  "composition": {
+    "C": 1.04,
+    "Si": 0.22499999999999998,
+    "Mn": 0.35,
+    "P": 0.0125,
+    "S": 0.0125,
+    "Cr": 1.4500000000000002
+  },
+  "condition": "Annealed",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 11.9
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "steel1.json",
+    "steel_thermal_expansion.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1023,
+    "Ac3_K": 986,
+    "Ac1_C": 750,
+    "Ac3_C": 713,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-1025",
+        "mode": "full-series",
+        "why": "52100 doesn't have electricalResistivity points; link sae-1025 series (same group steel; ElMD=0.853365, L1=2.585 wt% [ΔCr=1.45%; ΔC=0.79%; ΔSi=0.225%; ΔMn=0.1%; ΔS=0.0125%; ΔP=0.0075%])",
+        "compositionDistance": 0.853365,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-1042",
+        "mode": "full-series",
+        "why": "52100 doesn't have specificHeat points; link sae-1042 series (same group steel; ElMD=0.71627, L1=2.7 wt% [ΔCr=1.45%; ΔC=0.605%; ΔMn=0.4%; ΔSi=0.225%; ΔS=0.0125%; ΔP=0.0075%])",
+        "compositionDistance": 0.71627,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "aisi-w1",
+        "mode": "full-series",
+        "why": "52100 doesn't have thermalConductivity points; link aisi-w1 series (same group steel; ElMD=0.253586, L1=1.86 wt% [ΔCr=1.375%; ΔNi=0.1%; ΔMn=0.1%; ΔW=0.075%; ΔC=0.06%; ΔMo=0.05%; ΔV=0.05%; ΔSi=0.025%; ΔP=0.0125%; ΔS=0.0125%])",
+        "compositionDistance": 0.253586,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalExpansion": {
+        "materialId": "aisi-w1",
+        "mode": "full-series",
+        "why": "only 1 thermalExpansion point; link aisi-w1 series (same group steel; ElMD=0.253586, L1=1.86 wt% [ΔCr=1.375%; ΔNi=0.1%; ΔMn=0.1%; ΔW=0.075%; ΔC=0.06%; ΔMo=0.05%; ΔV=0.05%; ΔSi=0.025%; ΔP=0.0125%; ΔS=0.0125%])",
+        "compositionDistance": 0.253586,
+        "distanceMetric": "ElMD-mod_petti"
+      }
+    }
+  }
+}

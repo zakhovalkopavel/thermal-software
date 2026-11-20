@@ -1,0 +1,128 @@
+{
+  "materialId": "aisi-o2",
+  "name": "O2",
+  "group": "steel",
+  "family": "tool",
+  "aliases": {
+    "uns": "T31502",
+    "sae": "O2"
+  },
+  "composition": {
+    "C": 0.8999999999999999,
+    "Mn": 1.6,
+    "Si": 0.25,
+    "Cr": 0.25,
+    "Ni": 0.15,
+    "Mo": 0.15,
+    "V": 0.15
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "tool_steel_thermal_expansion_and_density.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 7660.0
+        }
+      ]
+    },
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "tool_steel_thermal_expansion_and_density.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 11.2
+        },
+        {
+          "T_K": 473.15,
+          "value": 12.6
+        },
+        {
+          "T_K": 698.15,
+          "value": 13.9
+        },
+        {
+          "T_K": 813.15,
+          "value": 14.6
+        },
+        {
+          "T_K": 923.15,
+          "value": 15.1
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 6.456,
+            "b": 0.01572,
+            "c": -6.959e-06
+          },
+          "min": 373.15,
+          "max": 923.15
+        },
+        "meanRelPct": 1.03,
+        "maxRelPct": 2.1
+      }
+    }
+  },
+  "sourceFiles": [
+    "tool_steel_composition.json",
+    "tool_steel_thermal_expansion_and_density.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 988,
+    "Ac3_K": 1020,
+    "Ac1_C": 715,
+    "Ac3_C": 747,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-5140",
+        "mode": "full-series",
+        "why": "aisi-o2 doesn't have electricalResistivity points; link sae-5140 series (same group steel; ElMD=0.40502, L1=2.3325 wt% [ΔMn=0.8%; ΔCr=0.55%; ΔC=0.495%; ΔMo=0.15%; ΔNi=0.15%; ΔV=0.15%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 0.40502,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-5140",
+        "mode": "full-series",
+        "why": "aisi-o2 doesn't have specificHeat points; link sae-5140 series (same group steel; ElMD=0.40502, L1=2.3325 wt% [ΔMn=0.8%; ΔCr=0.55%; ΔC=0.495%; ΔMo=0.15%; ΔNi=0.15%; ΔV=0.15%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 0.40502,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "aisi-w1",
+        "mode": "full-series",
+        "why": "aisi-o2 doesn't have thermalConductivity points; link aisi-w1 series (same family tool; ElMD=0.187684, L1=2.05 wt% [ΔMn=1.35%; ΔC=0.2%; ΔCr=0.175%; ΔMo=0.1%; ΔV=0.1%; ΔW=0.075%; ΔNi=0.05%])",
+        "compositionDistance": 0.187684,
+        "distanceMetric": "ElMD-mod_petti"
+      }
+    }
+  }
+}

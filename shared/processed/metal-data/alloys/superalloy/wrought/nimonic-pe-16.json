@@ -1,0 +1,139 @@
+{
+  "materialId": "nimonic-pe-16",
+  "name": "Nimonic PE.16",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "Nimonic PE.16",
+    "form": "Bar",
+    "base": "Nickel base"
+  },
+  "composition": {},
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8020.0
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 199.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 165.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 157.0
+        },
+        {
+          "T_K": 1033.15,
+          "value": 147.0
+        },
+        {
+          "T_K": 1143.15,
+          "value": 137.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 11.7
+        },
+        {
+          "T_K": 811.15,
+          "value": 20.2
+        },
+        {
+          "T_K": 1144.15,
+          "value": 26.4
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 811.15,
+          "value": 15.3
+        },
+        {
+          "T_K": 1144.15,
+          "value": 18.5
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "Nimonic PE.16",
+      "group": "Nickel base",
+      "form": "Bar",
+      "rupture_strength_1000h": {
+        "650": 345,
+        "760": 150
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "Nimonic PE.16",
+      "group": "Nickel base",
+      "form": "Bar",
+      "values": {
+        "21": 199,
+        "540": 165,
+        "650": 157,
+        "760": 147,
+        "870": 137
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "Nimonic PE.16",
+      "group": "Nickel base",
+      "form": "Bar",
+      "yield_strength_0.2_offset": {
+        "21": 530,
+        "540": 485,
+        "650": 485,
+        "760": 370,
+        "870": 140
+      },
+      "tensile_elongation": {
+        "21": 20,
+        "540": 37,
+        "650": 26,
+        "760": 30,
+        "870": 42
+      }
+    }
+  }
+}

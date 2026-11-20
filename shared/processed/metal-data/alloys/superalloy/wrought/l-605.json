@@ -1,0 +1,139 @@
+{
+  "materialId": "l-605",
+  "name": "L-605",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "L-605",
+    "form": "Sheet",
+    "base": "Cobalt base"
+  },
+  "composition": {
+    "Ni": 10.0,
+    "Cr": 20.0,
+    "Co": 52.9,
+    "W": 15.0,
+    "C": 0.05
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 9130.0
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 216.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 185.0
+        },
+        {
+          "T_K": 1143.15,
+          "value": 166.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 9.4
+        },
+        {
+          "T_K": 811.15,
+          "value": 19.5
+        },
+        {
+          "T_K": 1144.15,
+          "value": 26.1
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 811.15,
+          "value": 14.4
+        },
+        {
+          "T_K": 1144.15,
+          "value": 16.3
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "super_alloys_composition.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "L-605",
+      "group": "Cobalt base",
+      "form": "Sheet",
+      "rupture_strength_1000h": {
+        "650": 270,
+        "760": 165,
+        "870": 75,
+        "980": 30
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "L-605",
+      "group": "Cobalt base",
+      "form": "Sheet",
+      "values": {
+        "21": 216,
+        "650": 185,
+        "870": 166
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "L-605",
+      "group": "Cobalt base",
+      "form": "Sheet",
+      "yield_strength_0.2_offset": {
+        "21": 460,
+        "540": 250,
+        "650": 240,
+        "760": 260,
+        "870": 240
+      },
+      "tensile_elongation": {
+        "21": 35,
+        "540": 64,
+        "650": 59,
+        "760": 35,
+        "870": 12,
+        "1000": 35
+      }
+    }
+  }
+}

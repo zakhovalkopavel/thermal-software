@@ -1,0 +1,145 @@
+{
+  "materialId": "incoloy-800",
+  "name": "Incoloy 800",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "Incoloy 800",
+    "form": "Bar",
+    "base": "Iron base"
+  },
+  "composition": {
+    "Ni": 32.5,
+    "Cr": 21.0,
+    "Al": 0.4,
+    "Ti": 0.4,
+    "Fe": 46.0,
+    "Mn": 0.8,
+    "Si": 0.5,
+    "C": 0.05
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 7950.0
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 196.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 161.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 154.0
+        },
+        {
+          "T_K": 1033.15,
+          "value": 146.0
+        },
+        {
+          "T_K": 1143.15,
+          "value": 138.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 11.6
+        },
+        {
+          "T_K": 811.15,
+          "value": 20.1
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 811.15,
+          "value": 16.4
+        },
+        {
+          "T_K": 1144.15,
+          "value": 18.4
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "super_alloys_composition.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "Incoloy 800",
+      "group": "Iron base",
+      "form": "Bar",
+      "rupture_strength_1000h": {
+        "650": 165,
+        "760": 66,
+        "870": 30,
+        "980": 13
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "Incoloy 800",
+      "group": "Iron base",
+      "form": "Bar",
+      "values": {
+        "21": 196,
+        "540": 161,
+        "650": 154,
+        "760": 146,
+        "870": 138
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "Incoloy 800",
+      "group": "Iron base",
+      "form": "Bar",
+      "yield_strength_0.2_offset": {
+        "21": 250,
+        "540": 180,
+        "650": 180,
+        "760": 150
+      },
+      "tensile_elongation": {
+        "540": 44,
+        "650": 38,
+        "760": 51,
+        "870": 83
+      }
+    }
+  }
+}

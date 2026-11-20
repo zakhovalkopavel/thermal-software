@@ -1,0 +1,156 @@
+{
+  "materialId": "sae-1551",
+  "name": "1551",
+  "group": "steel",
+  "family": "high-mn",
+  "aliases": {
+    "uns": "G15510",
+    "sae": "1551"
+  },
+  "composition": {
+    "C": 0.505,
+    "Mn": 1.0,
+    "P": 0.02,
+    "S": 0.025
+  },
+  "condition": "Annealed",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "thermal_conductivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 273.15,
+          "value": 50.7
+        },
+        {
+          "T_K": 373.15,
+          "value": 49.3
+        },
+        {
+          "T_K": 473.15,
+          "value": 48.4
+        }
+      ],
+      "approximation": {
+        "Tswitch": 1039,
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 57.07,
+            "b": -0.03016,
+            "c": 2.5e-05
+          },
+          "min": 273.15,
+          "max": 473.15
+        },
+        "meanRelPct": 0.01,
+        "maxRelPct": 0.01,
+        "joinContinuous": true
+      }
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 11.7
+        },
+        {
+          "T_K": 673.15,
+          "value": 13.5
+        },
+        {
+          "T_K": 873.15,
+          "value": 14.4
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 8.708,
+            "b": 0.009139,
+            "c": -3e-06
+          },
+          "min": 373.15,
+          "max": 873.15
+        },
+        "meanRelPct": 0.0,
+        "maxRelPct": 0.0
+      }
+    }
+  },
+  "sourceFiles": [
+    "High-manganese carbon steel.json",
+    "steel_thermal_expansion.json",
+    "thermal_conductivity.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 985,
+    "Ac3_K": 1039,
+    "Ac1_C": 712,
+    "Ac3_C": 766,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-1524",
+        "mode": "full-series",
+        "why": "sae-1551 doesn't have electricalResistivity points; link sae-1524 series (same family high-mn; ElMD=0.205116, L1=0.765 wt% [ΔMn=0.475%; ΔC=0.29%])",
+        "compositionDistance": 0.205116,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "steel-13mn",
+        "mode": "full-series",
+        "why": "sae-1551 doesn't have specificHeat points; link steel-13mn series (same family high-mn; ElMD=6.25727, L1=13.18 wt% [ΔMn=12%; ΔC=0.715%; ΔSi=0.22%; ΔCu=0.07%; ΔNi=0.07%; ΔAs=0.038%; ΔCr=0.03%; ΔP=0.018%; ΔS=0.015%; ΔAl=0.004%])",
+        "compositionDistance": 6.257268,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "steel-13mn",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 273–473 K; link scaled steel-13mn outside (same family high-mn; ElMD=6.25727, L1=13.18 wt% [ΔMn=12%; ΔC=0.715%; ΔSi=0.22%; ΔCu=0.07%; ΔNi=0.07%; ΔAs=0.038%; ΔCr=0.03%; ΔP=0.018%; ΔS=0.015%; ΔAl=0.004%])",
+        "compositionDistance": 6.257268,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 3.29455497,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 5.40306025,
+          "maxRelPct": 14.224604
+        }
+      },
+      "thermalExpansion": {
+        "materialId": "steel-13mn",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 373–873 K; link scaled steel-13mn outside (same family high-mn; ElMD=6.25727, L1=13.18 wt% [ΔMn=12%; ΔC=0.715%; ΔSi=0.22%; ΔCu=0.07%; ΔNi=0.07%; ΔAs=0.038%; ΔCr=0.03%; ΔP=0.018%; ΔS=0.015%; ΔAl=0.004%])",
+        "compositionDistance": 6.257268,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.66952244,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.46620997,
+          "maxRelPct": 4.476816
+        }
+      }
+    }
+  }
+}

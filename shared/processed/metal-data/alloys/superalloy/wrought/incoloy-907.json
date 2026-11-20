@@ -1,0 +1,112 @@
+{
+  "materialId": "incoloy-907",
+  "name": "Incoloy 907",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "Incoloy 907",
+    "base": "Iron base"
+  },
+  "composition": {
+    "Ni": 38.0,
+    "Co": 13.0,
+    "Nb": 4.7,
+    "Al": 0.03,
+    "Ti": 1.5,
+    "Fe": 42.0,
+    "Si": 0.15
+  },
+  "condition": "Precipitation hardened",
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8330.0
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 165.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 165.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 159.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 14.8
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 700.15,
+          "value": 7.7
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "super_alloys_composition.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "superalloy3.json": {
+      "alloy": "Incoloy 907",
+      "group": "Iron base",
+      "condition": "Precipitation hardened",
+      "values": {
+        "21": 165,
+        "540": 165,
+        "650": 159
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "Incoloy 907",
+      "group": "Iron base",
+      "condition": "Precipitation hardened",
+      "yield_strength_0.2_offset": {
+        "21": 1110,
+        "540": 960,
+        "650": 895,
+        "760": 560
+      },
+      "tensile_elongation": {
+        "540": 12,
+        "760": 10,
+        "870": 20
+      }
+    }
+  }
+}

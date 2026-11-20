@@ -55,7 +55,7 @@ backend/src/common/thermal/
 
 backend/src/common/chemistry/   ← elements, formulas, compound molar masses (see below)
 backend/src/common/utils/       ← numerics: bessel/, root-finding/, optimization/, regression/,
-                                   linear-algebra/, quadrature/, math/, numeric-format/
+                                   linear-algebra/, quadrature/, interpolation/, math/, numeric-format/
 ```
 
 ---
@@ -335,10 +335,12 @@ Clenshaw-Curtis and `adaptiveIntegrate`.
 Used only when no closed-form antiderivative exists (e.g., `dipprN102` with non-integer
 exponent — see [CONVENTIONS.md §4](../CONVENTIONS.md)).
 
-### `root-finding/`, `optimization/`, `regression/`, `linear-algebra/`
-Wrappers named after their SciPy equivalents (`brentq`, `brent`, `nelderMead`, `luSolve`, …).  
-**Never import these directly in business logic** — use the `/api/v1/numeric` endpoints
-or the approved service-layer wrappers (see [NUMERICAL_METHODS_CONVENTION.md](../NUMERICAL_METHODS_CONVENTION.md)).
+### `root-finding/`, `optimization/`, `regression/`, `linear-algebra/`, `interpolation/`
+Wrappers named after their SciPy equivalents (`brentq`, `brent`, `nelderMead`, `luSolve`,
+`cubicSpline`, …).  
+**Never import underlying packages directly in business logic** — use these wrappers
+(see [NUMERICAL_METHODS_CONVENTION.md](../NUMERICAL_METHODS_CONVENTION.md)).  
+`cubicSpline` is used by `MetalThermalService` for tabulated alloy properties.
 
 ### `bessel/`, `math/`
 Bessel functions J₀, J₁, Y₀, Y₁ and J₀ roots; `logMean`.

@@ -12,7 +12,9 @@ export class MetalsController {
 
   @Get('list')
   @ApiTags('materials')
-  @ApiOperation({ summary: 'Catalogue of metal grades with their emissivity validity range' })
+  @ApiOperation({
+    summary: 'Catalogue of metal grades (poly overrides + synthesized ASM alloys)',
+  })
   @ApiOkResponse({ type: [MetalSummaryDto] })
   listMaterials(): MetalSummaryDto[] {
     return this.metalThermalService.listMaterials();
@@ -20,10 +22,13 @@ export class MetalsController {
 
   @Get('thermal-properties')
   @ApiOperation({
-    summary: 'λ(T) and ε(T) for a metal material',
+    summary: 'Thermal properties for a metal material',
     description:
-      'Returns thermal conductivity [W/(m·K)] and emissivity at the given temperature. ' +
-      'AISI 304 λ uses T in Kelvin; mild steel λ uses T in Celsius internally.',
+      'Poly grades (`aisi_304`, `mild_steel`): λ and ε from cubic polynomials. '
+      + 'Synthesized alloys: λ / Cp / CTE / ρ from table cubic splines '
+      + '(reject outside tabulated range); donor provenance when a series was filled. '
+      + 'Optional `lambdaModel=kCT56`: Chebyshev F(C,T) carbon-steel alternative '
+      + 'using alloy composition.C (domain C∈[0.05,1.1] wt%, T∈[0,815] °C).',
   })
   @ApiOkResponse({ type: MetalThermalResultDto })
   getThermalProperties(@Query() dto: MetalThermalQueryDto): MetalThermalResultDto {

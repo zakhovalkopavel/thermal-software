@@ -1,0 +1,141 @@
+{
+  "materialId": "hastelloy-x",
+  "name": "Hastelloy X",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "Hastelloy X",
+    "form": "Sheet",
+    "base": "Nickel base"
+  },
+  "composition": {},
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8210.0
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 197.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 161.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 154.0
+        },
+        {
+          "T_K": 1033.15,
+          "value": 146.0
+        },
+        {
+          "T_K": 1143.15,
+          "value": 137.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 9.1
+        },
+        {
+          "T_K": 811.15,
+          "value": 19.6
+        },
+        {
+          "T_K": 1144.15,
+          "value": 26.0
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 811.15,
+          "value": 15.1
+        },
+        {
+          "T_K": 1144.15,
+          "value": 16.2
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "Hastelloy X",
+      "group": "Nickel base",
+      "form": "Sheet",
+      "rupture_strength_1000h": {
+        "650": 215,
+        "760": 105,
+        "870": 40,
+        "980": 15
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "Hastelloy X",
+      "group": "Nickel base",
+      "form": "Sheet",
+      "values": {
+        "21": 197,
+        "540": 161,
+        "650": 154,
+        "760": 146,
+        "870": 137
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "Hastelloy X",
+      "group": "Nickel base",
+      "form": "Sheet",
+      "yield_strength_0.2_offset": {
+        "21": 360,
+        "540": 290,
+        "650": 275,
+        "760": 260,
+        "870": 180
+      },
+      "tensile_elongation": {
+        "21": 43,
+        "540": 45,
+        "650": 37,
+        "760": 37,
+        "870": 50
+      }
+    }
+  }
+}

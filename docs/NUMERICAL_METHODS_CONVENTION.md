@@ -28,9 +28,24 @@ API differences.
 | Power fit y=A·xᴮ | `curve_fit` with power model | `powerFit(x, y)` | `ml-regression` |
 | Arbitrary nonlinear curve fit | `scipy.optimize.curve_fit` / `least_squares` | `levenbergMarquardt(x, y, model, p0)` | `ml-levenberg-marquardt` |
 | Dense linear system | `scipy.linalg.solve` / `numpy.linalg.solve` | `luSolve(A, b)` | `mathjs` |
+| 1-D cubic spline interpolation | `scipy.interpolate.CubicSpline(..., bc_type='natural')` | `cubicSpline(x, y)` | built-in (natural cubic / Thomas) |
 
 > **Not covered:** sparse systems, global optimisation, integer programming, constrained optimisation (SLSQP).
 > Add a new wrapper if needed — do not call the underlying library directly.
+
+### `cubicSpline(x, y)`
+
+```typescript
+import { cubicSpline } from '../../../common/utils/interpolation';
+
+const S = cubicSpline(T_K, lambda);
+const lambda_WmK = S.evaluate(800); // throws if outside [Tmin, Tmax]
+```
+
+- Natural boundary conditions (second derivative zero at ends).
+- Requires ≥ 2 knots; `n === 2` uses linear interpolation.
+- **No extrapolation** — `evaluate(x)` throws when `x` is outside `[xMin, xMax]`.
+- Lives in `backend/src/common/utils/interpolation/`.
 
 ---
 

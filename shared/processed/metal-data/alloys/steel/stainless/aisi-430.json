@@ -1,0 +1,159 @@
+{
+  "materialId": "aisi-430",
+  "name": "430",
+  "group": "steel",
+  "family": "stainless",
+  "aliases": {
+    "uns": "S43000",
+    "sae": "430"
+  },
+  "composition": {
+    "C": 0.06,
+    "Cr": 16.0
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 7800.0
+        }
+      ]
+    },
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 6.000000000000001e-07
+        }
+      ]
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 323.15,
+          "value": 460.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 26.1
+        },
+        {
+          "T_K": 773.15,
+          "value": 26.3
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 10.4
+        },
+        {
+          "T_K": 588.15,
+          "value": 11.0
+        },
+        {
+          "T_K": 811.15,
+          "value": 11.4
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 8.859,
+            "b": 0.004979,
+            "c": -2.276e-06
+          },
+          "min": 373.15,
+          "max": 811.15
+        },
+        "meanRelPct": 0.0,
+        "maxRelPct": 0.0
+      }
+    }
+  },
+  "sourceFiles": [
+    "stainless_heat_resistant_composition.json",
+    "stainless_steel.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1267,
+    "Ac3_K": 1133,
+    "Ac1_C": 993,
+    "Ac3_C": 860,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-4130",
+        "mode": "full-series",
+        "why": "only 1 electricalResistivity point; link sae-4130 series (same group steel; ElMD=2.80084, L1=16.2825 wt% [ΔCr=15.05%; ΔMn=0.5%; ΔSi=0.25%; ΔC=0.245%; ΔMo=0.2%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 2.800837,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-1008",
+        "mode": "full-series",
+        "why": "only 1 specificHeat point; link sae-1008 series (same group steel; ElMD=2.72594, L1=16.455 wt% [ΔCr=16%; ΔMn=0.4%; ΔS=0.025%; ΔP=0.02%; ΔC=0.01%])",
+        "compositionDistance": 2.725943,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "aisi-m2",
+        "mode": "scaled-series",
+        "why": "only 2 own points; link scaled aisi-m2 curve (same group steel; ElMD=0.942032, L1=25.785 wt% [ΔCr=11.875%; ΔW=6.125%; ΔMo=5%; ΔV=1.975%; ΔSi=0.325%; ΔMn=0.275%; ΔNi=0.15%; ΔC=0.06%])",
+        "compositionDistance": 0.942032,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 1.07936739,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 2.71957296,
+          "maxRelPct": 11.480452
+        }
+      },
+      "thermalExpansion": {
+        "materialId": "aisi-m2",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 373–811 K; link scaled aisi-m2 outside (same group steel; ElMD=0.942032, L1=25.785 wt% [ΔCr=11.875%; ΔW=6.125%; ΔMo=5%; ΔV=1.975%; ΔSi=0.325%; ΔMn=0.275%; ΔNi=0.15%; ΔC=0.06%])",
+        "compositionDistance": 0.942032,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 1.02106079,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.62601592,
+          "maxRelPct": 7.176292
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "materialId": "sae-1085",
+  "name": "1085",
+  "group": "steel",
+  "family": "carbon",
+  "aliases": {
+    "uns": "G10850",
+    "sae": "1085"
+  },
+  "composition": {
+    "C": 0.865,
+    "Mn": 0.85,
+    "P": 0.02,
+    "S": 0.025
+  },
+  "condition": "Annealed",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 11.1
+        },
+        {
+          "T_K": 473.15,
+          "value": 11.7
+        },
+        {
+          "T_K": 573.15,
+          "value": 12.5
+        },
+        {
+          "T_K": 673.15,
+          "value": 13.2
+        },
+        {
+          "T_K": 773.15,
+          "value": 13.6
+        },
+        {
+          "T_K": 873.15,
+          "value": 14.2
+        },
+        {
+          "T_K": 973.15,
+          "value": 14.7
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 7.904,
+            "b": 0.009401,
+            "c": -2.5e-06
+          },
+          "min": 373.15,
+          "max": 973.15
+        },
+        "meanRelPct": 0.4,
+        "maxRelPct": 0.79
+      }
+    }
+  },
+  "sourceFiles": [
+    "carbon_steel.json",
+    "carbon_steel2.json",
+    "steel_thermal_expansion.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 987,
+    "Ac3_K": 994,
+    "Ac1_C": 714,
+    "Ac3_C": 721,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-1025",
+        "mode": "full-series",
+        "why": "sae-1085 doesn't have electricalResistivity points; link sae-1025 series (same family carbon; ElMD=0.442948, L1=1.015 wt% [ΔC=0.615%; ΔMn=0.4%])",
+        "compositionDistance": 0.442948,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-1042",
+        "mode": "full-series",
+        "why": "sae-1085 doesn't have specificHeat points; link sae-1042 series (same family carbon; ElMD=0.305853, L1=0.53 wt% [ΔC=0.43%; ΔMn=0.1%])",
+        "compositionDistance": 0.305853,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "sae-1078",
+        "mode": "full-series",
+        "why": "sae-1085 doesn't have thermalConductivity points; link sae-1078 series (same family carbon; ElMD=0.059927, L1=0.48 wt% [ΔMn=0.4%; ΔC=0.08%])",
+        "compositionDistance": 0.059927,
+        "distanceMetric": "ElMD-mod_petti"
+      }
+    }
+  }
+}

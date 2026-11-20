@@ -20,7 +20,7 @@
 | **Furnace** | 0% | Not started |
 | **Recuperator** | 100% | Implemented — 4 modules: combustion, metals, thermal-exchange, recuperator |
 | **Combustion** | 100% | `backend/src/modules/combustion/` — 4 modes (solid direct, two-step, fluid, kinetic bed) on one enthalpy/equilibrium core; hydrocarbon gases + MAP-gas preset |
-| **Metals** | 100% | `backend/src/modules/metals/` — MetalThermalService (AISI 304, mild steel); `GET /metals/list`; numeric `T_K` query fix |
+| **Metals** | 100% | `backend/src/modules/metals/` — poly λ/ε (`aisi_304`, `mild_steel`) + synthesized ASM dataset (`shared/processed/metal-data`, spline λ/Cp/CTE/ρ); optional `lambdaModel=kCT56` Chebyshev F(C,T) carbon-steel alternative; `GET /metals/list`; Abu-Eishah pure-metal λ joined into compound-data; spec [`METAL_DATA_SPEC.md`](../scripts/METAL_DATA_SPEC.md), algorithm [`KCT56_CARBON_STEEL_CONDUCTIVITY.md`](../algorithms/metals/KCT56_CARBON_STEEL_CONDUCTIVITY.md) |
 | **Thermal Exchange** | 100% | `backend/src/modules/thermal-exchange/` — MultilayerWallService + RecuperatorHtcService |
 | **Thermal Distribution** | 100% | Fully implemented, 31 test suites, 602 tests passing |
 | **Thermophysical** | 0% | Not started |
@@ -242,12 +242,20 @@ Spec: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md)
 ### `metals/` — 100%
 **Path:** `backend/src/modules/metals/`
 - [x] `metals.module.ts`
-- [x] `enums/metal-material.enum.ts` — AISI_304, MILD_STEEL
-- [x] `types/metal-thermal-entry.type.ts`, `metal-lambda-coefficients.type.ts`, `metal-emissivity-coefficients.type.ts` — data shapes as `type` (Phase 1 conventions pilot; was `data/interfaces/metal-thermal.interface.ts`)
-- [x] `data/materials/metal-thermal.data.ts` — `METAL_THERMAL_MATERIALS[]` + `METAL_THERMAL_MAP`
-- [x] `services/metal-thermal.service.ts` — pure computation (no hardcoded values)
-- [x] `dto/metal-thermal-query.dto.ts`, `metal-thermal-result.dto.ts`
-- [x] `controllers/metals.controller.ts` → `GET /metals/thermal-properties`
+- [x] `enums/metal-material.enum.ts` — AISI_304, MILD_STEEL (poly λ/ε overrides)
+- [x] `types/metal-thermal-entry.type.ts`, `metal-lambda-coefficients.type.ts`, `metal-emissivity-coefficients.type.ts`, `metal-alloy-record.type.ts`, `metal-property-series.type.ts`, `metal-dataset-index.type.ts`
+- [x] `data/materials/metal-thermal.data.ts` — poly `METAL_THERMAL_MATERIALS[]` + `METAL_THERMAL_MAP`
+- [x] `utils/metal-dataset.ts` — loads `shared/processed/metal-data`
+- [x] `services/metal-thermal.service.ts` — poly λ/ε + table cubic-spline λ/Cp/CTE/ρ + optional `lambdaKct56`
+- [x] `dto/metal-thermal-query.dto.ts`, `metal-thermal-result.dto.ts`, `metal-summary.dto.ts`
+- [x] `enums/metal-lambda-model.enum.ts` — `table` \| `kCT56`
+- [x] `utils/kct56-conductivity.ts` + `data/kct56-conductivity.data.ts` — Chebyshev F(C,T) carbon-steel λ
+- [x] `controllers/metals.controller.ts` → `GET /metals/list`, `GET /metals/thermal-properties?lambdaModel=`
+- [x] Algorithm doc [`docs/algorithms/metals/KCT56_CARBON_STEEL_CONDUCTIVITY.md`](../algorithms/metals/KCT56_CARBON_STEEL_CONDUCTIVITY.md); fit log `tmp/reports/conductivity-fit/`
+- [x] Dataset synthesis: `make metal-data-build` → `shared/processed/metal-data/`; pure-metal Abu-Eishah join into compound-data; spec [`METAL_DATA_SPEC.md`](../scripts/METAL_DATA_SPEC.md)
+- [x] Steel composition gap fill (raw tables): ASM chem-composition PDF → tesseract inventory + Surya OCR → `tool_steel_composition.json`, `stainless_heat_resistant_composition.json`, `former_sae_steel_composition.json` (+ obsolete tool); coverage report `tmp/reports/python/metal-data/composition-gap-fill.json`
+- [x] Alloy `materialId` / filenames prefer SAE/AISI (`sae-*` / `aisi-*`); UNS only when no grade is known (kept in `aliases.uns`)
+- [x] Steel Andrews Ac1/Ac3 (`Andrews1965`) on alloy `criticalTemperatures`; property `approximation` by physics: λ and ρₑ = Ac3 `low`/`high` split (free linear above, then anchored quadratic; if continuous join fails gate, move `Tswitch` to a nearby measured knot via `switchMovedFromAc3_K`); Cp = `indenCp` @ Tc; α/density = single quadratic; donor **link + scale** under `provenance.donors`; ElMD donor ranking (`Hargreaves2020ElMD`); RefKeys `Andrews1965`, `Inden1981`, `HillertJarl1978`, `Hargreaves2020ElMD`
 
 ### `thermal-exchange/` — 100%
 **Path:** `backend/src/modules/thermal-exchange/`
@@ -355,7 +363,8 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 - [x] **Phase 3** — `common/`: V5→0; one-construct splits; `EquationValidity` static class; 40 data-shape interfaces → `types/*.type.ts` (kept `Equation` / `NasaThermo` / `NasaMethod`); docs updated.
 - [x] **Phase 4** — combustion types + `BedMarchService`; `WallMaterialKey` split; recuperator smoke/balance extract (V9 −2, V2 −1).
 - [x] **Phase 5** — `thermal-distribution`: CP5.0 bit-identical goldens; eigenvalue/series/characteristic-length → static classes; BC3 series split by geometry; `toProfileOptions` on service; `ThermalSeriesTemp`/`ThermalSeriesMean` extract (service ≤300); structure + file-length baselines shrunk.
-- [x] **Phase 6.1** — refractory constants: `*.constants.ts` renames; `CALCULATION_CONSTANTS` / `BLEND_OPTIMIZER_CONSTANTS` single exports; `BlendOptimizerScenarios`; viscosity coefficients → `data/viscosity-parameters.data.ts`. Next: 6.2 enums.
+- [x] **Phase 6.1** — refractory constants: `*.constants.ts` renames; `CALCULATION_CONSTANTS` / `BLEND_OPTIMIZER_CONSTANTS` single exports; `BlendOptimizerScenarios`; viscosity coefficients → `data/viscosity-parameters.data.ts`.
+- [x] **Phase 6.2** — viscosity enums split (`ViscosityModel` / `ViscosityModelType` / `ConfidenceLevel` / `ExtrapolationRisk` + `VISCOSITY_MODEL_NAMES`); `GlassViscosityModelDto` / `ConversionDirectionDto` → `enums/`; water-demand DTO uses `WorkabilityType`. Next: 6.3 interfaces.
 - [x] **Huber 2019 viscosity-of-gases → compound-data** — OCR’d `shared/processed/viscosity-gases/crc-huber-2019/`; source `shared/sources/viscosity-gases-huber-2019.json`; parser `compound_data.parsers.viscosity_gases` joins 35 CAS rows as `raw` viscosity/gas (null μ cells omitted; Air skipped). RefKey `Huber2019` only (2011 table not retained). Tests: `python/tests/compound_data/test_viscosity_gases.py`. Spec: [`COMPOUND_DATA_SPEC.md`](../scripts/COMPOUND_DATA_SPEC.md).
 - [x] **Gas-viscosity equation precision order** — Huber2019 MAPE ranks sources Perry8 → Yaws1999 → VDI2010 → White3 (`VISCOSITY_GAS_SOURCE_PRIORITY`); per-CAS `def` from `shared/sources/viscosity-gas-defaults.json` (35 compounds). Huber `raw` stores `bestEquation`, `mape_pct`, `max_abs_pct` (2 decimal %), `nCompared`. Report: `tmp/reports/python/compound-data/viscosity-equation-precision.json`. Tests: `test_viscosity_gas_priority.py`, `test_viscosity_gases.py`.
 - [x] **Transport μ uses viscosity `def`** — removed Sutherland hard-preference in `TransportService` / `CompoundFluidPropsService`; both call `CompoundPropertyResolver` so Huber-ranked defaults apply.

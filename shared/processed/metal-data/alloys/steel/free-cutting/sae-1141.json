@@ -1,0 +1,116 @@
+{
+  "materialId": "sae-1141",
+  "name": "1141",
+  "group": "steel",
+  "family": "free-cutting",
+  "aliases": {
+    "uns": "G11410",
+    "sae": "1141"
+  },
+  "composition": {
+    "C": 0.41000000000000003,
+    "Mn": 1.5,
+    "P": 0.02,
+    "S": 0.10500000000000001
+  },
+  "condition": "Unknown",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [
+        "electrical_resistivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 293.15,
+          "value": 1.7000000000000001e-07
+        }
+      ]
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "thermal_conductivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 50.5
+        },
+        {
+          "T_K": 473.15,
+          "value": 47.6
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 473.15,
+          "value": 12.6
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "Free-cutting (resulfurized) carbon steel.json",
+    "electrical_resistivity.json",
+    "steel_thermal_expansion.json",
+    "thermal_conductivity.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 980,
+    "Ac3_K": 1053,
+    "Ac1_C": 707,
+    "Ac3_C": 780,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-1524",
+        "mode": "full-series",
+        "why": "only 1 electricalResistivity point; link sae-1524 series (same group steel; ElMD=0.175845, L1=0.3 wt% [ΔC=0.195%; ΔS=0.08%; ΔMn=0.025%])",
+        "compositionDistance": 0.175845,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-1524",
+        "mode": "full-series",
+        "why": "sae-1141 doesn't have specificHeat points; link sae-1524 series (same group steel; ElMD=0.175845, L1=0.3 wt% [ΔC=0.195%; ΔS=0.08%; ΔMn=0.025%])",
+        "compositionDistance": 0.175845,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "sae-5132",
+        "mode": "scaled-series",
+        "why": "only 2 own points; link scaled sae-5132 curve (same group steel; ElMD=0.186806, L1=2.0975 wt% [ΔCr=0.875%; ΔMn=0.8%; ΔSi=0.25%; ΔC=0.085%; ΔS=0.085%; ΔP=0.0025%])",
+        "compositionDistance": 0.186806,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 1.07936888,
+        "scaleQuality": "narrow-range",
+        "error": {
+          "rmse": 0.31674717,
+          "maxRelPct": 0.680627
+        }
+      },
+      "thermalExpansion": {
+        "materialId": "sae-1145",
+        "mode": "full-series",
+        "why": "only 1 thermalExpansion point; link sae-1145 series (same family free-cutting; ElMD=0.030709, L1=0.745 wt% [ΔMn=0.65%; ΔS=0.05%; ΔC=0.045%])",
+        "compositionDistance": 0.030709,
+        "distanceMetric": "ElMD-mod_petti"
+      }
+    }
+  }
+}

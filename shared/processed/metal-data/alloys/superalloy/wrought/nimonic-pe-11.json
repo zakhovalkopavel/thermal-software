@@ -1,0 +1,97 @@
+{
+  "materialId": "nimonic-pe-11",
+  "name": "Nimonic PE.11",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "Nimonic PE.11",
+    "form": "Bar",
+    "base": "Nickel base"
+  },
+  "composition": {},
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8020.0
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 198.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 166.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 157.0
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 811.15,
+          "value": 15.2
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "Nimonic PE.11",
+      "group": "Nickel base",
+      "form": "Bar",
+      "rupture_strength_1000h": {
+        "650": 335,
+        "760": 145
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "Nimonic PE.11",
+      "group": "Nickel base",
+      "form": "Bar",
+      "values": {
+        "21": 198,
+        "540": 166,
+        "650": 157
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "Nimonic PE.11",
+      "group": "Nickel base",
+      "form": "Bar",
+      "yield_strength_0.2_offset": {
+        "21": 720,
+        "540": 690,
+        "650": 670,
+        "760": 560
+      }
+    }
+  }
+}

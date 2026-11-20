@@ -16,11 +16,16 @@ describe('MetalThermalQueryDto', () => {
     expect(dto.T_K).toBe(800);
   });
 
+  it('synthesized alloy id - accepted at DTO layer', async () => {
+    const { errors } = await check({ material: 'uns-g10080', T_K: '400' });
+    expect(errors).toHaveLength(0);
+  });
+
   it.each([
     ['missing T_K', { material: 'aisi_304' }],
     ['non-numeric T_K', { material: 'aisi_304', T_K: 'hot' }],
     ['T_K below 1', { material: 'aisi_304', T_K: '0' }],
-    ['unknown material', { material: 'copper', T_K: '800' }],
+    ['missing material', { T_K: '800' }],
   ])('%s - rejected', async (_case, query) => {
     const { errors } = await check(query as Record<string, string>);
     expect(errors.length).toBeGreaterThan(0);

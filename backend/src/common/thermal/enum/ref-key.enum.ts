@@ -113,4 +113,16 @@ export enum RefKey {
   CoolProp = 'CoolProp',
   /** [53] Huber — NIST IR 8209 REFPROP v10 viscosity, thermal conductivity, and surface tension models (2018) */
   NISTIR8209 = 'NISTIR8209',
+  /** [54] Abu-Eishah — Correlations for the Thermal Conductivity of Metals as a Function of Temperature (2001) */
+  AbuEishah2001 = 'AbuEishah2001',
+  /** [55] ASM Handbook Vol. 1 — Properties and Selection: Irons, Steels, and High-Performance Alloys (2005) */
+  AsmHandbook2005Vol1 = 'AsmHandbook2005Vol1',
+  /** [56] Andrews — Empirical formulae for some transformation temperatures (1965) */
+  Andrews1965 = 'Andrews1965',
+  /** [57] Inden — The role of magnetism in the calculation of phase diagrams (1981) */
+  Inden1981 = 'Inden1981',
+  /** [58] Hillert & Jarl — A model for alloying in ferromagnetic metals (1978) */
+  HillertJarl1978 = 'HillertJarl1978',
+  /** [59] Hargreaves et al. — Earth Mover’s Distance for inorganic compositions (ElMD) (2020) */
+  Hargreaves2020ElMD = 'Hargreaves2020ElMD',
 }
