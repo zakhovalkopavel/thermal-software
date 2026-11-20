@@ -52,7 +52,7 @@ Before any slag viscosity calculation the liquidus temperature must be estimated
 ## Implementation notes (where to look in code)
 
 - Slag detection & routing: `backend/src/modules/refractory/services/composition/glass-viscosity.service.ts`
-- Iida implementation: `backend/src/modules/refractory/utils/glass-viscosity-iida.util.ts` (planned / partial)
+- Iida implementation: `backend/src/modules/refractory/utils/glass-viscosity-iida.ts` (`GlassViscosityIida`)
 - Nakamoto implementation: `backend/src/modules/refractory/constants/viscosity-parameters.ts` (coefficients present) and `utils/glass-viscosity-nakamoto.util.ts` (planned)
 - Liquidus estimation (Mills): `MILLS_LIQUIDUS` in `viscosity-parameters.ts`
 

@@ -18,7 +18,7 @@
 
 import { NAKAMOTO_2007, MILLS_LIQUIDUS } from '../data/viscosity-parameters.data';
 import type { SlagViscosityResult } from '../types';
-import { estimateLiquidusMills } from './glass-viscosity-iida.util';
+import { GlassViscosityIida } from './glass-viscosity-iida';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 import { celsiusToKelvin } from '../../../common/thermal/utils/temperature';
 
@@ -38,7 +38,7 @@ export function calcNakamotoViscosity(
   const T_K = celsiusToKelvin(temperature_C);
 
   // ── Liquidus safety check ─────────────────────────────────────────────────
-  const T_liq = estimateLiquidusMills(comp_wt_pct);
+  const T_liq = GlassViscosityIida.estimateLiquidusMills(comp_wt_pct);
   const thermalState =
     temperature_C <= T_liq      ? 'BELOW_LIQUIDUS' :
     temperature_C <= T_liq + 50 ? 'NEAR_LIQUIDUS'  : 'ABOVE_LIQUIDUS';

@@ -20,12 +20,8 @@ import { GlassComposition } from '../../utils/glass-composition';
 import { InvalidCompositionError } from '../../utils/invalid-composition-error';
 import { GlassViscosityLakatos } from '../../utils/glass-viscosity-lakatos';
 import { GlassViscosityVtf } from '../../utils/glass-viscosity-vtf';
-import {
-  buildHetheringtonResult,
-  calcHetheringtonLogEta,
-  hetheringtonTemperatureAtLogEta,
-} from '../../utils/glass-viscosity-arrhenius.util';
-import { calcIidaViscosity } from '../../utils/glass-viscosity-iida.util';
+import { GlassViscosityArrhenius } from '../../utils/glass-viscosity-arrhenius';
+import { GlassViscosityIida } from '../../utils/glass-viscosity-iida';
 import { calcNakamotoViscosity } from '../../utils/glass-viscosity-nakamoto.util';
 import { IIDA_MODEL, NAKAMOTO_2007 } from '../../data/viscosity-parameters.data';
 import { brentq } from '../../../../common/utils/root-finding';
@@ -42,7 +38,7 @@ import { brentq } from '../../../../common/utils/root-finding';
  *
  * All calculation is delegated to:
  *   utils/glass-composition.ts               — GlassComposition (normalise, wt%↔mol%)
- *   utils/glass-viscosity-arrhenius.util.ts — Hetherington 1964
+ *   utils/glass-viscosity-arrhenius.ts       — GlassViscosityArrhenius (Hetherington)
  *   utils/glass-viscosity-{lakatos,lakatos-isokoms,fluegel,vtf}.ts — static classes
  */
 @Injectable()
@@ -133,7 +129,7 @@ export class GlassViscosityService {
     const modelType = selection.primary;
 
     if (modelType === ViscosityModel.HETHERINGTON_1964) {
-      return buildHetheringtonResult(
+      return GlassViscosityArrhenius.buildHetheringtonResult(
         comp, temperature, selection, this.VERSION,
         (m, w) => this.buildValidationStatus(m, w),
         (c)    => this.buildComponentBreakdown(c),
@@ -146,7 +142,7 @@ export class GlassViscosityService {
     }
 
     if (modelType === ViscosityModel.IIDA) {
-      const result = calcIidaViscosity(comp, temperature);
+      const result = GlassViscosityIida.calcIidaViscosity(comp, temperature);
       return { ...result, composition: comp, secondaryModel: selection.secondary } as any;
     }
     if (modelType === ViscosityModel.NAKAMOTO_2007) {
@@ -212,7 +208,7 @@ export class GlassViscosityService {
     }
 
     if (modelType === ViscosityModel.IIDA || modelType === ViscosityModel.NAKAMOTO_2007) {
-      const calcFn = modelType === ViscosityModel.IIDA ? calcIidaViscosity : calcNakamotoViscosity;
+      const calcFn = modelType === ViscosityModel.IIDA ? GlassViscosityIida.calcIidaViscosity : calcNakamotoViscosity;
       const firstWarnings = calcFn(comp, temperatures_C[0]).warnings;
       const points = temperatures_C.map(T => {
         const r = calcFn(comp, T);
@@ -232,7 +228,7 @@ export class GlassViscosityService {
     // Hetherington: evaluate each temperature directly (no VTF)
     if (modelType === ViscosityModel.HETHERINGTON_1964) {
       const points = temperatures_C.map(T => {
-        const logEta = calcHetheringtonLogEta(T);
+        const logEta = GlassViscosityArrhenius.calcHetheringtonLogEta(T);
         return { temperature_C: T, logViscosity: Number(logEta.toFixed(3)), viscosity_Pas: Number(Math.pow(10, logEta).toFixed(4)) };
       });
       const validation = this.buildValidationStatus(modelType, selection.warnings);
@@ -288,7 +284,7 @@ export class GlassViscosityService {
     }
 
     if (modelType === ViscosityModel.IIDA || modelType === ViscosityModel.NAKAMOTO_2007) {
-      const calcFn = modelType === ViscosityModel.IIDA ? calcIidaViscosity : calcNakamotoViscosity;
+      const calcFn = modelType === ViscosityModel.IIDA ? GlassViscosityIida.calcIidaViscosity : calcNakamotoViscosity;
       const range  = modelType === ViscosityModel.IIDA
         ? { min: IIDA_MODEL.temperatureRange.min_C, max: IIDA_MODEL.temperatureRange.max_C }
         : { min: NAKAMOTO_2007.temperatureRange.min_C, max: NAKAMOTO_2007.temperatureRange.max_C };
@@ -305,7 +301,7 @@ export class GlassViscosityService {
     }
 
     if (modelType === ViscosityModel.HETHERINGTON_1964) {
-      const temperature_C = hetheringtonTemperatureAtLogEta(targetLogEta);
+      const temperature_C = GlassViscosityArrhenius.hetheringtonTemperatureAtLogEta(targetLogEta);
       const validation    = this.buildValidationStatus(modelType, selection.warnings);
       return {
         model:         VISCOSITY_MODEL_NAMES[modelType],

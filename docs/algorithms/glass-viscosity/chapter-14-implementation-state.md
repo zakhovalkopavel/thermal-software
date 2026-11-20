@@ -45,9 +45,8 @@ backend/src/modules/refractory/
 │   │                                        buildVtf, fitVtfThreePoints, evalVtf,
 │   │                                        temperatureAtLogViscosity,
 │   │                                        calculateFixedPointsFromVtf
-│   └── glass-viscosity-arrhenius.util.ts ← calcHetheringtonLogEta,
-│                                            hetheringtonTemperatureAtLogEta,
-│                                            buildHetheringtonResult
+│   ├── glass-viscosity-arrhenius.ts     ← GlassViscosityArrhenius (Hetherington)
+│   └── glass-viscosity-iida.ts          ← GlassViscosityIida (+ Mills liquidus)
 ├── services/
 │   └── glass-viscosity.service.ts       ← GlassViscosityService (NestJS @Injectable)
 │                                            selectModel, resolveModel,
@@ -127,22 +126,23 @@ Display names live in `constants/viscosity-model-names.constants.ts` (`VISCOSITY
 | `GlassViscosityVtf.calculateFixedPointsFromVtf` | ✅ Complete | Ch. 8 — thin VTF adapter over `calculateFixedPoints` |
 | `calculateFixedPoints` | ✅ Complete | Shared ASTM fixed points; log η in `ASTM_FIXED_POINT_LOG_ETA` |
 
-### `glass-viscosity-arrhenius.util.ts`
+### `GlassViscosityArrhenius` / `GlassViscosityIida`
 
-| Function | Status | Spec Chapter |
+| Method | Status | Spec Chapter |
 |----------|--------|--------------|
-| `calcHetheringtonLogEta` | ✅ Complete | Ch. 1 (Hetherington model) |
-| `hetheringtonTemperatureAtLogEta` | ✅ Complete | Ch. 1 |
-| `buildHetheringtonResult` | ✅ Complete | — internal builder |
+| `GlassViscosityArrhenius.calcHetheringtonLogEta` | ✅ Complete | Ch. 1 (Hetherington model) |
+| `GlassViscosityArrhenius.hetheringtonTemperatureAtLogEta` | ✅ Complete | Ch. 1 |
+| `GlassViscosityArrhenius.buildHetheringtonResult` | ✅ Complete | — internal builder |
+| `GlassViscosityIida.estimateLiquidusMills` | ✅ Complete | Ch. 13 |
+| `GlassViscosityIida.calcIidaViscosity` | ✅ Complete | Ch. 13 |
 
-### Pending slag utils
+### Slag utils
 
-| File (planned) | Status | Spec Chapter |
+| File / method | Status | Spec Chapter |
 |----------------|--------|--------------|
-| `glass-viscosity-slag.util.ts` | ❌ Pending | Ch. 13 |
-| — `calcLiquidusMills` | ❌ Pending | Ch. 13 — liquidus safety guard |
-| — `calcIidaViscosity` | ❌ Pending | Ch. 13 — Iida model |
-| — `calcNakamotoViscosity` | ❌ Pending | Ch. 13 — Nakamoto 2007 model |
+| `GlassViscosityIida.estimateLiquidusMills` | ✅ Complete | Ch. 13 — liquidus safety guard |
+| `GlassViscosityIida.calcIidaViscosity` | ✅ Complete | Ch. 13 |
+| `calcNakamotoViscosity` (`glass-viscosity-nakamoto.util.ts`) | ✅ Complete | Ch. 13 — single-function util |
 
 ---
 
@@ -153,7 +153,7 @@ Display names live in `constants/viscosity-model-names.constants.ts` (`VISCOSITY
 | Case | Status | Notes |
 |------|--------|-------|
 | SiO₂ > 99% → HETHERINGTON | ✅ Complete | |
-| Slag detection → IIDA / NAKAMOTO | ⚠️ Partial | Iida implementation present (`calcIidaViscosity`); Nakamoto coefficients present in `viscosity-parameters.ts`. Full slag endpoints and integration tests are pending. |
+| Slag detection → IIDA / NAKAMOTO | ⚠️ Partial | Iida via `GlassViscosityIida`; Nakamoto via `calcNakamotoViscosity`. Full slag endpoints and integration tests are pending. |
 | Lakatos validity check | ✅ Complete | |
 | Lakatos → LAKATOS_1976 | ✅ Complete | |
 | Fallback → FLUEGEL_2007 | ✅ Complete | |
