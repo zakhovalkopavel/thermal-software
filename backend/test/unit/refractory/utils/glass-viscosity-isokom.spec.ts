@@ -9,7 +9,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { GlassViscosityService } from '../../../../src/modules/refractory/services/composition/glass-viscosity.service';
-import { ViscosityModelType } from '../../../../src/modules/refractory/enums/viscosity-model.enum';
+import { ViscosityModelType } from '../../../../src/modules/refractory/enums/viscosity-model-type.enum';
 import {
   predictVtfDirectLakatos,
   predictIsokomsFluegel,

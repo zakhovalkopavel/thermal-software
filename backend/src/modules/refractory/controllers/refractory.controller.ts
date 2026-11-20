@@ -23,17 +23,16 @@ import { MineralPhaseDto } from '../dto/mineral-phases/mineral-phase.dto';
 import { AndreasenPsdDto, FunkDingerPsdDto } from '../dto/psd/psd-calculation.dto';
 import { PackingCpmDto, PackingFurnasDto } from '../dto/packing/packing-models.dto';
 import { ParticipationDto } from '../dto/participation/participation.dto';
-import { WaterDemandDto, WaterDemandRangeDto } from '../dto/water-demand/water-demand.dto';
+import { WaterDemandDto } from '../dto/water-demand/water-demand.dto';
+import { WaterDemandRangeDto } from '../dto/water-demand/water-demand-range.dto';
 import { ShrinkagePredictionDto } from '../dto/shrinkage/shrinkage-prediction.dto';
 import { ThermalConductivityDto } from '../dto/thermal-conductivity/thermal-conductivity.dto';
 import { RefractorinessDto } from '../dto/refractoriness/refractoriness.dto';
-import {
-  GlassViscosityDto,
-  GlassViscosityProfileDto,
-  GlassTemperatureAtViscosityDto,
-  GlassCompositionConvertDto,
-  ConversionDirectionDto,
-} from '../dto/glass-viscosity/glass-viscosity.dto';
+import { GlassViscosityDto } from '../dto/glass-viscosity/glass-viscosity.dto';
+import { GlassViscosityProfileDto } from '../dto/glass-viscosity/glass-viscosity-profile.dto';
+import { GlassTemperatureAtViscosityDto } from '../dto/glass-viscosity/glass-temperature-at-viscosity.dto';
+import { GlassCompositionConvertDto } from '../dto/glass-viscosity/glass-composition-convert.dto';
+import { ConversionDirectionDto } from '../enums/conversion-direction.enum';
 import { MixCompositionInputDto } from '../dto/mix-composition/mix-composition-input.dto';
 import { MixCompositionResultDto } from '../dto/mix-composition/mix-composition-result.dto';
 import { MixThermalInputDto } from '../dto/mix-thermal/mix-thermal-input.dto';

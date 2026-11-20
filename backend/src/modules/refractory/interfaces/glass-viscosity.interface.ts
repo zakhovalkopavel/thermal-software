@@ -13,7 +13,7 @@
  * Version: 2.0 - Composition-dependent models
  */
 
-import { ViscosityModel, ViscosityModelType, ConfidenceLevel, ExtrapolationRisk } from '../enums/viscosity-model.enum';
+import { ViscosityModel, ViscosityModelType, ConfidenceLevel, ExtrapolationRisk } from '../enums';
 
 // ============================================================
 // INPUT INTERFACES

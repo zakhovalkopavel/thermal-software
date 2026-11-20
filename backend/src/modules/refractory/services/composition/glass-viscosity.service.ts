@@ -13,13 +13,11 @@ import {
 import {
   ModelSelectionResult,
 } from '../../interfaces/viscosity-parameters.interface';
-import {
-  ViscosityModel,
-  ViscosityModelNames,
-  ViscosityModelType,
-  ConfidenceLevel,
-  ExtrapolationRisk,
-} from '../../enums/viscosity-model.enum';
+import { ViscosityModel } from '../../enums/viscosity-model.enum';
+import { ViscosityModelType } from '../../enums/viscosity-model-type.enum';
+import { ConfidenceLevel } from '../../enums/confidence-level.enum';
+import { ExtrapolationRisk } from '../../enums/extrapolation-risk.enum';
+import { VISCOSITY_MODEL_NAMES } from '../../constants/viscosity-model-names.constants';
 import {
   normalizeComposition,
   wtPctToMolPct,
@@ -181,7 +179,7 @@ export class GlassViscosityService {
       model: {
         type:       ViscosityModelType.VFT,
         systemType: modelType,
-        systemName: ViscosityModelNames[modelType],
+        systemName: VISCOSITY_MODEL_NAMES[modelType],
         parameters: { A: vtf.A, B: vtf.B, T0: vtf.T0, temperatureRange: { min_C: 400, max_C: 1600 } },
       } as ModelInfo,
       fixedPoints: fp,
@@ -234,10 +232,10 @@ export class GlassViscosityService {
       const allWarnings = [...firstWarnings, ...points.flatMap(() => [] as string[])]
         .filter((w, i, a) => a.indexOf(w) === i);
       return {
-        model: ViscosityModelNames[modelType],
+        model: VISCOSITY_MODEL_NAMES[modelType],
         points,
         fixedPoints: null,
-        secondaryModel: selection.secondary ? ViscosityModelNames[selection.secondary] : undefined,
+        secondaryModel: selection.secondary ? VISCOSITY_MODEL_NAMES[selection.secondary] : undefined,
         validation: this.buildValidationStatus(modelType, allWarnings),
       };
     }
@@ -249,7 +247,7 @@ export class GlassViscosityService {
         return { temperature_C: T, logViscosity: Number(logEta.toFixed(3)), viscosity_Pas: Number(Math.pow(10, logEta).toFixed(4)) };
       });
       const validation = this.buildValidationStatus(modelType, selection.warnings);
-      return { model: ViscosityModelNames[modelType], points, fixedPoints: null, validation };
+      return { model: VISCOSITY_MODEL_NAMES[modelType], points, fixedPoints: null, validation };
     }
 
     const { vtf, modelRef, isokomWarnings } = buildVtf(comp, selection);
@@ -267,7 +265,7 @@ export class GlassViscosityService {
     });
 
     return {
-      model:       ViscosityModelNames[modelType],
+      model:       VISCOSITY_MODEL_NAMES[modelType],
       modelRef,
       vtfParameters: { A: vtf.A, B: vtf.B, T0: vtf.T0 },
       points,
@@ -309,11 +307,11 @@ export class GlassViscosityService {
       const { root: T_C } = brentq(f, range.min, range.max, 1e-4);
       const validation = this.buildValidationStatus(modelType, selection.warnings);
       return {
-        model:         ViscosityModelNames[modelType],
+        model:         VISCOSITY_MODEL_NAMES[modelType],
         targetLogEta,
         temperature_C: Number(T_C.toFixed(1)),
         validation,
-        secondaryModel: selection.secondary ? ViscosityModelNames[selection.secondary] : undefined,
+        secondaryModel: selection.secondary ? VISCOSITY_MODEL_NAMES[selection.secondary] : undefined,
       };
     }
 
@@ -321,7 +319,7 @@ export class GlassViscosityService {
       const temperature_C = hetheringtonTemperatureAtLogEta(targetLogEta);
       const validation    = this.buildValidationStatus(modelType, selection.warnings);
       return {
-        model:         ViscosityModelNames[modelType],
+        model:         VISCOSITY_MODEL_NAMES[modelType],
         targetLogEta,
         temperature_C: Number(temperature_C.toFixed(1)),
         validation,
@@ -334,7 +332,7 @@ export class GlassViscosityService {
     const validation    = this.buildValidationStatus(modelType, allWarnings);
 
     return {
-      model:         ViscosityModelNames[modelType],
+      model:         VISCOSITY_MODEL_NAMES[modelType],
       modelRef,
       targetLogEta,
       temperature_C: Number(temperature_C.toFixed(1)),
@@ -469,7 +467,7 @@ export class GlassViscosityService {
     if      (hasOrdering)     { confidenceLevel = ConfidenceLevel.LOW;    extrapolationRisk = ExtrapolationRisk.SEVERE; }
     else if (outOfRange >= 3) { confidenceLevel = ConfidenceLevel.LOW;    extrapolationRisk = ExtrapolationRisk.MODERATE; }
     else if (outOfRange >= 1) { confidenceLevel = ConfidenceLevel.MEDIUM; extrapolationRisk = ExtrapolationRisk.MINOR; }
-    const systemName = ViscosityModelNames[modelType] ?? modelType;
+    const systemName = VISCOSITY_MODEL_NAMES[modelType] ?? modelType;
     return { systemDetected: systemName, confidenceLevel, warnings, componentsInRange: 0, componentsOutOfRange: outOfRange, extrapolationRisk, compositionIssues };
   }
 

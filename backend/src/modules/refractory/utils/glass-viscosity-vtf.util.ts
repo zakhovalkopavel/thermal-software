@@ -29,6 +29,7 @@ import {
 } from '../interfaces/viscosity-parameters.interface';
 import { levenbergMarquardt } from '../../../common/utils/regression';
 import { FixedPoints } from '../interfaces/glass-viscosity.interface';
+import { calculateFixedPoints } from './calculate-fixed-points.util';
 import {
   LAKATOS_1976_COEFFICIENTS,
   LAKATOS_1976_DIRECT_VTF_COEFFICIENTS,
@@ -536,31 +537,13 @@ export function temperatureAtLogViscosity(
 
 /**
  * Calculate all ASTM C965-96 fixed points from a VTF parameter set.
- *
- * Fixed-point log₁₀(η [Pa·s]) targets:
- *   Melting  : 1.0    Working : 3.0    Flow     : 4.0
- *   Softening: 6.6    Annealing: 12.0  Strain   : 13.5
+ * Log₁₀(η) targets live in `ASTM_FIXED_POINT_LOG_ETA`; this only
+ * supplies the VTF inverse T(log η).
  */
 export function calculateFixedPointsFromVtf(vtf: VtfParameters): FixedPoints {
-  const T = (logEta: number) => temperatureAtLogViscosity(vtf, logEta);
-
-  const fp: FixedPoints = {
-    meltingPoint_C:   T(1.0),
-    workingPoint_C:   T(3.0),
-    flowPoint_C:      T(4.0),
-    softeningPoint_C: T(6.6),
-    annealingPoint_C: T(12.0),
-    strainPoint_C:    T(13.5),
-  };
-
-  fp.spans = {
-    meltingToStrain_C:      fp.meltingPoint_C   - fp.strainPoint_C,
-    workingToSoftening_C:   fp.workingPoint_C   - fp.softeningPoint_C,
-    softeningToAnnealing_C: fp.softeningPoint_C - fp.annealingPoint_C,
-    annealingToStrain_C:    fp.annealingPoint_C - fp.strainPoint_C,
-  };
-
-  return fp;
+  return calculateFixedPoints(
+    (logEta) => temperatureAtLogViscosity(vtf, logEta),
+  );
 }
 
 // ─── Lakatos validity ─────────────────────────────────────────────────────────

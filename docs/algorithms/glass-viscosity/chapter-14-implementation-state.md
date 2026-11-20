@@ -17,12 +17,16 @@ Last updated: 2026-03-07
 ```
 backend/src/modules/refractory/
 ├── constants/
-│   └── viscosity-parameters.ts          ← LAKATOS_1976_DIRECT_VTF_COEFFICIENTS [Table 6, production]
+│   └── viscosity-model-names.constants.ts ← VISCOSITY_MODEL_NAMES display labels
+├── data/
+│   └── viscosity-parameters.data.ts     ← LAKATOS_1976_DIRECT_VTF_COEFFICIENTS [Table 6, production]
 │                                            LAKATOS_1976_COEFFICIENTS            [Table 7, illustration]
-│                                            Fluegel, Hetherington constants
+│                                            Fluegel, Hetherington, Iida, Nakamoto constants
 ├── enums/
-│   └── viscosity-model.enum.ts          ← ViscosityModel, ViscosityModelType,
-│                                            ConfidenceLevel, ExtrapolationRisk
+│   ├── viscosity-model.enum.ts          ← ViscosityModel
+│   ├── viscosity-model-type.enum.ts     ← ViscosityModelType
+│   ├── confidence-level.enum.ts         ← ConfidenceLevel
+│   └── extrapolation-risk.enum.ts       ← ExtrapolationRisk
 ├── interfaces/
 │   ├── viscosity-parameters.interface.ts ← VtfPoint, VtfParameters, LakatosIsokoms,
 │   │                                        FluegelIsokoms, SlagViscosityResult,
@@ -63,7 +67,7 @@ backend/src/modules/refractory/
 
 ---
 
-## Constants (`viscosity-parameters.ts`)
+## Constants (`data/viscosity-parameters.data.ts`)
 
 | Constant | Status | Notes |
 |----------|--------|-------|
@@ -80,9 +84,9 @@ backend/src/modules/refractory/
 
 ---
 
-## Enums (`viscosity-model.enum.ts`)
+## Enums (`enums/viscosity-model*.enum.ts` and related)
 
-| Enum value | Status | Notes |
+| Enum value (`ViscosityModel`) | Status | Notes |
 |------------|--------|-------|
 | `LAKATOS_1976` | ✅ Active | VTF model for soda-lime-silica |
 | `FLUEGEL_2007` | ✅ Active | VFT model for broad silicate space |
@@ -90,6 +94,9 @@ backend/src/modules/refractory/
 | `IIDA` | ✅ Active | Industrial mixed-slag model (Iida & Guthrie 1988) — used for CaO–SiO₂–Al₂O₃ slags up to CaF₂ ≈ 8 mol% |
 | `NAKAMOTO_2007` | ✅ Active | Fluoride-bearing slag model (Nakamoto 2007) — preferred for high-CaF₂ slags; CaF₂ ≥ 5 mol% recommended |
 | `NOT_SUPPORTED` | ✅ Active | Returned when no model matches |
+
+Display names live in `constants/viscosity-model-names.constants.ts` (`VISCOSITY_MODEL_NAMES`).
+`ViscosityModelType`, `ConfidenceLevel`, and `ExtrapolationRisk` each have their own `enums/*.enum.ts` file.
 
 ---
 
@@ -114,7 +121,8 @@ backend/src/modules/refractory/
 | `fitVtfThreePoints` | ✅ Complete | Ch. 7 — analytical 3-point solve |
 | `evalVtf` | ✅ Complete | Ch. 7 |
 | `temperatureAtLogViscosity` | ✅ Complete | Ch. 7 |
-| `calculateFixedPointsFromVtf` | ✅ Complete | Ch. 8 — all ASTM C965-96 fixed points |
+| `calculateFixedPointsFromVtf` | ✅ Complete | Ch. 8 — thin VTF adapter over `calculateFixedPoints` |
+| `calculateFixedPoints` | ✅ Complete | Shared ASTM fixed points; log η in `ASTM_FIXED_POINT_LOG_ETA` |
 
 ### `glass-viscosity-arrhenius.util.ts`
 

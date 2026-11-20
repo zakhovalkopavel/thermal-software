@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ViscosityModel, ViscosityModelType } from '../../../enums/viscosity-model.enum';
+import { ViscosityModel } from '../../../enums/viscosity-model.enum';
+import { ViscosityModelType } from '../../../enums/viscosity-model-type.enum';
 import { ViscosityModelParametersDto } from './viscosity-model-parameters.dto';
 
 export class ViscosityModelInfoDto {

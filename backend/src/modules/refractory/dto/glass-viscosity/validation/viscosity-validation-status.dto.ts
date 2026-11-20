@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ConfidenceLevel, ExtrapolationRisk } from '../../../enums/viscosity-model.enum';
+import { ConfidenceLevel } from '../../../enums/confidence-level.enum';
+import { ExtrapolationRisk } from '../../../enums/extrapolation-risk.enum';
 import { CompositionIssueDto } from './composition-issue.dto';
 
 export class ViscosityValidationStatusDto {

@@ -9,11 +9,9 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { GlassViscosityService } from '../../../../../src/modules/refractory/services/composition/glass-viscosity.service';
-import {
-  ViscosityModel,
-  ViscosityModelType,
-  ConfidenceLevel,
-} from '../../../../../src/modules/refractory/enums/viscosity-model.enum';
+import { ViscosityModel } from '../../../../../src/modules/refractory/enums/viscosity-model.enum';
+import { ViscosityModelType } from '../../../../../src/modules/refractory/enums/viscosity-model-type.enum';
+import { ConfidenceLevel } from '../../../../../src/modules/refractory/enums/confidence-level.enum';
 import {
   LAKATOS_VALIDATION_GLASSES,
   FLUEGEL_VALIDATION_GLASSES,

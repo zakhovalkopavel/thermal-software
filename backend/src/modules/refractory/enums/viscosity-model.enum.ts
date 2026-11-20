@@ -39,36 +39,3 @@ export enum ViscosityModel {
    *  Service returns NOT_SUPPORTED error rather than a bogus number. */
   NOT_SUPPORTED = 'NOT_SUPPORTED',
 }
-
-export const ViscosityModelNames: Record<ViscosityModel, string> = {
-  [ViscosityModel.LAKATOS_1976]:      'Soda-Lime-Silica / Near-Variants (Lakatos 1976)',
-  [ViscosityModel.FLUEGEL_2007]:      'Broad Silicate Glass incl. low-F oxide-fluoride (Fluegel 2007)',
-  [ViscosityModel.HETHERINGTON_1964]: 'Pure Fused Silica (Hetherington 1964)',
-  [ViscosityModel.IIDA]:              'Industrial Mixed Slag — Iida Model (Iida & Guthrie 1988 / Mills 2011)',
-  [ViscosityModel.NAKAMOTO_2007]:     'Fluoride-Bearing Slag — Nakamoto 2007 (ISIJ Int. 47:1583)',
-  [ViscosityModel.NOT_SUPPORTED]:     'Not Supported — no valid published model',
-};
-
-export enum ViscosityModelType {
-  ARRHENIUS       = 'ARRHENIUS',
-  /** Modified Weymann-Frenkel: η = A·η₀·exp(E/B_i*). Used by Iida model. */
-  WEYMANN_FRENKEL = 'WEYMANN_FRENKEL',
-  /** Modified Arrhenius: η = A·T·exp(E/RT). Used by Nakamoto 2007. */
-  ARRHENIUS_T     = 'ARRHENIUS_T',
-  VFT             = 'VFT',
-}
-
-export enum ConfidenceLevel {
-  HIGH     = 'HIGH',      // Within validated ranges, established system
-  MEDIUM   = 'MEDIUM',    // Minor deviations or near boundaries
-  LOW      = 'LOW',       // Significant deviations or near model boundary
-  VERY_LOW = 'VERY_LOW',  // Major extrapolation
-}
-
-export enum ExtrapolationRisk {
-  NONE     = 'NONE',      // All components within validated ranges
-  MINOR    = 'MINOR',     // Small deviations (<10%)
-  MODERATE = 'MODERATE',  // Moderate deviations (10–25%)
-  SEVERE   = 'SEVERE',    // Large deviations (>25%) or unknown system
-}
-

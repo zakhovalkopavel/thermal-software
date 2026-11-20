@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ConfidenceLevel, ViscosityModelType } from '../../../enums/viscosity-model.enum';
+import { ConfidenceLevel } from '../../../enums/confidence-level.enum';
+import { ViscosityModelType } from '../../../enums/viscosity-model-type.enum';
 
 export class GlassViscosityMetadataDto {
   @ApiProperty({ type: String, format: 'date-time' })

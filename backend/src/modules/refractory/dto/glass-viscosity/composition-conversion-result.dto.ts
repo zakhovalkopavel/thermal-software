@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ConversionDirectionDto } from './glass-viscosity.dto';
+import { ConversionDirectionDto } from '../../enums/conversion-direction.enum';
 
 const COMPOSITION_MAP = { type: 'object', additionalProperties: { type: 'number' } } as const;
 

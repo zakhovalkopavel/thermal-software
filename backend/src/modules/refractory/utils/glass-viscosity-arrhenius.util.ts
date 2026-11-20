@@ -21,17 +21,15 @@ import { celsiusToKelvin, kelvinToCelsius } from '../../../common/thermal/utils/
 import {
   GlassViscosityResult,
   ModelInfo,
-  FixedPoints,
   ValidationStatus,
   GlassViscosityMetadata,
   ComponentBreakdown,
 } from '../interfaces/glass-viscosity.interface';
 import { ModelSelectionResult } from '../interfaces/viscosity-parameters.interface';
-import {
-  ViscosityModel,
-  ViscosityModelNames,
-  ViscosityModelType,
-} from '../enums/viscosity-model.enum';
+import { ViscosityModel } from '../enums/viscosity-model.enum';
+import { ViscosityModelType } from '../enums/viscosity-model-type.enum';
+import { VISCOSITY_MODEL_NAMES } from '../constants/viscosity-model-names.constants';
+import { calculateFixedPoints } from './calculate-fixed-points.util';
 
 // ─── Hetherington 1964 ────────────────────────────────────────────────────────
 
@@ -89,27 +87,14 @@ export function buildHetheringtonResult(
   const logViscosity  = calcHetheringtonLogEta(temperature);
   const viscosity_Pas = Math.max(1e-3, Math.min(1e15, Math.pow(10, logViscosity)));
 
-  const fp: FixedPoints = {
-    meltingPoint_C:   hetheringtonTemperatureAtLogEta(1.0),
-    workingPoint_C:   hetheringtonTemperatureAtLogEta(3.0),
-    flowPoint_C:      hetheringtonTemperatureAtLogEta(4.0),
-    softeningPoint_C: hetheringtonTemperatureAtLogEta(6.6),
-    annealingPoint_C: hetheringtonTemperatureAtLogEta(12.0),
-    strainPoint_C:    hetheringtonTemperatureAtLogEta(13.5),
-  };
-  fp.spans = {
-    meltingToStrain_C:      fp.meltingPoint_C   - fp.strainPoint_C,
-    workingToSoftening_C:   fp.workingPoint_C   - fp.softeningPoint_C,
-    softeningToAnnealing_C: fp.softeningPoint_C - fp.annealingPoint_C,
-    annealingToStrain_C:    fp.annealingPoint_C - fp.strainPoint_C,
-  };
+  const fp = calculateFixedPoints(hetheringtonTemperatureAtLogEta);
 
   const validation = buildValidationStatus(ViscosityModel.HETHERINGTON_1964, selection.warnings);
 
   const modelInfo: ModelInfo = {
     type: ViscosityModelType.ARRHENIUS,
     systemType: ViscosityModel.HETHERINGTON_1964,
-    systemName: ViscosityModelNames[ViscosityModel.HETHERINGTON_1964],
+    systemName: VISCOSITY_MODEL_NAMES[ViscosityModel.HETHERINGTON_1964],
     parameters: {
       A: h.A,
       B: h.B,

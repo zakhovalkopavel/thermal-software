@@ -1,12 +1,8 @@
 import { IsNumber, IsOptional, IsEnum, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { WorkabilityType } from '../../enums/workability.enum';
 
-export enum WorkabilityEnum {
-  FIRM = 'firm',
-  STANDARD = 'standard',
-  FLOWABLE = 'flowable',
-}
-
+/** Water demand at a packing fraction and workability. */
 export class WaterDemandDto {
   @ApiProperty({
     example: 0.74,
@@ -19,23 +15,11 @@ export class WaterDemandDto {
 
   @ApiProperty({
     example: 'STANDARD',
-    enum: WorkabilityEnum,
+    enum: WorkabilityType,
     required: false,
     description: 'Workability level: FIRM (0.38), STANDARD (0.42, default), FLOWABLE (0.50)',
   })
-  @IsEnum(WorkabilityEnum)
+  @IsEnum(WorkabilityType)
   @IsOptional()
-  workability?: WorkabilityEnum;
+  workability?: WorkabilityType;
 }
-
-export class WaterDemandRangeDto {
-  @ApiProperty({
-    example: 0.74,
-    description: 'Packing fraction φ (0–1)',
-  })
-  @IsNumber()
-  @Min(0)
-  @Max(1)
-  packingFraction: number;
-}
-
