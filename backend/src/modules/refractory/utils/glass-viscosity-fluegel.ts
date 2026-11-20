@@ -9,7 +9,7 @@ import {
   FLUEGEL_2007_T12,
   FLUEGEL_2007_BOUNDS,
 } from '../data/viscosity-parameters.data';
-import { wtPctToMolPct } from './glass-composition.util';
+import { GlassComposition } from './glass-composition';
 
 export class GlassViscosityFluegel {
   /**
@@ -28,7 +28,7 @@ export class GlassViscosityFluegel {
   static predictIsokomsFluegel(
     comp: Record<string, number>,
   ): FluegelIsokoms {
-    const molPct = wtPctToMolPct(comp);
+    const molPct = GlassComposition.wtPctToMolPct(comp);
     const C = (k: string) => molPct[k] ?? 0;
 
     type FlugelTable =

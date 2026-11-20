@@ -13,7 +13,7 @@ import { ViscosityModelType } from '../../../../src/modules/refractory/enums/vis
 import { GlassViscosityLakatos } from '../../../../src/modules/refractory/utils/glass-viscosity-lakatos';
 import { GlassViscosityFluegel } from '../../../../src/modules/refractory/utils/glass-viscosity-fluegel';
 import { GlassViscosityVtf } from '../../../../src/modules/refractory/utils/glass-viscosity-vtf';
-import { wtPctToMolPct } from '../../../../src/modules/refractory/utils/glass-composition.util';
+import { GlassComposition } from '../../../../src/modules/refractory/utils/glass-composition';
 import { kelvinToCelsius } from '../../../../src/common/thermal/utils/temperature';
 import {
   LAKATOS_VALIDATION_GLASSES,

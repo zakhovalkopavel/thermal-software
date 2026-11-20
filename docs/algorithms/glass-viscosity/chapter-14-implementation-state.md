@@ -32,8 +32,9 @@ backend/src/modules/refractory/
 │   ├── slag-viscosity-result / model-selection-result
 │   └── glass-viscosity-result / fixed-points / validation-status / model-info …
 ├── utils/
-│   ├── glass-composition.util.ts        ← wtPctToMolPct, molPctToWtPct,
-│   │                                        normalizeComposition
+│   ├── glass-composition.ts             ← GlassComposition
+│   │                                        normalizeComposition, wtPctToMolPct, molPctToWtPct
+│   ├── invalid-composition-error.ts     ← InvalidCompositionError
 │   ├── glass-viscosity-lakatos.ts       ← GlassViscosityLakatos
 │   │                                        predictVtfDirectLakatos [PRODUCTION: Table 6]
 │   │                                        checkLakatosValidity
@@ -103,9 +104,9 @@ Display names live in `constants/viscosity-model-names.constants.ts` (`VISCOSITY
 
 ## Utils
 
-### `glass-composition.util.ts`
+### `GlassComposition` (`glass-composition.ts`)
 
-| Function | Status | Spec Chapter |
+| Method | Status | Spec Chapter |
 |----------|--------|--------------|
 | `normalizeComposition` | ✅ Complete | Ch. 6 |
 | `wtPctToMolPct` | ✅ Complete | Ch. 6 |
@@ -191,7 +192,7 @@ Swagger UI: `GET /api/docs`
 
 | File | Status | Covers |
 |------|--------|--------|
-| `test/unit/refractory/utils/glass-composition.util.spec.ts` | ✅ Complete | `wtPctToMolPct`, `molPctToWtPct` |
+| `test/unit/refractory/utils/glass-composition.spec.ts` | ✅ Complete | `GlassComposition` normalize / wt%↔mol% |
 | `test/unit/refractory/utils/glass-viscosity-vtf.spec.ts` | ✅ Complete | `GlassViscosityVtf.fitVtfThreePoints`, `evalVtf`, `temperatureAtLogViscosity` |
 | `test/unit/refractory/utils/glass-viscosity-isokom.spec.ts` | ✅ Complete | Lakatos direct VTF, Fluegel isokoms, Hetherington self-check |
 | `test/unit/refractory/services/composition/glass-viscosity-model-selection.spec.ts` | ✅ Complete | `selectModel` — all routing cases (Fluegel default, Lakatos reserve, slag/fluoride logic verified) |

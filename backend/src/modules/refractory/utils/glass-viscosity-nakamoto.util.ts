@@ -18,7 +18,6 @@
 
 import { NAKAMOTO_2007, MILLS_LIQUIDUS } from '../data/viscosity-parameters.data';
 import type { SlagViscosityResult } from '../types';
-import { wtPctToMolPct } from './glass-composition.util';
 import { estimateLiquidusMills } from './glass-viscosity-iida.util';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 import { celsiusToKelvin } from '../../../common/thermal/utils/temperature';

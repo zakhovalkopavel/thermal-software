@@ -15,7 +15,7 @@
 
 import { IIDA_MODEL, MILLS_LIQUIDUS, MOLAR_MASSES } from '../data/viscosity-parameters.data';
 import type { SlagViscosityResult } from '../types';
-import { wtPctToMolPct } from './glass-composition.util';
+import { GlassComposition } from './glass-composition';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 import { celsiusToKelvin } from '../../../common/thermal/utils/temperature';
 import { molarMassGramsPerMol } from '../../../common/chemistry';
@@ -123,7 +123,7 @@ export function calcIidaViscosity(
   if (temperature_C > IIDA_MODEL.temperatureRange.max_C) warnings.push(`T = ${temperature_C} °C above Iida valid range (${IIDA_MODEL.temperatureRange.max_C} °C)`);
 
   // CaF₂ check
-  const molPct = wtPctToMolPct(comp_wt_pct);
+  const molPct = GlassComposition.wtPctToMolPct(comp_wt_pct);
   const X_CaF2 = (molPct['CaF2'] ?? 0) / 100;
   if (X_CaF2 > IIDA_MODEL.CaF2_max_mol) {
     warnings.push(`CaF₂ = ${(X_CaF2 * 100).toFixed(1)} mol% exceeds Iida limit (${IIDA_MODEL.CaF2_max_mol * 100} mol%) — consider Nakamoto 2007`);

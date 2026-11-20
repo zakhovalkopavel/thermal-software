@@ -16,12 +16,8 @@ import { ViscosityModelType } from '../../enums/viscosity-model-type.enum';
 import { ConfidenceLevel } from '../../enums/confidence-level.enum';
 import { ExtrapolationRisk } from '../../enums/extrapolation-risk.enum';
 import { VISCOSITY_MODEL_NAMES } from '../../constants/viscosity-model-names.constants';
-import {
-  normalizeComposition,
-  wtPctToMolPct,
-  molPctToWtPct,
-  InvalidCompositionError,
-} from '../../utils/glass-composition.util';
+import { GlassComposition } from '../../utils/glass-composition';
+import { InvalidCompositionError } from '../../utils/invalid-composition-error';
 import { GlassViscosityLakatos } from '../../utils/glass-viscosity-lakatos';
 import { GlassViscosityVtf } from '../../utils/glass-viscosity-vtf';
 import {
@@ -45,7 +41,7 @@ import { brentq } from '../../../../common/utils/root-finding';
  *   selectModel               — auto-selects or validates a requested model
  *
  * All calculation is delegated to:
- *   utils/glass-composition.util.ts         — normalisation, wt%↔mol%
+ *   utils/glass-composition.ts               — GlassComposition (normalise, wt%↔mol%)
  *   utils/glass-viscosity-arrhenius.util.ts — Hetherington 1964
  *   utils/glass-viscosity-{lakatos,lakatos-isokoms,fluegel,vtf}.ts — static classes
  */
@@ -347,7 +343,7 @@ export class GlassViscosityService {
     direction: 'wt_to_mol' | 'mol_to_wt',
   ): { input: Record<string, number>; output: Record<string, number>; direction: string } {
     const input  = this.normalize(composition);
-    const output = direction === 'wt_to_mol' ? wtPctToMolPct(input) : molPctToWtPct(input);
+    const output = direction === 'wt_to_mol' ? GlassComposition.wtPctToMolPct(input) : GlassComposition.molPctToWtPct(input);
     return { input, output, direction };
   }
 
@@ -381,7 +377,7 @@ export class GlassViscosityService {
     if (isSlag) {
       // CaF₂ > 8 mol% (rough wt% proxy ~10%) → Nakamoto is preferred
       // Otherwise Iida handles all industrial slags incl. CaF₂ ≤ 8 mol%
-      const molPct = wtPctToMolPct(comp);
+      const molPct = GlassComposition.wtPctToMolPct(comp);
       const CaF2_mol = (molPct['CaF2'] ?? 0) / 100;
       if (CaF2_mol > IIDA_MODEL.CaF2_max_mol) {
         return {
@@ -432,7 +428,7 @@ export class GlassViscosityService {
   /** Normalise to 100 % before any model selection or calculation. */
   private normalize(composition: Record<string, number>): Record<string, number> {
     try {
-      return normalizeComposition(composition);
+      return GlassComposition.normalizeComposition(composition);
     } catch (error) {
       if (error instanceof InvalidCompositionError) throw new BadRequestException(error.message);
       throw error;

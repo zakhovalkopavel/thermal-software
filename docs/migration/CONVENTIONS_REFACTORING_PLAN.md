@@ -1,6 +1,6 @@
 # Conventions Refactoring Plan
 
-**Status:** In progress — Phase 6.4 (`vtf` + `viable-range-formatter` done); remaining: `glass-composition`, `composition-analyzer`, `arrhenius/iida`; optional leftover `component-property.interface.ts`  
+**Status:** In progress — Phase 6.4 (`vtf`, `viable-range-formatter`, `glass-composition` done); remaining: `composition-analyzer`, `arrhenius/iida`; optional leftover `component-property.interface.ts`  
 
 
 
