@@ -8,41 +8,12 @@
  * - Studart et al. (2006): Micro-fillers enable higher packing
  * - de Larrard (1999): Size distribution affects packing capacity
  * - Pileggi et al. (2001): Refractory castable classification
+ *
+ * Stateless — no DI.
  */
 
 import { COMPOSITION_ANALYSIS_CONSTANTS } from '../constants/packing.constants';
-
-/**
- * Detected composition characteristics
- */
-export interface CompositionCharacteristics {
-  /** Has significant micro-filler content (<0.1 mm) */
-  hasMicroFillers: boolean;
-
-  /** Micro-filler percentage by mass */
-  microFillerPercent: number;
-
-  /** Detected PSD type */
-  psdType: 'mono' | 'binary' | 'ternary' | 'quaternary_plus' | 'continuous';
-
-  /** Size ratio spread (largest/smallest) */
-  sizeRatioSpread: number;
-
-  /** Is castable-type composition (multiple fractions) */
-  isCastable: boolean;
-
-  /** Estimated packing quality based on size distribution */
-  packingQuality: 'poor' | 'fair' | 'good' | 'excellent';
-
-  /** Recommended φ_max based on composition */
-  recommendedMaxPhi: number;
-
-  /** Confidence score (0-1) for recommendation */
-  confidence: number;
-
-  /** Explanation of recommendation */
-  explanation: string;
-}
+import type { CompositionCharacteristics } from '../types/composition-characteristics.type';
 
 /**
  * Composition-based limit selector
@@ -229,4 +200,3 @@ export class CompositionAnalyzer {
     };
   }
 }
-

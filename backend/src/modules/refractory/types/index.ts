@@ -16,6 +16,7 @@ export type { PackingValidationResult } from './packing-validation-result.type';
 export type { PackingValidationError } from './packing-validation-error.type';
 export type { PackingValidationWarning } from './packing-validation-warning.type';
 export type { SortedFractions } from './sorted-fractions.type';
+export type { CompositionCharacteristics } from './composition-characteristics.type';
 
 export type { ShrinkageMaterial } from './shrinkage-material.type';
 export type { CementType } from './cement-type.type';
