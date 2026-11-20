@@ -11,7 +11,7 @@
 refractory/
 ├── interfaces/          ✅ TypeScript Interfaces (NEW)
 │   ├── index.ts        ← Central export point
-│   └── (glass-viscosity → ../types/; viscosity-parameters still pending)
+│   └── component-property.interface.ts (optional 6.3 leftover)
 │
 ├── types/               ✅ PSD + packing + shrinkage + blend shapes (Phase 6.3)
 ├── utils/psd-type-guards.ts              ✅ PsdTypeGuards

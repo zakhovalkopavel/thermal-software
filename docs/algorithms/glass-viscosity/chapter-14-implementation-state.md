@@ -27,12 +27,10 @@ backend/src/modules/refractory/
 │   ├── viscosity-model-type.enum.ts     ← ViscosityModelType
 │   ├── confidence-level.enum.ts         ← ConfidenceLevel
 │   └── extrapolation-risk.enum.ts       ← ExtrapolationRisk
-├── interfaces/
-│   ├── viscosity-parameters.interface.ts ← VtfPoint, VtfParameters, LakatosIsokoms,
-│   │                                        FluegelIsokoms, SlagViscosityResult,
-│   │                                        ModelSelectionResult
-│   └── glass-viscosity.interface.ts     ← GlassViscosityResult, FixedPoints,
-│                                            ValidationStatus, ModelInfo, etc.
+├── types/                                 ← Phase 6.3: one `*.type.ts` per shape
+│   ├── vtf-point / vtf-parameters / lakatos-isokoms / fluegel-isokoms
+│   ├── slag-viscosity-result / model-selection-result
+│   └── glass-viscosity-result / fixed-points / validation-status / model-info …
 ├── utils/
 │   ├── glass-composition.util.ts        ← wtPctToMolPct, molPctToWtPct,
 │   │                                        normalizeComposition

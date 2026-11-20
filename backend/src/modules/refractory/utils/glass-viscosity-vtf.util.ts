@@ -26,7 +26,7 @@ import {
   LakatosIsokoms,
   FluegelIsokoms,
   ModelSelectionResult,
-} from '../interfaces/viscosity-parameters.interface';
+} from '../types';
 import { levenbergMarquardt } from '../../../common/utils/regression';
 import type { FixedPoints } from '../types';
 import { calculateFixedPoints } from './calculate-fixed-points.util';

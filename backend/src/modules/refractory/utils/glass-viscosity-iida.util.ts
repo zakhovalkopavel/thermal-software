@@ -14,7 +14,7 @@
  */
 
 import { IIDA_MODEL, MILLS_LIQUIDUS, MOLAR_MASSES } from '../data/viscosity-parameters.data';
-import { SlagViscosityResult } from '../interfaces/viscosity-parameters.interface';
+import type { SlagViscosityResult } from '../types';
 import { wtPctToMolPct } from './glass-composition.util';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 import { celsiusToKelvin } from '../../../common/thermal/utils/temperature';

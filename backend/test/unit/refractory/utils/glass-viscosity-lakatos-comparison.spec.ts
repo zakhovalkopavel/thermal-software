@@ -32,7 +32,7 @@ import {
   calculateFixedPointsFromVtf,
 } from '../../../../src/modules/refractory/utils/glass-viscosity-vtf.util';
 import { LAKATOS_VALIDATION_GLASSES } from '../../../../src/modules/refractory/data/glass-viscosity-validation.data';
-import type { VtfParameters } from '../../../../src/modules/refractory/interfaces/viscosity-parameters.interface';
+import type { VtfParameters } from '../../../../src/modules/refractory/types';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 

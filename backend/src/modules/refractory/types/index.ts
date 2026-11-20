@@ -113,3 +113,10 @@ export type { GlassProcessingWindow } from './glass-processing-window.type';
 export type { GlassViscosityValidationResult } from './glass-viscosity-validation-result.type';
 export type { GlassViscosityValidationError } from './glass-viscosity-validation-error.type';
 export type { GlassViscosityValidationWarning } from './glass-viscosity-validation-warning.type';
+
+export type { VtfPoint } from './vtf-point.type';
+export type { VtfParameters } from './vtf-parameters.type';
+export type { LakatosIsokoms } from './lakatos-isokoms.type';
+export type { FluegelIsokoms } from './fluegel-isokoms.type';
+export type { SlagViscosityResult } from './slag-viscosity-result.type';
+export type { ModelSelectionResult } from './model-selection-result.type';

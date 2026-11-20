@@ -9,10 +9,8 @@ import {
   ComponentEffect,
   CompositionIssue,
   GlassViscosityMetadata,
-} from '../../types';
-import {
   ModelSelectionResult,
-} from '../../interfaces/viscosity-parameters.interface';
+} from '../../types';
 import { ViscosityModel } from '../../enums/viscosity-model.enum';
 import { ViscosityModelType } from '../../enums/viscosity-model-type.enum';
 import { ConfidenceLevel } from '../../enums/confidence-level.enum';

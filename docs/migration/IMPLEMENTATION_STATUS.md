@@ -94,7 +94,7 @@
 - [x] `refractoriness` shapes → `types/` + `utils/refractoriness-type-guards.ts` (`RefractorinessTypeGuards`) — Phase 6.3
 - [x] `shrinkage-calculator` shapes → `types/` + `utils/shrinkage-type-guards.ts` (`ShrinkageTypeGuards`) — Phase 6.3
 - [x] `thermal-performance` shapes → `types/` + `utils/thermal-performance-type-guards.ts` (`ThermalPerformanceTypeGuards`) — Phase 6.3
-- [x] `viscosity-parameters.interface.ts`
+- [x] `viscosity-parameters` shapes → `types/` (Vtf*/Lakatos/Fluegel/Slag/ModelSelection) — Phase 6.3
 
 ### Data interfaces (2 / 2, under `data/interfaces/`)
 - [x] `glass-viscosity-validation.interface.ts`
@@ -365,7 +365,7 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 - [x] **Phase 5** — `thermal-distribution`: CP5.0 bit-identical goldens; eigenvalue/series/characteristic-length → static classes; BC3 series split by geometry; `toProfileOptions` on service; `ThermalSeriesTemp`/`ThermalSeriesMean` extract (service ≤300); structure + file-length baselines shrunk.
 - [x] **Phase 6.1** — refractory constants: `*.constants.ts` renames; `CALCULATION_CONSTANTS` / `BLEND_OPTIMIZER_CONSTANTS` single exports; `BlendOptimizerScenarios`; viscosity coefficients → `data/viscosity-parameters.data.ts`.
 - [x] **Phase 6.2** — viscosity enums split (`ViscosityModel` / `ViscosityModelType` / `ConfidenceLevel` / `ExtrapolationRisk` + `VISCOSITY_MODEL_NAMES`); `GlassViscosityModelDto` / `ConversionDirectionDto` → `enums/`; water-demand DTO uses `WorkabilityType`.
-- [x] **Phase 6.3 (partial)** — through `glass-viscosity` → `types/` + type-guard classes. Next: `viscosity-parameters`.
+- [x] **Phase 6.3** — refractory `interfaces/` multi-exports → `types/*.type.ts` + `*TypeGuards` static classes; structure baselines cleared for those files. Leftover single-file: `component-property.interface.ts`. Next: 6.4 utils.
 - [x] **Huber 2019 viscosity-of-gases → compound-data** — OCR’d `shared/processed/viscosity-gases/crc-huber-2019/`; source `shared/sources/viscosity-gases-huber-2019.json`; parser `compound_data.parsers.viscosity_gases` joins 35 CAS rows as `raw` viscosity/gas (null μ cells omitted; Air skipped). RefKey `Huber2019` only (2011 table not retained). Tests: `python/tests/compound_data/test_viscosity_gases.py`. Spec: [`COMPOUND_DATA_SPEC.md`](../scripts/COMPOUND_DATA_SPEC.md).
 - [x] **Gas-viscosity equation precision order** — Huber2019 MAPE ranks sources Perry8 → Yaws1999 → VDI2010 → White3 (`VISCOSITY_GAS_SOURCE_PRIORITY`); per-CAS `def` from `shared/sources/viscosity-gas-defaults.json` (35 compounds). Huber `raw` stores `bestEquation`, `mape_pct`, `max_abs_pct` (2 decimal %), `nCompared`. Report: `tmp/reports/python/compound-data/viscosity-equation-precision.json`. Tests: `test_viscosity_gas_priority.py`, `test_viscosity_gases.py`.
 - [x] **Transport μ uses viscosity `def`** — removed Sutherland hard-preference in `TransportService` / `CompoundFluidPropsService`; both call `CompoundPropertyResolver` so Huber-ranked defaults apply.
