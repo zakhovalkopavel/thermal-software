@@ -9,7 +9,7 @@ import {
   ComponentEffect,
   CompositionIssue,
   GlassViscosityMetadata,
-} from '../../interfaces/glass-viscosity.interface';
+} from '../../types';
 import {
   ModelSelectionResult,
 } from '../../interfaces/viscosity-parameters.interface';

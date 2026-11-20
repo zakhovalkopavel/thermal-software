@@ -140,21 +140,27 @@ export { RefractorinessTypeGuards } from '../utils/refractoriness-type-guards';
 // Viscosity interfaces removed: superseded by glass-viscosity interfaces and new spec.
 
 // ============================================================
-// GLASS VISCOSITY INTERFACES
+// GLASS VISCOSITY (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   GlassViscosityInput,
   ASTMFixedPoint,
-  GlassViscosityResult,
+  ModelParameters,
+  ModelInfo,
+  FixedPointSpans,
+  FixedPoints,
+  CompositionIssue,
+  ValidationStatus,
+  ComponentEffect,
+  ComponentBreakdown,
   GlassViscosityMetadata,
+  GlassViscosityResult,
   GlassProcessingWindow,
   GlassViscosityValidationResult,
   GlassViscosityValidationError,
   GlassViscosityValidationWarning,
-  isGlassViscosityInput,
-  isGlassViscosityResult,
-  isASTMFixedPoint,
-} from './glass-viscosity.interface';
+} from '../types';
+export { GlassViscosityTypeGuards } from '../utils/glass-viscosity-type-guards';
 
 // ============================================================
 // MINERAL PHASE (types + guards; Phase 6.3)

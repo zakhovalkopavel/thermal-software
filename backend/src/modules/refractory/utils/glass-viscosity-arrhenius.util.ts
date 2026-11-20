@@ -24,7 +24,7 @@ import {
   ValidationStatus,
   GlassViscosityMetadata,
   ComponentBreakdown,
-} from '../interfaces/glass-viscosity.interface';
+} from '../types';
 import { ModelSelectionResult } from '../interfaces/viscosity-parameters.interface';
 import { ViscosityModel } from '../enums/viscosity-model.enum';
 import { ViscosityModelType } from '../enums/viscosity-model-type.enum';

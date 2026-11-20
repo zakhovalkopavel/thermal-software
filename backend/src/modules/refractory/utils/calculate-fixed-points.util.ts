@@ -5,7 +5,7 @@
  * solver changes (VTF, Arrhenius, …).
  */
 import { ASTM_FIXED_POINT_LOG_ETA } from '../constants/astm-fixed-point-log-eta.constants';
-import type { FixedPoints } from '../interfaces/glass-viscosity.interface';
+import type { FixedPoints } from '../types';
 
 /**
  * Evaluate all fixed points and spans via a temperature-at-log-η callback.

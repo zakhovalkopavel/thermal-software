@@ -28,7 +28,7 @@ import {
   ModelSelectionResult,
 } from '../interfaces/viscosity-parameters.interface';
 import { levenbergMarquardt } from '../../../common/utils/regression';
-import { FixedPoints } from '../interfaces/glass-viscosity.interface';
+import type { FixedPoints } from '../types';
 import { calculateFixedPoints } from './calculate-fixed-points.util';
 import {
   LAKATOS_1976_COEFFICIENTS,
