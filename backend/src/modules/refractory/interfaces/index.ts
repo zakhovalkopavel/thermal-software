@@ -73,9 +73,9 @@ export type {
 export { ShrinkageTypeGuards } from '../utils/shrinkage-type-guards';
 
 // ============================================================
-// PHASE EQUILIBRIUM INTERFACES
+// PHASE EQUILIBRIUM (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   PhaseEquilibriumInput,
   PhaseComponent,
   MineralPhase,
@@ -88,11 +88,8 @@ export {
   PhaseEquilibriumValidationWarning,
   EutecticPoint,
   LiquidusResult,
-  isPhaseEquilibriumInput,
-  isPhaseData,
-  isMineralPhase,
-  isPhaseEquilibriumResult,
-} from './phase-equilibrium.interface';
+} from '../types';
+export { PhaseEquilibriumTypeGuards } from '../utils/phase-equilibrium-type-guards';
 
 // ============================================================
 // THERMAL PERFORMANCE INTERFACES

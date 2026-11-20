@@ -11,7 +11,6 @@
 refractory/
 ├── interfaces/          ✅ TypeScript Interfaces (NEW)
 │   ├── index.ts        ← Central export point
-│   ├── phase-equilibrium.interface.ts
 │   ├── thermal-performance.interface.ts
 │   ├── refractoriness.interface.ts
 │   ├── glass-viscosity.interface.ts
@@ -21,7 +20,8 @@ refractory/
 ├── utils/psd-type-guards.ts              ✅ PsdTypeGuards
 ├── utils/packing-type-guards.ts          ✅ PackingTypeGuards
 ├── utils/shrinkage-type-guards.ts        ✅ ShrinkageTypeGuards
-├── utils/blend-optimizer-type-guards.ts  ✅ BlendOptimizerTypeGuards
+├── utils/blend-optimizer-type-guards.ts      ✅ BlendOptimizerTypeGuards
+├── utils/phase-equilibrium-type-guards.ts    ✅ PhaseEquilibriumTypeGuards
 │
 └── dto/                ✅ NestJS DTOs (Validation)
     ├── blend-optimization.dto.ts
@@ -191,7 +191,10 @@ ShrinkageTypeGuards.isShrinkageResult()
 BlendOptimizerTypeGuards.isFraction()
 BlendOptimizerTypeGuards.isBlendOptimizationOptions()
 BlendOptimizerTypeGuards.isBlendOptimizationRequest()
-isPhaseEquilibriumInput()
+PhaseEquilibriumTypeGuards.isPhaseEquilibriumInput()
+PhaseEquilibriumTypeGuards.isPhaseData()
+PhaseEquilibriumTypeGuards.isMineralPhase()
+PhaseEquilibriumTypeGuards.isPhaseEquilibriumResult()
 isThermalInput()
 isThermalConductivityInput()
 isRefractorinessInput()

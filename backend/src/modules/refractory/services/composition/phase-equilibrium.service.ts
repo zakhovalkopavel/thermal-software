@@ -7,7 +7,7 @@ import {
   PhaseData,
   SolidPhaseData,
   MineralPhase,
-} from '../../interfaces/phase-equilibrium.interface';
+} from '../../types';
 import {
   calculateLiquidusEffect,
   calculateLiquidCompositionWithEnrichment,

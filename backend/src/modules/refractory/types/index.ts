@@ -41,3 +41,16 @@ export type { ValidationWarning } from './validation-warning.type';
 // Blend-local PSDResult / PackingResult: import from
 // ./blend-optimizer-psd-result.type and ./blend-optimizer-packing-result.type
 // (same names as calculator types; not re-exported here to avoid collision).
+
+export type { PhaseEquilibriumInput } from './phase-equilibrium-input.type';
+export type { PhaseComponent } from './phase-component.type';
+export type { MineralPhase } from './mineral-phase.type';
+export type { PhaseData } from './phase-data.type';
+export type { SolidPhaseData } from './solid-phase-data.type';
+export type { PhaseEquilibriumMetadata } from './phase-equilibrium-metadata.type';
+export type { PhaseEquilibriumResult } from './phase-equilibrium-result.type';
+export type { PhaseEquilibriumValidationResult } from './phase-equilibrium-validation-result.type';
+export type { PhaseEquilibriumValidationError } from './phase-equilibrium-validation-error.type';
+export type { PhaseEquilibriumValidationWarning } from './phase-equilibrium-validation-warning.type';
+export type { EutecticPoint } from './eutectic-point.type';
+export type { LiquidusResult } from './liquidus-result.type';
