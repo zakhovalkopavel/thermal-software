@@ -35,7 +35,12 @@ export class GasViscosity {
    */
   static diluteResult(compound: CompoundValue, T_K: number): EvaluationResult {
     if (compound.viscosity.values.length > 0) {
-      return new CompoundPropertyResolver(compound).viscosityResult(T_K);
+      const fromData = new CompoundPropertyResolver(compound).viscosityResult(T_K);
+      // Unbounded / mis-ranked correlations can go non-physical at extreme T;
+      // Chapman–Enskog is the dilute fallback when μ ≤ 0 or non-finite.
+      if (Number.isFinite(fromData.value) && fromData.value > 0) {
+        return fromData;
+      }
     }
     const ce = ChapmanEnskogViscosity.fromCompound(compound, T_K);
     return {

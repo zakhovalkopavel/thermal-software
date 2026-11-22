@@ -15,7 +15,7 @@
 
 import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-properties/compound-property-resolver';
 import { RefKey } from '../../../../src/common/thermal/enum/ref-key.enum';
-import { CO2, N2 } from '../../../../src/common/thermal/compound/gas';
+import { CH4, CO2, N2 } from '../../../../src/common/thermal/compound/gas';
 import { CompoundValue } from '../../../../src/common/thermal/types/compound-value.type';
 import { EquationTypeDto } from '../../../../src/common/thermal/dto/equation-type.dto';
 import { compoundNasa7, compoundNasa9 } from '../../../../src/common/thermal/utils/nasa';
@@ -201,6 +201,20 @@ describe('CompoundPropertyResolver — transport (CO2)', () => {
 
   it('viscosity increases with T (quadratic fit for CO2)', () => {
     expect(resolver.viscosity(800)).toBeGreaterThan(resolver.viscosity(300));
+  });
+});
+
+describe('CompoundPropertyResolver — CH4 viscosity outside all published windows', () => {
+  const resolver = new CompoundPropertyResolver(CH4);
+
+  it('clamps via a ranged correlation instead of unbounded VDI (non-physical μ)', () => {
+    // def is VDI2010 quartic (no min/max); Perry/Yaws tops out at ≤1000 K.
+    // At bed flame temperatures the unbounded quartic goes negative — resolveEntry
+    // must pick a ranged equation and clamp.
+    const result = resolver.viscosityResult(2300);
+    expect(result.value).toBeGreaterThan(0);
+    expect(result.validity.action).toBe('clamped');
+    expect(result.validity.max).toBeLessThanOrEqual(1000);
   });
 });
 

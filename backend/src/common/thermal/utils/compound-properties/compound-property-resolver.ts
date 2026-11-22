@@ -11,6 +11,11 @@ function coversTemperature(entry: EquationValue, T: number): boolean {
   return entry.min != null && entry.max != null && T >= entry.min && T <= entry.max;
 }
 
+/** True when the equation publishes a finite [min, max] (so out-of-range T can clamp). */
+function hasFiniteRange(entry: EquationValue): boolean {
+  return entry.min != null && entry.max != null;
+}
+
 /**
  * Resolves a single property value (Cp, μ, λ …) from a compound's
  * multi-approximation bucket.
@@ -20,7 +25,8 @@ function coversTemperature(entry: EquationValue, T: number): boolean {
  *   2. `preferred` as RefKey            → first entry whose ref === preferred
  *   3. when T is given and preferred is unset:
  *        prefer an equation whose [min, max] covers T (def if it covers, else first covering)
- *   4. undefined / no covering entry    → values[def]  (then clamp+warn at eval time)
+ *   4. no covering entry → prefer a ranged equation (def if ranged, else first ranged)
+ *      so eval can clamp+warn; only then unbounded `def` (no clamp)
  *
  * If the preferred entry is not found, falls back to the default silently.
  */
@@ -43,6 +49,11 @@ function resolveEntry(
     if (defEntry && coversTemperature(defEntry, T)) return defEntry;
     const covering = values.find(v => coversTemperature(v, T));
     if (covering) return covering;
+    // Outside every published window: clamp via a ranged correlation rather than
+    // an unbounded def (e.g. VDI quartic μ for CH4 goes negative above ~2200 K).
+    if (defEntry && hasFiniteRange(defEntry)) return defEntry;
+    const ranged = values.find(v => hasFiniteRange(v));
+    if (ranged) return ranged;
   }
 
   return values[def];
