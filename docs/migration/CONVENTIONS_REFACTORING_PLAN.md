@@ -1,6 +1,6 @@
 # Conventions Refactoring Plan
 
-**Status:** In progress — Phase 6.5 services/controller done; next Phase 7 (docs > 500); optional leftover `component-property.interface.ts`  
+**Status:** In progress — Phase 7.1 docs split done (file-length baseline empty); next Phase 8 close-out; optional leftover `component-property.interface.ts`  
 
 
 
@@ -200,8 +200,8 @@ Do it as several PRs, in this order (each PR is one sub-step, each passes C1–C
 
 | Step | Action | Checkpoint |
 |------|--------|-----------|
-| 7.1 | Split the 15 docs over 500 lines by topic, each with an index/link from its parent (`algorithms/README.md`, `PACKING_MODELS.md`, `REFRACTORY_API_SPEC.md`, `TEST_SPECIFICATION.md`, …). Order by size, largest first. | `make doc-check` (links) passes after each split; baseline docs entries removed. |
-| 7.2 | Check `docs/` references to moved files / folders (`CONVENTIONS.md`, `COMMON_THERMAL_LIBRARY.md`, `INTERFACES_IMPLEMENTATION_INDEX.md`). | `make doc-check` green. |
+| 7.1 | Split the 15 docs over 500 lines by topic, each with an index/link from its parent (`algorithms/README.md`, `PACKING_MODELS.md`, `REFRACTORY_API_SPEC.md`, `TEST_SPECIFICATION.md`, …). Order by size, largest first. | ✅ All 15 split into ≤500 topic files + parent indexes; file-length baseline `{}`. |
+| 7.2 | Check `docs/` references to moved files / folders (`CONVENTIONS.md`, `COMMON_THERMAL_LIBRARY.md`, `INTERFACES_IMPLEMENTATION_INDEX.md`). | ✅ Parent indexes linked; stale heat-conduction + compound-data paths fixed; `make doc-check` / `doc-links` green (orphan warnings only). |
 
 ### Phase 8 — Close-out
 

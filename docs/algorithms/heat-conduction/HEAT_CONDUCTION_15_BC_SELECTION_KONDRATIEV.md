@@ -109,7 +109,7 @@ $$m = \psi \cdot \bar{a} \cdot K_K$$
 - $\psi = 1.0$ when $Bi \to \infty$ (BC I — maximum cooling velocity)
 - $\psi \to 0$ when $Bi \to 0$
 
-For arbitrary geometry (Section 6 of [HEAT_CONDUCTION_08_COMPLEX_GEOMETRIES.md](HEAT_CONDUCTION_08_COMPLEX_GEOMETRIES.md)), $\psi$ is approximated by:
+For arbitrary geometry (Section 6 of [HEAT_CONDUCTION_16_COMPLEX_GEOMETRIES.md](HEAT_CONDUCTION_16_COMPLEX_GEOMETRIES.md)), $\psi$ is approximated by:
 $$\psi = \frac{Bi^*}{\sqrt{(Bi^*)^2 + 1.43 \cdot Bi^* + 1}}$$
 
 ---

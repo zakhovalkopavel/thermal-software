@@ -35,7 +35,7 @@ $$Bi^* = \frac{\alpha_{\text{eff}} \cdot R_V}{\bar{\lambda}}$$
 
 ### 2.3. Mathematical Mapping
 
-The dimensionless mean volumetric temperature $\bar{\Theta}(\tau)$ of the arbitrary body is approximated using the Solid Sphere formulation (see [HEAT_CONDUCTION_04_BC3_CYLINDER_SPHERE.md](HEAT_CONDUCTION_04_BC3_CYLINDER_SPHERE.md)), substituting $Fo \to Fo^*$ and $Bi \to Bi^*$.
+The dimensionless mean volumetric temperature $\bar{\Theta}(\tau)$ of the arbitrary body is approximated using the Solid Sphere formulation (see [HEAT_CONDUCTION_10_BC3_SPHERE.md](HEAT_CONDUCTION_10_BC3_SPHERE.md)), substituting $Fo \to Fo^*$ and $Bi \to Bi^*$.
 
 This scaling matches experimental cooling curves of irregular geometries within an engineering tolerance of **5–12%**.
 
@@ -176,5 +176,5 @@ $$R_{3,\text{eq}} = R_{1,\text{eq}} \cdot \frac{W_z}{W_x}$$
 
 ### 6.3. Final Handoff
 
-The computed values ($R_{1,\text{eq}}, R_{2,\text{eq}}, R_{3,\text{eq}}$) are passed directly into the Finite Parallelepiped solver ([HEAT_CONDUCTION_05_BC3_HOLLOW_MULTI.md Part B](HEAT_CONDUCTION_05_BC3_HOLLOW_MULTI.md)), which evaluates independent Biot numbers $Bi_1, Bi_2, Bi_3$ and executes the multi-dimensional analytical convergence loop.
+The computed values ($R_{1,\text{eq}}, R_{2,\text{eq}}, R_{3,\text{eq}}$) are passed directly into the Finite Parallelepiped solver ([HEAT_CONDUCTION_12_BC3_PARALLELEPIPED.md](HEAT_CONDUCTION_12_BC3_PARALLELEPIPED.md)), which evaluates independent Biot numbers $Bi_1, Bi_2, Bi_3$ and executes the multi-dimensional analytical convergence loop.
 
