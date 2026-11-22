@@ -144,7 +144,7 @@ The `search` length limit is `MATERIAL_CATALOG_CONSTANTS.SEARCH_MAX_LENGTH` (64)
 
 **Module**
 
-`modules/refractory/refractory.module.ts`: `controllers: [RefractoryController, MaterialCatalogController]` (order matters, see §1.3); add `MaterialCatalogService`, `ParticleSizeCatalogService` and `MixComponentCatalogService` to `providers`; add `MaterialCatalogService` and `MixComponentCatalogService` to `exports`.
+`modules/refractory/refractory.module.ts`: calculation controllers (`RefractoryCompositionController`, `RefractoryPackingController`, `RefractoryThermalController`) then `MaterialCatalogController` (order matters, see §1.3); add `MaterialCatalogService`, `ParticleSizeCatalogService` and `MixComponentCatalogService` to `providers`; add `MaterialCatalogService` and `MixComponentCatalogService` to `exports`.
 
 ### 1.5 Tests
 

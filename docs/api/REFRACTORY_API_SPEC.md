@@ -1,7 +1,7 @@
 # Refractory API Specification
 
 **Base path:** `/api/v1/refractory`  
-**Controller:** `RefractoryController`  
+**Controllers:** `RefractoryCompositionController`, `RefractoryPackingController`, `RefractoryThermalController` (shared `@Controller('refractory')`; routes unchanged)  
 **Swagger UI:** `http://localhost/api/docs`  
 **Tag:** `Refractory Calculations`
 
@@ -756,7 +756,7 @@ Rules:
 - **Groups (`/:groupRoute`, `/material-groups`):** a material with several groups appears in each. Order and labels come from `MATERIAL_GROUP_ROUTES`.
 - **Categories (`/material-categories`):** each material once, under its primary group `materialGroup[0]`.
 - **Mix components (`/mix-components`):** primary group in `MIX_COMPONENT_GROUPS` (binder, oxide, silicate, clay, carbide, nitride, borate, fluoride) and id not in `MIX_EXCLUDED_MATERIAL_IDS` (`paper_clay`). 67 materials today. Glasses carry silicate / oxide as secondary groups and are therefore not mix components.
-- **Route order:** `/:groupRoute` is the last handler of `MaterialCatalogController`, and the controller is registered after `RefractoryController`. New static `GET /refractory/<name>` routes must be declared above it.
+- **Route order:** `/:groupRoute` is the last handler of `MaterialCatalogController`, and the controller is registered after the calculation controllers. New static `GET /refractory/<name>` routes must be declared above it.
 
 `MaterialEntryDto`: `materialId`, `name`, `type`, `materialGroup[]` (first = primary), `orderNumber`, `description`, `composition` (wt% as stored), `rho_true_after_firing_kgm3`, `availableParticleSizes?`, `particleSize?`, `thermalProperties?` (`thermalConductivity_WmK?`, `specificHeat_JkgK?`, `thermalExpansion_perK?`), `mechanicalProperties?`, `chemicalShrinkage_volFrac`, `activationEnergy_Jmol`, `meltingPoint_C`, `mineralogy?`, `sourceUrl?`, `supplier?`, `grade?`.
 

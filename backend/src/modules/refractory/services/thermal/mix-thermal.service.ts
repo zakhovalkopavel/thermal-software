@@ -13,22 +13,10 @@ import { ThermalReferenceSource } from '../../enums/thermal-reference-source.enu
 import { toFiredPhases } from '../../utils/fired-phases.util';
 import { maxwellEuckenConductivity } from '../../utils/maxwell-eucken-conductivity.util';
 import { phaseSpecificHeat } from '../../utils/phase-specific-heat.util';
+import type { MaterialBasis } from '../../types/material-basis.type';
 import { MixComponentCatalogService } from '../catalog/mix-component-catalog.service';
 
 const air = new CompoundPropertyResolver(Air);
-
-type MaterialBasis = {
-  material: MaterialEntryDto;
-  firedMassFraction: number;
-  volumeFraction: number;
-  phases_wt: Record<string, number>;
-  lambdaReference_WmK: number;
-  lambdaReferenceSource: ThermalReferenceSource;
-  conductionLaw: ConductionLaw;
-  /** Library Cp used for the phases without NASA-9 data; undefined → covered phases rescaled */
-  specificHeatReference_JkgK?: number;
-  heatCapacityCoverage_wt: number;
-};
 
 /**
  * MixThermalService
@@ -112,11 +100,11 @@ export class MixThermalService {
 
     return {
       porosity: dto.porosity,
-      lossOnIgnition_wt: round(raw.reduce((sum, r) => sum + r.w * r.lossOnIgnition_wt, 0), 3),
-      firedPhases_wt: roundValues(firedPhases_wt, 3),
-      heatCapacityCoverage_wt: round(heatCapacityCoverage_wt, 3),
-      trueDensity_kgm3: round(trueDensity_kgm3, 1),
-      bulkDensity_kgm3: round(bulkDensity_kgm3, 1),
+      lossOnIgnition_wt: this.round(raw.reduce((sum, r) => sum + r.w * r.lossOnIgnition_wt, 0), 3),
+      firedPhases_wt: this.roundValues(firedPhases_wt, 3),
+      heatCapacityCoverage_wt: this.round(heatCapacityCoverage_wt, 3),
+      trueDensity_kgm3: this.round(trueDensity_kgm3, 1),
+      bulkDensity_kgm3: this.round(bulkDensity_kgm3, 1),
       materials: bases.map(b => this.toMaterialDto(b)),
       points,
       warnings,
@@ -193,22 +181,24 @@ export class MixThermalService {
   private toMaterialDto(basis: MaterialBasis): MixThermalMaterialDto {
     return {
       materialId: basis.material.materialId,
-      firedMassFraction: round(basis.firedMassFraction, 4),
-      volumeFraction: round(basis.volumeFraction, 4),
-      firedPhases_wt: roundValues(basis.phases_wt, 3),
+      firedMassFraction: this.round(basis.firedMassFraction, 4),
+      volumeFraction: this.round(basis.volumeFraction, 4),
+      firedPhases_wt: this.roundValues(basis.phases_wt, 3),
       trueDensity_kgm3: basis.material.rho_true_after_firing_kgm3,
-      lambdaReference_WmK: round(basis.lambdaReference_WmK, 3),
+      lambdaReference_WmK: this.round(basis.lambdaReference_WmK, 3),
       lambdaReferenceSource: basis.lambdaReferenceSource,
       conductionLaw: basis.conductionLaw,
-      heatCapacityCoverage_wt: round(basis.heatCapacityCoverage_wt, 3),
+      heatCapacityCoverage_wt: this.round(basis.heatCapacityCoverage_wt, 3),
     };
   }
-}
 
-function round(value: number, digits: number): number {
-  return Number(value.toFixed(digits));
-}
+  private round(value: number, digits: number): number {
+    return Number(value.toFixed(digits));
+  }
 
-function roundValues(values: Record<string, number>, digits: number): Record<string, number> {
-  return Object.fromEntries(Object.entries(values).map(([key, value]) => [key, round(value, digits)]));
+  private roundValues(values: Record<string, number>, digits: number): Record<string, number> {
+    return Object.fromEntries(
+      Object.entries(values).map(([key, value]) => [key, this.round(value, digits)]),
+    );
+  }
 }

@@ -9,6 +9,7 @@ export type { PSDValidationWarning } from './psd-validation-warning.type';
 export type { PackingInput } from './packing-input.type';
 export type { CPMCalibration } from './cpm-calibration.type';
 export type { CPMInput } from './cpm-input.type';
+export type { MaterialBasis } from './material-basis.type';
 export type { FurnasInput } from './furnas-input.type';
 export type { PackingResult } from './packing-result.type';
 export type { PackingResultDetailed } from './packing-result-detailed.type';

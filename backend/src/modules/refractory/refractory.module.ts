@@ -1,8 +1,12 @@
 import { Module } from '@nestjs/common';
-import { RefractoryController } from './controllers/refractory.controller';
+import { RefractoryCompositionController } from './controllers/refractory-composition.controller';
+import { RefractoryPackingController } from './controllers/refractory-packing.controller';
+import { RefractoryThermalController } from './controllers/refractory-thermal.controller';
 import { MaterialCatalogController } from './controllers/material-catalog.controller';
 import { PhaseEquilibriumService } from './services/composition/phase-equilibrium.service';
 import { BlendOptimizerService } from './services/particle-packing/blend-optimizer.service';
+import { BlendOptimizerEvaluateService } from './services/particle-packing/blend-optimizer-evaluate.service';
+import { BlendOptimizerExpandService } from './services/particle-packing/blend-optimizer-expand.service';
 import { PSDCalculatorService } from './services/particle-packing/psd-calculator.service';
 import { PackingService } from './services/particle-packing/packing.service';
 import { ShrinkageService } from './services/thermal/shrinkage.service';
@@ -21,10 +25,17 @@ import { MixThermalService } from './services/thermal/mix-thermal.service';
 
 @Module({
   // MaterialCatalogController ends with GET /refractory/:groupRoute and must stay last.
-  controllers: [RefractoryController, MaterialCatalogController],
+  controllers: [
+    RefractoryCompositionController,
+    RefractoryPackingController,
+    RefractoryThermalController,
+    MaterialCatalogController,
+  ],
   providers: [
     PhaseEquilibriumService,
     BlendOptimizerService,
+    BlendOptimizerEvaluateService,
+    BlendOptimizerExpandService,
     PSDCalculatorService,
     PackingService,
     ShrinkageService,

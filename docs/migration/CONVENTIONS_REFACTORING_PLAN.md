@@ -1,6 +1,6 @@
 # Conventions Refactoring Plan
 
-**Status:** In progress — Phase 6.4 utils done; next 6.5 (services/controller > 300); optional leftover `component-property.interface.ts`  
+**Status:** In progress — Phase 6.5 services/controller done; next Phase 7 (docs > 500); optional leftover `component-property.interface.ts`  
 
 
 
@@ -194,7 +194,7 @@ Do it as several PRs, in this order (each PR is one sub-step, each passes C1–C
 | 6.2 | `enums/viscosity-model.enum.ts` (const + enum), DTO files with enums (`glass-viscosity.dto.ts`, `water-demand.dto.ts`) → enums into `enums/*.enum.ts` (old enums in `*.dto.ts` are tolerated legacy, so this is optional but cheap) | ✅ one enum/const per file; DTO enums → `enums/`; water demand uses `WorkabilityType`; Swagger values unchanged. |
 | 6.3 | `interfaces/` — 10 files with functions inside (22, 19, 18, 16, 15, 15, 14, 14, 10 exports …): move functions to static classes in `utils/`, split every declaration into its own file, convert data shapes to `type` (D1), move to `types/`. Do **one file per commit**. | ✅ Complete for multi-exports + type-guard classes (psd → viscosity-parameters). Leftover: `component-property.interface.ts` (single data-shape → `types/` when convenient). |
 | 6.4 | `utils/`: `glass-viscosity-vtf.util.ts` (633 lines, 9 functions), `viable-range-formatter`, `glass-composition` (class + function), `composition-analyzer` (class + interface), `glass-viscosity-arrhenius/iida` → static classes ≤ 300 lines; numerical-regression guard as in Phase 5. | ✅ Done (golden values unchanged). |
-| 6.5 | Services > 300 lines: `glass-viscosity.service.ts` 497, `blend-optimizer.service.ts` 446, `packing.service.ts` 352 (+ inline interface), `shrinkage.service.ts` 341, `mix-thermal.service.ts` (module-level function); controller `refractory.controller.ts` 438 → thin, split by resource, routes identical. | Extend thin tests first (IMPLEMENTATION_STATUS lists several 20–40-line spec files). |
+| 6.5 | Services > 300 lines: `glass-viscosity.service.ts` 497, `blend-optimizer.service.ts` 446, `packing.service.ts` 352 (+ inline interface), `shrinkage.service.ts` 341, `mix-thermal.service.ts` (module-level function); controller `refractory.controller.ts` 438 → thin, split by resource, routes identical. | ✅ All ≤300; controller → composition/packing/thermal; packing V1/V2 cleared; file-length refractory entries removed. |
 
 ### Phase 7 — Documentation limits (docs/ only, no code)
 

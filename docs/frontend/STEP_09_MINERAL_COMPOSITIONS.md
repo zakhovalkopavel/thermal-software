@@ -3,7 +3,7 @@
 **Priority:** HIGH  
 **Depends on:** [STEP_02_SHARED_CALC_COMPONENTS.md](STEP_02_SHARED_CALC_COMPONENTS.md), [STEP_03_MATERIALS_MODULE.md](STEP_03_MATERIALS_MODULE.md)  
 **Frontend root:** `frontend/src/modules/materials/sections/mineral-compositions/`  
-**Backend:** `refractory.controller.ts` (+ `POST /refractory/mix/composition` — approved and implemented, §2; `POST /refractory/phase-equilibrium` takes the fractions, [FULL_PHASE_EQUILIBRIUM.md](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md))
+**Backend:** `refractory-thermal.controller.ts` / `refractory-composition.controller.ts` (+ `POST /refractory/mix/composition` — approved and implemented, §2; `POST /refractory/phase-equilibrium` takes the fractions, [FULL_PHASE_EQUILIBRIUM.md](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md))
 
 ---
 
@@ -100,7 +100,7 @@ export type MixFraction = {
 
 ### 2.1 Endpoint
 
-`POST /refractory/mix/composition` — `@HttpCode(200)`, tag `Refractory Calculations`, handler in the existing `RefractoryController`.
+`POST /refractory/mix/composition` — `@HttpCode(200)`, tag `Refractory Calculations`, handler in `RefractoryThermalController`.
 
 ```json
 // request — mix components only (GET /refractory/mix-components)
@@ -173,7 +173,7 @@ Mix eligibility (`MIX_COMPONENT_GROUPS`, `MIX_EXCLUDED_MATERIAL_IDS`) is defined
 | `dto/non-oxide-components.dto.ts` | `NonOxideComponentsDto` | optional `carbide`, `nitride`, `fluoride`, `carbon`, `other` (wt% of fired mass) |
 | `dto/mix-composition-result.dto.ts` | `MixCompositionResultDto` | `basis: CompositionBasis`, `lossOnIgnition_wt`, `oxides_wt: Record<string, number>`, `nonOxideComponents_wt: NonOxideComponentsDto`, `droppedMetals_wt`, `trueDensity_kgm3`, `warnings: string[]` |
 | `services/mix-composition.service.ts` | `MixCompositionService` | `calculate(dto: MixCompositionInputDto): MixCompositionResultDto`; injects `MixComponentCatalogService` (`getMixComponent`: 404 unknown, 400 not a mix component / excluded); private helpers for key classification, mixing and density |
-| `controllers/refractory.controller.ts` | existing `RefractoryController` | add `@Post('mix/composition') @HttpCode(HttpStatus.OK) calculateMixComposition(@Body() dto: MixCompositionInputDto): MixCompositionResultDto` → `mixCompositionService.calculate(dto)` |
+| `controllers/refractory-thermal.controller.ts` | `RefractoryThermalController` | `@Post('mix/composition')` → `mixCompositionService.calculate(dto)` |
 | `refractory.module.ts` | existing | add `MixCompositionService` to `providers` and `exports` |
 
 `OxideCompositionDto` (`dto/common/common.dto.ts`) is removed in step 3: after this change, the old `/phase-equilibrium`, `/mineral-phases`, `/refractoriness` and `/thermal-conductivity` DTOs no longer use it, and nothing else does.

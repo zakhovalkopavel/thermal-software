@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BlendOptimizerService } from '../../../../../src/modules/refractory/services/particle-packing/blend-optimizer.service';
+import { BlendOptimizerEvaluateService } from '../../../../../src/modules/refractory/services/particle-packing/blend-optimizer-evaluate.service';
+import { BlendOptimizerExpandService } from '../../../../../src/modules/refractory/services/particle-packing/blend-optimizer-expand.service';
 import { PSDCalculatorService } from '../../../../../src/modules/refractory/services/particle-packing/psd-calculator.service';
 import { PackingService } from '../../../../../src/modules/refractory/services/particle-packing/packing.service';
 import { ShrinkageService } from '../../../../../src/modules/refractory/services/thermal/shrinkage.service';
@@ -51,6 +53,8 @@ describe('BlendOptimizerService - Live Demo', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BlendOptimizerService,
+        BlendOptimizerEvaluateService,
+        BlendOptimizerExpandService,
         PSDCalculatorService,
         PackingService,
         ShrinkageService,

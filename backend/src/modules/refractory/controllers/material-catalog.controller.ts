@@ -28,7 +28,7 @@ import { ParticleSizeRangeDto } from '../dto/material-catalog/particle-size-rang
  *
  * `GET /refractory/:groupRoute` is a parameter route directly under
  * `/refractory`: it must stay the LAST handler here, and this controller must be
- * registered after `RefractoryController`. Declare any new static GET route above it.
+ * registered after the calculation controllers. Declare any new static GET route above it.
  */
 @ApiTags('materials')
 @ApiExtraModels(ParticleSizeRangeDto)
