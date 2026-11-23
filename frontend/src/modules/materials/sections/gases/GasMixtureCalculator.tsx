@@ -42,7 +42,7 @@ export function GasMixtureCalculator() {
   return (
     <CalculatorPage
       title="Gas mixture"
-      description="Cp, H, ρ, μ, λ, Pr and diffusion coefficients of a gas mixture versus temperature."
+      description="Cp, H, ρ, μ, ν, λ, Pr and diffusion coefficients of a gas mixture versus temperature (plot any available property)."
       inputs={
         <GasMixtureForm
           species={species}
@@ -65,7 +65,9 @@ export function GasMixtureCalculator() {
           error={result.error ?? gasList.error}
           hasResult={Boolean(request) && result.isComplete}
         >
-          {request && <GasMixtureResults request={request} rows={result.rows} />}
+          {request && (
+            <GasMixtureResults request={request} rows={result.rows} temperatureUnit={sweep.unit} />
+          )}
         </ResultPanel>
       }
     />

@@ -111,7 +111,7 @@ export function PureGasCalculator() {
   return (
     <CalculatorPage
       title="Pure gas"
-      description="Cp, Cv, γ, M, μ, ν, ρ, λ and Pr of pure gases versus temperature."
+      description="Cp, Cv, γ, M, μ, ν, ρ, λ and Pr of pure gases versus temperature (plot any available property)."
       inputs={
         <Stack spacing={2}>
           {unknownParam && <Alert severity="info">Unknown gas “{gasParam}” in the link — ignored.</Alert>}
@@ -136,7 +136,14 @@ export function PureGasCalculator() {
           error={result.allFailed ? result.firstError : gasList.error}
           hasResult={Boolean(request) && result.isComplete && !result.allFailed}
         >
-          {request && <PureGasResults request={request} rows={result.rows} gasList={list} />}
+          {request && (
+            <PureGasResults
+              request={request}
+              rows={result.rows}
+              gasList={list}
+              temperatureUnit={sweep.unit}
+            />
+          )}
         </ResultPanel>
       }
     />

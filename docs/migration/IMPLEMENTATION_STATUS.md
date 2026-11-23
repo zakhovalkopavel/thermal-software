@@ -16,7 +16,7 @@
 | **Refractory** | ~85% | All 11 services + RefractoryThermalService + material catalogue (read-only) + mix composition; tests partially complete |
 | **Thermodynamics** | ~55% | All 8 services + 3 controllers implemented; tests partial |
 | **Common thermal library** | ~70% | 16 gas compounds, composition, numeric utils |
-| **Frontend** | ~2% | Skeleton only — no pages or components yet |
+| **Frontend** | ~55% | Materials hub (gases, metals, refractories, glasses, mineral compositions / blend+phase); processes module; shared calc/charts UI |
 | **Furnace** | 0% | Not started |
 | **Recuperator** | 100% | Implemented — 4 modules: combustion, metals, thermal-exchange, recuperator |
 | **Combustion** | 100% | `backend/src/modules/combustion/` — 4 modes (solid direct, two-step, fluid, kinetic bed) on one enthalpy/equilibrium core; hydrocarbon gases + MAP-gas preset |
@@ -181,17 +181,19 @@ All input/output DTOs for fluid, dimensionless, geometry, numeric endpoints in `
 
 ---
 
-## Frontend — ~2%
+## Frontend — ~55%
 
 **Base path:** `frontend/src/`  
-Stack: React 19, Vite 7, MUI 7, React Query 5, React Router 7
+Stack: React 19, Vite 7, MUI 7, React Query 5, React Router 7  
+Architecture: [`docs/frontend/architecture_refactor/ARCHITECTURE.md`](../frontend/architecture_refactor/ARCHITECTURE.md)
 
-- [x] `App.tsx` (entry point only)
-- [x] `main.tsx`
-- [ ] Pages (0 / ~10)
-- [ ] Components (0)
-- [ ] API hooks (0)
-- [ ] Routing (0)
+- [x] App shell, router, materials + processes hubs
+- [x] Materials sections: gases (pure + mixture), metals, refractories, glasses, raw materials, mineral compositions
+- [x] Phase equilibrium + blend optimizer UI (`mineral-compositions/` — chemistry + blend APIs)
+- [x] Shared calc forms, result tables/cards, Highcharts wrappers, units/settings
+- [ ] Remaining process calculators / furnace UI
+- [ ] Full contract coverage vs Swagger
+- [x] Gas charts: plot any present property; T axis follows form °C/K (live unit sync)
 
 ---
 
@@ -348,9 +350,10 @@ Per-service checklist: [`docs/SERVICE_TEST_CHECKLIST.md`](../SERVICE_TEST_CHECKL
 ### Highest priority
 
 1. ~~**Expand thin refractory test files**~~ — done
-2. ~~**Add thermodynamics service tests**~~ — fluid-property, dimensionless-numbers/calculation, aerodynamics added; diffusion expanded; gas-properties/transport/radiation already present
-3. **Frontend: first pages** — Phase Equilibrium + Blend Optimizer (highest user value)
+2. ~~**Add thermodynamics service tests**~~ — done
+3. ~~**Frontend: Phase Equilibrium + Blend Optimizer**~~ — already in `mineral-compositions/`; gas charts now sync T unit + plot present keys
 4. **Phase 8.2 coverage report** — `docker compose exec backend npm run test:cov` when Docker is available
+5. **Frontend verify** — restore full `frontend/node_modules` (vitest/highcharts) and run `npm test` / `npm run typecheck`
 
 ### Conventions refactoring (complete on `refactoring`)
 

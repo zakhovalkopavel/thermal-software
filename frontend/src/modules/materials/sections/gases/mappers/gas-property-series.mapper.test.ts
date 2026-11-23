@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { kelvinToCelsius } from '@/shared/utils/kelvin-to-celsius';
 import { toGasPropertySeries } from './gas-property-series.mapper';
 
 describe('gases › gas-property-series', () => {
@@ -26,5 +27,14 @@ describe('gases › gas-property-series', () => {
         ],
       },
     ]);
+  });
+
+  it('maps the x axis through toX (e.g. °C)', () => {
+    const series = toGasPropertySeries(
+      [{ name: 'Nitrogen', rows: [{ T_K: 500, Cp_J_kgK: 1056.4 }] }],
+      'Cp_J_kgK',
+      kelvinToCelsius,
+    );
+    expect(series[0].data).toEqual([[kelvinToCelsius(500), 1056.4]]);
   });
 });

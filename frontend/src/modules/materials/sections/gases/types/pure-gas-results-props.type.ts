@@ -6,4 +6,6 @@ export type PureGasResultsProps = {
   request: PureGasRequest;
   rows: PureGasPropertyRow[];
   gasList: GasListEntry[];
+  /** Live form unit — plot/table T axis follows this without recalculating. */
+  temperatureUnit: 'C' | 'K';
 };

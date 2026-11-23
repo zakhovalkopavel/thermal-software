@@ -1,3 +1,4 @@
+/** Scalar / T-dependent properties shown in pure-gas result tables. */
 export const PURE_GAS_PROPERTIES = [
   { key: 'Cp_J_kgK', label: 'Cp', unit: 'J/(kg·K)' },
   { key: 'Cv_J_kgK', label: 'Cv', unit: 'J/(kg·K)' },
