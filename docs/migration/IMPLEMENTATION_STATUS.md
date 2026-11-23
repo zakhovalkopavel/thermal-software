@@ -58,30 +58,26 @@
 |---------|-------|-------|-------|
 | `blend-optimizer.service.ts` | 115 | ✅ Full (`blend-optimizer-demo.spec.ts`) | + evaluate/expand services; `BlendOptimizerRanking` |
 | `glass-viscosity.service.ts` | 283 | ✅ Full (206 + 88 + utils specs) | Model selection / result meta → static utils |
-| `phase-equilibrium.service.ts` | 275 | ⚠️ Skeleton (23 lines) | Needs expansion |
+| `phase-equilibrium.service.ts` | 275 | ✅ Expanded | eutectic/liquidus regimes, mineral phases, validation |
 | `packing.service.ts` | 112 | ✅ Good (83 lines) | CPMCalibration → `types/`; Furnas/fractions/resolve utils |
-| `refractoriness.service.ts` | 291 | ⚠️ Skeleton (33 lines) | Needs expansion |
-| `shrinkage.service.ts` | 153 | ⚠️ Skeleton (42 lines) | `ShrinkageModels` / `ShrinkageStages`; `calculateFromProfile` |
+| `refractoriness.service.ts` | 291 | ✅ Expanded | ISO/ASTM/GOST standards, duty class, component buckets |
+| `shrinkage.service.ts` | 153 | ✅ Expanded | complete + fromProfile; MSC defaults; validation |
 | `psd-calculator.service.ts` | 116 | ✅ Good (47 lines) | |
-| `mineral-phase.service.ts` | 235 | ⚠️ Skeleton (22 lines) | Needs expansion |
-| `thermal-performance.service.ts` | 123 | ⚠️ Skeleton (23 lines) | Needs expansion |
+| `mineral-phase.service.ts` | 235 | ✅ Expanded | alumina/silica/CAS/Mg/Fe/Cr/Zr/alkali + fallback |
+| `thermal-performance.service.ts` | 123 | ✅ Expanded | porosity, T-dependence, composition breakdown |
 | `water-demand.service.ts` | 148 | ✅ Full (376 lines) | |
-| `participation.service.ts` | 57 | ⚠️ Skeleton (27 lines) | Needs expansion |
+| `participation.service.ts` | 57 | ✅ Expanded | 1/√d model, size/mass sensitivity, edge cases |
 
-### DTOs (13 / 13)
-- [x] `blend-optimization.dto.ts`
-- [x] `common.dto.ts`
-- [x] `glass-viscosity.dto.ts`
-- [x] `mineral-phase.dto.ts`
-- [x] `packing-calculation.dto.ts`
-- [x] `packing-models.dto.ts`
-- [x] `participation.dto.ts`
-- [x] `phase-equilibrium.dto.ts`
-- [x] `psd-calculation.dto.ts`
-- [x] `refractoriness.dto.ts`
-- [x] `shrinkage-prediction.dto.ts`
-- [x] `thermal-conductivity.dto.ts`
-- [x] `water-demand.dto.ts`
+### DTOs (one class per file under `dto/`)
+- [x] blend-optimization / blend-optimization-options
+- [x] common: oxide-composition, fraction-input
+- [x] glass-viscosity (+ profile / convert DTOs)
+- [x] mineral-phase
+- [x] packing: packing-cpm, packing-furnas, packing-calculation, …
+- [x] participation / participation-fraction
+- [x] phase-equilibrium: phase-calculation, phase-calculation-response
+- [x] psd: andreasen-psd, funk-dinger-psd, psd-fraction
+- [x] refractoriness, shrinkage-prediction, thermal-conductivity, water-demand
 
 ### Interfaces (11 / 11)
 - [x] `blend-optimizer` shapes → `types/` + `utils/blend-optimizer-type-guards.ts` (`BlendOptimizerTypeGuards`) — Phase 6.3
@@ -350,9 +346,10 @@ Per-service checklist: [`docs/SERVICE_TEST_CHECKLIST.md`](../SERVICE_TEST_CHECKL
 
 ### Highest priority
 
-1. **Expand thin refractory test files** (phase-equilibrium, refractoriness, shrinkage, mineral-phase, thermal-performance, participation — all ~20-40 lines, need 100+ each)
+1. ~~**Expand thin refractory test files**~~ — done (phase-equilibrium, refractoriness, shrinkage, mineral-phase, thermal-performance, participation)
 2. **Add thermodynamics service tests** (fluid-property, dimensionless-calculation, gas-properties, dimensionless-numbers, diffusion, transport, aerodynamics)
 3. **Frontend: first pages** — Phase Equilibrium + Blend Optimizer (highest user value)
+4. **Phase 8.2 coverage report** — `docker compose exec backend npm run test:cov` when Docker is available
 
 ### Conventions refactoring (in progress on `refactoring`)
 
