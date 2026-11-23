@@ -17,7 +17,7 @@
 | **Thermodynamics** | ~55% | All 8 services + 3 controllers implemented; tests partial |
 | **Common thermal library** | ~70% | 16 gas compounds, composition, numeric utils |
 | **Frontend** | ~55% | Materials hub (gases, metals, refractories, glasses, mineral compositions / blend+phase); processes module; shared calc/charts UI |
-| **Furnace** | 0% | Not started |
+| **Furnace** | — | Superseded — see Combustion (bed mode) + Thermodynamics; do not create `modules/furnace/` |
 | **Recuperator** | 100% | Implemented — 4 modules: combustion, metals, thermal-exchange, recuperator |
 | **Combustion** | 100% | `backend/src/modules/combustion/` — 4 modes (solid direct, two-step, fluid, kinetic bed) on one enthalpy/equilibrium core; hydrocarbon gases + MAP-gas preset |
 | **Metals** | 100% | `backend/src/modules/metals/` — poly λ/ε (`aisi_304`, `mild_steel`) + synthesized ASM dataset (`shared/processed/metal-data`, spline λ/Cp/CTE/ρ); optional `lambdaModel=kCT56` Chebyshev F(C,T) carbon-steel alternative; `GET /metals/list`; Abu-Eishah pure-metal λ joined into compound-data; spec [`METAL_DATA_SPEC.md`](../scripts/METAL_DATA_SPEC.md), algorithm [`KCT56_CARBON_STEEL_CONDUCTIVITY.md`](../algorithms/metals/KCT56_CARBON_STEEL_CONDUCTIVITY.md) |
@@ -153,7 +153,7 @@ All input/output DTOs for fluid, dimensionless, geometry, numeric endpoints in `
 - [x] [`docs/api/THERMODYNAMICS_API_SPEC.md`](../api/THERMODYNAMICS_API_SPEC.md) — API conventions (input format, DTOs, Swagger rules)
 - [x] [`docs/api/REFRACTORY_API_SPEC.md`](../api/REFRACTORY_API_SPEC.md) — Refractory API conventions
 - [x] `docs/services/THERMODYNAMICS_SERVICES.md` — Service method reference (formulas, correlations) ← **new May 2026**
-- [ ] Algorithm entries in `docs/algorithms/README.md` — thermodynamics section pending
+- [x] Algorithm entries in `docs/algorithms/README.md` — thermodynamics section + `docs/algorithms/thermodynamics/`
 
 ---
 
@@ -191,23 +191,21 @@ Architecture: [`docs/frontend/architecture_refactor/ARCHITECTURE.md`](../fronten
 - [x] Materials sections: gases (pure + mixture), metals, refractories, glasses, raw materials, mineral compositions
 - [x] Phase equilibrium + blend optimizer UI (`mineral-compositions/` — chemistry + blend APIs)
 - [x] Shared calc forms, result tables/cards, Highcharts wrappers, units/settings
-- [ ] Remaining process calculators / furnace UI
+- [ ] Remaining process calculators (combustion/bed UI exists; other processes TBD)
 - [ ] Full contract coverage vs Swagger
 - [x] Gas charts: plot any present property; T axis follows form °C/K (live unit sync)
 
 ---
 
-## Furnace Module — 0%
+## Furnace Module — superseded
 
-**Target path:** `backend/src/modules/furnace/`
+**Do not implement** `backend/src/modules/furnace/`. Legacy `furnaceCombustion` landed in:
 
-- [ ] Module structure
-- [ ] Combustion service
-- [ ] Heat transfer service
-- [ ] Efficiency service
-- [ ] Stoichiometry service
+- **Thermodynamics** — transport, diffusion, aerodynamics (Ergun), Gunn Nu
+- **Combustion** — solid / fluid / **bed** (`POST /combustion/bed` = packed-bed layer model)
+- **Frontend** — `frontend/src/modules/processes/sections/combustion/`
 
-Spec: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md)
+Historical plan: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md) (banner: superseded).
 
 ---
 
@@ -328,12 +326,12 @@ Spec: [`STEP_05_DATABASE_MIGRATION.md`](STEP_05_DATABASE_MIGRATION.md)
 
 | Area | Spec files | Lines | Status |
 |------|-----------|-------|--------|
-| Refractory services | 12 | ~1070 | ⚠️ 4 full, 8 skeleton |
-| Refractory utils | 5 | 528 | ✅ Full |
-| Thermodynamics services | 1 (radiation) | 192 | ⚠️ Partial — 7 services missing |
-| Thermodynamics controllers | 1 | 332 | ✅ Full |
-| Common thermal | 1 | 188 | ✅ Full |
-| Conventions (file length + structure) | 4 | ~700 | ✅ Passing in Docker — file-length baseline (20 code + 15 docs); structure baseline (V1=55, V2=25, V3=25, V5=47, V6=6) in `structure-baseline.json`. Docs mount: `./docs:/docs:ro`. |
+| Refractory services | 12+ | expanded | ✅ Expanded beyond stubs (blend-optimizer still demo-oriented) |
+| Refractory data / utils | several | — | ✅ Component properties + eutectic systems specs |
+| Thermodynamics services | 9 | — | ✅ Aerodynamics, diffusion, dimensionless, gas-props, radiation, transport, … |
+| Thermodynamics controllers | 1+ | — | ✅ Fluid controller covered |
+| Common thermal | 1+ | — | ✅ Gas compounds + related |
+| Conventions (file length + structure) | 4 | — | ✅ Baselines empty; ratchet green (host or Docker) |
 
 ### Missing
 - [ ] Backend integration tests (0)
@@ -354,7 +352,8 @@ Per-service checklist: [`docs/SERVICE_TEST_CHECKLIST.md`](../SERVICE_TEST_CHECKL
 3. ~~**Frontend: Phase Equilibrium + Blend Optimizer**~~ — already in `mineral-compositions/`; gas charts now sync T unit + plot present keys
 4. **Phase 8.2 coverage report** — `docker compose exec backend npm run test:cov` when Docker is available
 5. **Frontend verify** — restore full `frontend/node_modules` (vitest/highcharts) and run `npm test` / `npm run typecheck`
-6. **Furnace module** — Stage B per [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md) / [`ROADMAP.md`](ROADMAP.md)
+6. ~~**Furnace module**~~ — superseded by Combustion + Thermodynamics (see section above)
+7. **Blend-optimizer unit tests** — replace/augment demo spec per `SERVICE_TEST_CHECKLIST.md`
 
 ### Conventions refactoring (complete on `refactoring`)
 
@@ -384,14 +383,17 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 - [x] **CoolProp dense μ + Chung mixture μ** — evaluable CoolProp `TRANSPORT.viscosity` (collision_integral / Rainwater–Friend / Batschinski–Hildebrand) via `GasViscosity`; mixture Wilke + Chung Δη below \(y\) switch, full Chung dense μ above; Poling Ch.9 E-table (not 10-3). `POST /thermodynamics/properties` passes `P_Pa` into `viscosityMix`. Algorithm: `docs/algorithms/thermodynamics/COOLPROP_CHUNG_VISCOSITY.md`.
 - [x] **Component registry formula keys** — `COMPONENT_PROPERTIES` / category maps keyed by chemical formula (`SiO2`, …) matching OxideCompositionDto; fixes silent no-op of refractoriness/liquidus/λ effects when API sent mixed-case formulas.
 - [x] **Component properties SRP split** — dataset → `data/component-properties.data.ts` (single `COMPONENT_PROPERTIES` export); helpers → `utils/component-properties.ts` (`ComponentProperties` static class); category result → `types/components-by-category.type.ts`. Old multi-export `data/component-properties.ts` removed.
+- [x] **Eutectic systems SRP split** — `data/eutectic-systems.data.ts` dataset only; `types/eutectic-system-point.type.ts`; `utils/eutectic-systems.ts` (`EutecticSystems`); repository uses static class.
+- [x] **Materials index cleanup** — single `ALL_MATERIALS` export in `data/all-materials.data.ts`; removed unused helpers / re-exports / `MATERIAL_COUNTS` from old `materials-index.ts`.
+- [x] **Furnace status + ROADMAP refresh** — mark STEP_02 / Furnace as superseded; ROADMAP module-map statuses match shipped thermo / combustion / recuperator / refractory.
 
 ### Medium priority
 
 4. ~~**Transport / aerodynamics services**~~ — aerodynamics + transport covered by unit tests; Ergun ΔP implemented
-5. ~~**Recuperator / combustion modules**~~ — already at 100% in this status file (roadmap table still stale)
-6. **Furnace module** — not started; see highest-priority item 6
+5. ~~**Recuperator / combustion modules**~~ — already at 100% in this status file
+6. ~~**Furnace module**~~ — superseded (combustion bed + thermodynamics)
 7. **Database migrations** — required before any persistent data features
-8. **Refresh [`ROADMAP.md`](ROADMAP.md)** — statuses still say “planning / not started” for modules that are shipped
+8. ~~**Refresh [`ROADMAP.md`](ROADMAP.md)**~~ — module-map statuses updated
 
 ---
 

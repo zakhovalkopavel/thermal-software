@@ -6,7 +6,7 @@ import { PSDCalculatorService } from '../../../../../src/modules/refractory/serv
 import { PackingService } from '../../../../../src/modules/refractory/services/particle-packing/packing.service';
 import { ShrinkageService } from '../../../../../src/modules/refractory/services/thermal/shrinkage.service';
 import { WaterDemandService } from '../../../../../src/modules/refractory/services/particle-packing/water-demand.service';
-import { ALL_MATERIALS } from '../../../../../src/modules/refractory/data/materials-index';
+import { ALL_MATERIALS } from '../../../../../src/modules/refractory/data/all-materials.data';
 
 // Helper function to find material by ID
 const getMaterial = (materialId: string) => {

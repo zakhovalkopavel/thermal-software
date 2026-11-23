@@ -14,7 +14,7 @@ The component effects system provides centralized, data-driven calculations for 
 
 ### Key Concept
 
-Instead of hardcoding individual component coefficients scattered throughout services, all component data is stored in a single `ComponentEffect` interface with properties for:
+Instead of hardcoding individual component coefficients scattered throughout services, all component data is stored as `ComponentProperty` (`types/component-property.type.ts`) with:
 - **refractorinessEffect** (K) - Impact on refractoriness temperature
 - **liquidusEffect** (K) - Impact on liquidus temperature  
 - **viscosityEffect** (K) - Impact on viscosity (activation energy)
@@ -23,22 +23,25 @@ Instead of hardcoding individual component coefficients scattered throughout ser
 
 ## Data Structure
 
-### ComponentEffect Interface
+### ComponentProperty (dataset row)
 
 ```typescript
-export interface ComponentEffect {
-  name: string;                           // Full component name
-  formula: string;                        // Chemical formula
+// types/component-property.type.ts — shape of each COMPONENT_PROPERTIES entry
+export type ComponentProperty = {
+  name: string;
+  formula: string; // registry key, e.g. 'SiO2'
   category: 'oxide-former' | 'oxide-modifier' | 'fluoride' | 'chloride';
   classification: 'network-former' | 'network-modifier' | 'flux' | 'destabilizer';
-  refractorinessEffect: number;          // Effect on refractoriness (K)
-  liquidusEffect: number;                // Effect on liquidus (K)
-  viscosityEffect?: number;              // Effect on viscosity (K)
-  meltingPoint_C?: number;               // Pure component melting point
-  liquidEnrichmentFactor?: number;       // Enrichment factor in liquid phase
-  solidEnrichmentFactor?: number;        // Enrichment factor in solid phase
-  description?: string;                  // Brief description
-}
+  refractorinessEffect: number;
+  liquidusEffect: number;
+  viscosityEffect?: number;
+  conductivity_WmK: number;
+  specificHeat_JkgK: number;
+  meltingPoint_C?: number;
+  liquidEnrichmentFactor?: number;
+  solidEnrichmentFactor?: number;
+  description?: string;
+};
 ```
 
 ### Component Categories
@@ -120,64 +123,21 @@ Represents how much a component remains in the solid phase:
 - Flux oxides (Na2O, CaO): 0.4 (leave solid for liquid)
 - Fluorides/Chlorides: 0.1 (almost all leave - volatile)
 
-## Helper Functions
+## Static helpers (`ComponentProperties`)
 
-### calculateRefractorinessEffect(composition)
-Calculates total refractoriness effect by iterating through all 33 components:
+All aggregations live on `utils/component-properties.ts` (`ComponentProperties`):
 
-```typescript
-export function calculateRefractorinessEffect(
-  composition: Record<string, number>
-): number {
-  let totalEffect = 0;
-  for (const [formula, percentage] of Object.entries(composition)) {
-    const component = getComponentEffect(formula);
-    if (component) {
-      totalEffect += (percentage / 100) * component.refractorinessEffect;
-    }
-  }
-  return totalEffect;
-}
-```
+| Method | Role |
+|---|---|
+| `get(formula)` | Lookup one row |
+| `refractorinessEffect(composition)` | Σ (%/100)×`refractorinessEffect` |
+| `liquidusEffect(composition)` | Same with `liquidusEffect` |
+| `viscosityEffect(composition)` | Same with `viscosityEffect` (skips missing) |
+| `weightedThermalConductivity` / `weightedSpecificHeat` | Mass-weighted λ / Cp |
+| `liquidCompositionWithEnrichment` / `solidCompositionWithEnrichment` | Apply enrichment factors |
+| `extractByCategory(composition)` | Bucket wt% by former/modifier/fluoride/chloride |
 
-**Algorithm:**
-1. Iterate through each component in composition
-2. Get component from registry by formula
-3. Apply weighted effect: (% / 100) × effect
-4. Sum all effects
-
-### calculateLiquidusEffect(composition)
-Same algorithm as refractoriness but uses `liquidusEffect` property.
-
-### calculateViscosityEffect(composition)
-Same algorithm but uses `viscosityEffect` property (activation energy in K).
-
-### calculateLiquidCompositionWithEnrichment(composition)
-Applies liquid enrichment factors to estimate liquid composition:
-
-```typescript
-export function calculateLiquidCompositionWithEnrichment(
-  composition: Record<string, number>
-): Record<string, number> {
-  const liquid: Record<string, number> = {};
-  for (const [formula, percentage] of Object.entries(composition)) {
-    const component = getComponentEffect(formula);
-    if (component && component.liquidEnrichmentFactor) {
-      liquid[formula] = percentage * component.liquidEnrichmentFactor;
-    }
-  }
-  return liquid;
-}
-```
-
-**Result:** Composition enriched in fluxes, depleted in refractories.
-
-### calculateSolidCompositionWithEnrichment(composition)
-Applies solid enrichment factors to estimate solid composition:
-
-**Algorithm:** Same as liquid enrichment but uses `solidEnrichmentFactor`.
-
-**Result:** Composition enriched in refractories, depleted in fluxes.
+**Weighted-effect algorithm:** iterate composition → resolve by formula → add `(% / 100) × effect`.
 
 ## Physical Basis
 
@@ -257,37 +217,11 @@ B += effectFromComponents;
 
 ## Future Extensions
 
-### Ready for Addition
-The system is designed to easily add new properties:
-
-```typescript
-export interface ComponentEffect {
-  // ...existing...
-  thermalConductivityEffect?: number;    // Can be added
-  densityEffect?: number;                // Can be added
-  elasticModulusEffect?: number;         // Can be added
-  thermalExpansionEffect?: number;       // Can be added
-}
-```
-
 ### Adding New Components
-Just define new component object and add to registry:
-
-```typescript
-export const NEWCOMPONENT: ComponentEffect = {
-  name: 'New Component',
-  formula: 'NC',
-  // ...all properties...
-};
-
-// Then add to COMPONENT_EFFECTS registry
-export const COMPONENT_EFFECTS = {
-  // ...existing...
-  NEWCOMPONENT,  // ← Automatically included!
-};
-```
-
-New component is automatically included in all helper functions via iteration!
+1. Add a private `ComponentProperty` const in `data/component-properties.data.ts`.
+2. Register it under `[row.formula]: row` in `COMPONENT_PROPERTIES`.
+3. `ComponentProperties` methods pick it up automatically via formula iteration.
+4. Prefer citing a `RefKey` when effect magnitudes gain literature sources.
 
 ## References
 
@@ -299,9 +233,9 @@ New component is automatically included in all helper functions via iteration!
 
 ## File Location
 
-- **Component Effects Definition:** `backend/src/modules/refractory/constants/component-effects.ts`
-- **Helper Functions:** Same file
-- **Usage Examples:** All services in `backend/src/modules/refractory/services/`
+- **Dataset:** `backend/src/modules/refractory/data/component-properties.data.ts`
+- **Helpers:** `backend/src/modules/refractory/utils/component-properties.ts`
+- **Type:** `backend/src/modules/refractory/types/component-property.type.ts`
 
 ---
 

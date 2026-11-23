@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ALL_MATERIALS } from '../../data/materials-index';
+import { ALL_MATERIALS } from '../../data/all-materials.data';
 import { MaterialEntry } from '../../data/interfaces/material.interface';
 import { MATERIAL_GROUP_ROUTES } from '../../constants/material-group-routes.constants';
 import { MaterialGroup } from '../../enums/material-group.enum';

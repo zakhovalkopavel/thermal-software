@@ -1,15 +1,24 @@
 # STEP 02: Furnace Combustion Module Migration
 
-**Priority:** MEDIUM  
+> **Superseded.** Do **not** create `backend/src/modules/furnace/`.  
+> Legacy `legacy/furnaceCombustion/` was migrated into:
+> - `backend/src/modules/thermodynamics/` (transport, diffusion, aerodynamics / Gunn / Ergun)
+> - `backend/src/modules/combustion/` (modes 1–4; packed-bed layer model = former furnace combustor)
+>
+> Frontend: `frontend/src/modules/processes/sections/combustion/`.  
+> See [`MODULE_ARCHITECTURE.md`](MODULE_ARCHITECTURE.md) and [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md).
+
+**Priority:** — (obsolete)  
 **Complexity:** HIGH  
-**Estimated Time:** 1 week  
+**Estimated Time:** —  
 **Dependencies:** None
 
 ---
 
 ## Overview
 
-Migrate furnace combustion model from JavaScript to TypeScript NestJS module.
+~~Migrate furnace combustion model from JavaScript to TypeScript NestJS module.~~  
+Historical plan only — retained for archaeology.
 
 **Legacy Location:** `legacy/furnaceCombustion/`  
 **Target Location:** `backend/src/modules/furnace/`  

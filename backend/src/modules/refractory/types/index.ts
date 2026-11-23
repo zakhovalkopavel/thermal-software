@@ -55,6 +55,7 @@ export type { PhaseEquilibriumValidationResult } from './phase-equilibrium-valid
 export type { PhaseEquilibriumValidationError } from './phase-equilibrium-validation-error.type';
 export type { PhaseEquilibriumValidationWarning } from './phase-equilibrium-validation-warning.type';
 export type { EutecticPoint } from './eutectic-point.type';
+export type { EutecticSystemPoint } from './eutectic-system-point.type';
 export type { LiquidusResult } from './liquidus-result.type';
 
 export type { MineralPhaseData } from './mineral-phase-data.type';

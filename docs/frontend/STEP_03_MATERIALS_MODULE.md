@@ -27,7 +27,7 @@ Both parts follow [`docs/CONVENTIONS.md`](../CONVENTIONS.md), [`docs/NAMING_CONV
 | Metals (2 grades, λ/ε coefficients) | `metals/data/materials/metal-thermal.data.ts` (`METAL_THERMAL_MATERIALS`) | Only `GET /metals/thermal-properties` (needs the id already) |
 | Gases (species + aliases) | `thermodynamics` `FluidPropertyService.getFluidList()` | Yes — `GET /thermodynamics/fluid/list` → `[{ key, name, formula, Mr_kg_mol }]` |
 | Refractory products (19, λ(T)/ε(T)) | `refractory/data/materials/refractory-thermal.data.ts` (`REFRACTORY_THERMAL_MATERIALS`) + `RefractoryThermalService` | **No** — used internally by multilayer wall |
-| Raw materials library (112 entries, 102 unique ids; composition, density, sizes) | `refractory/data/materials-index.ts` (`ALL_MATERIALS`) | **No** |
+| Raw materials library (112 entries, 102 unique ids; composition, density, sizes) | `refractory/data/all-materials.data.ts` (`ALL_MATERIALS`) | **No** |
 | Standard particle-size fractions | `refractory/data/particle-sizes.data.ts` | **No** |
 
 ### 1.2 Endpoints

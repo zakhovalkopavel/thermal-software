@@ -12,12 +12,12 @@ See [MODULE_ARCHITECTURE.md](MODULE_ARCHITECTURE.md) for the full boundary and o
 
 | Legacy source | Target backend module | Spec folder | Status |
 |---|---|---|---|
-| `legacy/scripts/src/` (interfaces, dto, utils, compounds) | `backend/src/common/thermal/` | recuperator [PHASE 1](recuperator/CHECKLIST.md) | 🟡 Planning |
-| `legacy/furnaceCombustion/classes/Thermodynamics.js` + `TransportProperties.js` + `DiffusionCoefficients.js` + `HeatTransfer.js` + `Aerodynamics.js` | `backend/src/modules/thermodynamics/` | [thermodynamics/](thermodynamics/) | 🟡 Planning |
-| `legacy/scripts/recuperator.js` (heat transfer sections) + `legacy/scripts/src/thermalExchange/` | `backend/src/modules/recuperator/` | [recuperator/](recuperator/) | 🟡 Planning |
-| `legacy/scripts/recuperator.js` (combustion ~575–680) + `legacy/furnaceCombustion/modules/` + `FuelDatabase.js` | `backend/src/modules/combustion/` | [combustion/](combustion/) | 🟡 Planning |
-| `legacy/library/processed_data/` + `legacy/python_scripts/` | `python/src/thermophysical/` + `backend/src/modules/thermophysical/` | [thermophysical-library/](thermophysical-library/) | 🟡 Planning |
-| `legacy/refractory/` | `backend/src/modules/refractory/` | [STEP_01_REFRACTORY_MODULE.md](STEP_01_REFRACTORY_MODULE.md) | 🔴 Not started |
+| `legacy/scripts/src/` (interfaces, dto, utils, compounds) | `backend/src/common/thermal/` | recuperator [PHASE 1](recuperator/CHECKLIST.md) | ✅ Complete |
+| `legacy/furnaceCombustion/classes/Thermodynamics.js` + `TransportProperties.js` + `DiffusionCoefficients.js` + `HeatTransfer.js` + `Aerodynamics.js` | `backend/src/modules/thermodynamics/` | [thermodynamics/](thermodynamics/) | ✅ Complete (tests partial) |
+| `legacy/scripts/recuperator.js` (heat transfer sections) + `legacy/scripts/src/thermalExchange/` | `backend/src/modules/recuperator/` + `thermal-exchange/` | [recuperator/](recuperator/) | ✅ Complete |
+| `legacy/scripts/recuperator.js` (combustion ~575–680) + `legacy/furnaceCombustion/modules/` + `FuelDatabase.js` | `backend/src/modules/combustion/` | [combustion/](combustion/) | ✅ Complete |
+| `legacy/library/processed_data/` + `legacy/python_scripts/` | `python/src/thermophysical/` + `backend/src/modules/thermophysical/` | [thermophysical-library/](thermophysical-library/) | 🔴 Not started |
+| `legacy/refractory/` | `backend/src/modules/refractory/` | [STEP_01_REFRACTORY_MODULE.md](STEP_01_REFRACTORY_MODULE.md) | ✅ Complete (~85%; see IMPLEMENTATION_STATUS) |
 
 ---
 

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { EutecticData } from '../entities/eutectic-data.entity';
-import { EUTECTIC_SYSTEMS, getEutectic } from '../data/eutectic-systems.data';
+import { EutecticSystems } from '../utils/eutectic-systems';
 
 @Injectable()
 export class PhaseDiagramRepository {
@@ -31,7 +31,7 @@ export class PhaseDiagramRepository {
     }
 
     // Fallback to static data
-    return getEutectic(system, name);
+    return EutecticSystems.get(system, name);
   }
 
   /**
@@ -51,11 +51,7 @@ export class PhaseDiagramRepository {
       }));
     }
 
-    // Fallback to static data
-    const staticData = EUTECTIC_SYSTEMS[system as keyof typeof EUTECTIC_SYSTEMS];
-    if (!staticData) return [];
-
-    return Object.values(staticData);
+    return Object.values(EutecticSystems.forSystem(system));
   }
 
   /**
@@ -76,7 +72,7 @@ export class PhaseDiagramRepository {
       .getRawMany();
 
     const dbSystems = systems.map(s => s.system);
-    const staticSystems = Object.keys(EUTECTIC_SYSTEMS);
+    const staticSystems = EutecticSystems.listSystems();
 
     return [...new Set([...dbSystems, ...staticSystems])];
   }

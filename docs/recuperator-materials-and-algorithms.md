@@ -284,7 +284,7 @@ calculate(input: FurnaceInputDto): FurnaceResultDto
 ## 7. Refractory Module — Required Additions
 
 The legacy code references the following material IDs that are **not yet present** in the
-refractory `MaterialEntry` library (checked against `materials-index.ts`):
+refractory `MaterialEntry` library (checked against `all-materials.data.ts`):
 
 | Legacy key | Required MaterialEntry `materialId` |
 |---|---|
