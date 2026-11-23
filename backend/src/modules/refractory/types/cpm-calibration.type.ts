@@ -1,4 +1,5 @@
-import type { Beta0Model, MaxPhiModel } from '../enums/packing-models.enum';
+import type { Beta0Model } from '../enums/beta0-model.enum';
+import type { MaxPhiModel } from '../enums/max-phi-model.enum';
 
 /**
  * CPM calibration parameters with research-backed models.

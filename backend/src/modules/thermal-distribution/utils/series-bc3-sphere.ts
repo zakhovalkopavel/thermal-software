@@ -4,7 +4,8 @@
  */
 import { EigenvaluesBc3 } from './eigenvalues-bc3';
 import { simpson } from '../../../common/utils/quadrature';
-import { SERIES_TERMS_DEFAULT, SIMPSON_INTERVALS_DEFAULT } from '../constants/thermal-distribution.constants';
+import { THERMAL_DISTRIBUTION_CONSTANTS } from '../constants/thermal-distribution.constants';
+const { SERIES_TERMS_DEFAULT, SIMPSON_INTERVALS_DEFAULT } = THERMAL_DISTRIBUTION_CONSTANTS;
 
 export class SeriesBc3Sphere {
   private static sincMu(u: number): number {

@@ -1,6 +1,6 @@
 # Conventions Refactoring Plan
 
-**Status:** In progress — Phase 7.1 docs split done (file-length baseline empty); next Phase 8 close-out; optional leftover `component-property.interface.ts`  
+**Status:** Complete — Phase 8 close-out done (structure + file-length baselines empty; codemods removed).  
 
 
 
@@ -207,10 +207,10 @@ Do it as several PRs, in this order (each PR is one sub-step, each passes C1–C
 
 | Step | Action | Checkpoint |
 |------|--------|-----------|
-| 8.1 | All structure and length baselines empty (or each remaining entry has a written, agreed exception). | **CP8.1:** baseline JSON files are `{}` or only agreed exceptions. |
-| 8.2 | Coverage ≥ 80 % for touched services (Definition of Done). | `npm run test:cov` report. |
-| 8.3 | Remove temporary tooling (`codemod-*.mjs`) if no longer needed; update `CONVENTIONS.md` with lessons / amendments (D2 exception, any new rule). | Docs updated. |
-| 8.4 | Decide on lint enforcement (ESLint `no-restricted-syntax` / `max-classes-per-file`) to complement the tests. | Decision recorded. |
+| 8.1 | All structure and length baselines empty (or each remaining entry has a written, agreed exception). | ✅ Structure + file-length baselines empty. Remaining multi-exports split/merged (packing/water/phase/thermal-distribution constants; DTOs one class/file; fluid catalogue shapes → `types/`; correlation-families `.constants.ts` + private map). `ComponentProperty` → `types/component-property.type.ts`. |
+| 8.2 | Coverage ≥ 80 % for touched services (Definition of Done). | ⏸ Host `tsc` + conventions Jest green; full `test:cov` when Docker is available (`docker compose exec backend npm run test:cov`). |
+| 8.3 | Remove temporary tooling (`codemod-*.mjs`) if no longer needed; update `CONVENTIONS.md` with lessons / amendments (D2 exception, any new rule). | ✅ `codemod-split.mjs` / `codemod-tidy.mjs` deleted; lessons in `CONVENTIONS.md`. |
+| 8.4 | Decide on lint enforcement (ESLint `no-restricted-syntax` / `max-classes-per-file`) to complement the tests. | ✅ **Decision:** no backend ESLint for export/class limits. Jest structure + file-length ratchets remain the only enforcement (backend has no ESLint config; frontend ESLint is unrelated). |
 
 ---
 
@@ -265,9 +265,9 @@ Pilot file: `metals/data/interfaces/metal-thermal.interface.ts` → three `metal
 ### Procedure for later phases
 
 1. For **≤ ~5 exports** or any `interface` → `type` / suffix-folder change: **split by hand** (or `git mv` + edit), follow N1–N9.
-2. For **large multi-export files** that stay the same construct kind: optional `node codemod-split.mjs split.json` with every export mapped; then immediately `tsc`, tests, and a manual pass for D1 / folder / suffix.
-3. After adding a folder `index.ts` barrel: optional `node codemod-tidy.mjs <module-path>` to point external imports at the barrel — review the diff; it skips default imports and `index.ts` itself.
-4. Never rely on the codemods alone for C6/C10; always review with `git diff -M --color-moved=dimmed-zebra`.
+2. For **large multi-export files** that stay the same construct kind: split by hand (one construct per file), then immediately `tsc`, tests, and a manual pass for D1 / folder / suffix.
+3. After adding a folder `index.ts` barrel: rewrite external imports to the barrel carefully; skip default imports and `index.ts` itself.
+4. Always review with `git diff -M --color-moved=dimmed-zebra`. Temporary `codemod-*.mjs` tools were removed in Phase 8.3.
 
 ### Baseline note
 

@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { EquationValidityDto, MixtureValidityDto } from '../shared/equation-validity.dto';
+import { EquationValidityDto } from '../shared/equation-validity.dto';
+import { MixtureValidityDto } from '../shared/mixture-validity.dto';
 
 export class ResolvedFluidDto {
   @ApiPropertyOptional() rho_kg_m3?: number;

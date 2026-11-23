@@ -402,6 +402,25 @@ Before committing any file, verify:
 
 ---
 
+## Lessons from the conventions refactoring (Phase 8)
+
+Recorded when clearing the structure / file-length baselines (`docs/migration/CONVENTIONS_REFACTORING_PLAN.md`):
+
+1. **Constants:** Prefer one related `export const … = { … }` (typed or `as const`) per file over several
+   sibling `export const` names. Call sites may destructure locally; that does not count as extra exports.
+2. **Numeric defaults in a constants object:** Annotate series / tolerance fields as `number` (or give
+   the object an explicit type). Bare `as const` literals (`100`, `50`) poison default-parameter types
+   (`N = SERIES_TERMS_DEFAULT` becomes `N: 100` and rejects other numbers).
+3. **Data shapes:** Plain object shapes use `export type` in `types/*.type.ts`. Do not leave a parallel
+   `interface` under `interfaces/` for the same shape (see `ComponentProperty`).
+4. **Temporary split tooling:** `backend/codemod-*.mjs` were removed after close-out. Prefer hand splits
+   (or `git mv` + edit) so `interface` → `type`, folder, and suffix stay correct.
+5. **Enforcement:** Structure and file-length **Jest ratchets** under `backend/test/unit/conventions/`
+   are the source of truth. There is no backend ESLint for max-classes / export count — do not add a
+   weaker duplicate rule without an explicit decision to replace the tests.
+
+---
+
 ## Tests Must Run Inside Docker
 
 All automated tests (unit, integration, e2e) **must be executed inside the Docker container**,

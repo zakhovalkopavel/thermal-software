@@ -1,4 +1,5 @@
-import { BETA0_VALUES, PACKING_DEFAULTS } from '../constants/packing.constants';
+import { BETA0_VALUES } from '../constants/beta0-values.constants';
+import { PACKING_DEFAULTS } from '../constants/packing-defaults.constants';
 import { PackingFractions } from './packing-fractions';
 
 /**

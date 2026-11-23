@@ -4,7 +4,8 @@ import { PhaseEquilibriumService } from '../services/composition/phase-equilibri
 import { RefractorinessService } from '../services/composition/refractoriness.service';
 import { GlassViscosityService } from '../services/composition/glass-viscosity.service';
 import { MineralPhaseService } from '../services/composition/mineral-phase.service';
-import { PhaseCalculationDto, PhaseCalculationResponseDto } from '../dto/phase-equilibrium/phase-equilibrium.dto';
+import { PhaseCalculationDto } from '../dto/phase-equilibrium/phase-calculation.dto';
+import { PhaseCalculationResponseDto } from '../dto/phase-equilibrium/phase-calculation-response.dto';
 import { MineralPhaseDto } from '../dto/mineral-phases/mineral-phase.dto';
 import { RefractorinessDto } from '../dto/refractoriness/refractoriness.dto';
 import { GlassViscosityDto } from '../dto/glass-viscosity/glass-viscosity.dto';

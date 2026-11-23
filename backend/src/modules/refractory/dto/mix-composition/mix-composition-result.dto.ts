@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CompositionBasis } from '../../enums/composition-basis.enum';
-import { OxideCompositionDto } from '../common/common.dto';
+import { OxideCompositionDto } from '../common';
 import { NonOxideComponentsDto } from './non-oxide-components.dto';
 
 export class MixCompositionResultDto {

@@ -1,4 +1,4 @@
-import { BetweenLayerDto } from '../dto/multilayer-wall-result.dto';
+import { BetweenLayerDto } from '../dto/between-layer.dto';
 import { AlphaResult } from './alpha-result.interface';
 
 /** Heat balance of the wall for one trial inner surface temperature */

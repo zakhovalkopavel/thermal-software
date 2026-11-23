@@ -8,7 +8,8 @@
  */
 import { besselJ0, besselJ1, besselY0, besselY1 } from '../../../common/utils/bessel';
 import { brentq } from '../../../common/utils/root-finding';
-import { EIGENVALUE_TOL_HOLLOW_BC3 } from '../constants/thermal-distribution.constants';
+import { THERMAL_DISTRIBUTION_CONSTANTS } from '../constants/thermal-distribution.constants';
+const { EIGENVALUE_TOL_HOLLOW_BC3 } = THERMAL_DISTRIBUTION_CONSTANTS;
 
 /** Stateless EigenvaluesHollowBc3 helpers — no DI. */
 export class EigenvaluesHollowBc3 {

@@ -1,6 +1,6 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { CALCULATION_CONSTANTS } from '../../constants/calculation.constants';
-import { EUTECTIC_COMPOSITION, EUTECTIC_TEMPERATURE_C } from '../../constants/phase-equilibrium.constants';
+import { PHASE_EQUILIBRIUM_CONSTANTS } from '../../constants/phase-equilibrium.constants';
 import {
   PhaseEquilibriumInput,
   PhaseEquilibriumResult,
@@ -13,6 +13,8 @@ import {
   calculateLiquidCompositionWithEnrichment,
   calculateSolidCompositionWithEnrichment,
 } from '../../data/component-properties';
+
+const { EUTECTIC_COMPOSITION, EUTECTIC_TEMPERATURE_C } = PHASE_EQUILIBRIUM_CONSTANTS;
 
 /**
  * Phase Equilibrium Calculator Service

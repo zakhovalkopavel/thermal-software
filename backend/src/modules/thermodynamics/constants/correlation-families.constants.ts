@@ -7,7 +7,7 @@ import { CorrelationFamily } from '../enums/correlation-family.enum';
  *
  * Invariant: every CorrelationName member must appear in exactly one family set.
  */
-export const CORRELATION_FAMILY_MAP: Readonly<Record<CorrelationFamily, ReadonlySet<CorrelationName>>> = {
+const CORRELATION_FAMILY_MAP: Readonly<Record<CorrelationFamily, ReadonlySet<CorrelationName>>> = {
   [CorrelationFamily.PipeDuct]: new Set([
     CorrelationName.Mills,
     CorrelationName.SiederTateLaminar,

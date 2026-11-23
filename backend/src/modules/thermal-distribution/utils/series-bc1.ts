@@ -12,7 +12,8 @@
  */
 import { EigenvaluesBc1 } from './eigenvalues-bc1';
 import { besselJ0, besselJ1 } from '../../../common/utils/bessel';
-import { SERIES_TERMS_DEFAULT } from '../constants/thermal-distribution.constants';
+import { THERMAL_DISTRIBUTION_CONSTANTS } from '../constants/thermal-distribution.constants';
+const { SERIES_TERMS_DEFAULT } = THERMAL_DISTRIBUTION_CONSTANTS;
 
 /** Stateless SeriesBc1 helpers — no DI. */
 export class SeriesBc1 {

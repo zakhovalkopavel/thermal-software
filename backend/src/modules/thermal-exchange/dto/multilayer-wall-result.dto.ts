@@ -1,13 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AlphaResult } from '../interfaces/alpha-result.interface';
 import { AlphaResultDto } from './alpha-result.dto';
-
-export class BetweenLayerDto {
-  @ApiProperty()
-  name:     string;
-  @ApiProperty()
-  tCelsius: number;
-}
+import { BetweenLayerDto } from './between-layer.dto';
 
 export class MultilayerWallResultDto {
   @ApiProperty({ description: 'Inner surface temperature [K]' })

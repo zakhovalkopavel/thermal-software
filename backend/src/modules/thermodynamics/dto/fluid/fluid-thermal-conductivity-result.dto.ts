@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { EquationValidityDto, MixtureValidityDto } from '../shared/equation-validity.dto';
+import { EquationValidityDto } from '../shared/equation-validity.dto';
+import { MixtureValidityDto } from '../shared/mixture-validity.dto';
 
 export class FluidThermalConductivityResultDto {
   @ApiProperty({ description: 'Thermal conductivity λ [W/(m·K)]' })

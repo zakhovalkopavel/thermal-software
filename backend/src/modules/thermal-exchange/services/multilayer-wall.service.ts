@@ -7,7 +7,8 @@ import { MetalThermalService } from '../../metals/services/metal-thermal.service
 import { FlowGeometry } from '../../thermodynamics/enums/flow-geometry.enum';
 import { Species } from '../../thermodynamics/enums/species.enum';
 import { MultilayerWallInputDto } from '../dto/multilayer-wall-input.dto';
-import { MultilayerWallResultDto, BetweenLayerDto } from '../dto/multilayer-wall-result.dto';
+import { MultilayerWallResultDto } from '../dto/multilayer-wall-result.dto';
+import { BetweenLayerDto } from '../dto/between-layer.dto';
 import { AlphaResult } from '../interfaces/alpha-result.interface';
 import { WallBalance } from '../interfaces/wall-balance.interface';
 import { WallGeometry } from '../enums/wall-geometry.enum';

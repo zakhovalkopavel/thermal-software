@@ -1,5 +1,5 @@
 import { FlowGeometry } from '../enums/flow-geometry.enum';
-import { GeometryListEntry } from '../interfaces/fluid-property.interfaces';
+import type { GeometryListEntry } from '../types/geometry-list-entry.type';
 
 /** Catalogue of flow geometries for GET /thermodynamics/geometry/list. */
 export const GEOMETRY_LIST: readonly GeometryListEntry[] = [

@@ -2,7 +2,7 @@ import { DimensionlessInputDto } from '../dto/dimensionless/dimensionless-input.
 import { GeometryDimsDto } from '../dto/geometry/geometry-dims.dto';
 import { CorrelationName } from '../enums/correlation-name.enum';
 import { CorrelationFamily } from '../enums/correlation-family.enum';
-import { CORRELATION_NAME_TO_FAMILY } from '../constants/correlation-families.constant';
+import { CORRELATION_NAME_TO_FAMILY } from '../constants/correlation-families.constants';
 import { FlowGeometry } from '../enums/flow-geometry.enum';
 import { FlowRegime } from '../types/flow-regime.type';
 import { ResolvedDimensionlessPropsDto } from '../dto/dimensionless/resolved-dimensionless-props.dto';

@@ -94,11 +94,10 @@ Phase 6.3 moves data shapes to `types/*.type.ts` and type guards to static class
 
 ```
 backend/src/modules/refractory/
-├── types/                              ✅ Phase 6.3 complete (incl. VTF/slag viscosity params)
+├── types/                              ✅ Phase 6.3 + Phase 8 (`component-property.type.ts`, …)
 ├── utils/*-type-guards.ts              ✅ domain TypeGuards static classes
 └── interfaces/
     ├── index.ts                        ✅ Central export (re-exports types + guards)
-    ├── component-property.interface.ts ⏳ single data-shape (optional → types/)
     └── README.md
 ```
 

@@ -1,4 +1,4 @@
-import { OxideCompositionDto } from '../dto/common/common.dto';
+import { OxideCompositionDto } from '../dto/common';
 
 /**
  * Plain wt% record of the oxides present in the request.

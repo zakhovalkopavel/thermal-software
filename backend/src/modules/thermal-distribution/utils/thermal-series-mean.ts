@@ -12,10 +12,8 @@ import { SeriesBc3Cylinder } from './series-bc3-cylinder';
 import { SeriesBc3Sphere } from './series-bc3-sphere';
 import { SeriesHollowBc3 } from './series-hollow-bc3';
 import { ThermalSeriesTemp } from './thermal-series-temp';
-import {
-  AVERAGE_MODE_DEFAULT,
-  GAUSS_NODES_DEFAULT,
-} from '../constants/thermal-distribution.constants';
+import { THERMAL_DISTRIBUTION_CONSTANTS } from '../constants/thermal-distribution.constants';
+const { AVERAGE_MODE_DEFAULT, GAUSS_NODES_DEFAULT } = THERMAL_DISTRIBUTION_CONSTANTS;
 
 export class ThermalSeriesMean {
 

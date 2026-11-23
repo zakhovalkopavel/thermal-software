@@ -9,11 +9,10 @@
 
 ```
 refractory/
-├── interfaces/          ✅ TypeScript Interfaces (NEW)
-│   ├── index.ts        ← Central export point
-│   └── component-property.interface.ts (optional 6.3 leftover)
+├── interfaces/          ✅ Barrel re-exports (types + guards)
+│   └── index.ts        ← Central export point
 │
-├── types/               ✅ PSD + packing + shrinkage + blend shapes (Phase 6.3)
+├── types/               ✅ Data shapes (Phase 6.3 + 8; includes component-property.type.ts)
 ├── utils/psd-type-guards.ts              ✅ PsdTypeGuards
 ├── utils/packing-type-guards.ts          ✅ PackingTypeGuards
 ├── utils/shrinkage-type-guards.ts        ✅ ShrinkageTypeGuards
@@ -24,14 +23,14 @@ refractory/
 ├── utils/thermal-performance-type-guards.ts  ✅ ThermalPerformanceTypeGuards
 ├── utils/glass-viscosity-type-guards.ts      ✅ GlassViscosityTypeGuards
 │
-└── dto/                ✅ NestJS DTOs (Validation)
-    ├── blend-optimization.dto.ts
-    ├── common.dto.ts
-    ├── glass-viscosity.dto.ts
-    ├── packing-calculation.dto.ts
-    ├── phase-equilibrium.dto.ts
-    ├── refractoriness.dto.ts
-    └── shrinkage-prediction.dto.ts
+└── dto/                ✅ NestJS DTOs (one class per file)
+    ├── common/oxide-composition.dto.ts
+    ├── common/fraction-input.dto.ts
+    ├── blend-optimization/…
+    ├── packing/packing-cpm.dto.ts
+    ├── packing/packing-furnas.dto.ts
+    ├── phase-equilibrium/phase-calculation.dto.ts
+    └── …
 ```
 
 ---

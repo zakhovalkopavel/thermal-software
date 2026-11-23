@@ -1,5 +1,5 @@
 import { plainToInstance } from 'class-transformer';
-import { OxideCompositionDto } from '../../../../src/modules/refractory/dto/common/common.dto';
+import { OxideCompositionDto } from '../../../../src/modules/refractory/dto/common';
 import { PhaseEquilibriumService } from '../../../../src/modules/refractory/services/composition/phase-equilibrium.service';
 import { toOxideCompositionRecord } from '../../../../src/modules/refractory/utils/oxide-composition-record.util';
 

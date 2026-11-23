@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Species } from '../../enums/species.enum';
-import { EquationValidityDto, MixtureValidityDto } from '../shared/equation-validity.dto';
+import { EquationValidityDto } from '../shared/equation-validity.dto';
+import { MixtureValidityDto } from '../shared/mixture-validity.dto';
 
 export class GasPropertiesResultDto {
   @ApiProperty() Cp_J_kgK: number;

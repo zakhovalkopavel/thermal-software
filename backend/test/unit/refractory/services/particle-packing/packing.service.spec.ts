@@ -1,5 +1,6 @@
 import { PackingService } from '../../../../../src/modules/refractory/services/particle-packing/packing.service';
-import { Beta0Model, MaxPhiModel } from '../../../../../src/modules/refractory/enums/packing-models.enum';
+import { Beta0Model } from '../../../../../src/modules/refractory/enums/beta0-model.enum';
+import { MaxPhiModel } from '../../../../../src/modules/refractory/enums/max-phi-model.enum';
 
 describe('PackingService', () => {
   let service: PackingService;

@@ -7,7 +7,7 @@ import { MaterialEntryDto } from '../../dto/material-catalog/material-entry.dto'
 import { MixCompositionInputDto } from '../../dto/mix-composition/mix-composition-input.dto';
 import { MixCompositionResultDto } from '../../dto/mix-composition/mix-composition-result.dto';
 import { NonOxideComponentsDto } from '../../dto/mix-composition/non-oxide-components.dto';
-import { OxideCompositionDto } from '../../dto/common/common.dto';
+import { OxideCompositionDto } from '../../dto/common';
 import { MixComponentCatalogService } from '../catalog/mix-component-catalog.service';
 
 type KeyClass =

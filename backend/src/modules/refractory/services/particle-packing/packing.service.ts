@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PACKING_DEFAULTS } from '../../constants/packing.constants';
+import { PACKING_DEFAULTS } from '../../constants/packing-defaults.constants';
 import type { CPMCalibration } from '../../types/cpm-calibration.type';
 import { CompositionAnalyzer } from '../../utils/composition-analyzer';
 import { CpmCalibrationResolve } from '../../utils/cpm-calibration-resolve';

@@ -12,7 +12,7 @@
  * Stateless — no DI.
  */
 
-import { COMPOSITION_ANALYSIS_CONSTANTS } from '../constants/packing.constants';
+import { COMPOSITION_ANALYSIS_CONSTANTS } from '../constants/composition-analysis.constants';
 import type { CompositionCharacteristics } from '../types/composition-characteristics.type';
 
 /**

@@ -1,12 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { WorkabilityType } from '../../enums/workability.enum';
-import {
-  WORKABILITY_FACTORS,
-  WATER_DEMAND_CONSTANTS,
-} from '../../constants/water-demand.constants';
+import { WATER_DEMAND_CONSTANTS } from '../../constants/water-demand.constants';
 
-// Re-export enums for convenience
-export { WorkabilityType };
+const { WORKABILITY_FACTORS } = WATER_DEMAND_CONSTANTS;
 
 /**
  * Water Demand Service

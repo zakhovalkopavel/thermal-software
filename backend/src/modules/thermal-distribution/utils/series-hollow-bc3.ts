@@ -17,10 +17,8 @@ import {
 } from '../../../common/utils/bessel';
 import { adaptiveIntegrate, simpson } from '../../../common/utils/quadrature';
 import { EigenvaluesHollowBc3 } from './eigenvalues-hollow-bc3';
-import {
-  HOLLOW_SERIES_TERMS_DEFAULT,
-  SIMPSON_INTERVALS_DEFAULT,
-} from '../constants/thermal-distribution.constants';
+import { THERMAL_DISTRIBUTION_CONSTANTS } from '../constants/thermal-distribution.constants';
+const { HOLLOW_SERIES_TERMS_DEFAULT, SIMPSON_INTERVALS_DEFAULT } = THERMAL_DISTRIBUTION_CONSTANTS;
 
 /** Stateless SeriesHollowBc3 helpers — no DI. */
 export class SeriesHollowBc3 {

@@ -12,7 +12,8 @@
  */
 import { besselJ0, besselJ1, besselJ0Roots } from '../../../common/utils/bessel';
 import { brentq, newtonPolish } from '../../../common/utils/root-finding';
-import { EIGENVALUE_TOL_BC3 } from '../constants/thermal-distribution.constants';
+import { THERMAL_DISTRIBUTION_CONSTANTS } from '../constants/thermal-distribution.constants';
+const { EIGENVALUE_TOL_BC3 } = THERMAL_DISTRIBUTION_CONSTANTS;
 import type { BC3EigenFn } from '../types/bc3-eigen-fn.type';
 
 /** Stateless EigenvaluesBc3 helpers — no DI. */

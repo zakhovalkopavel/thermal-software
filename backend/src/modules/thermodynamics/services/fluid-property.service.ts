@@ -15,12 +15,10 @@ import { FluidThermalConductivityResultDto } from '../dto/fluid/fluid-thermal-co
 import { FlowRegime, KnownFluids } from '../types';
 import { CORRELATION_VALIDITY } from '../constants/correlation-validity.constants';
 import { GEOMETRY_LIST } from '../data/geometry-list.data';
-import {
-  FlowModeEntry,
-  FluidListEntry,
-  GeometryListEntry,
-  CorrelationListEntry,
-} from '../interfaces/fluid-property.interfaces';
+import type { FlowModeEntry } from '../types/flow-mode-entry.type';
+import type { FluidListEntry } from '../types/fluid-list-entry.type';
+import type { GeometryListEntry } from '../types/geometry-list-entry.type';
+import type { CorrelationListEntry } from '../types/correlation-list-entry.type';
 import { GasDensity } from '../utils/density/gas-density';
 
 /**

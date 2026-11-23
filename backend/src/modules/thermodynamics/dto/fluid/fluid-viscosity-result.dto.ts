@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { EquationValidityDto, MixtureValidityDto } from '../shared/equation-validity.dto';
+import { EquationValidityDto } from '../shared/equation-validity.dto';
+import { MixtureValidityDto } from '../shared/mixture-validity.dto';
 
 export class FluidViscosityResultDto {
   @ApiProperty({ description: 'Dynamic viscosity μ [Pa·s]' })

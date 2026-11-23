@@ -22,7 +22,8 @@ import type { CharacteristicLengths } from '../types/characteristic-lengths.type
 import { SeriesBc1 } from '../utils/series-bc1';
 import { ThermalSeriesTemp } from '../utils/thermal-series-temp';
 import { ThermalSeriesMean } from '../utils/thermal-series-mean';
-import { SERIES_TERMS_DEFAULT } from '../constants/thermal-distribution.constants';
+import { THERMAL_DISTRIBUTION_CONSTANTS } from '../constants/thermal-distribution.constants';
+const { SERIES_TERMS_DEFAULT } = THERMAL_DISTRIBUTION_CONSTANTS;
 
 @Injectable()
 export class ThermalDistributionService {

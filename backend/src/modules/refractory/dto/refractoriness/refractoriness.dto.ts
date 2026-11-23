@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, IsNumber, IsObject, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
-import { OxideCompositionDto } from '../common/common.dto';
+import { OxideCompositionDto } from '../common';
 
 export class RefractorinessDto {
   @ApiProperty({ type: OxideCompositionDto })
