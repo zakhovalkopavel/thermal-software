@@ -354,6 +354,7 @@ Per-service checklist: [`docs/SERVICE_TEST_CHECKLIST.md`](../SERVICE_TEST_CHECKL
 3. ~~**Frontend: Phase Equilibrium + Blend Optimizer**~~ — already in `mineral-compositions/`; gas charts now sync T unit + plot present keys
 4. **Phase 8.2 coverage report** — `docker compose exec backend npm run test:cov` when Docker is available
 5. **Frontend verify** — restore full `frontend/node_modules` (vitest/highcharts) and run `npm test` / `npm run typecheck`
+6. **Furnace module** — Stage B per [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md) / [`ROADMAP.md`](ROADMAP.md)
 
 ### Conventions refactoring (complete on `refactoring`)
 
@@ -381,14 +382,16 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 - [x] **Peng–Robinson density fallback** — when no CoolProp fluid, use PR from \(T_c,P_c,\omega\) (`criticalPressure` on `CompoundValue`); ideal gas only inside `IDEAL_GAS_DENSITY_LIMITS` (else throw); PR + Helmholtz/ideal-gas density constants live under `modules/thermodynamics/`. Algorithm: `docs/algorithms/thermodynamics/GAS_DENSITY.md`.
 - [x] **Chapman–Enskog μ + Eucken λ + Stockmayer** — shared Neufeld \(\Omega_D/\Omega_v\) + LJ combining in `utils/chapman-enskog/`; CE \(\mu\) (LJ/Stockmayer) and Poling `1.858e-3` binary \(D\) under `utils/viscosity/`; `stockmayerDelta` on `CompoundValue`; `TransportService` CE viscosity fallback and Eucken dilute \(\lambda\) after CE \(\mu\); `DiffusionService` thin orchestrator. Algorithm: `docs/algorithms/thermodynamics/CHAPMAN_ENSKOG_VISCOSITY.md`.
 - [x] **CoolProp dense μ + Chung mixture μ** — evaluable CoolProp `TRANSPORT.viscosity` (collision_integral / Rainwater–Friend / Batschinski–Hildebrand) via `GasViscosity`; mixture Wilke + Chung Δη below \(y\) switch, full Chung dense μ above; Poling Ch.9 E-table (not 10-3). `POST /thermodynamics/properties` passes `P_Pa` into `viscosityMix`. Algorithm: `docs/algorithms/thermodynamics/COOLPROP_CHUNG_VISCOSITY.md`.
+- [x] **Component registry formula keys** — `COMPONENT_PROPERTIES` / category maps keyed by chemical formula (`SiO2`, …) matching OxideCompositionDto; fixes silent no-op of refractoriness/liquidus/λ effects when API sent mixed-case formulas.
+- [x] **Component properties SRP split** — dataset → `data/component-properties.data.ts` (single `COMPONENT_PROPERTIES` export); helpers → `utils/component-properties.ts` (`ComponentProperties` static class); category result → `types/components-by-category.type.ts`. Old multi-export `data/component-properties.ts` removed.
 
 ### Medium priority
 
-4. **Transport / aerodynamics services** — thin implementations (40-78 lines), likely incomplete
-5. **Recuperator module** — start after ThermodynamicsModule is stable; spec in [`recuperator/`](recuperator/)
-6. **Combustion module** — Stage C per [`ROADMAP.md`](ROADMAP.md); spec in [`combustion/`](combustion/)
-7. **Furnace module** — start Stage B per [`ROADMAP.md`](ROADMAP.md)
-8. **Database migrations** — required before any persistent data features
+4. ~~**Transport / aerodynamics services**~~ — aerodynamics + transport covered by unit tests; Ergun ΔP implemented
+5. ~~**Recuperator / combustion modules**~~ — already at 100% in this status file (roadmap table still stale)
+6. **Furnace module** — not started; see highest-priority item 6
+7. **Database migrations** — required before any persistent data features
+8. **Refresh [`ROADMAP.md`](ROADMAP.md)** — statuses still say “planning / not started” for modules that are shipped
 
 ---
 

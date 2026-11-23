@@ -9,12 +9,8 @@ import {
   ThermalExpansionResult,
   ThermalPerformanceResult,
 } from '../../types';
-import {
-  calculateWeightedThermalConductivity,
-  calculateWeightedSpecificHeat,
-  extractComponentsByCategory,
-} from '../../data/component-properties';
 import { CALCULATION_CONSTANTS } from '../../constants/calculation.constants';
+import { ComponentProperties } from '../../utils/component-properties';
 
 /**
  * Thermal Performance Calculator Service
@@ -24,7 +20,7 @@ import { CALCULATION_CONSTANTS } from '../../constants/calculation.constants';
  * Supports 33 components (21 oxides + 6 fluorides + 6 chlorides) with individual thermal properties.
  *
  * All component thermal properties are centralized in:
- * - data/thermal-component-properties.data.ts
+ * - data/component-properties.data.ts (looked up via ComponentProperties)
  *
  * This service uses data-driven iteration instead of hardcoded values:
  * - Composition iteration via component properties object
@@ -63,7 +59,7 @@ export class ThermalPerformanceService {
     // ====================================================
     // Uses data-driven approach: iterate through components
     // instead of hardcoded property assignments
-    const k_base = calculateWeightedThermalConductivity(composition);
+    const k_base = ComponentProperties.weightedThermalConductivity(composition);
 
     // ====================================================
     // TEMPERATURE DEPENDENCE
@@ -81,7 +77,7 @@ export class ThermalPerformanceService {
     // ====================================================
     // SPECIFIC HEAT (J/kg·K)
     // ====================================================
-    const cp_base = calculateWeightedSpecificHeat(composition);
+    const cp_base = ComponentProperties.weightedSpecificHeat(composition);
     const cp = cp_base + CALCULATION_CONSTANTS.SPECIFIC_HEAT_TEMP_COEFF * temperature;
 
     // ====================================================
@@ -97,7 +93,7 @@ export class ThermalPerformanceService {
     // ====================================================
     // COMPONENT BREAKDOWN
     // ====================================================
-    const componentsByCategory = extractComponentsByCategory(composition);
+    const componentsByCategory = ComponentProperties.extractByCategory(composition);
 
     return {
       thermalConductivity_WmK: Number(k_effective.toFixed(3)),

@@ -8,10 +8,10 @@ const { EUTECTIC_TEMPERATURE_C } = PHASE_EQUILIBRIUM_CONSTANTS;
 describe('PhaseEquilibriumService', () => {
   let service: PhaseEquilibriumService;
 
-  /** Keys match `COMPONENT_PROPERTIES` (uppercase formulas). */
-  const casEutectic = { SIO2: 34.8, AL2O3: 36.8, CAO: 28.4 };
-  const highAlumina = { AL2O3: 70, SIO2: 25, CAO: 5 };
-  const nearHundred = { SIO2: 50, AL2O3: 40, CAO: 10 };
+  /** Composition keys match OxideCompositionDto / COMPONENT_PROPERTIES formulas. */
+  const casEutectic = { SiO2: 34.8, Al2O3: 36.8, CaO: 28.4 };
+  const highAlumina = { Al2O3: 70, SiO2: 25, CaO: 5 };
+  const nearHundred = { SiO2: 50, Al2O3: 40, CaO: 10 };
 
   beforeEach(() => {
     service = new PhaseEquilibriumService();
@@ -63,7 +63,7 @@ describe('PhaseEquilibriumService', () => {
     it('accepts compositions that sum within 95–105%', () => {
       expect(() =>
         service.calculatePhaseEquilibrium({
-          composition: { SIO2: 48, AL2O3: 48, CAO: 2 },
+          composition: { SiO2: 48, Al2O3: 48, CaO: 2 },
           temperature: 1400,
         }),
       ).not.toThrow();
@@ -99,7 +99,7 @@ describe('PhaseEquilibriumService', () => {
       });
       expect(full.liquid.percent).toBe(100);
       expect(full.solid.percent).toBe(0);
-      expect(full.liquid.composition.SIO2).toBeCloseTo(casEutectic.SIO2, 1);
+      expect(full.liquid.composition.SiO2).toBeCloseTo(casEutectic.SiO2, 1);
     });
 
     it('forms intermediate liquid between eutectic and liquidus', () => {
@@ -150,7 +150,7 @@ describe('PhaseEquilibriumService', () => {
     it('throws when composition sum is far from 100%', () => {
       expect(() =>
         service.calculatePhaseEquilibrium({
-          composition: { SIO2: 10 },
+          composition: { SiO2: 10 },
           temperature: 1400,
         }),
       ).toThrow(BadRequestException);

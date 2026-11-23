@@ -8,9 +8,7 @@ import {
   GOST4069Result,
   ComponentRefractorinesEffect,
 } from '../../types';
-import {
-  calculateRefractorinessEffect,
-} from '../../data/component-properties';
+import { ComponentProperties } from '../../utils/component-properties';
 
 
 /**
@@ -91,7 +89,7 @@ import {
  */
 @Injectable()
 export class RefractorinessService {
-  // Using shared constants imported from component-properties.ts
+  // Using shared effects via ComponentProperties
   // All component effects for refractoriness calculations
 
   // ====================================================
@@ -114,7 +112,7 @@ export class RefractorinessService {
 
     // Use helper function to calculate effect from all 33 components at once
     // This automatically loops through composition and applies effects
-    const effectFromComponents = calculateRefractorinessEffect(composition);
+    const effectFromComponents = ComponentProperties.refractorinessEffect(composition);
     refractorinessTemp += effectFromComponents;
 
     // Ensure physically meaningful temperature

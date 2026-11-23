@@ -1,4 +1,4 @@
-import { getComponentEffect } from '../data/component-properties';
+import { ComponentProperties } from './component-properties';
 import { ConfidenceLevel } from '../enums/confidence-level.enum';
 import { ExtrapolationRisk } from '../enums/extrapolation-risk.enum';
 import { ViscosityModel } from '../enums/viscosity-model.enum';
@@ -59,7 +59,7 @@ export class GlassViscosityResultMeta {
     const chlorides: ComponentEffect[] = [];
     for (const [component, percentage] of Object.entries(comp)) {
       if (percentage <= 0) continue;
-      const effect = getComponentEffect(component)?.viscosityEffect ?? 0;
+      const effect = ComponentProperties.get(component)?.viscosityEffect ?? 0;
       const entry: ComponentEffect = { component, percentage, effect };
 
       if      (formers.has(component))    networkFormers.push(entry);

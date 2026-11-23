@@ -4,9 +4,9 @@ import { CALCULATION_CONSTANTS } from '../../../../../src/modules/refractory/con
 describe('RefractorinessService', () => {
   let service: RefractorinessService;
 
-  /** Effect lookup uses uppercase `COMPONENT_PROPERTIES` keys. */
-  const highAlumina = { SIO2: 20, AL2O3: 75, CAO: 5 };
-  const highFlux = { SIO2: 40, AL2O3: 20, NA2O: 40 };
+  /** Effect lookup uses chemical-formula keys (`SiO2`, …). */
+  const highAlumina = { SiO2: 20, Al2O3: 75, CaO: 5 };
+  const highFlux = { SiO2: 40, Al2O3: 20, Na2O: 40 };
 
   beforeEach(() => {
     service = new RefractorinessService();
@@ -37,14 +37,14 @@ describe('RefractorinessService', () => {
     });
 
     it('clamps extreme flux compositions to the minimum temperature', () => {
-      const res = service.calculateRefractoriness({ NA2O: 100 }, 'ISO1893');
+      const res = service.calculateRefractoriness({ Na2O: 100 }, 'ISO1893');
       expect(res.estimatedRefractoriness_C).toBe(CALCULATION_CONSTANTS.MIN_TEMPERATURE_C);
       expect(res.classification).toBe('Low duty refractory');
     });
 
     it('clamps extreme refractory compositions to the maximum temperature', () => {
       const res = service.calculateRefractoriness(
-        { AL2O3: 50, ZRO2: 50 },
+        { Al2O3: 50, ZrO2: 50 },
         'ISO1893',
       );
       expect(res.estimatedRefractoriness_C).toBeLessThanOrEqual(
@@ -90,7 +90,7 @@ describe('RefractorinessService', () => {
     });
 
     it('returns genericRefractoriness_C for unknown standards', () => {
-      const res = service.calculateRefractoriness({ SIO2: 40, AL2O3: 60 }, 'UNKNOWN');
+      const res = service.calculateRefractoriness({ SiO2: 40, Al2O3: 60 }, 'UNKNOWN');
       expect(res).toHaveProperty('genericRefractoriness_C');
       expect(res.genericRefractoriness_C).toBe(res.estimatedRefractoriness_C);
       expect(res.RUL).toBeUndefined();
@@ -120,17 +120,17 @@ describe('RefractorinessService', () => {
 
   describe('duty classification', () => {
     it('classifies low duty for strong flux and high/super duty for formers', () => {
-      const low = service.calculateRefractoriness({ NA2O: 100 }, 'ISO1893');
+      const low = service.calculateRefractoriness({ Na2O: 100 }, 'ISO1893');
       expect(low.classification).toBe('Low duty refractory');
 
       const mid = service.calculateRefractoriness(
-        { SIO2: 55, AL2O3: 35, CAO: 10 },
+        { SiO2: 55, Al2O3: 35, CaO: 10 },
         'ISO1893',
       );
       expect(mid.classification).toMatch(/duty refractory$/);
 
       const superDuty = service.calculateRefractoriness(
-        { AL2O3: 80, CR2O3: 20 },
+        { Al2O3: 80, Cr2O3: 20 },
         'ISO1893',
       );
       expect(

@@ -1,34 +1,15 @@
-/**
- * Unified Component Properties for Refractory Calculations
- *
- * This file contains comprehensive component data used across all services:
- * - RefractorinessService: Component effects on refractoriness temperature
- * - PhaseEquilibriumService: Component effects on liquidus temperature & enrichment
- * - ViscosityService: Component effects on viscosity
- * - ThermalPerformanceService: Thermal conductivity & specific heat capacity
- * - Future services: All component-based calculations
- *
- * Structure: Single unified interface per component with ALL properties
- * This enables iteration, loops, and easy extension with new properties.
- *
- * Conventions:
- * - Effect values in Kelvin (K)
- * - Positive effects: Network formers (increase melting point/refractoriness)
- * - Negative effects: Network modifiers/fluxes (decrease melting point/refractoriness)
- * - Conductivity in W/m·K
- * - Specific heat in J/kg·K
- *
- * Date: February 2, 2026
- * Last Updated: February 2, 2026
- */
-
 import type { ComponentProperty } from '../types/component-property.type';
+
+/**
+ * Refractory component property dataset (33 species).
+ * Indexed by chemical formula matching OxideCompositionDto keys (`SiO2`, `Al2O3`, …).
+ */
 
 // ============================================================
 // OXIDE NETWORK FORMERS (7 components)
 // ============================================================
 
-export const AL2O3: ComponentProperty = {
+const AL2O3: ComponentProperty = {
   name: 'Aluminum Oxide',
   formula: 'Al2O3',
   category: 'oxide-former',
@@ -49,7 +30,7 @@ export const AL2O3: ComponentProperty = {
     'Strongest refractory former, creates strong Al-O-Al bonds, highest thermal conductivity',
 };
 
-export const SIO2: ComponentProperty = {
+const SIO2: ComponentProperty = {
   name: 'Silicon Dioxide',
   formula: 'SiO2',
   category: 'oxide-former',
@@ -65,7 +46,7 @@ export const SIO2: ComponentProperty = {
   description: 'Common network former, forms Si-O-Si bridging bonds',
 };
 
-export const CR2O3: ComponentProperty = {
+const CR2O3: ComponentProperty = {
   name: 'Chromium Oxide',
   formula: 'Cr2O3',
   category: 'oxide-former',
@@ -81,7 +62,7 @@ export const CR2O3: ComponentProperty = {
   description: 'Very strong former, creates strong Cr-O bonds',
 };
 
-export const ZRO2: ComponentProperty = {
+const ZRO2: ComponentProperty = {
   name: 'Zirconium Dioxide',
   formula: 'ZrO2',
   category: 'oxide-former',
@@ -97,7 +78,7 @@ export const ZRO2: ComponentProperty = {
   description: 'Extremely strong former, highest melting oxide, strongest liquidus effect',
 };
 
-export const TIO2: ComponentProperty = {
+const TIO2: ComponentProperty = {
   name: 'Titanium Oxide',
   formula: 'TiO2',
   category: 'oxide-former',
@@ -113,7 +94,7 @@ export const TIO2: ComponentProperty = {
   description: 'Mild network former, moderate thermal effects',
 };
 
-export const MGO: ComponentProperty = {
+const MGO: ComponentProperty = {
   name: 'Magnesium Oxide',
   formula: 'MgO',
   category: 'oxide-former',
@@ -130,7 +111,7 @@ export const MGO: ComponentProperty = {
     'Strong network former but acts as flux in refractories, excellent thermal conductivity',
 };
 
-export const B2O3: ComponentProperty = {
+const B2O3: ComponentProperty = {
   name: 'Boron Oxide',
   formula: 'B2O3',
   category: 'oxide-former',
@@ -147,7 +128,7 @@ export const B2O3: ComponentProperty = {
     'Very low melting point despite network structure, extremely strong flux',
 };
 
-export const GEO2: ComponentProperty = {
+const GEO2: ComponentProperty = {
   name: 'Germanium Dioxide',
   formula: 'GeO2',
   category: 'oxide-former',
@@ -167,7 +148,7 @@ export const GEO2: ComponentProperty = {
 // OXIDE NETWORK MODIFIERS & FLUXES (14 components)
 // ============================================================
 
-export const NA2O: ComponentProperty = {
+const NA2O: ComponentProperty = {
   name: 'Sodium Oxide',
   formula: 'Na2O',
   category: 'oxide-modifier',
@@ -184,7 +165,7 @@ export const NA2O: ComponentProperty = {
     'Strongest oxide flux, extremely depolymerizing, highly soluble in silicates',
 };
 
-export const K2O: ComponentProperty = {
+const K2O: ComponentProperty = {
   name: 'Potassium Oxide',
   formula: 'K2O',
   category: 'oxide-modifier',
@@ -200,7 +181,7 @@ export const K2O: ComponentProperty = {
   description: 'Very strong flux, similar to Na2O but slightly less soluble',
 };
 
-export const LI2O: ComponentProperty = {
+const LI2O: ComponentProperty = {
   name: 'Lithium Oxide',
   formula: 'Li2O',
   category: 'oxide-modifier',
@@ -216,7 +197,7 @@ export const LI2O: ComponentProperty = {
   description: 'Strong flux with depolymerizing effect',
 };
 
-export const PBO: ComponentProperty = {
+const PBO: ComponentProperty = {
   name: 'Lead Oxide',
   formula: 'PbO',
   category: 'oxide-modifier',
@@ -233,7 +214,7 @@ export const PBO: ComponentProperty = {
     'Very strong flux, extremely fusible, strong network breaker',
 };
 
-export const CAO: ComponentProperty = {
+const CAO: ComponentProperty = {
   name: 'Calcium Oxide',
   formula: 'CaO',
   category: 'oxide-modifier',
@@ -250,7 +231,7 @@ export const CAO: ComponentProperty = {
     'Strong flux, forms CaO-SiO2 eutectic systems, creates anorthite',
 };
 
-export const BAO: ComponentProperty = {
+const BAO: ComponentProperty = {
   name: 'Barium Oxide',
   formula: 'BaO',
   category: 'oxide-modifier',
@@ -266,7 +247,7 @@ export const BAO: ComponentProperty = {
   description: 'Strong flux with moderate depolymerizing effect',
 };
 
-export const SRO: ComponentProperty = {
+const SRO: ComponentProperty = {
   name: 'Strontium Oxide',
   formula: 'SrO',
   category: 'oxide-modifier',
@@ -282,7 +263,7 @@ export const SRO: ComponentProperty = {
   description: 'Similar to BaO, strong depolymerizing effect',
 };
 
-export const MNO: ComponentProperty = {
+const MNO: ComponentProperty = {
   name: 'Manganese(II) Oxide',
   formula: 'MnO',
   category: 'oxide-modifier',
@@ -298,7 +279,7 @@ export const MNO: ComponentProperty = {
   description: 'Moderate flux with mild depolymerizing effect',
 };
 
-export const FEO: ComponentProperty = {
+const FEO: ComponentProperty = {
   name: 'Iron(II) Oxide',
   formula: 'FeO',
   category: 'oxide-modifier',
@@ -314,7 +295,7 @@ export const FEO: ComponentProperty = {
   description: 'Divalent iron, moderate flux, oxidizes to Fe2O3 at high T',
 };
 
-export const FE2O3: ComponentProperty = {
+const FE2O3: ComponentProperty = {
   name: 'Iron(III) Oxide',
   formula: 'Fe2O3',
   category: 'oxide-modifier',
@@ -330,7 +311,7 @@ export const FE2O3: ComponentProperty = {
   description: 'Trivalent iron, moderate flux, common in natural clays',
 };
 
-export const COO: ComponentProperty = {
+const COO: ComponentProperty = {
   name: 'Cobalt Oxide',
   formula: 'CoO',
   category: 'oxide-modifier',
@@ -346,7 +327,7 @@ export const COO: ComponentProperty = {
   description: 'Mild flux with gentle depolymerizing effect',
 };
 
-export const NIO: ComponentProperty = {
+const NIO: ComponentProperty = {
   name: 'Nickel Oxide',
   formula: 'NiO',
   category: 'oxide-modifier',
@@ -362,7 +343,7 @@ export const NIO: ComponentProperty = {
   description: 'Mild flux with gentle depolymerizing effect',
 };
 
-export const CUO: ComponentProperty = {
+const CUO: ComponentProperty = {
   name: 'Copper Oxide',
   formula: 'CuO',
   category: 'oxide-modifier',
@@ -382,7 +363,7 @@ export const CUO: ComponentProperty = {
 // FLUORIDE COMPONENTS (6 components)
 // ============================================================
 
-export const NAF: ComponentProperty = {
+const NAF: ComponentProperty = {
   name: 'Sodium Fluoride',
   formula: 'NaF',
   category: 'fluoride',
@@ -397,7 +378,7 @@ export const NAF: ComponentProperty = {
   description: 'Very strong flux, more effective than Na2O',
 };
 
-export const KF: ComponentProperty = {
+const KF: ComponentProperty = {
   name: 'Potassium Fluoride',
   formula: 'KF',
   category: 'fluoride',
@@ -412,7 +393,7 @@ export const KF: ComponentProperty = {
   description: 'Strong flux with strong depolymerizing effect',
 };
 
-export const LIF: ComponentProperty = {
+const LIF: ComponentProperty = {
   name: 'Lithium Fluoride',
   formula: 'LiF',
   category: 'fluoride',
@@ -427,7 +408,7 @@ export const LIF: ComponentProperty = {
   description: 'Strong flux with strong depolymerizing effect',
 };
 
-export const CAF2: ComponentProperty = {
+const CAF2: ComponentProperty = {
   name: 'Calcium Fluoride',
   formula: 'CaF2',
   category: 'fluoride',
@@ -442,7 +423,7 @@ export const CAF2: ComponentProperty = {
   description: 'Moderate flux, equivalent to CaO but more volatile',
 };
 
-export const MGF2: ComponentProperty = {
+const MGF2: ComponentProperty = {
   name: 'Magnesium Fluoride',
   formula: 'MgF2',
   category: 'fluoride',
@@ -457,7 +438,7 @@ export const MGF2: ComponentProperty = {
   description: 'Mild flux with gentle depolymerizing effect',
 };
 
-export const ALF3: ComponentProperty = {
+const ALF3: ComponentProperty = {
   name: 'Aluminum Fluoride',
   formula: 'AlF3',
   category: 'fluoride',
@@ -476,7 +457,7 @@ export const ALF3: ComponentProperty = {
 // CHLORIDE COMPONENTS (6 components)
 // ============================================================
 
-export const NACL: ComponentProperty = {
+const NACL: ComponentProperty = {
   name: 'Sodium Chloride',
   formula: 'NaCl',
   category: 'chloride',
@@ -492,7 +473,7 @@ export const NACL: ComponentProperty = {
     'Volatile at high temperature, strong network-breaking effect',
 };
 
-export const KCL: ComponentProperty = {
+const KCL: ComponentProperty = {
   name: 'Potassium Chloride',
   formula: 'KCl',
   category: 'chloride',
@@ -507,7 +488,7 @@ export const KCL: ComponentProperty = {
   description: 'Volatile, similar to NaCl',
 };
 
-export const CACL2: ComponentProperty = {
+const CACL2: ComponentProperty = {
   name: 'Calcium Chloride',
   formula: 'CaCl2',
   category: 'chloride',
@@ -522,7 +503,7 @@ export const CACL2: ComponentProperty = {
   description: 'Volatile, moderate flux effect',
 };
 
-export const MGCL2: ComponentProperty = {
+const MGCL2: ComponentProperty = {
   name: 'Magnesium Chloride',
   formula: 'MgCl2',
   category: 'chloride',
@@ -537,7 +518,7 @@ export const MGCL2: ComponentProperty = {
   description: 'Volatile, mild flux effect',
 };
 
-export const FECL2: ComponentProperty = {
+const FECL2: ComponentProperty = {
   name: 'Iron(II) Chloride',
   formula: 'FeCl2',
   category: 'chloride',
@@ -552,7 +533,7 @@ export const FECL2: ComponentProperty = {
   description: 'Volatile, mild flux effect',
 };
 
-export const FECL3: ComponentProperty = {
+const FECL3: ComponentProperty = {
   name: 'Iron(III) Chloride',
   formula: 'FeCl3',
   category: 'chloride',
@@ -567,371 +548,39 @@ export const FECL3: ComponentProperty = {
   description: 'Volatile, mild flux effect',
 };
 
-// ============================================================
-// UNIFIED COMPONENT REGISTRY
-// ============================================================
-
-/**
- * All 33 components indexed by formula
- * Single source of truth for all component properties
- * Enables iteration: for (const [formula, props] of Object.entries(COMPONENT_PROPERTIES))
- */
+/** Single registry: formula → properties. */
 export const COMPONENT_PROPERTIES: Record<string, ComponentProperty> = {
-  // Oxide Network Formers (7)
-  AL2O3,
-  SIO2,
-  CR2O3,
-  ZRO2,
-  TIO2,
-  MGO,
-  B2O3,
-  GEO2,
-  // Oxide Network Modifiers (14)
-  NA2O,
-  K2O,
-  LI2O,
-  PBO,
-  CAO,
-  BAO,
-  SRO,
-  MNO,
-  FEO,
-  FE2O3,
-  COO,
-  NIO,
-  CUO,
-  // Fluorides (6)
-  NAF,
-  KF,
-  LIF,
-  CAF2,
-  MGF2,
-  ALF3,
-  // Chlorides (6)
-  NACL,
-  KCL,
-  CACL2,
-  MGCL2,
-  FECL2,
-  FECL3,
-} as const;
-
-// Backward compatibility export
-export const COMPONENT_EFFECTS = COMPONENT_PROPERTIES;
-
-// ============================================================
-// GROUPED EXPORTS BY CATEGORY
-// ============================================================
-
-/**
- * All oxide network formers
- */
-export const OXIDE_NETWORK_FORMERS = {
-  AL2O3,
-  SIO2,
-  CR2O3,
-  ZRO2,
-  TIO2,
-  MGO,
-  B2O3,
-  GEO2,
+  [AL2O3.formula]: AL2O3,
+  [SIO2.formula]: SIO2,
+  [CR2O3.formula]: CR2O3,
+  [ZRO2.formula]: ZRO2,
+  [TIO2.formula]: TIO2,
+  [MGO.formula]: MGO,
+  [B2O3.formula]: B2O3,
+  [GEO2.formula]: GEO2,
+  [NA2O.formula]: NA2O,
+  [K2O.formula]: K2O,
+  [LI2O.formula]: LI2O,
+  [PBO.formula]: PBO,
+  [CAO.formula]: CAO,
+  [BAO.formula]: BAO,
+  [SRO.formula]: SRO,
+  [MNO.formula]: MNO,
+  [FEO.formula]: FEO,
+  [FE2O3.formula]: FE2O3,
+  [COO.formula]: COO,
+  [NIO.formula]: NIO,
+  [CUO.formula]: CUO,
+  [NAF.formula]: NAF,
+  [KF.formula]: KF,
+  [LIF.formula]: LIF,
+  [CAF2.formula]: CAF2,
+  [MGF2.formula]: MGF2,
+  [ALF3.formula]: ALF3,
+  [NACL.formula]: NACL,
+  [KCL.formula]: KCL,
+  [CACL2.formula]: CACL2,
+  [MGCL2.formula]: MGCL2,
+  [FECL2.formula]: FECL2,
+  [FECL3.formula]: FECL3,
 };
-
-/**
- * All oxide network modifiers (fluxes)
- */
-export const OXIDE_NETWORK_MODIFIERS = {
-  NA2O,
-  K2O,
-  LI2O,
-  PBO,
-  CAO,
-  BAO,
-  SRO,
-  MNO,
-  FEO,
-  FE2O3,
-  COO,
-  NIO,
-  CUO,
-};
-
-/**
- * All fluoride components
- */
-export const FLUORIDE_COMPONENTS = {
-  NAF,
-  KF,
-  LIF,
-  CAF2,
-  MGF2,
-  ALF3,
-};
-
-/**
- * All chloride components
- */
-export const CHLORIDE_COMPONENTS = {
-  NACL,
-  KCL,
-  CACL2,
-  MGCL2,
-  FECL2,
-  FECL3,
-};
-
-// ============================================================
-// HELPER FUNCTIONS - COMPONENT ACCESS
-// ============================================================
-
-/**
- * Get component by formula
- * @param formula Component formula (e.g., 'Al2O3')
- * @returns Component properties object or undefined
- */
-export function getComponentEffect(
-  formula: string,
-): ComponentProperty | undefined {
-  return COMPONENT_PROPERTIES[formula as keyof typeof COMPONENT_PROPERTIES];
-}
-
-// Backward compatibility alias
-export function getComponentProperty(
-  formula: string,
-): ComponentProperty | undefined {
-  return getComponentEffect(formula);
-}
-
-/**
- * Get all component names (formulas)
- * @returns Array of all component formulas
- */
-export function getAllComponentNames(): string[] {
-  return Object.keys(COMPONENT_PROPERTIES);
-}
-
-/**
- * Get components by category
- * @param category Component category
- * @returns Array of components in that category
- */
-export function getComponentsByCategory(
-  category: ComponentProperty['category'],
-): ComponentProperty[] {
-  return Object.values(COMPONENT_PROPERTIES).filter(
-    (comp) => comp.category === category,
-  );
-}
-
-/**
- * Get components by classification
- * @param classification Component classification
- * @returns Array of components with that classification
- */
-export function getComponentsByClassification(
-  classification: ComponentProperty['classification'],
-): ComponentProperty[] {
-  return Object.values(COMPONENT_PROPERTIES).filter(
-    (comp) => comp.classification === classification,
-  );
-}
-
-// ============================================================
-// HELPER FUNCTIONS - EFFECT CALCULATIONS
-// ============================================================
-
-/**
- * Calculate total refractoriness effect from composition
- * Iterates through composition and sums weighted effects
- *
- * @param composition Record with component formulas and weight percentages
- * @returns Total refractoriness effect in Kelvin
- */
-export function calculateRefractorinessEffect(
-  composition: Record<string, number>,
-): number {
-  let totalEffect = 0;
-  for (const [formula, percentage] of Object.entries(composition)) {
-    const component = getComponentEffect(formula);
-    if (component && percentage > 0) {
-      totalEffect += (percentage / 100) * component.refractorinessEffect;
-    }
-  }
-  return totalEffect;
-}
-
-/**
- * Calculate total liquidus effect from composition
- * Iterates through composition and sums weighted effects
- *
- * @param composition Record with component formulas and weight percentages
- * @returns Total liquidus effect in Kelvin
- */
-export function calculateLiquidusEffect(
-  composition: Record<string, number>,
-): number {
-  let totalEffect = 0;
-  for (const [formula, percentage] of Object.entries(composition)) {
-    const component = getComponentEffect(formula);
-    if (component && percentage > 0) {
-      totalEffect += (percentage / 100) * component.liquidusEffect;
-    }
-  }
-  return totalEffect;
-}
-
-/**
- * Calculate total viscosity effect from composition
- * Iterates through composition and sums weighted effects
- *
- * @param composition Record with component formulas and weight percentages
- * @returns Total viscosity effect in Kelvin
- */
-export function calculateViscosityEffect(
-  composition: Record<string, number>,
-): number {
-  let totalEffect = 0;
-  for (const [formula, percentage] of Object.entries(composition)) {
-    const component = getComponentEffect(formula);
-    if (component && component.viscosityEffect && percentage > 0) {
-      totalEffect += (percentage / 100) * component.viscosityEffect;
-    }
-  }
-  return totalEffect;
-}
-
-// ============================================================
-// HELPER FUNCTIONS - THERMAL PROPERTIES
-// ============================================================
-
-/**
- * Calculate weighted thermal conductivity from composition
- * Iterates through composition and sums weighted conductivities
- *
- * @param composition Record with component formulas and weight percentages
- * @returns Weighted average thermal conductivity (W/m·K)
- */
-export function calculateWeightedThermalConductivity(
-  composition: Record<string, number>,
-): number {
-  let k_base = 0;
-  for (const [formula, percentage] of Object.entries(composition)) {
-    const component = getComponentEffect(formula);
-    if (component && percentage > 0) {
-      k_base += (percentage / 100) * component.conductivity_WmK;
-    }
-  }
-  return k_base > 0 ? k_base : 1.0;
-}
-
-/**
- * Calculate weighted specific heat from composition
- * Iterates through composition and sums weighted specific heats
- *
- * @param composition Record with component formulas and weight percentages
- * @returns Weighted average specific heat (J/kg·K)
- */
-export function calculateWeightedSpecificHeat(
-  composition: Record<string, number>,
-): number {
-  let cp = 0;
-  let totalWeight = 0;
-  for (const [formula, percentage] of Object.entries(composition)) {
-    const component = getComponentEffect(formula);
-    if (component && percentage > 0) {
-      cp += (percentage / 100) * component.specificHeat_JkgK;
-      totalWeight += percentage;
-    }
-  }
-  return totalWeight > 0 ? cp : 800; // Default 800 J/kg·K
-}
-
-// ============================================================
-// HELPER FUNCTIONS - PHASE ENRICHMENT
-// ============================================================
-
-/**
- * Calculate liquid composition using enrichment factors
- * Applies liquidEnrichmentFactor to each component
- *
- * @param composition Original bulk composition
- * @returns Liquid composition with enrichment applied
- */
-export function calculateLiquidCompositionWithEnrichment(
-  composition: Record<string, number>,
-): Record<string, number> {
-  const liquid: Record<string, number> = {};
-  for (const [formula, percentage] of Object.entries(composition)) {
-    const component = getComponentEffect(formula);
-    if (component && component.liquidEnrichmentFactor && percentage > 0) {
-      liquid[formula] = percentage * component.liquidEnrichmentFactor;
-    }
-  }
-  return liquid;
-}
-
-/**
- * Calculate solid composition using enrichment factors
- * Applies solidEnrichmentFactor to each component
- *
- * @param composition Original bulk composition
- * @returns Solid composition with enrichment applied
- */
-export function calculateSolidCompositionWithEnrichment(
-  composition: Record<string, number>,
-): Record<string, number> {
-  const solid: Record<string, number> = {};
-  for (const [formula, percentage] of Object.entries(composition)) {
-    const component = getComponentEffect(formula);
-    if (component && component.solidEnrichmentFactor && percentage > 0) {
-      solid[formula] = percentage * component.solidEnrichmentFactor;
-    }
-  }
-  return solid;
-}
-
-/**
- * Extract components by category
- * Organizes composition by component type
- *
- * @param composition Record with component formulas and weight percentages
- * @returns Components organized by category
- */
-export function extractComponentsByCategory(composition: Record<string, number>): {
-  oxideFormers: Record<string, number>;
-  oxideModifiers: Record<string, number>;
-  fluorides: Record<string, number>;
-  chlorides: Record<string, number>;
-} {
-  const result = {
-    oxideFormers: {} as Record<string, number>,
-    oxideModifiers: {} as Record<string, number>,
-    fluorides: {} as Record<string, number>,
-    chlorides: {} as Record<string, number>,
-  };
-
-  for (const [formula, percentage] of Object.entries(composition)) {
-    if (percentage <= 0) continue;
-
-    const component = getComponentEffect(formula);
-    if (!component) continue;
-
-    switch (component.category) {
-      case 'oxide-former':
-        result.oxideFormers[formula] = percentage;
-        break;
-      case 'oxide-modifier':
-        result.oxideModifiers[formula] = percentage;
-        break;
-      case 'fluoride':
-        result.fluorides[formula] = percentage;
-        break;
-      case 'chloride':
-        result.chlorides[formula] = percentage;
-        break;
-    }
-  }
-
-  return result;
-}
-

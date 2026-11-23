@@ -153,7 +153,7 @@ describe('FILE_LENGTH_RULES', () => {
 
   it.each([
     'src/modules/refractory/data/materials/materials-oxide.data.ts',
-    'src/modules/refractory/data/component-properties.ts',
+    'src/modules/refractory/data/component-properties.data.ts',
     'src/common/thermal/compound/gas/n2.ts',
     'src/common/thermal/enum/ref-key.enum.ts',
     'src/modules/x/some.spec.ts',

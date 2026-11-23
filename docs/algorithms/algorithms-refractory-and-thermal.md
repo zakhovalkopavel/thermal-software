@@ -11,7 +11,7 @@
 | [`FULL_PHASE_EQUILIBRIUM.md`](./phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md) | `PhaseEquilibriumService`: lever rule on tabulated phase diagrams with a shrinking-core grain reaction; matrix equilibrium at T and after cooling (liquid → glass) | 🔄 REWRITTEN |
 | [`MINERAL_PHASE_IDENTIFICATION.md`](./phase-equilibrium/MINERAL_PHASE_IDENTIFICATION.md) | Raw material mineralogy and phase catalog | ✅ |
 | [`REFRACTORINESS_ALGORITHM.md`](./phase-equilibrium/REFRACTORINESS_ALGORITHM.md) | Equilibrium melting of the fired mix on the phase diagrams: solidus, liquidus, temperatures at given liquid fractions; cone refractoriness (ASTM C24 / GOST 4069) from a critical liquid fraction fitted to published cone values; no refractoriness under load (ISO 1893) | 🔄 REWRITTEN |
-| [`COMPONENT_EFFECTS.md`](./phase-equilibrium/COMPONENT_EFFECTS.md) | Per-component effect table; only the component breakdown of `GlassViscosityService` still uses it | ⚠️ unsourced values |
+| [`COMPONENT_EFFECTS.md`](./phase-equilibrium/COMPONENT_EFFECTS.md) | Per-component effect table (`COMPONENT_PROPERTIES` + `ComponentProperties`); used by refractoriness / phase eq / thermal / glass-viscosity breakdown | ⚠️ unsourced values |
 
 ### Mix — [`mix/`](./mix/)
 

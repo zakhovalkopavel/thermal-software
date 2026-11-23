@@ -4,8 +4,8 @@ import { CALCULATION_CONSTANTS } from '../../../../../src/modules/refractory/con
 describe('ThermalPerformanceService', () => {
   let service: ThermalPerformanceService;
 
-  /** Keys match `COMPONENT_PROPERTIES` (uppercase formulas). */
-  const silicaAlumina = { SIO2: 40, AL2O3: 30, CAO: 10 };
+  /** Keys match COMPONENT_PROPERTIES chemical formulas. */
+  const silicaAlumina = { SiO2: 40, Al2O3: 30, CaO: 10 };
 
   beforeEach(() => {
     service = new ThermalPerformanceService();
@@ -77,12 +77,12 @@ describe('ThermalPerformanceService', () => {
   describe('composition effects', () => {
     it('returns different conductivity for different oxide mixes', () => {
       const a = service.calculateThermalConductivity(
-        { SIO2: 90, AL2O3: 10 },
+        { SiO2: 90, Al2O3: 10 },
         200,
         0.1,
       );
       const b = service.calculateThermalConductivity(
-        { MGO: 90, AL2O3: 10 },
+        { MgO: 90, Al2O3: 10 },
         200,
         0.1,
       );
@@ -91,7 +91,7 @@ describe('ThermalPerformanceService', () => {
 
     it('includes fluorides/chlorides in component breakdown when present', () => {
       const res = service.calculateThermalConductivity(
-        { SIO2: 40, AL2O3: 40, CAF2: 10, NACL: 10 },
+        { SiO2: 40, Al2O3: 40, CaF2: 10, NaCl: 10 },
         200,
         0.1,
       );

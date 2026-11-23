@@ -365,7 +365,7 @@ Removed:
 - the `/thermal-conductivity` endpoint (replaced by `/mix/thermal`):
   - the controller route, `services/thermal/thermal-performance.service.ts` and its provider, `test/unit/refractory/services/thermal/thermal-performance.service.spec.ts`;
   - `dto/thermal-conductivity/` (`thermal-conductivity.dto.ts`, `thermal-conductivity-result.dto.ts`, `thermal-conductivity-components.dto.ts`) and `interfaces/thermal-performance.interface.ts`;
-  - `calculateWeightedThermalConductivity`, `calculateWeightedSpecificHeat` and `extractComponentsByCategory` in `data/component-properties.ts`, and `AIR_THERMAL_CONDUCTIVITY`, `BASE_DENSITY_KGM3`, `BASE_TEMPERATURE_C`, `DEFAULT_POROSITY`, `SPECIFIC_HEAT_TEMP_COEFF`, `THERMAL_CONDUCTIVITY_TEMP_COEFF` in `constants/calculation-constants.ts`;
+  - `ComponentProperties.weightedThermalConductivity` / `weightedSpecificHeat` / `extractByCategory` (`utils/component-properties.ts`) over `COMPONENT_PROPERTIES` (`data/component-properties.data.ts`), and `AIR_THERMAL_CONDUCTIVITY`, `BASE_DENSITY_KGM3`, `BASE_TEMPERATURE_C`, `DEFAULT_POROSITY`, `SPECIFIC_HEAT_TEMP_COEFF`, `THERMAL_CONDUCTIVITY_TEMP_COEFF` in `constants/calculation.constants.ts`;
   - frontend: see [Step 9](../../frontend/STEP_09_MINERAL_COMPOSITIONS.md) (λ chart moves to `/mix/thermal`);
 - the old composition-based refractoriness (see [REFRACTORINESS_ALGORITHM.md](REFRACTORINESS_ALGORITHM.md), Code layout);
 - `OxideCompositionDto` in `dto/common/common.dto.ts` (eight oxide fields) and `utils/oxide-composition-record.util.ts` with its spec, once no DTO uses them.

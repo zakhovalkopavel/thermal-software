@@ -8,11 +8,7 @@ import {
   SolidPhaseData,
   MineralPhase,
 } from '../../types';
-import {
-  calculateLiquidusEffect,
-  calculateLiquidCompositionWithEnrichment,
-  calculateSolidCompositionWithEnrichment,
-} from '../../data/component-properties';
+import { ComponentProperties } from '../../utils/component-properties';
 
 const { EUTECTIC_COMPOSITION, EUTECTIC_TEMPERATURE_C } = PHASE_EQUILIBRIUM_CONSTANTS;
 
@@ -64,7 +60,7 @@ export class PhaseEquilibriumService {
   private readonly logger = new Logger(PhaseEquilibriumService.name);
   private readonly MIN_TEMPERATURE = CALCULATION_CONSTANTS.MIN_TEMPERATURE_C;
   private readonly MAX_TEMPERATURE = CALCULATION_CONSTANTS.MAX_TEMPERATURE_C;
-  // Using shared liquidus effects from component-properties.ts - no private constants needed
+  // Using shared liquidus effects from ComponentProperties — no private constants needed
 
   calculatePhaseEquilibrium(data: { composition: Record<string, number>; temperature: number; totalMass?: number; }) {
     const { composition, temperature, totalMass = 100 } = data;
@@ -152,7 +148,7 @@ export class PhaseEquilibriumService {
 
     // Use helper function to calculate liquidus effect from all 33 components at once
     // This automatically loops through composition and applies effects
-    const effectFromComponents = calculateLiquidusEffect(comp);
+    const effectFromComponents = ComponentProperties.liquidusEffect(comp);
     liquidus += effectFromComponents;
 
     return Math.max(1300, Math.min(1900, liquidus));
@@ -166,7 +162,7 @@ export class PhaseEquilibriumService {
    * Liquid composition is enriched in flux oxides (CaO, Fe2O3)
    * and approaches eutectic composition, depleted in refractory oxides (Al2O3, SiO2).
    *
-   * Uses liquidEnrichmentFactor from each component in component-properties.ts
+   * Uses liquidEnrichmentFactor from each component in COMPONENT_PROPERTIES
    * which automatically applies component-specific enrichment coefficients.
    *
    * @param original Original bulk composition
@@ -177,8 +173,8 @@ export class PhaseEquilibriumService {
     if (liquidPercent < 0.01) return {};
     if (liquidPercent === 100) return { ...original };
 
-    // Use helper to apply enrichment factors from component-properties
-    const liquid = calculateLiquidCompositionWithEnrichment(original);
+    // Apply enrichment factors via ComponentProperties
+    const liquid = ComponentProperties.liquidCompositionWithEnrichment(original);
 
     // Blend factor: approaches eutectic composition as liquid increases
     const blendFactor = Math.min(liquidPercent / 100, 0.6);
@@ -203,7 +199,7 @@ export class PhaseEquilibriumService {
    * - Depleted in CaO, Fe2O3 (fluxes prefer liquid phase)
    * - Fluorides and chlorides almost completely leave solid
    *
-   * Uses solidEnrichmentFactor from each component in component-properties.ts
+   * Uses solidEnrichmentFactor from each component in COMPONENT_PROPERTIES
    * which automatically handles component-specific solid retention.
    *
    * @param original Original bulk composition
@@ -216,8 +212,8 @@ export class PhaseEquilibriumService {
     if (solidPercent < 0.01) return {};
     if (liquidPercent < 0.01) return { ...original };
 
-    // Use helper to apply solid enrichment factors from component-properties
-    const solid = calculateSolidCompositionWithEnrichment(original);
+    // Apply solid enrichment factors via ComponentProperties
+    const solid = ComponentProperties.solidCompositionWithEnrichment(original);
 
     // Normalize to get percentage composition
     const normalized: Record<string, number> = {};

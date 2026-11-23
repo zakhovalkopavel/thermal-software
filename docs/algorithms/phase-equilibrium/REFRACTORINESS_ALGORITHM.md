@@ -106,7 +106,7 @@ See [API spec §11](../../api/REFRACTORY_API_SPEC.md): `refractoriness` (`temper
 
 Removed:
 - `interfaces/refractoriness.interface.ts` and its exports in `interfaces/index.ts`;
-- `calculateRefractorinessEffect` in `data/component-properties.ts`;
+- `ComponentProperties.refractorinessEffect` (`utils/component-properties.ts`) over `COMPONENT_PROPERTIES` (`data/component-properties.data.ts`);
 - `BASE_REFRACTORINESS_C`, `RUL_TEST_LOAD_PA`, `LOW_DUTY_LIMIT_C`, `INTERMEDIATE_DUTY_LIMIT_C`, `HIGH_DUTY_LIMIT_C`, `MAX_TEMPERATURE_C` in `constants/calculation-constants.ts` (their only other user is the old `PhaseEquilibriumService`, which is rewritten); `MIN_TEMPERATURE_C` stays for `MixThermalInputDto`;
 - frontend: `constants/refractoriness-standards.constants.ts` and the standard selector;
 - the load-test results (`RUL` T0.5 / T1 / T2) and the GOST / ASTM C71 variants: the cone value covers ASTM C24 and GOST 4069, which measure the same cone bending.
