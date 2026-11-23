@@ -124,14 +124,15 @@
 
 | Service | Lines | Tests | Notes |
 |---------|-------|-------|-------|
-| `fluid-property.service.ts` | 292 | ❌ Missing | Core service — needs tests |
-| `dimensionless-calculation.service.ts` | 223 | ❌ Missing | Nu, HTC — needs tests |
-| `gas-properties.service.ts` | 182 | ❌ Missing | NASA-7 coefficients — needs tests |
-| `radiation.service.ts` | 167 | ✅ Full (192 lines) | |
-| `dimensionless-numbers.service.ts` | 159 | ❌ Missing | Re, Pr, Gr, Ra — needs tests |
-| `transport.service.ts` | 78 | ❌ Missing | Thin implementation |
-| `diffusion.service.ts` | 67 | ❌ Missing | |
-| `aerodynamics.service.ts` | 40 | ❌ Missing | Thin implementation |
+| `fluid-property.service.ts` | 261 | ✅ Added | catalogues + Cp/μ/ρ/λ + validation |
+| `dimensionless-calculation.service.ts` | 244 | ✅ Added | resolveFluid, Re/Pr/Gr/Ra, Nu |
+| `gas-properties.service.ts` | 297 | ✅ Present | NASA H/S/G + Cp (97 lines) |
+| `radiation.service.ts` | 165 | ✅ Full (192 lines) | |
+| `dimensionless-numbers.service.ts` | 156 | ✅ Added | scalars, geometry, Nu dispatcher |
+| `transport.service.ts` | 263 | ✅ Present | mixture λ/μ (180 lines) |
+| `diffusion.service.ts` | 67 | ✅ Expanded | binary + Wilke effective D |
+| `aerodynamics.service.ts` | 40 | ✅ Added | Ergun ΔP/L + superficial velocity |
+| `compound-fluid-props.service.ts` | 187 | ✅ Present | 103 lines |
 
 ### DTOs (25+ files) — ✅ Complete
 All input/output DTOs for fluid, dimensionless, geometry, numeric endpoints in `dto/index.ts`.
@@ -141,8 +142,8 @@ All input/output DTOs for fluid, dimensionless, geometry, numeric endpoints in `
 - [x] `correlation-name.type.ts`
 - [x] `flow-regime.type.ts`
 
-### Interfaces (3 files) — ✅ Complete
-- [x] `fluid-property.interfaces.ts`
+### Interfaces / catalogue types — ✅ Complete
+- [x] fluid catalogue shapes → `types/flow-mode-entry.type.ts` etc. (Phase 8)
 - [x] `nusselt-result.interface.ts`
 
 ### Controller test
@@ -346,12 +347,12 @@ Per-service checklist: [`docs/SERVICE_TEST_CHECKLIST.md`](../SERVICE_TEST_CHECKL
 
 ### Highest priority
 
-1. ~~**Expand thin refractory test files**~~ — done (phase-equilibrium, refractoriness, shrinkage, mineral-phase, thermal-performance, participation)
-2. **Add thermodynamics service tests** (fluid-property, dimensionless-calculation, gas-properties, dimensionless-numbers, diffusion, transport, aerodynamics)
+1. ~~**Expand thin refractory test files**~~ — done
+2. ~~**Add thermodynamics service tests**~~ — fluid-property, dimensionless-numbers/calculation, aerodynamics added; diffusion expanded; gas-properties/transport/radiation already present
 3. **Frontend: first pages** — Phase Equilibrium + Blend Optimizer (highest user value)
 4. **Phase 8.2 coverage report** — `docker compose exec backend npm run test:cov` when Docker is available
 
-### Conventions refactoring (in progress on `refactoring`)
+### Conventions refactoring (complete on `refactoring`)
 
 Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).  
 - [x] **Phase 0** — suite baseline (1137 tests), conventions + structure ratchet, Swagger snapshot, D2 equation-type exception in `CONVENTIONS.md`.  
