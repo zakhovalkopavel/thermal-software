@@ -1,19 +1,22 @@
 # Setup and secrets
-.PHONY: setup setup-secrets generate-jwt check-env
+.PHONY: setup setup-secrets generate-jwt check-env init-submodules update-submodules sync-vendor-env
 
-setup: ## Create a .env from .env.example (initial setup)
+setup: ## Init submodules, create .env, sync vendor envs
 	@echo "🔧 Setting up Thermal Software project..."
+	@$(MAKE) init-submodules
 	@if [ -f .env ]; then \
 		echo "⚠️  .env file already exists!"; \
 		read -p "Overwrite? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1; \
 	fi
 	@cp .env.example .env
 	@echo "✅ Created .env from .env.example"
+	@$(MAKE) sync-vendor-env
 	@echo ""
 	@echo "⚙️  Next steps:"
 	@echo "  1. Run: make setup-secrets   (generates secure JWT tokens)"
 	@echo "  2. Edit .env if needed:      vim .env"
-	@echo "  3. Start services:           make up"
+	@echo "  3. Sync vendor envs again:   make sync-vendor-env"
+	@echo "  4. Start services:           make up"
 	@echo ""
 
 check-env: ## Verify .env exists (used by up/rebuild)
@@ -22,6 +25,30 @@ check-env: ## Verify .env exists (used by up/rebuild)
 		echo "   Run: make setup"; \
 		exit 1; \
 	fi
+
+_require-gitmodules:
+	@if [ ! -f .gitmodules ]; then \
+		echo "❌ ERROR: .gitmodules missing — register page-ocr and source-extract as submodules first."; \
+		exit 1; \
+	fi
+
+init-submodules: _require-gitmodules ## Clone vendor/* at the commits pinned by this repo
+	@echo "📦 Initializing git submodules (vendor/page-ocr, vendor/source-extract)…"
+	@git submodule update --init --recursive
+	@echo "✅ Submodules ready (pinned commits)"
+
+update-submodules: _require-gitmodules ## Fetch latest remote commits for vendor/*
+	@echo "⬆️  Updating git submodules from remotes (vendor/page-ocr, vendor/source-extract)…"
+	@git submodule sync --recursive
+	@git submodule update --init --remote --recursive
+	@echo "✅ Submodules updated to remote tracking tips (branch from .gitmodules)"
+	@echo "   Parent repo now points at new SHAs — commit when ready:"
+	@echo "     git add vendor/page-ocr vendor/source-extract && git commit"
+
+sync-vendor-env: check-env ## Fill vendor/*/ .env from the main project .env
+	@chmod +x scripts/sync-vendor-env.sh
+	@./scripts/sync-vendor-env.sh
+
 
 setup-secrets: ## Generate secure JWT secrets and DB password into .env
 	@echo "🔐 Generating secure JWT secrets using OpenSSL..."

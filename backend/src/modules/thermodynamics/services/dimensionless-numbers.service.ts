@@ -1,22 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { FlowGeometry } from '../enums/flow-geometry.enum';
 import { BodyGeometry } from '../enums/body-geometry.enum';
-import { DimensionlessInputDto } from '../dto/dimensionless-input.dto';
-import { GeometryDimsDto } from '../dto/geometry-dims.dto';
-import { ResolvedDimensionlessPropsDto } from '../dto/resolved-dimensionless-props.dto';
+import { DimensionlessInputDto } from '../dto/dimensionless/dimensionless-input.dto';
+import { GeometryDimsDto } from '../dto/geometry/geometry-dims.dto';
+import { ResolvedDimensionlessPropsDto } from '../dto/dimensionless/resolved-dimensionless-props.dto';
 import { CorrelationName } from '../enums/correlation-name.enum';
 import { FlowRegime } from '../types/flow-regime.type';
 import { NusseltResult } from '../interfaces/nusselt-result.interface';
-import { ChannelGeometryHelper } from '../helpers/channel-geometry.helper';
+import { ChannelGeometryHelper } from '../utils/channel-geometry';
 
 export { NusseltResult } from '../interfaces/nusselt-result.interface';
-import { BodyGeometryHelper } from '../helpers/body-geometry.helper';
-import {
-  availableCorrelations,
-  resolveRegime, validatePreferredCorrelation,
-} from '../helpers/correlation-validity.helper';
-import { CorrelationSelectorHelper } from '../helpers/correlation-selector.helper';
-import { Common } from '../../../common/thermal/utils/common';
+import { BodyGeometryHelper } from '../utils/body-geometry';
+import { CorrelationValidity } from '../utils/correlation-validity';
+import { CorrelationSelectorHelper } from '../utils/correlation-selector';
+import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 
 @Injectable()
 export class DimensionlessNumbersService {
@@ -42,15 +39,15 @@ export class DimensionlessNumbersService {
 
   /**
    * Gr = g·β·ΔT·L³ / ν²   β = 2/(T_hot+T_cold) (ideal gas)
-   * g defaults to Common.g (9.80665 m/s²); override for non-Earth conditions.
+   * g defaults to PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2 (9.80665 m/s²); override for non-Earth conditions.
    */
-  grashof(T_hot_K: number, T_cold_K: number, L: number, nu: number, g = Common.g): number {
+  grashof(T_hot_K: number, T_cold_K: number, L: number, nu: number, g = PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2): number {
     const beta = 2 / (T_hot_K + T_cold_K);
     return g * beta * Math.abs(T_hot_K - T_cold_K) * Math.pow(L, 3) / (nu * nu);
   }
 
   /** Ra = Gr · Pr */
-  rayleigh(T_hot_K: number, T_cold_K: number, L: number, nu: number, Pr: number, g = Common.g): number {
+  rayleigh(T_hot_K: number, T_cold_K: number, L: number, nu: number, Pr: number, g = PHYSICAL_CONSTANTS.STANDARD_GRAVITY_M_S2): number {
     return this.grashof(T_hot_K, T_cold_K, L, nu, g) * Pr;
   }
 
@@ -111,10 +108,10 @@ export class DimensionlessNumbersService {
     const { lambda } = resolved;
     const L = ChannelGeometryHelper.characteristicLength(geometry, dimensions as GeometryDimsDto);
 
-    const regime    = resolveRegime(geometry, Re, Ra, params.forceRegime);
+    const regime    = CorrelationValidity.resolveRegime(geometry, Re, Ra, params.forceRegime);
     const isNatural = regime === FlowRegime.NATURAL;
 
-    const available  = availableCorrelations(geometry);
+    const available  = CorrelationValidity.availableCorrelations(geometry);
     const allResults: Record<string, { Nu: number; rangeValid: boolean; warning?: string }> = {};
     for (const corr of available) {
       try {
@@ -127,7 +124,7 @@ export class DimensionlessNumbersService {
     let preferredRejectedReason: string | undefined;
 
     if (preferredCorrelation) {
-      const rejection = validatePreferredCorrelation(preferredCorrelation, geometry, Re, Pr, Ra);
+      const rejection = CorrelationValidity.validatePreferredCorrelation(preferredCorrelation, geometry, Re, Pr, Ra);
       if (!rejection) {
         selectedCorr = preferredCorrelation;
         preferredUsed = true;

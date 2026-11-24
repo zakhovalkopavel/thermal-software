@@ -49,7 +49,7 @@ Recommended layout:
 ```
 backend/test/unit/            # Unit tests (fast, isolated)
   modules/refractory/services/
-    refractoriness.service.spec.ts   # Tests for ../../src/modules/refractory/services/refractoriness.service.ts
+    refractoriness.service.spec.ts   # Tests for ../../src/modules/refractory/services/composition/refractoriness.service.ts
 
 backend/test/e2e/             # E2E tests (integration/workflows)
   calculation-workflow.e2e-spec.ts
@@ -187,7 +187,6 @@ Create a `*.spec.ts` file for each service in `backend/src/modules/refractory/se
 Services list (from repository) — for each service, add tests for every public method:
 - `blend-optimizer.service.ts`
 - `glass-viscosity.service.ts`
-- `mineral-phase.service.ts`
 - `packing.service.ts`
 - `participation.service.ts`
 - `phase-equilibrium.service.ts`
@@ -274,24 +273,12 @@ Use the Jest + Nest TestingModule pattern for services that depend on Nest provi
   - Edge case: empty temperatureProfile -> result should return drying stage and empty firing array (or documented behavior)
   - Case: check metadata fields existence and that percent conversions (×100) were applied consistently
 
-5) `refractoriness.service.ts`
+5) `refractoriness.service.ts` (rewritten: mix fractions → solidus, liquidus, liquid levels)
 - Public methods:
-  - `calculateRefractoriness(composition, standard?, testTemperature?)`
-- Tests to implement:
-  - Happy path: typical composition -> expect `estimatedRefractoriness_C` numeric and `classification` one of known categories
-  - Edge case: composition with only flux components (Na2O heavy) -> ensure `estimatedRefractoriness_C` is clamped to `MIN_TEMPERATURE_C` and classification is correct
-  - Edge case: unknown standard -> returns `genericRefractoriness_C` and does not throw
-  - Boundary tests: values near classification thresholds to check `classifyRefractoriness` mapping
-  - Test extract*Components helpers indirectly via expected `components` keys in results
+  - `calculate(dto: RefractorinessInputDto)`
+- Tests to implement: see [`REFRACTORINESS_ALGORITHM.md`](algorithms/phase-equilibrium/REFRACTORINESS_ALGORITHM.md) § Tests (solidus at the data-file invariants, liquidus null above 2000 °C, inert share, levels non-decreasing, no standards without a recorded correlation)
 
-6) `thermal-performance.service.ts`
-- Public methods:
-  - `calculateThermalConductivity(composition, temperature, porosity?)`
-- Tests to implement:
-  - Happy path: typical composition -> expect `thermalConductivity_WmK`, `specificHeat_JkgK`, `density_kgm3`, `thermalDiffusivity_m2s` numeric and within physical ranges
-  - Edge case: porosity = 0 -> effective conductivity should equal k_solid calculation (within rounding)
-  - Edge case: porosity close to 1 -> effective conductivity small but finite, no division by zero
-  - Test that components grouping `oxideFormers` etc. returns only keys present in input composition
+6) `thermal-performance.service.ts` — removed with `POST /thermal-conductivity`; thermal properties are tested in `mix-thermal.service.spec.ts`
 
 7) `viscosity.service.ts`
 - Public methods:
@@ -302,17 +289,7 @@ Use the Jest + Nest TestingModule pattern for services that depend on Nest provi
   - Edge case: extreme composition effect producing very large B -> viscosity clamped to 1e10
   - Test that extracted components keys are properly filtered (non-zero components only)
 
-8) `mineral-phase.service.ts`
-- Public methods:
-  - `identifyPhases(solidComposition, temperature?): Array<{ phase, formula, percent, meltingPoint, description }>`
-- Tests to implement:
-  - Happy path: typical clay/ceramic composition -> expect returned array contains known phases (e.g., Mullite or Corundum depending on Al2O3/SiO2)
-  - Edge case: low Al2O3 and SiO2 -> should return the fallback `Mixed solid solution` entry
-  - Boundary case: composition near mullite ratio (Al2O3/SiO2 ≈ 1.5) -> ensure Mullite is included when ratio falls inside allowed range
-  - Temperature-dependent phases: run at low and high temperatures to exercise `estimateCristobalite` and `estimateTridymite` thresholds
-  - Negative/invalid input: empty composition object -> should return fallback `Mixed solid solution` (not throw)
-
-9) `glass-viscosity.service.ts`
+8) `glass-viscosity.service.ts`
 - Public methods:
   - `calculateViscosity(composition, temperature)`
 - Tests to implement:
@@ -322,7 +299,7 @@ Use the Jest + Nest TestingModule pattern for services that depend on Nest provi
   - Component extraction tests: pass composition containing known keys and assert `components.networkFormers` and `networkModifiers` only contain present keys and corresponding effect numbers
   - Invalid input: null composition or non-number entries -> expect function to handle gracefully (e.g., treat missing as zero) rather than throwing
 
-10) `phase-equilibrium.service.ts`
+9) `phase-equilibrium.service.ts`
 - Public methods:
   - `calculatePhaseEquilibrium({ composition, temperature, totalMass? })`
 - Tests to implement:
@@ -334,7 +311,7 @@ Use the Jest + Nest TestingModule pattern for services that depend on Nest provi
   - Verify rounding and normalization: check `roundComposition` and `normalizeComposition` effects on returned `liquid.composition` and `solid.composition`
   - Warnings generation: craft composition and temperature that trigger a warning (liquidPercent > 25 and temp < liquidus - 100) and assert warnings array includes expected message
 
-11) `participation.service.ts`
+10) `participation.service.ts`
 - Public methods:
   - `calculateParticipation(fractions)`
 - Tests to implement:
@@ -343,7 +320,7 @@ Use the Jest + Nest TestingModule pattern for services that depend on Nest provi
   - Edge case: mass fractions sum to zero -> ensure normalizedParticipation handled (avoid NaN)
   - Negative/invalid input: empty array -> expect returned structure with empty arrays and totalParticipation 0 (or documented behavior)
 
-12) `particle-size-classifier.util.ts` (utility)
+11) `particle-size-classifier.util.ts` (utility)
 - Public methods / accessors:
   - `classifications` (getter)
   - `meshToMm` (getter)
@@ -372,7 +349,7 @@ Use the Jest + Nest TestingModule pattern for services that depend on Nest provi
 The repository includes Makefile shortcuts that run tests inside the project's Docker Compose services. These targets are recommended so tests run in the same environment as CI.
 
 - `make test-backend` — runs the backend test suite inside the `backend` service container. It will `exec` into a running container when available or run a one-off container otherwise.
-- `make test-frontend` — same for the `frontend` service.
+- `make test-frontend` — runs the full frontend quality gate (`npm run verify`) in the `frontend` service container, with the same exec-or-run behaviour. `OFFLINE=1` skips the contract stage.
 - `make test-service SERVICE=<service>` — generic runner for any named service in `compose.yml`.
 
 Examples:

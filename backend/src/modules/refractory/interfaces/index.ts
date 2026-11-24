@@ -8,26 +8,25 @@
  */
 
 // ============================================================
-// BLEND OPTIMIZER INTERFACES
+// BLEND OPTIMIZER (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   Fraction,
   BlendOptimizationOptions,
   BlendOptimizationRequest,
   BlendOptimizationResult,
   BlendOptimizationResults,
+  ViableCompositionRange,
   ValidationResult,
   ValidationError,
   ValidationWarning,
-  isFraction,
-  isBlendOptimizationOptions,
-  isBlendOptimizationRequest,
-} from './blend-optimizer.interface';
+} from '../types';
+export { BlendOptimizerTypeGuards } from '../utils/blend-optimizer-type-guards';
 
 // ============================================================
-// PSD CALCULATOR INTERFACES
+// PSD CALCULATOR (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   PSDFraction,
   PSDCalculationOptions,
   PSDCalculationRequest,
@@ -35,15 +34,13 @@ export {
   PSDValidationResult,
   PSDValidationError,
   PSDValidationWarning,
-  isPSDFraction,
-  isPSDCalculationRequest,
-  isPSDResult,
-} from './psd-calculator.interface';
+} from '../types';
+export { PsdTypeGuards } from '../utils/psd-type-guards';
 
 // ============================================================
-// PACKING CALCULATOR INTERFACES
+// PACKING CALCULATOR (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   PackingInput,
   CPMCalibration,
   CPMInput,
@@ -54,16 +51,13 @@ export {
   PackingValidationError,
   PackingValidationWarning,
   SortedFractions,
-  isPackingInput,
-  isCPMInput,
-  isFurnasInput,
-  isPackingResult,
-} from './packing-calculator.interface';
+} from '../types';
+export { PackingTypeGuards } from '../utils/packing-type-guards';
 
 // ============================================================
-// SHRINKAGE CALCULATOR INTERFACES
+// SHRINKAGE CALCULATOR (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   ShrinkageMaterial,
   CementType,
   ShrinkageInput,
@@ -75,16 +69,13 @@ export {
   ShrinkageValidationResult,
   ShrinkageValidationError,
   ShrinkageValidationWarning,
-  isShrinkageMaterial,
-  isShrinkageInput,
-  isShrinkageStage,
-  isShrinkageResult,
-} from './shrinkage-calculator.interface';
+} from '../types';
+export { ShrinkageTypeGuards } from '../utils/shrinkage-type-guards';
 
 // ============================================================
-// PHASE EQUILIBRIUM INTERFACES
+// PHASE EQUILIBRIUM (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   PhaseEquilibriumInput,
   PhaseComponent,
   MineralPhase,
@@ -97,16 +88,13 @@ export {
   PhaseEquilibriumValidationWarning,
   EutecticPoint,
   LiquidusResult,
-  isPhaseEquilibriumInput,
-  isPhaseData,
-  isMineralPhase,
-  isPhaseEquilibriumResult,
-} from './phase-equilibrium.interface';
+} from '../types';
+export { PhaseEquilibriumTypeGuards } from '../utils/phase-equilibrium-type-guards';
 
 // ============================================================
-// THERMAL PERFORMANCE INTERFACES
+// THERMAL PERFORMANCE (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   ThermalInput,
   ThermalConductivityInput,
   SpecificHeatInput,
@@ -123,18 +111,13 @@ export {
   ThermalValidationWarning,
   TemperatureDependentProperty,
   PropertyCurve,
-  isThermalInput,
-  isThermalConductivityInput,
-  isThermalConductivityResult,
-  isSpecificHeatResult,
-  isThermalExpansionResult,
-  isThermalPerformanceResult,
-} from './thermal-performance.interface';
+} from '../types';
+export { ThermalPerformanceTypeGuards } from '../utils/thermal-performance-type-guards';
 
 // ============================================================
-// REFRACTORINESS INTERFACES
+// REFRACTORINESS (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   RefractorinessInput,
   RefractorinessStandard,
   ISO1893Result,
@@ -148,12 +131,8 @@ export {
   RefractorinessValidationError,
   RefractorinessValidationWarning,
   RefractorinessComparison,
-  isRefractorinessInput,
-  isRefractorinessResult,
-  isISO1893Result,
-  isASTMC24Result,
-  isGOST4069Result,
-} from './refractoriness.interface';
+} from '../types';
+export { RefractorinessTypeGuards } from '../utils/refractoriness-type-guards';
 
 // ============================================================
 // VISCOSITY INTERFACES
@@ -161,26 +140,32 @@ export {
 // Viscosity interfaces removed: superseded by glass-viscosity interfaces and new spec.
 
 // ============================================================
-// GLASS VISCOSITY INTERFACES
+// GLASS VISCOSITY (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   GlassViscosityInput,
   ASTMFixedPoint,
-  GlassViscosityResult,
+  ModelParameters,
+  ModelInfo,
+  FixedPointSpans,
+  FixedPoints,
+  CompositionIssue,
+  ValidationStatus,
+  ComponentEffect,
+  ComponentBreakdown,
   GlassViscosityMetadata,
+  GlassViscosityResult,
   GlassProcessingWindow,
   GlassViscosityValidationResult,
   GlassViscosityValidationError,
   GlassViscosityValidationWarning,
-  isGlassViscosityInput,
-  isGlassViscosityResult,
-  isASTMFixedPoint,
-} from './glass-viscosity.interface';
+} from '../types';
+export { GlassViscosityTypeGuards } from '../utils/glass-viscosity-type-guards';
 
 // ============================================================
-// MINERAL PHASE INTERFACES
+// MINERAL PHASE (types + guards; Phase 6.3)
 // ============================================================
-export {
+export type {
   MineralPhaseData,
   MineralPhaseInput,
   MineralPhaseResult,
@@ -191,10 +176,6 @@ export {
   MineralPhaseValidationError,
   MineralPhaseValidationWarning,
   PhaseTemperatureComparison,
-  isMineralPhaseInput,
-  isMineralPhaseData,
-  isMineralPhaseResult,
-  isPhaseDistribution,
-  isPhaseStability,
-} from './mineral-phase.interface';
+} from '../types';
+export { MineralPhaseTypeGuards } from '../utils/mineral-phase-type-guards';
 

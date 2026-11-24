@@ -87,29 +87,105 @@
 
 ## 📂 CREATED FILES
 
-### Interface Files (10 files)
+### Interface / type files (refractory)
+
+Phase 6.3 moves data shapes to `types/*.type.ts` and type guards to static classes in `utils/`.
+`interfaces/index.ts` remains the central barrel (re-exports).
+
 ```
-backend/src/modules/refractory/interfaces/
-├── index.ts                            ✅ Central export
-├── blend-optimizer.interface.ts        ✅ 9 interfaces
-├── psd-calculator.interface.ts         ✅ 6 interfaces
-├── packing-calculator.interface.ts     ✅ 10 interfaces
-├── shrinkage-calculator.interface.ts   ✅ 10 interfaces
-├── phase-equilibrium.interface.ts      ✅ 11 interfaces
-├── thermal-performance.interface.ts    ✅ 14 interfaces
-├── refractoriness.interface.ts         ✅ 13 interfaces
-├── viscosity.interface.ts              ✅ 5 interfaces
-├── glass-viscosity.interface.ts        ✅ 6 interfaces
-├── mineral-phase.interface.ts          ✅ 13 interfaces
-└── README.md                           ✅ Quick reference
+backend/src/modules/refractory/
+├── types/                              ✅ Phase 6.3 + Phase 8 (`component-property.type.ts`, …)
+├── utils/*-type-guards.ts              ✅ domain TypeGuards static classes
+└── interfaces/
+    ├── index.ts                        ✅ Central export (re-exports types + guards)
+    └── README.md
 ```
 
 ### Constants Files
 ```
 backend/src/modules/refractory/constants/
-├── blend-optimizer.constants.ts        ✅ 180+ lines
-├── calculation-constants.ts            ✅ Existing
-└── component-effects.ts                ✅ Existing
+├── blend-optimizer.constants.ts        ✅ single `BLEND_OPTIMIZER_CONSTANTS` (+ `utils/blend-optimizer-scenarios.ts`)
+├── calculation.constants.ts            ✅ single `CALCULATION_CONSTANTS`
+├── component-effects.ts                ✅ Existing
+├── material-group-routes.constants.ts  ✅ MATERIAL_GROUP_ROUTES (route → group → label)
+├── mix-component-groups.constants.ts   ✅ MIX_COMPONENT_GROUPS
+├── mix-excluded-material-ids.constants.ts ✅ MIX_EXCLUDED_MATERIAL_IDS
+├── material-catalog.constants.ts       ✅ MATERIAL_CATALOG_CONSTANTS
+└── mix-composition.constants.ts        ✅ MIX_COMPOSITION_CONSTANTS (key classification)
+```
+
+### Combustion module — types (November 2026)
+
+Former `modules/combustion/interfaces/*.interface.ts` data shapes are `export type` under
+`modules/combustion/types/` (`CondensedFuel`, `GasStream`, `MarchResult`, …). Bed layer physics:
+`BedMarchService`; orchestration: `BedCombustionService`.
+
+### Common thermal library — types vs interfaces (November 2026)
+
+Conventions Phase 3.4: plain data shapes are `export type` in `types/*.type.ts`. Behavioural
+contracts stay `export interface` in `interfaces/*.interface.ts`. See
+[`COMMON_THERMAL_LIBRARY.md`](services/COMMON_THERMAL_LIBRARY.md).
+
+| Kind | Path | Constructs |
+|------|------|------------|
+| Data shapes | `common/thermal/types/` | `CompoundValue`, `EquationValue`, `EquationValidity`, `EvaluationResult`, `MixtureValidity`, `ValidityAction` |
+| Behaviour | `common/thermal/interfaces/` | `Equation<T>` |
+| Data shapes | `common/thermal/utils/compound-data/types/` | compound-data JSON / search / bounds records (formerly `interfaces/`) |
+| Data shapes | `common/thermal/utils/janaf/types/` | JANAF table / row / file shapes |
+| Data shapes | `common/thermal/utils/nasa/types/` | `Nasa7Species`, `Nasa9Species`, `NasaDatabase` |
+| Behaviour | `common/thermal/utils/nasa/interfaces/` | `NasaThermo`, `NasaMethod<V>` |
+
+### Material catalogue and mix composition (September 2026)
+
+One construct per file. API: [`REFRACTORY_API_SPEC.md`](api/REFRACTORY_API_SPEC.md) §13–14, [`METALS_API_SPEC.md`](api/METALS_API_SPEC.md).
+
+```
+backend/src/common/thermal/dto/
+└── temperature-range.dto.ts                 TemperatureRangeDto
+
+backend/src/modules/metals/dto/
+├── metal-summary.dto.ts                     MetalSummaryDto
+├── metal-thermal-query.dto.ts               MetalThermalQueryDto (`lambdaModel?`)
+└── metal-thermal-result.dto.ts              MetalThermalResultDto
+
+backend/src/modules/metals/enums/
+├── metal-material.enum.ts                   MetalMaterial
+└── metal-lambda-model.enum.ts               MetalLambdaModel (`table` \| `kCT56`)
+
+backend/src/modules/metals/types/
+├── metal-property-approximation.type.ts     MetalPropertyApproximation
+├── metal-property-donor.type.ts             MetalPropertyDonor
+├── metal-property-series.type.ts            MetalPropertySeries
+├── metal-alloy-record.type.ts               MetalAlloyRecord
+├── metal-dataset-index-entry.type.ts        MetalDatasetIndexEntry
+└── kct56-conductivity-model.type.ts         Kct56ConductivityModel
+
+backend/src/modules/refractory/enums/
+├── material-group.enum.ts                   MaterialGroup (17)
+├── material-group-route.enum.ts             MaterialGroupRoute (17)
+├── material-type.enum.ts                    MaterialType
+├── composition-basis.enum.ts                CompositionBasis
+└── non-oxide-component-group.enum.ts        NonOxideComponentGroup
+
+backend/src/modules/refractory/dto/
+├── refractory-product-summary.dto.ts        RefractoryProductSummaryDto
+├── refractory-product-query.dto.ts          RefractoryProductQueryDto
+├── refractory-product-result.dto.ts         RefractoryProductResultDto
+├── material-list-query.dto.ts               MaterialListQueryDto
+├── material-id-param.dto.ts                 MaterialIdParamDto
+├── material-group-route-param.dto.ts        MaterialGroupRouteParamDto
+├── material-group-summary.dto.ts            MaterialGroupSummaryDto
+├── material-category.dto.ts                 MaterialCategoryDto
+├── material-entry.dto.ts                    MaterialEntryDto
+├── material-particle-size.dto.ts            MaterialParticleSizeDto
+├── material-thermal-properties.dto.ts       MaterialThermalPropertiesDto
+├── material-mechanical-properties.dto.ts    MaterialMechanicalPropertiesDto
+├── particle-size-range.dto.ts               ParticleSizeRangeDto
+├── particle-sizes.dto.ts                    ParticleSizesDto
+├── mix-component-input.dto.ts               MixComponentInputDto
+├── mix-composition-input.dto.ts             MixCompositionInputDto
+├── non-oxide-components.dto.ts              NonOxideComponentsDto
+└── mix-composition-result.dto.ts            MixCompositionResultDto
 ```
 
 ### Documentation Files (in tmp/reports/)
@@ -325,7 +401,6 @@ Complete:    tmp/reports/COMPLETE_CHECKLIST.md
 6. RefractorinessService
 7. ViscosityService
 8. GlassViscosityService
-9. MineralPhaseService
 
 Each needs import path updates from `../dto/` to `../interfaces/`
 
@@ -336,6 +411,7 @@ Each needs import path updates from `../dto/` to `../interfaces/`
 | Version | Date | Status | Notes |
 |---------|------|--------|-------|
 | 1.0 | Feb 2, 2026 | ✅ Complete | Initial release, production ready |
+| 1.1 | Sep 28, 2026 | ✅ Complete | Material catalogue DTOs / enums, mix composition DTOs, `TemperatureRangeDto`, `MetalSummaryDto` |
 
 ---
 

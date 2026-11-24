@@ -1,0 +1,131 @@
+{
+  "materialId": "aisi-p20",
+  "name": "P20",
+  "group": "steel",
+  "family": "tool",
+  "aliases": {
+    "uns": "T51620",
+    "sae": "P20"
+  },
+  "composition": {
+    "C": 0.34,
+    "Mn": 0.8,
+    "Si": 0.5,
+    "Cr": 1.7,
+    "Mo": 0.42500000000000004
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "tool_steel_thermal_expansion_and_density.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 7850.0
+        }
+      ]
+    },
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "tool_steel_thermal_expansion_and_density.json"
+      ],
+      "points": [
+        {
+          "T_K": 698.15,
+          "value": 12.8
+        },
+        {
+          "T_K": 813.15,
+          "value": 13.7
+        },
+        {
+          "T_K": 923.15,
+          "value": 14.2
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": -0.9412,
+            "b": 0.02986,
+            "c": -1.458e-05
+          },
+          "min": 698.15,
+          "max": 923.15
+        },
+        "meanRelPct": 0.0,
+        "maxRelPct": 0.0
+      }
+    }
+  },
+  "sourceFiles": [
+    "tool_steel_composition.json",
+    "tool_steel_thermal_expansion_and_density.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1031,
+    "Ac3_K": 1101,
+    "Ac1_C": 758,
+    "Ac3_C": 827,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-4140",
+        "mode": "full-series",
+        "why": "aisi-p20 doesn't have electricalResistivity points; link sae-4140 series (same group steel; ElMD=0.17422, L1=1.4025 wt% [ΔCr=0.75%; ΔSi=0.25%; ΔMo=0.225%; ΔMn=0.075%; ΔC=0.065%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 0.17422,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-5140",
+        "mode": "full-series",
+        "why": "aisi-p20 doesn't have specificHeat points; link sae-5140 series (same group steel; ElMD=0.217767, L1=1.6775 wt% [ΔCr=0.9%; ΔMo=0.425%; ΔSi=0.25%; ΔC=0.065%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 0.217767,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "aisi-w1",
+        "mode": "full-series",
+        "why": "aisi-p20 doesn't have thermalConductivity points; link aisi-w1 series (same family tool; ElMD=0.755404, L1=3.785 wt% [ΔCr=1.625%; ΔC=0.76%; ΔMn=0.55%; ΔMo=0.375%; ΔSi=0.25%; ΔNi=0.1%; ΔW=0.075%; ΔV=0.05%])",
+        "compositionDistance": 0.755404,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalExpansion": {
+        "materialId": "aisi-s1",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 698–923 K; link scaled aisi-s1 outside (same family tool; ElMD=0.225744, L1=3.96 wt% [ΔW=2.25%; ΔMn=0.55%; ΔCr=0.3%; ΔV=0.225%; ΔMo=0.175%; ΔSi=0.175%; ΔNi=0.15%; ΔC=0.135%])",
+        "compositionDistance": 0.225744,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.97880783,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.30045509,
+          "maxRelPct": 3.233639
+        }
+      }
+    }
+  }
+}

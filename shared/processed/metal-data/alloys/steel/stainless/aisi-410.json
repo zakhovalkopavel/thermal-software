@@ -1,0 +1,159 @@
+{
+  "materialId": "aisi-410",
+  "name": "410",
+  "group": "steel",
+  "family": "stainless",
+  "aliases": {
+    "uns": "S41000",
+    "sae": "410"
+  },
+  "composition": {
+    "C": 0.075,
+    "Cr": 12.5
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 7800.0
+        }
+      ]
+    },
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 5.7e-07
+        }
+      ]
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 323.15,
+          "value": 460.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 24.9
+        },
+        {
+          "T_K": 773.15,
+          "value": 28.7
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 9.9
+        },
+        {
+          "T_K": 588.15,
+          "value": 11.4
+        },
+        {
+          "T_K": 811.15,
+          "value": 11.6
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 4.25,
+            "b": 0.02032,
+            "c": -1.388e-05
+          },
+          "min": 373.15,
+          "max": 811.15
+        },
+        "meanRelPct": 0.0,
+        "maxRelPct": 0.0
+      }
+    }
+  },
+  "sourceFiles": [
+    "stainless_heat_resistant_composition.json",
+    "stainless_steel.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1207,
+    "Ac3_K": 1128,
+    "Ac1_C": 934,
+    "Ac3_C": 854,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-4130",
+        "mode": "full-series",
+        "why": "only 1 electricalResistivity point; link sae-4130 series (same group steel; ElMD=2.20087, L1=12.7675 wt% [ΔCr=11.55%; ΔMn=0.5%; ΔSi=0.25%; ΔC=0.23%; ΔMo=0.2%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 2.200869,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-1008",
+        "mode": "full-series",
+        "why": "only 1 specificHeat point; link sae-1008 series (same group steel; ElMD=2.13593, L1=12.97 wt% [ΔCr=12.5%; ΔMn=0.4%; ΔS=0.025%; ΔC=0.025%; ΔP=0.02%])",
+        "compositionDistance": 2.135934,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "aisi-m2",
+        "mode": "scaled-series",
+        "why": "only 2 own points; link scaled aisi-m2 curve (same group steel; ElMD=0.344843, L1=22.3 wt% [ΔCr=8.375%; ΔW=6.125%; ΔMo=5%; ΔV=1.975%; ΔSi=0.325%; ΔMn=0.275%; ΔNi=0.15%; ΔC=0.075%])",
+        "compositionDistance": 0.344843,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 1.11209751,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.99457941,
+          "maxRelPct": 4.400874
+        }
+      },
+      "thermalExpansion": {
+        "materialId": "aisi-m2",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 373–811 K; link scaled aisi-m2 outside (same group steel; ElMD=0.344843, L1=22.3 wt% [ΔCr=8.375%; ΔW=6.125%; ΔMo=5%; ΔV=1.975%; ΔSi=0.325%; ΔMn=0.275%; ΔNi=0.15%; ΔC=0.075%])",
+        "compositionDistance": 0.344843,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 1.02492751,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.78941009,
+          "maxRelPct": 10.094078
+        }
+      }
+    }
+  }
+}

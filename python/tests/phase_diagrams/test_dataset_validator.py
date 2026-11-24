@@ -1,0 +1,232 @@
+"""
+Unit tests for validate_dataset: one passing fixture dataset and one failing fixture per rule.
+"""
+from __future__ import annotations
+
+import pytest
+
+from phase_diagrams.validation.dataset_validator import validate_dataset
+
+BINARY = "systems/mgo-sio2.json"
+TERNARY = "systems/ternary.json"
+
+
+def _point(data):
+    return data[BINARY]["invariantPoints"][0]
+
+
+def _codes(path):
+    return {(issue.code, issue.level) for issue in validate_dataset(path)}
+
+
+def test_valid_dataset_has_no_issues(dataset_factory):
+    assert validate_dataset(dataset_factory()) == []
+
+
+def _broken_json(data):
+    data["systems/broken.json"] = "{ not json"
+
+
+def _bad_sum(data):
+    _point(data)["liquid_wt"]["SiO2"] = 38.5
+
+
+def _duplicate_id(data):
+    data[TERNARY]["invariantPoints"] = [dict(_point(data))]
+
+
+def _unknown_phase(data):
+    data[BINARY]["phases"].append("unobtainium")
+
+
+def _liquidus_end(data):
+    data[BINARY]["liquidus"][0]["points"][-1] = [38.0, 1849]
+
+
+def _liquidus_order(data):
+    data[BINARY]["liquidus"][0]["points"] = [[0, 2822], [30, 2400], [20, 2300], [38.0, 1850]]
+
+
+def _unknown_status(data):
+    _point(data)["status"] = "guessed"
+
+
+def _confirmed_without_match(data):
+    _point(data)["sources"][1]["reported"]["temperature_C"] = 1900
+
+
+def _conflict_with_match(data):
+    _point(data)["status"] = "conflict"
+
+
+def _unlisted_figure(data):
+    _point(data)["sources"][0]["figure"] = "Fig. 3.999"
+
+
+def _missing_pixel(data):
+    del _point(data)["sources"][0]["pixel"]
+
+
+def _recalled(data):
+    _point(data)["sources"].append({"ref": "recalled"})
+
+
+def _unknown_path_id(data):
+    data[TERNARY]["boundaryCurves"][0]["path"] = ["ms-1850", "xx-1"]
+
+
+def _null_polyline(data):
+    data[TERNARY]["boundaryCurves"][0]["polyline_wt"] = None
+
+
+def _page_mapping(data):
+    _point(data)["sources"][1]["pdfPage"] = 117
+
+
+def _ternary_point(data, point_id: str, temperature: float, kind: str = "ternary", reaction: str | None = "eutectic"):
+    data[TERNARY]["invariantPoints"].append(
+        {"id": point_id, "type": kind, "reaction": reaction, "phases": ["periclase", "silica"], "temperature_C": temperature,
+         "liquid_wt": {"MgO": 50.0, "SiO2": 50.0}, "status": "extracted", "sources": []})
+
+
+def _bad_arrows(data):
+    data[TERNARY]["boundaryCurves"][0]["arrows"] = ["down"]
+
+
+def _uphill_arrow(data):
+    _ternary_point(data, "tt-1900", 1900, reaction="peritectic")
+    data[TERNARY]["boundaryCurves"][0].update(path=["ms-1850", "tt-1900"], arrows=[">"])
+
+
+def _arrow_into_binary_eutectic(data):
+    data[TERNARY]["boundaryCurves"][0]["arrows"] = ["<"]
+
+
+def _isotherms(data, *entries):
+    line = [[40.0, 60.0], [45.0, 55.0]]
+    data[TERNARY]["isotherms"] = [{"field": "silica", "polyline_wt": line, **e} for e in entries]
+
+
+def _inferred_off_step(data):
+    _isotherms(data, {"temperature_C": 1600}, {"temperature_C": 1650, "inferred": {"from": [1600], "step": 100}})
+
+
+def _inferred_from_unprinted(data):
+    _isotherms(data, {"temperature_C": 1600}, {"temperature_C": 1700, "inferred": {"from": [1600, 1800], "step": 100}})
+
+
+def _modification(**extra):
+    def modify(data):
+        data["compounds.json"]["compounds"].append({"id": "cristobalite", "oxideMoles": {"SiO2": 1}, "modificationOf": "silica", **extra})
+    return modify
+
+
+def _modification_and_compound(data):
+    _modification()(data)
+    _isotherms(data, {"temperature_C": 1600, "field": "cristobalite"})
+
+
+@pytest.mark.parametrize(
+    "modify, code, level",
+    [
+        (_modification(oxideMoles={"SiO2": 2}), "PD019", "error"),
+        (_modification(modificationOf="stishovite"), "PD019", "error"),
+        (_modification(melting={"temperature_C": 1725}), "PD019", "error"),
+        (_modification_and_compound, "PD020", "error"),
+        (_broken_json, "PD001", "error"),
+        (_bad_sum, "PD002", "error"),
+        (_duplicate_id, "PD003", "error"),
+        (_unknown_phase, "PD004", "error"),
+        (_liquidus_end, "PD005", "error"),
+        (_liquidus_order, "PD005", "error"),
+        (_unknown_status, "PD006", "error"),
+        (_confirmed_without_match, "PD007", "error"),
+        (_conflict_with_match, "PD007", "error"),
+        (_unlisted_figure, "PD008", "error"),
+        (_missing_pixel, "PD009", "warning"),
+        (_recalled, "PD010", "warning"),
+        (_unknown_path_id, "PD011", "error"),
+        (_null_polyline, "PD012", "warning"),
+        (_page_mapping, "PD013", "error"),
+        (_bad_arrows, "PD014", "error"),
+        (_uphill_arrow, "PD015", "warning"),
+        (_arrow_into_binary_eutectic, "PD016", "warning"),
+        (_inferred_off_step, "PD017", "error"),
+        (_inferred_from_unprinted, "PD018", "warning"),
+    ],
+)
+def test_rule(dataset_factory, modify, code, level):
+    assert (code, level) in _codes(dataset_factory(modify))
+
+
+def test_modifications_in_place_of_their_compound_are_valid(dataset_factory):
+    def modify(data):
+        _modification()(data)
+        _isotherms(data, {"temperature_C": 1600, "field": "cristobalite"})
+        data[TERNARY]["phases"] = [p for p in data[TERNARY].get("phases", []) if p != "silica"]
+        for curve in data[TERNARY]["boundaryCurves"]:
+            curve["fields"] = ["cristobalite" if f == "silica" else f for f in curve["fields"]]
+        for point in data[TERNARY]["invariantPoints"]:
+            point["phases"] = ["cristobalite" if p == "silica" else p for p in point["phases"]]
+    assert validate_dataset(dataset_factory(modify)) == []
+
+
+def test_isotherm_inferred_between_printed_neighbours_is_valid(dataset_factory):
+    def modify(data):
+        _isotherms(data, {"temperature_C": 1600}, {"temperature_C": 1800},
+                   {"temperature_C": 1700, "inferred": {"from": [1600, 1800], "step": 100}})
+    assert validate_dataset(dataset_factory(modify)) == []
+
+
+def _with_arrows(path: list[str], arrows: list[str], *points):
+    def modify(data):
+        for point in points:
+            _ternary_point(data, *point)
+        data[TERNARY]["boundaryCurves"][0].update(path=path, arrows=arrows)
+    return modify
+
+
+def test_arrows_down_from_the_binary_eutectic_into_a_ternary_eutectic_are_valid(dataset_factory):
+    modify = _with_arrows(["ms-1850", "tt-1500"], [">"], ("tt-1500", 1500))
+    assert validate_dataset(dataset_factory(modify)) == []
+
+
+def test_saddle_with_arrows_away_on_both_sides_is_valid_and_an_arrow_into_it_is_not(dataset_factory):
+    points = (("tt-1400", 1400), ("tt-1600", 1600, "saddle", None), ("tt-1500", 1500))
+    path = ["tt-1400", "tt-1600", "tt-1500"]
+    assert validate_dataset(dataset_factory(_with_arrows(path, ["<", ">"], *points))) == []
+    issues = validate_dataset(dataset_factory(_with_arrows(path, ["<", "<"], *points)))
+    assert {i.message.split(":")[0] for i in issues if i.code == "PD016"} == {"tt-1600", "tt-1500"}
+    assert any(i.code == "PD015" for i in issues)
+
+
+def test_unknown_arrow_is_not_checked(dataset_factory):
+    modify = _with_arrows(["ms-1850", "tt-1900"], ["?"], ("tt-1900", 1900))
+    assert validate_dataset(dataset_factory(modify)) == []
+
+
+def _compound_end(composition):
+    def modify(data):
+        data[BINARY]["liquidus"].append(
+            {"phase": "forsterite", "from": "ms-1850", "to": "forsterite melting point", "status": "extracted",
+             "points": [[38.0, 1850], [composition, 1890]]}
+        )
+
+    return modify
+
+
+def test_compound_end_member_at_stoichiometry_is_valid(dataset_factory):
+    assert validate_dataset(dataset_factory(_compound_end(42.7))) == []
+
+
+def test_compound_end_member_off_stoichiometry_is_an_error(dataset_factory):
+    assert ("PD005", "error") in _codes(dataset_factory(_compound_end(43.0)))
+
+
+def test_conflict_between_two_atlas_sources_is_allowed(dataset_factory):
+    def atlas_conflict(data):
+        point = _point(data)
+        point["status"] = "conflict"
+        point["sources"] = [point["sources"][0], dict(point["sources"][0])]
+
+    assert not [i for i in validate_dataset(dataset_factory(atlas_conflict)) if i.code == "PD007"]

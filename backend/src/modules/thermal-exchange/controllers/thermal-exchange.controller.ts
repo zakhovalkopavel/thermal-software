@@ -1,5 +1,5 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MultilayerWallService } from '../services/multilayer-wall.service';
 import { MultilayerWallInputDto } from '../dto/multilayer-wall-input.dto';
 import { MultilayerWallResultDto } from '../dto/multilayer-wall-result.dto';
@@ -13,8 +13,8 @@ export class ThermalExchangeController {
   @ApiOperation({
     summary: 'Heat flux and temperature profile through a multilayer furnace wall',
     description:
-      'Binary-search solver: iterates on the inner surface temperature until inner and outer heat ' +
-      'fluxes converge. Supports flat, cylindrical and spherical geometries. ' +
+      'Brent root finding on the inner surface temperature so that inner and outer heat ' +
+      'fluxes balance. Supports flat, cylindrical and spherical geometries. ' +
       'Layers are listed inside → outside; each may be a refractory or metal material.',
   })
   @ApiBody({
@@ -58,6 +58,7 @@ export class ThermalExchangeController {
       },
     },
   })
+  @ApiCreatedResponse({ type: MultilayerWallResultDto })
   calculateWall(@Body() dto: MultilayerWallInputDto): MultilayerWallResultDto {
     return this.multilayerWallService.calculate(dto);
   }

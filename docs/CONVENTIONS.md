@@ -12,7 +12,7 @@ or configuration in this project. All linked documents must be consulted for the
 |--------|------|-----------|
 | **Naming** | [`docs/NAMING_CONVENTIONS.md`](./NAMING_CONVENTIONS.md) | `kebab-case` files, `PascalCase` classes, `camelCase` vars/methods, `UPPER_SNAKE_CASE` constants, chemical formula exception |
 | **Code Quality** | [`docs/CODE_QUALITY_STANDARDS.md`](./CODE_QUALITY_STANDARDS.md) | No hardcoded values, DTOs at API boundary, SRP, constants in config files |
-| **Thermodynamics API** | [`docs/api/THERMODYNAMICS_API_SPEC.md`](./api/THERMODYNAMICS_API_SPEC.md) | Flat fluid interface, `dimensions` field, Prandtl geometry-free, HTC = Nusselt input, `KNOWN_FLUIDS` as single source of truth |
+| **Thermodynamics API** | [`docs/api/THERMODYNAMICS_API_SPEC.md`](./api/THERMODYNAMICS_API_SPEC.md) | Flat fluid interface, `dimensions` field, Prandtl geometry-free, HTC = Nusselt input, `FLUID_REGISTRY` as named-fluid source of truth |
 | **Thermodynamics Services** | [`docs/services/THERMODYNAMICS_SERVICES.md`](./services/THERMODYNAMICS_SERVICES.md) | Implemented service methods, formulas, correlations |
 | **Common Thermal Library** | [`docs/services/COMMON_THERMAL_LIBRARY.md`](./services/COMMON_THERMAL_LIBRARY.md) | Gas compounds, NASA-7/9, Sutherland, numeric utils |
 | **Numerical Methods** | [`docs/NUMERICAL_METHODS_CONVENTION.md`](./NUMERICAL_METHODS_CONVENTION.md) | Use approved wrappers (brentq, nelderMead, etc.) — never call numerical libs directly; response formatting via `numeric-format.util.ts` |
@@ -23,7 +23,7 @@ or configuration in this project. All linked documents must be consulted for the
 | **Interfaces & Index** | [`docs/INTERFACES_IMPLEMENTATION_INDEX.md`](./INTERFACES_IMPLEMENTATION_INDEX.md) | Master index of all interfaces and their implementations |
 | **Test Specification** | [`docs/TEST_SPECIFICATION.md`](./TEST_SPECIFICATION.md) | Unit / integration / e2e test requirements |
 | **Service Test Spec** | [`docs/SERVICE_TEST_SPEC.md`](./SERVICE_TEST_SPEC.md) | Per-service test checklist and coverage targets |
-| **Reports Management** | [`docs/REPORTS_MANAGEMENT.md`](./REPORTS_MANAGEMENT.md) | All generated reports go to `tmp/reports/` |
+| **Reports Management** | [`docs/REPORTS_MANAGEMENT.md`](./REPORTS_MANAGEMENT.md) | All generated reports go to `tmp/reports/`; only `.gitkeep`/`.gitignore` under `tmp/` are tracked |
 | **Docker / Nginx** | [`docs/NGINX_ARCHITECTURE.md`](./NGINX_ARCHITECTURE.md) | Reverse-proxy layout, SSL termination, upstream routing |
 | **Python Container** | [`docs/PYTHON_CONTAINER.md`](./PYTHON_CONTAINER.md) | Python service conventions, package management |
 | **Docker Registry** | [`docs/DOCKER_REGISTRY.md`](./DOCKER_REGISTRY.md) | Image naming, tagging, push/pull workflow |
@@ -33,18 +33,106 @@ or configuration in this project. All linked documents must be consulted for the
 ## Core Principles (summary)
 
 ### 1. Single Responsibility Principle (SRP)
-Each file exports **exactly one primary construct**:
+Each file exports **exactly one primary construct**, and **every construct lives in its own
+folder with its own file suffix**. This is mandatory — not an example layout.
 
-| File suffix | Exports |
-|-------------|---------|
-| `*.type.ts` / type files in `type/` | One `export type` |
-| `*.interface.ts` | One `export interface` |
-| `*.class.ts` / method files in `utils/` | One `export class` |
-| `*.dto.ts` | One `export class` (DTO) or one `export enum` |
-| compound data files (`gas/*.ts`, etc.) | One `export const` (compound object) |
+#### Construct → folder → file → export
 
-> **Do not mix** interfaces, types, and classes in a single file.  
+Folders sit inside a module (`backend/src/modules/<feature>/<folder>/`) or a shared area
+(`backend/src/common/<area>/<folder>/`).
+
+| Construct | Folder | File name | The file exports exactly one |
+|-----------|--------|-----------|------------------------------|
+| Type alias (data shape) | `types/` | `<name>.type.ts` | `export type` |
+| Equation coefficient type (legacy) | `type/` | `<name>-equation.ts` (no `.type.ts`) | `export type` — **exception** for `common/thermal/type/` only; do not copy this pattern elsewhere |
+| Interface (behavioural contract) | `interfaces/` | `<name>.interface.ts` | `export interface` |
+| DTO | `dto/` | `<name>.dto.ts` | `export class` |
+| Enum | `enums/` | `<name>.enum.ts` | `export enum` |
+| Constant / lookup table | `constants/` | `<name>.constants.ts` | `export const` (group related values in one `as const` object, e.g. `STANDARD_CONDITIONS`) |
+| Static dataset | `data/` | `<name>.data.ts` | `export const` |
+| Service (injectable) | `services/` | `<name>.service.ts` | `@Injectable()` class |
+| Controller | `controllers/` | `<name>.controller.ts` | controller class |
+| Entity | `entities/` | `<name>.entity.ts` | entity class |
+| Static utility class | `utils/` | `<class-name>.ts` (no suffix) | `export class` with `static` methods |
+| Single pure formula | `utils/` | `<name>.util.ts` | one `export function` |
+| Compound data | `compound/<phase>/` | `<compound>.ts` | `export const` (compound object) |
+
+#### Placement rules
+
+1. **A construct goes in its own folder.** A type never lives in `interfaces/`, an interface never in
+   `types/`, a constant never in a service file, and so on. No "misc" or module-root dumping.
+2. **A folder holds only its own construct.** `interfaces/` contains only `*.interface.ts` files,
+   `services/` only `*.service.ts` files, and so on.
+3. **A file never mixes constructs from different rows** of the table above — not an interface plus a
+   type, not a service plus an interface, not a class plus a constant, not a function plus a type.
+4. **A service / controller / class file contains only that class.** No exported or file-level helper
+   functions next to it: helpers are `private` methods (or `private static` for static classes).
+5. **Non-exported, file-private constants** used only by that one construct may stay in its file.
+   As soon as a constant is exported or shared, it moves to `constants/`.
+6. **Barrel files** (`index.ts`) may re-export several constructs; they must contain re-exports only.
+7. **Folder spelling:** new folders use the plural names in the table above (`types/`, `enums/`,
+   `interfaces/`, `constants/`, `services/`, …); `dto/` stays singular. The existing singular `type/`
+   and `enum/` folders in `common/thermal/` are legacy: keep using them there, never rename them as a
+   side effect, and never create both spellings in the same module.
+8. **Legacy:** existing `*.dto.ts` files that export an `enum` stay as they are; **new** enums go in
+   `enums/<name>.enum.ts`.
+
+> **Do not mix** interfaces, types, enums, constants, functions, and classes in a single file.  
 > A type file must not contain a class. A class file must not contain a type alias.
+
+#### Choosing the form: service, static class, or single function
+
+Pick the form by what the code **needs**, not by preference:
+
+| # | Situation | Form | Location |
+|---|-----------|------|----------|
+| 1 | Uses or orchestrates **injected services** (gas properties, transport, resolvers…), or chains several services | `@Injectable()` class — instance methods, `private` methods for steps | `services/*.service.ts` |
+| 2 | **Stateless**, cohesive helpers for one concern, **no DI** | One class with `static` methods; `private static` for internals | `utils/<kebab-name>.ts` (no suffix) |
+| 3 | **One standalone pure formula** / thin adapter | One exported function per file, named after the file | `utils/` (`*.util.ts` allowed) |
+| 4 | Constants and lookup tables | One `export const` per file | `constants/`, `data/` |
+
+**Hard rules**
+- **Never pass injected services as function arguments** (`fn(gasProps, transport, …)`). That code
+  belongs in tier 1: inject the services in the constructor and use `private` methods.
+- **Static classes have no DI.** The only permitted state is a documented cache with a
+  `resetCache()` for tests (see `CompoundData`).
+- **No free-function families.** Two or more related functions go on a class (tier 2) — never a file
+  (or folder) of exported functions.
+- A file never exports a function **and** an interface/type/class (SRP rule above).
+- **Do not create new `*.helper.ts` files.** Use `*.service.ts` (tier 1) or a kebab-case static class
+  (tier 2). Existing helpers are migrated when they are touched.
+- A service-like helper must be mockable via the Nest testing module; static classes are only for
+  deterministic code that needs no mocking.
+
+**Tier 2 — static utility class** (`backend/src/common/thermal/` and similar domain utils): related
+pure helpers live on **one utility class with `static` methods**, not a scatter of free functions
+across `*.util.ts` files.
+
+```typescript
+// ✅ CORRECT — related helpers on one class (see Common, CompoundText, CompoundData, CompoundValueBuilder)
+export class CompoundText {
+  static normalizeCas(raw: string): string { /* … */ }
+  static normalizeFormula(raw: string): string { /* … */ }
+  static hillFormula(formula: string): string { /* … */ }
+}
+
+CompoundText.normalizeCas('124389');
+CompoundData.loadIndex();
+CompoundData.toEquationValue(row);
+
+// ❌ WRONG — one tiny free function per file for the same concern
+export function normalizeCasText(raw: string): string { /* … */ }
+export function normalizeFormulaText(raw: string): string { /* … */ }
+```
+
+**Rules:**
+- Group by concern (`CompoundText`, `CompoundData`, `CompoundSearch`, `CompoundGasBounds`, `Common`).
+- File name is `kebab-case` matching the class (`compound-text.ts` → `CompoundText`). Prefer **no**
+  `.util.ts` suffix for these classes (reserve `*.util.ts` for thin single-purpose adapters elsewhere,
+  e.g. numeric wrappers under `common/utils/`).
+- Data shapes (`type`) stay in `types/` and behavioural contracts (`interface`) in `interfaces/`, as
+  separate one-export files; the class imports them.
+- Private helpers used only by that class are `private static` on the same class.
 
 #### SRP for Controllers and Services
 
@@ -84,7 +172,7 @@ calcReynolds(@Body() dto: ReynoldsInputDto): ScalarDimensionlessResultDto {
 
 ```typescript
 // ✅ CORRECT — type for data shape
-export type AlyLeeEquation = { c1: number; c2: number; /* ... */ };
+export type DipprN107Equation = { c1: number; c2: number; /* ... */ };
 
 // ✅ CORRECT — interface for behaviour
 export interface Equation<T> {
@@ -93,7 +181,7 @@ export interface Equation<T> {
 }
 
 // ❌ WRONG — interface used as data shape
-export interface AlyLeeVars { c1: number; c2: number; }
+export interface DipprN107Vars { c1: number; c2: number; }
 
 // ❌ WRONG — type and class in the same file
 export type Foo = { a: number };
@@ -110,17 +198,18 @@ self-documenting.
 import { RefKey } from '../../dto/ref-key.dto';
 
 // ✅ CORRECT — RefKey enum value
-{ type: EquationTypeDto.alyLee, ref: RefKey.Perry7, page: 223, k: 1e-3, vars: { ... }, min: 100, max: 2273 }
+{ type: EquationTypeDto.dipprN107, ref: RefKey.Perry7, page: 223, k: 1e-3, vars: { ... }, min: 100, max: 2273 }
 
 // ❌ WRONG — raw number
-{ type: EquationTypeDto.alyLee, ref: 4, page: 223, vars: { ... }, min: 100, max: 2273 }
+{ type: EquationTypeDto.dipprN107, ref: 4, page: 223, vars: { ... }, min: 100, max: 2273 }
 
 // ❌ WRONG — no reference at all
-{ type: EquationTypeDto.alyLee, vars: { ... }, min: 100, max: 2273 }
+{ type: EquationTypeDto.dipprN107, vars: { ... }, min: 100, max: 2273 }
 ```
 
-`RefKey` is defined in `backend/src/common/thermal/dto/ref-key.dto.ts`.
-Machine-readable metadata (name, year, url) is in `REFERENCES_META` in the same file.
+`RefKey` is defined in `backend/src/common/thermal/enum/ref-key.enum.ts` and its machine-readable metadata
+(name, year, url) in `REFERENCES_META` (`backend/src/common/thermal/dto/ref-key.dto.ts`). Both, their Python mirrors and the
+`docs/REFERENCES.md` table are generated from `shared/references/references.json` (`make references-generate`).
 
 ### 4. Exact Integrals Over Numerical Integration
 When a closed-form antiderivative exists, **always use it**.  
@@ -135,9 +224,8 @@ Verified antiderivatives for all equation types used in `heatCapacity`, `viscosi
 | `quadratic` | ✅ | algebra |
 | `cubic` | ✅ | algebra |
 | `quartic` | ✅ | algebra |
-| `linearHyperbolic` | ✅ | algebra |
-| `linearHyperbolicLogarithmic` | ✅ | ref WolframAlpha |
-| `alyLee` (DIPPR-107) | ✅ | ref WolframAlpha — `c1T + c2c3·coth(c3/T) − c4c5·tanh(c5/T)` |
+| `maierKelley` | ✅ | algebra |
+| `dipprN107` | ✅ | ref WolframAlpha — `c1T + c2c3·coth(c3/T) − c4c5·tanh(c5/T)` |
 | `dipprN102` | ❌ | no closed form for arbitrary c2 — use Gauss–Legendre |
 | `nasa7` | ✅ (polynomial) | algebra — but lives in `CompoundValue.nasa7`, not in property buckets |
 | `nasa9` | ✅ (polynomial + 1/T + ln T) | algebra — but lives in `CompoundValue.nasa9`, not in property buckets |
@@ -149,39 +237,33 @@ The corresponding coefficient **type** lives in its own file in `type/`.
 They are always separate files — never merged.
 
 ```
-type/aly-lee-equation.ts        ← export type AlyLeeEquation
-utils/aly-lee-equation-method.ts ← export class AlyLeeEquationMethod implements Equation<AlyLeeEquation>
+type/dippr-n107-equation.ts        ← export type DipprN107Equation
+utils/dippr-equation-107-method.ts ← export class DipprEquation107Method implements Equation<DipprN107Equation>
 ```
 
 ### 6. NASA-7 and NASA-9 are Separate Properties
 `nasa7` and `nasa9` coefficients simultaneously cover Cp, H, S and G — they do not belong to any single
-property bucket. They are stored as **top-level fields** on `CompoundValue`, separate from `heatCapacity`.
+property bucket. They are referenced by **top-level keys** (`nasa7Key`, `nasa9Key`) on `CompoundValue`, separate from `heatCapacity`.
 **NASA-9 is the modern format and is preferred when available.**
 
+The coefficients live in the NASA databases `shared/processed/NASA/nasa7.json` / `nasa9.json`
+(read by `utils/nasa-database.ts`); a compound stores only the exact species keys.
+
 ```typescript
-// ✅ CORRECT — nasa7/nasa9 at top level, named coefficients
+// ✅ CORRECT — exact keys into the NASA databases
 export const N2: CompoundValue = {
-  nasa7: {
-    Tswitch: 1000,
-    low:  { a1: 3.531, a2: -1.237e-4, ..., a6: -1047, a7: 2.967 },
-    high: { a1: 2.953, a2:  1.397e-3, ..., a6:  -924, a7: 5.872 },
-  },
-  // nasa9 preferred for new data — variable ranges, higher accuracy:
-  nasa9: {
-    ranges: [
-      { Tmin: 200,  Tmax: 1000, coeffs: { a1: 2.21e+04, a2: -3.82e+02, a3: 6.08, ..., a8: 7.11e+02, a9: -1.08e+01 } },
-      { Tmin: 1000, Tmax: 6000, coeffs: { a1: 5.88e+05, a2: -2.24e+03, a3: 6.07, ..., a8: 1.28e+04, a9: -1.59e+01 } },
-    ],
-  },
-  heatCapacity: { def: 0, values: [ /* polynomial approximations only */ ] },
+  nasa7Key: 'N2',
+  nasa9Key: 'N2',
+  heatCapacity: { def: 0, values: [ /* polynomial approximations only */ ] },  // optional — omit when there are none
   ...
 };
+// NASA-9 / NASA-7 Cp entries are added by heatCapacityEntries(compound); never repeat them in heatCapacity.
+
+// ❌ WRONG — NASA coefficients copied into the compound file
+nasa7: { Tswitch: 1000, low: { a1: 3.531, ... }, high: { ... } }
 
 // ❌ WRONG — nasa7/nasa9 inside heatCapacity
 heatCapacity: { def: 0, values: [ { type: EquationTypeDto.nasa7, vars: { low: [...], high: [...] } } ] }
-
-// ❌ WRONG — tuple arrays instead of named coefficients
-low: [3.531, -1.237e-4, ...]   // use { a1: 3.531, a2: -1.237e-4, ... }
 ```
 
 ### 7. Property Resolution via CompoundPropertyResolver
@@ -203,13 +285,13 @@ const cp = resolver.heatCapacity(1000, RefKey.Perry7);
 // Select by index:
 const cp = resolver.heatCapacity(1000, 0);
 
-// Enthalpy/entropy/Gibbs — from nasa9 (preferred) or nasa7:
+// Enthalpy/entropy/Gibbs — NASA-9 (nasa9Key), else NASA-7 (nasa7Key):
 const h = resolver.enthalpy(1000);
 const s = resolver.entropy(1000);
 const g = resolver.gibbsEnergy(1000);
 ```
 
-### 6. File Naming
+### 8. File Naming
 Follow [`docs/NAMING_CONVENTIONS.md`](./NAMING_CONVENTIONS.md).  
 Equation-related files use the pattern:
 
@@ -218,6 +300,48 @@ type/<equation-name>-equation.ts
 utils/<equation-name>-equation-method.ts
 interfaces/<domain>-<noun>.interface.ts
 ```
+
+---
+
+## File Length Limits
+
+Long files hide mixed responsibilities. Every file has a maximum length, enforced by an automated test.
+
+| Files | Limit (lines) | Target |
+|-------|---------------|--------|
+| Backend code — `backend/src/**/*.ts` | **300** | aim for ≤ 200 |
+| Backend tests — `backend/test/**/*.ts` | **500** | — |
+| Documentation — `docs/**/*.md` | **500** | split by topic, link from an index |
+
+**Exempt — data may be arbitrarily long:** files in `data/` folders, `*.data.ts`, compound data files
+(`compound/`), and generated files (`ref-key.enum.ts`, `ref-key.dto.ts`). Constants are **not**
+exempt: a large lookup table that is really a dataset belongs in `data/<name>.data.ts`.
+
+Not covered yet: frontend (`frontend/`), Python (`python/`, `scripts/`).
+
+**Rules**
+1. Count is physical lines (`wc -l`), including blank lines and comments. Never delete comments or
+   blank lines, or join lines, only to fit the limit.
+2. When a file nears its limit, **split it by responsibility** (SRP, folder-per-construct rules above) —
+   do not add content to an oversized file.
+3. **Never raise a limit, add a file to the baseline, or exempt a path to make a change pass.** If you
+   believe a limit is wrong, stop and ask the user.
+4. **Baseline (grandfathered files).** Files that already exceeded a limit when the rule was introduced
+   are listed in `backend/test/unit/conventions/file-length-baseline.json` with their size at that time.
+   They **must not grow**. When one shrinks (still over the limit), lower its baseline value; when it
+   gets within the limit, remove it from the baseline — the test fails until you do.
+5. The baseline must only ever **shrink**. New entries are not allowed.
+
+**Enforcement:** `backend/test/unit/conventions/file-length.spec.ts` (rules in
+`constants/file-length-rules.constants.ts`, logic in `utils/file-length-checker.ts`). It runs with the
+normal backend tests, inside Docker:
+
+```bash
+docker compose exec backend npm run test -- conventions
+```
+
+`docs/` is mounted read-only into the dev backend container (`./docs:/docs:ro` in `compose.yml`). In a
+container without that mount (e.g. `compose.production.yml`) the docs rule is skipped with a warning.
 
 ---
 
@@ -255,21 +379,45 @@ the codebase by more than one commit.
 Before committing any file, verify:
 
 - [ ] File exports exactly **one** primary construct (SRP)
+- [ ] Each construct is in its **own folder with its own suffix** (`types/*.type.ts`, `interfaces/*.interface.ts`, `dto/*.dto.ts`, `enums/*.enum.ts`, `constants/*.constants.ts`, `services/*.service.ts`, …) — see § Construct → folder → file → export
+- [ ] No constructs from different folders mixed in one file; no helper functions beside a class/service
+- [ ] Form matches need: DI/orchestration → `@Injectable` service; stateless related helpers → static class; single pure formula → one function per file (see § Choosing the form)
+- [ ] No injected service passed as a function argument; no new `*.helper.ts`; no families of exported free functions
 - [ ] Controller handler contains **no** business logic — delegates to a service
 - [ ] Coefficient shape uses `type`, behavioural contract uses `interface`
 - [ ] Every `EquationValue` has `ref: RefKey.Xxx` (not a raw number) pointing to `docs/REFERENCES.md`
 - [ ] **Python:** every module/class/function using literature data has a `Refs:` docstring citation using `[N] KeyName` format
 - [ ] **Python:** `from references import RefKey` used for any runtime reference lookup — never raw integers
-- [ ] New reference sources added to `docs/REFERENCES.md` **and** `dto/ref-key.dto.ts` (TypeScript) / `python/src/references/` (Python) before use
-- [ ] `nasa7`/`nasa9` data is at top-level `CompoundValue.nasa7`/`CompoundValue.nasa9`, **not** inside `heatCapacity.values`
-- [ ] `nasa7` coefficients use named fields `{a1, a2, …, a7}`, **not** tuple arrays; `nasa9` uses `{a1…a9}` + `Tmin`/`Tmax` ranges
+- [ ] New reference sources added to `shared/references/references.json` and `make references-generate` run before use (`make references-check` passes)
+- [ ] NASA data is referenced by `CompoundValue.nasa7Key`/`nasa9Key` (exact keys in `shared/processed/NASA/*.json`) — coefficients are **not** copied into the compound or into `heatCapacity.values`
 - [ ] Closed-form integral used where it exists — no unnecessary numerical integration
 - [ ] Property calculations go through `CompoundPropertyResolver`, not direct equation method calls
 - [ ] File name is `kebab-case`, class name is `PascalCase`
+- [ ] File length within limits: code ≤ 300 lines, tests ≤ 500, docs ≤ 500 (data files exempt); baseline files did not grow — see § File Length Limits
 - [ ] No hardcoded magic numbers without a named constant or reference
+- [ ] Imports are relative — the `@/` alias is **not configured** (examples in this doc that show `@/…` are illustrative only)
 - [ ] Tests are run **inside Docker**, not on the host machine (see § Tests section below)
 - [ ] **Definition of Done:** implementation + tests + docs all updated in the same PR
 - [ ] **`docs/migration/IMPLEMENTATION_STATUS.md`** updated in this commit if any service, test, or doc changed
+
+---
+
+## Lessons from the conventions refactoring (Phase 8)
+
+Recorded when clearing the structure / file-length baselines (`docs/migration/CONVENTIONS_REFACTORING_PLAN.md`):
+
+1. **Constants:** Prefer one related `export const … = { … }` (typed or `as const`) per file over several
+   sibling `export const` names. Call sites may destructure locally; that does not count as extra exports.
+2. **Numeric defaults in a constants object:** Annotate series / tolerance fields as `number` (or give
+   the object an explicit type). Bare `as const` literals (`100`, `50`) poison default-parameter types
+   (`N = SERIES_TERMS_DEFAULT` becomes `N: 100` and rejects other numbers).
+3. **Data shapes:** Plain object shapes use `export type` in `types/*.type.ts`. Do not leave a parallel
+   `interface` under `interfaces/` for the same shape (see `ComponentProperty`).
+4. **Temporary split tooling:** `backend/codemod-*.mjs` were removed after close-out. Prefer hand splits
+   (or `git mv` + edit) so `interface` → `type`, folder, and suffix stay correct.
+5. **Enforcement:** Structure and file-length **Jest ratchets** under `backend/test/unit/conventions/`
+   are the source of truth. There is no backend ESLint for max-classes / export count — do not add a
+   weaker duplicate rule without an explicit decision to replace the tests.
 
 ---
 

@@ -1,0 +1,332 @@
+"""Tests for identifiers, formula resolution and merging."""
+from __future__ import annotations
+
+import pytest
+from chemicals_fixtures import tsv
+
+from chemical_formula.organic_family import OrganicFamilyClassifier
+from chemicals_tables.constants.equation_type import EquationType
+from chemicals_tables.constants.source_tables import SOURCE_TABLES
+from chemicals_tables.equation_value import EquationValue
+from chemicals_tables.identifier import Identifier
+from chemicals_tables.parsers.identifiers import load_identifiers
+from chemicals_tables.property_value import PropertyValue
+from chemicals_tables.source_entry import SourceEntry
+from compound_data.merger import merge_compounds
+from references import RefKey
+
+
+@pytest.fixture(scope="module")
+def classifier():
+    return OrganicFamilyClassifier()
+
+
+def _ids(*rows):
+    return tsv(*rows)
+
+
+@pytest.fixture
+def identifier_source(make_source):
+    return make_source({
+        "Inorganic db": _ids(
+            [-1, "1344-28-1", "Al2O3", 101.961, "O=[Al]O[Al]=O", "", "TWNQ", "iupac", "aluminium oxide"],
+        ),
+        "pubchem small": _ids(
+            [14769, "1344-28-1", "Al2O3", 101.96, "", "", "", "", "electrocorundum"],
+            [702, "64-17-5", "C2H6O", 46.07, "CCO", "", "LFQSCWFLJHTTHZ-UHFFFAOYSA-N", "ethanol", "ethanol"],
+            [6587, "79-24-3", "C2H5NO2", 75.07, "CCN(=O)=O", "", "", "nitroethane", "nitroethane"],
+            [1, "12004-39-6", "Al2O7Ti2", 293.7, "", "", "", "", "aluminum titanate"],
+        ),
+        "pubchem large": _ids(
+            [9, "64-17-5", "C2H6O", 46.0, "", "", "", "", "large ethanol"],
+            [10, "7440-37-1", "Ar", 39.948, "[Ar]", "", "", "argon", "argon"],
+        ),
+    })
+
+
+class TestIdentifiers:
+    def test_precedence_and_only_wanted(self, identifier_source, chem):
+        found = load_identifiers(identifier_source, chem, {"1344-28-1", "64-17-5", "7440-37-1"})
+        assert found["1344-28-1"].name == "aluminium oxide"
+        assert found["1344-28-1"].source.table == "Inorganic db"
+        assert found["64-17-5"].source.table == "pubchem small" and found["64-17-5"].source.line == 2
+        assert found["7440-37-1"].source.table == "pubchem large"
+        assert "79-24-3" not in found
+
+    def test_skips_cas_placeholder_common_name(self, make_source, chem):
+        """PubChem large often puts the CAS in the common-name column; use a synonym instead."""
+        source = make_source({
+            "pubchem large": tsv(
+                [166593, "12067-22-0", "S3Sm2", 396.915,
+                 "[S-2].[S-2].[S-2].[Sm+3].[Sm+3]", "", "KKZKWPQFAZAUSB-UHFFFAOYSA-N",
+                 "samarium(3+);trisulfide", "12067-22-0", "samarium sulfide", "samarium(iii) sulfide"],
+            ),
+        })
+        found = load_identifiers(source, chem, {"12067-22-0"})
+        assert found["12067-22-0"].name == "samarium sulfide"
+
+
+def _prop(cas, value, ref, chem, table="CRC inorganic constants", formula=None, label=None):
+    return SourceEntry(
+        cas=cas, formula=formula, label=label, property="meltingPoint",
+        value=PropertyValue(value, ref, chem.link(SOURCE_TABLES[table], 2, label)),
+    )
+
+
+def _eq(cas, ref, type_, chem, table, formula=None, phase="solid"):
+    return SourceEntry(
+        cas=cas, formula=formula, label=formula, property="heatCapacity", phase=phase,
+        value=EquationValue(type_, ref, {"a": 1, "b": 0, "d": 0}, 300, 1000, chem.link(SOURCE_TABLES[table], 3)),
+    )
+
+
+class TestMerge:
+    def test_override_and_conflict(self, identifier_source, chem, classifier):
+        ids = load_identifiers(identifier_source, chem, {"12004-39-6"})
+        result = merge_compounds([_prop("12004-39-6", 2133.15, RefKey.CRC95, chem)], ids, classifier)
+        record = result.records["12004-39-6"]
+        assert record.formula == "Al2TiO5" and record.group == "Ti"
+        assert record.Mr is None
+        conflict = next(c for c in result.conflicts if c["cas"] == "12004-39-6")
+        assert conflict["resolution"] == "override" and conflict["identifierFormula"] == "Al2O7Ti2"
+
+    def test_inorganic_display_prefers_conventional_hydrate(self, chem, classifier):
+        """When PubChem Hill matches the name, display keeps Sm(NO3)3·6H2O."""
+        link = chem.link(SOURCE_TABLES["pubchem large"], 1)
+        ids = {
+            "13759-83-6": Identifier(
+                "13759-83-6", "H12N3O15Sm", 444.47, None, None,
+                "samarium trinitrate hexahydrate", link,
+            ),
+        }
+        entries = [
+            _prop("13759-83-6", 351.15, RefKey.CRC95, chem, label="Samarium(III) nitrate hexahydrate"),
+        ]
+        result = merge_compounds(entries, ids, classifier)
+        record = result.records["13759-83-6"]
+        assert record.hill == "H12N3O15Sm"
+        assert record.display_formula == "Sm(NO3)3·6H2O"
+
+    def test_name_formula_overrides_truncated_pubchem_hill(self, chem, classifier):
+        """Aluminum nitrate nonahydrate must not keep PubChem's AlH3NO4."""
+        link = chem.link(SOURCE_TABLES["pubchem large"], 1)
+        ids = {
+            "7784-27-2": Identifier(
+                "7784-27-2", "AlH3NO4", 100.0, None, None,
+                "aluminum nitrate nonahydrate", link,
+            ),
+        }
+        entries = [
+            _prop("7784-27-2", 346.15, RefKey.CRC95, chem, label="aluminum nitrate nonahydrate"),
+        ]
+        result = merge_compounds(entries, ids, classifier)
+        record = result.records["7784-27-2"]
+        assert record.display_formula == "Al(NO3)3·9H2O"
+        assert record.hill == "AlH18N3O18"
+        assert any(c.get("resolution") == "name_formula" for c in result.conflicts)
+
+    def test_record_name_normalizes_pdf_mojibake(self, chem, classifier):
+        link = chem.link(SOURCE_TABLES["pubchem large"], 1)
+        ids = {
+            "95639-17-1": Identifier(
+                "95639-17-1", "C13H25NO3", 243.0, None, None,
+                "␣-关共Cyclohexyloxy兲methyl兴-4-morpholineethanol", link,
+            ),
+        }
+        entries = [_prop("95639-17-1", 300.0, RefKey.CRC95, chem)]
+        result = merge_compounds(entries, ids, classifier)
+        assert result.records["95639-17-1"].name == "α-[(Cyclohexyloxy)methyl]-4-morpholineethanol"
+
+    def test_kf_dimer_override_display(self, chem, classifier):
+        """Alkali halide dimers use (MX)2 display, not Hill F2K2."""
+        entries = [_prop("12285-62-0", 300.0, RefKey.NBS1982, chem, formula="F2K2")]
+        # Empty overrides: exercise merger dimer logic (accepted file may differ).
+        result = merge_compounds(entries, {}, classifier, overrides={})
+        record = result.records["12285-62-0"]
+        assert record.hill == "F2K2"
+        assert record.display_formula == "(KF)2"
+
+    def test_cabr_override_display_iupac(self, chem, classifier):
+        """Hill BrCa must display as IUPAC CaBr."""
+        entries = [_prop("10024-43-8", 300.0, RefKey.NBS1982, chem, formula="BrCa")]
+        result = merge_compounds(entries, {}, classifier, overrides={})
+        record = result.records["10024-43-8"]
+        assert record.hill == "BrCa"
+        assert record.display_formula == "CaBr"
+
+    def test_name_override_when_identifier_missing(self, chem, classifier, monkeypatch):
+        """Filled NAME_OVERRIDES supply a name when identifier/source labels are empty."""
+        import compound_data.merger as merger_mod
+        monkeypatch.setitem(merger_mod.NAME_OVERRIDES, "99999-99-9", "Testium bromide")
+        entries = [_prop("99999-99-9", 300.0, RefKey.CRC95, chem, formula="BrTe")]
+        result = merge_compounds(entries, {}, classifier)
+        record = result.records["99999-99-9"]
+        assert record.name == "Testium bromide"
+        assert record.display_formula == "TeBr"
+
+    def test_class_override_and_formula_rule_are_reported(self, chem, classifier):
+        link = chem.link(SOURCE_TABLES["pubchem small"], 1)
+        ids = {"74-90-8": Identifier("74-90-8", "CHN", 27.03, "C#N", None, "hydrogen cyanide", link)}
+        entries = [_prop("74-90-8", 259.9, RefKey.CRC95, chem),
+                   _prop(None, 250.3, RefKey.CRC95, chem, formula="CCl4", label="carbon tetrachloride")]
+        result = merge_compounds(entries, ids, classifier)
+        hcn = result.records["74-90-8"]
+        assert (hcn.compound_class, hcn.group, hcn.display_formula) == ("inorganic", "C", "HCN")
+        assert result.class_overridden == [{
+            "cas": "74-90-8", "formula": "CHN", "name": "hydrogen cyanide", "class": "inorganic",
+            "bondRule": True, "reason": result.class_overridden[0]["reason"],
+        }]
+        ccl4 = result.records["formula:CCl4"]
+        assert (ccl4.compound_class, ccl4.group, ccl4.families) == ("organic", "halogenated", ["halogenated"])
+        assert result.class_from_formula == [
+            {"cas": None, "formula": "CCl4", "name": "carbon tetrachloride", "class": "organic"},
+        ]
+        assert result.family_from_formula == [
+            {"cas": None, "formula": "CCl4", "name": "carbon tetrachloride", "family": "halogenated"},
+        ]
+
+    def test_values_kept_and_def_follows_priority(self, identifier_source, chem, classifier):
+        ids = load_identifiers(identifier_source, chem, {"7440-37-1"})
+        entries = [
+            _eq("7440-37-1", RefKey.NISTWebBook, EquationType.shomate, chem, "WebBook Shomate", phase="gas"),
+            _eq("7440-37-1", RefKey.Poling5, EquationType.quartic, chem, "Poling databank", phase="gas"),
+            _eq("7440-37-1", RefKey.Perry8, EquationType.dipprN102, chem, "Perry 2-312", phase="gas"),
+            _prop("7440-37-1", 83.8, RefKey.CRC95, chem),
+            _prop("7440-37-1", 83.81, RefKey.CRC95, chem),
+        ]
+        record = merge_compounds(entries, ids, classifier).records["7440-37-1"]
+        gas = record.to_dict()["equations"]["heatCapacity"]["gas"]
+        assert [v["ref"][0] for v in gas["values"]] == ["Perry8", "Poling5", "NISTWebBook"]
+        assert gas["def"] == 0
+        assert [p.value for p in record.properties["meltingPoint"]] == [83.8, 83.81]
+        assert record.Mr == pytest.approx(0.039948)
+
+    def test_def_skips_planned_types(self, identifier_source, chem, classifier, monkeypatch):
+        monkeypatch.setattr("compound_data.compound_record.PLANNED_EQUATION_TYPES", frozenset({"dipprN114"}))
+        ids = load_identifiers(identifier_source, chem, {"64-17-5"})
+        entries = [
+            _eq("64-17-5", RefKey.Perry8, EquationType.dipprN114, chem, "Perry 2-153 DIPPR 114", phase="liquid"),
+            _eq("64-17-5", RefKey.Perry8, EquationType.quartic, chem, "Perry 2-153 DIPPR 100", phase="liquid"),
+        ]
+        record = merge_compounds(entries, ids, classifier).records["64-17-5"]
+        assert record.to_dict()["equations"]["heatCapacity"]["liquid"]["def"] == 1
+        assert (record.compound_class, record.group) == ("organic", "alcohols")
+
+    def test_def_is_first_value_when_nothing_is_planned(self, identifier_source, chem, classifier):
+        ids = load_identifiers(identifier_source, chem, {"64-17-5"})
+        entries = [
+            _eq("64-17-5", RefKey.Perry8, EquationType.dipprN114, chem, "Perry 2-153 DIPPR 114", phase="liquid"),
+            _eq("64-17-5", RefKey.Perry8, EquationType.quartic, chem, "Perry 2-153 DIPPR 100", phase="liquid"),
+        ]
+        record = merge_compounds(entries, ids, classifier).records["64-17-5"]
+        assert record.to_dict()["equations"]["heatCapacity"]["liquid"]["def"] == 0
+
+    def test_wrong_cas_row_is_detached(self, identifier_source, chem, classifier):
+        ids = load_identifiers(identifier_source, chem, {"79-24-3"})
+        entries = [
+            _eq("79-24-3", RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="Ne",
+                phase="gas"),
+            _prop("79-24-3", 183.6, RefKey.CRC95, chem),
+        ]
+        result = merge_compounds(entries, ids, classifier)
+        assert result.records["formula:Ne"].cas is None
+        assert (result.records["formula:Ne"].compound_class, result.records["formula:Ne"].group) == ("inorganic", "Ne")
+        assert "heatCapacity" not in result.records["79-24-3"].equations
+        assert any(c["resolution"] == "detached" and c["sourceFormula"] == "Ne" for c in result.conflicts)
+
+    def test_proportional_formula_keeps_cas(self, identifier_source, chem, classifier):
+        ids = load_identifiers(identifier_source, chem, {"1344-28-1"})
+        entry = _eq("1344-28-1", RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151",
+                    formula="Al4O6")
+        result = merge_compounds([entry], ids, classifier)
+        assert "heatCapacity" in result.records["1344-28-1"].equations
+
+    def test_unresolved(self, chem, classifier):
+        entries = [
+            _prop(None, 1.0, RefKey.Zabransky1996, chem, label="Pentaethoxyuranium"),
+            _prop("50-00-0", 2.0, RefKey.Yaws2014, chem, label="formaldehyde"),
+        ]
+        result = merge_compounds(entries, {}, classifier)
+        assert result.records == {}
+        assert [u["reason"] for u in result.unresolved] == ["no CAS and no formula", "formula not found"]
+
+    def test_unknown_cas_moves_to_the_identified_record(self, identifier_source, chem, classifier):
+        ids = load_identifiers(identifier_source, chem, {"7440-37-1"})
+        entries = [
+            _prop("7440-37-1", 83.8, RefKey.CRC95, chem),
+            _eq("1111-11-1", RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="Ar",
+                phase="gas"),
+        ]
+        result = merge_compounds(entries, ids, classifier)
+        assert list(result.records) == ["7440-37-1"]
+        argon = result.records["7440-37-1"]
+        assert argon.other_cas == ["1111-11-1"]
+        assert argon.equations["heatCapacity"]["gas"][0].ref == RefKey.Perry8
+        assert result.unknown_cas_moved == [
+            {"from": "1111-11-1", "cas": "1111-11-1", "formula": "Ar", "name": "Ar", "id": "7440-37-1"},
+        ]
+
+    def test_unknown_organic_cas_is_kept(self, identifier_source, chem, classifier):
+        ids = load_identifiers(identifier_source, chem, {"64-17-5"})
+        entries = [
+            _prop("64-17-5", 351.4, RefKey.CRC95, chem),
+            _prop("115-10-6", 248.3, RefKey.CRC95, chem, formula="C2H6O", label="Dimethyl ether"),
+        ]
+        result = merge_compounds(entries, ids, classifier)
+        assert set(result.records) == {"64-17-5", "115-10-6"}
+        assert result.unknown_cas_kept == [
+            {"id": "115-10-6", "cas": "115-10-6", "formula": "C2H6O", "name": "Dimethyl ether",
+             "candidates": ["64-17-5"]},
+        ]
+
+    def test_unknown_cas_without_single_target_is_kept(self, chem, classifier):
+        entries = [_eq("2222-22-2", RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="Kr",
+                       phase="gas")]
+        result = merge_compounds(entries, {}, classifier)
+        assert "2222-22-2" in result.records
+        assert result.unknown_cas_kept[0]["candidates"] == []
+
+    def test_detached_row_moves_to_the_identified_record(self, identifier_source, chem, classifier):
+        ids = load_identifiers(identifier_source, chem, {"79-24-3", "7440-37-1"})
+        entries = [
+            _prop("7440-37-1", 83.8, RefKey.CRC95, chem),
+            _eq("79-24-3", RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="Ar",
+                phase="gas"),
+        ]
+        result = merge_compounds(entries, ids, classifier)
+        assert "formula:Ar" not in result.records
+        argon = result.records["7440-37-1"]
+        assert "gas" in argon.equations["heatCapacity"] and argon.other_cas == []
+        assert result.no_cas_moved == [
+            {"from": "formula:Ar", "cas": None, "formula": "Ar", "name": "Ar", "id": "7440-37-1"},
+        ]
+
+    def test_isotope_formula_is_not_moved(self, identifier_source, chem, classifier):
+        ids = {"1333-74-0": Identifier("1333-74-0", "H2", 2.016, "[HH]", None, "hydrogen",
+                                       chem.link(SOURCE_TABLES["pubchem small"], 4, "hydrogen"))}
+        entries = [
+            _prop("1333-74-0", 13.99, RefKey.CRC95, chem),
+            _eq(None, RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="D2", phase="gas"),
+        ]
+        result = merge_compounds(entries, ids, classifier)
+        assert "formula:D2" in result.records
+        assert result.no_cas_kept[0]["id"] == "formula:D2"
+
+    def test_pubchem_cid_and_override_smiles(self, identifier_source, chem, classifier):
+        ids = load_identifiers(identifier_source, chem, {"64-17-5"})
+        entries = [
+            _prop("64-17-5", 351.4, RefKey.CRC95, chem),
+            SourceEntry(None, "C10H25O5U", "Pentaethoxyuranium", "meltingPoint",
+                        PropertyValue(1.0, RefKey.Zabransky1996, chem.link(SOURCE_TABLES["Zabransky"], 2)),
+                        smiles="CCO[U](OCC)(OCC)(OCC)OCC"),
+        ]
+        records = merge_compounds(entries, ids, classifier).records
+        assert records["64-17-5"].pubchem_cid == 702
+        assert records["64-17-5"].to_dict()["pubchemCid"] == 702
+        assert records["formula:C10H25O5U"].smiles == "CCO[U](OCC)(OCC)(OCC)OCC"
+        assert records["formula:C10H25O5U"].pubchem_cid is None
+
+    def test_no_cas_record_uses_formula_id(self, chem, classifier):
+        entry = _eq(None, RefKey.Perry8, EquationType.maierKelley, chem, "Perry 2-151", formula="Ag2Al")
+        record = merge_compounds([entry], {}, classifier).records["formula:Ag2Al"]
+        assert (record.hill, record.group) == ("Ag2Al", "Al")

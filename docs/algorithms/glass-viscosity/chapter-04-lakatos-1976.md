@@ -217,9 +217,9 @@ These coefficients are why Table 7 is valuable for illustration:
 
 | Function | File | Role |
 |---|---|---|
-| `predictVtfDirectLakatos(comp)` | `glass-viscosity-vtf.util.ts` | **Production**: Table 6 → standard VTF parameters |
-| `buildVtf(comp, selection)` | `glass-viscosity-vtf.util.ts` | Calls `predictVtfDirectLakatos` for `LAKATOS_1976` |
-| `predictIsokomsLakatos(comp)` | `glass-viscosity-vtf.util.ts` | **Illustration**: Table 7 → 3 isokom temperatures |
+| `GlassViscosityLakatos.predictVtfDirectLakatos(comp)` | `glass-viscosity-lakatos.ts` | **Production**: Table 6 → standard VTF parameters |
+| `GlassViscosityVtf.buildVtf(comp, selection)` | `glass-viscosity-vtf.ts` | Calls `predictVtfDirectLakatos` for `LAKATOS_1976` |
+| `GlassViscosityLakatosIsokoms.predictIsokomsLakatos(comp)` | `glass-viscosity-lakatos-isokoms.ts` | **Illustration**: Table 7 → 3 isokom temperatures |
 | `LAKATOS_1976_DIRECT_VTF_COEFFICIENTS` | `constants/viscosity-parameters.ts` | Table 6 coefficients |
 | `LAKATOS_1976_COEFFICIENTS` | `constants/viscosity-parameters.ts` | Table 7 coefficients |
 

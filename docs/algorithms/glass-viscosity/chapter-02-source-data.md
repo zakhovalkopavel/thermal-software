@@ -97,7 +97,7 @@ B₂O₃,-21.62,-11.97,-6.42
 
 **Note on missing SiO₂:** SiO₂ has no row because the composition encoding already expresses everything relative to 100 parts SiO₂.
 
-**Function:** `predictIsokomsLakatos()` in `glass-viscosity-vtf.util.ts`
+**Method:** `GlassViscosityLakatosIsokoms.predictIsokomsLakatos()` in `glass-viscosity-lakatos-isokoms.ts`
 **Constant:** `LAKATOS_1976_COEFFICIENTS` in `constants/viscosity-parameters.ts`
 
 #### `page_002_table_007.csv` — Standard deviations

@@ -8,7 +8,7 @@ Refs: docs/REFERENCES.md  [9] Burcat2005, [23] NASA9
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 
 from nasa_thermo.nasa9_equation import Nasa9Equation
@@ -28,6 +28,7 @@ class Nasa9Species:
     MW: Optional[float]
     Hf298: float        # [J/mol]
     nasa9: Nasa9Equation
+    elements: dict[str, float] = field(default_factory=dict)  # element counts, e.g. {"C": 1, "H": 4}
 
     def to_dict(self) -> dict:
         return {
@@ -38,5 +39,6 @@ class Nasa9Species:
             "MW": self.MW,
             "Hf298": self.Hf298,
             "nasa9": self.nasa9.to_dict(),
+            "elements": self.elements,
         }
 

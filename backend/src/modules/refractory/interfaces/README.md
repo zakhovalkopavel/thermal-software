@@ -9,26 +9,28 @@
 
 ```
 refractory/
-├── interfaces/          ✅ TypeScript Interfaces (NEW)
-│   ├── index.ts        ← Central export point
-│   ├── blend-optimizer.interface.ts
-│   ├── psd-calculator.interface.ts
-│   ├── packing-calculator.interface.ts
-│   ├── shrinkage-calculator.interface.ts
-│   ├── phase-equilibrium.interface.ts
-│   ├── thermal-performance.interface.ts
-│   ├── refractoriness.interface.ts
-│   ├── glass-viscosity.interface.ts
-│   └── mineral-phase.interface.ts
+├── interfaces/          ✅ Barrel re-exports (types + guards)
+│   └── index.ts        ← Central export point
 │
-└── dto/                ✅ NestJS DTOs (Validation)
-    ├── blend-optimization.dto.ts
-    ├── common.dto.ts
-    ├── glass-viscosity.dto.ts
-    ├── packing-calculation.dto.ts
-    ├── phase-equilibrium.dto.ts
-    ├── refractoriness.dto.ts
-    └── shrinkage-prediction.dto.ts
+├── types/               ✅ Data shapes (Phase 6.3 + 8; includes component-property.type.ts)
+├── utils/psd-type-guards.ts              ✅ PsdTypeGuards
+├── utils/packing-type-guards.ts          ✅ PackingTypeGuards
+├── utils/shrinkage-type-guards.ts        ✅ ShrinkageTypeGuards
+├── utils/blend-optimizer-type-guards.ts      ✅ BlendOptimizerTypeGuards
+├── utils/phase-equilibrium-type-guards.ts    ✅ PhaseEquilibriumTypeGuards
+├── utils/mineral-phase-type-guards.ts        ✅ MineralPhaseTypeGuards
+├── utils/refractoriness-type-guards.ts       ✅ RefractorinessTypeGuards
+├── utils/thermal-performance-type-guards.ts  ✅ ThermalPerformanceTypeGuards
+├── utils/glass-viscosity-type-guards.ts      ✅ GlassViscosityTypeGuards
+│
+└── dto/                ✅ NestJS DTOs (one class per file)
+    ├── common/oxide-composition.dto.ts
+    ├── common/fraction-input.dto.ts
+    ├── blend-optimization/…
+    ├── packing/packing-cpm.dto.ts
+    ├── packing/packing-furnas.dto.ts
+    ├── phase-equilibrium/phase-calculation.dto.ts
+    └── …
 ```
 
 ---
@@ -46,15 +48,16 @@ import {
 
 ### Option 2: Specific File
 ```typescript
-import { BlendOptimizationRequest } from '../interfaces/blend-optimizer.interface';
+import type { BlendOptimizationRequest } from '../types/blend-optimization-request.type';
 ```
 
 ### Option 3: Type Guards
 ```typescript
-import {
-  isBlendOptimizationRequest,
-  isRefractorinessInput,
-} from '../interfaces';
+import { PsdTypeGuards } from '../utils/psd-type-guards';
+import { RefractorinessTypeGuards } from '../utils/refractoriness-type-guards';
+
+if (!PsdTypeGuards.isPSDCalculationRequest(data)) { /* … */ }
+if (!RefractorinessTypeGuards.isRefractorinessInput(data)) { /* … */ }
 ```
 
 ---
@@ -174,20 +177,35 @@ PhaseTemperatureComparison
 All interfaces have corresponding type guards:
 
 ```typescript
-isFraction()
-isBlendOptimizationRequest()
-isPSDCalculationRequest()
-isCPMInput()
-isFurnasInput()
-isShrinkageInput()
-isPhaseEquilibriumInput()
-isThermalInput()
-isThermalConductivityInput()
-isRefractorinessInput()
-isViscosityInput()
-isGlassViscosityInput()
-isMineralPhaseInput()
-// ... and more
+PsdTypeGuards.isPSDFraction()
+PsdTypeGuards.isPSDCalculationRequest()
+PsdTypeGuards.isPSDResult()
+PackingTypeGuards.isPackingInput()
+PackingTypeGuards.isCPMInput()
+PackingTypeGuards.isFurnasInput()
+PackingTypeGuards.isPackingResult()
+ShrinkageTypeGuards.isShrinkageMaterial()
+ShrinkageTypeGuards.isShrinkageInput()
+ShrinkageTypeGuards.isShrinkageStage()
+ShrinkageTypeGuards.isShrinkageResult()
+BlendOptimizerTypeGuards.isFraction()
+BlendOptimizerTypeGuards.isBlendOptimizationOptions()
+BlendOptimizerTypeGuards.isBlendOptimizationRequest()
+PhaseEquilibriumTypeGuards.isPhaseEquilibriumInput()
+PhaseEquilibriumTypeGuards.isPhaseData()
+PhaseEquilibriumTypeGuards.isMineralPhase()
+PhaseEquilibriumTypeGuards.isPhaseEquilibriumResult()
+ThermalPerformanceTypeGuards.isThermalInput()
+ThermalPerformanceTypeGuards.isThermalConductivityInput()
+ThermalPerformanceTypeGuards.isThermalPerformanceResult()
+RefractorinessTypeGuards.isRefractorinessInput()
+RefractorinessTypeGuards.isRefractorinessResult()
+GlassViscosityTypeGuards.isGlassViscosityInput()
+GlassViscosityTypeGuards.isGlassViscosityResult()
+GlassViscosityTypeGuards.isASTMFixedPoint()
+MineralPhaseTypeGuards.isMineralPhaseInput()
+MineralPhaseTypeGuards.isMineralPhaseData()
+MineralPhaseTypeGuards.isMineralPhaseResult()
 ```
 
 ---

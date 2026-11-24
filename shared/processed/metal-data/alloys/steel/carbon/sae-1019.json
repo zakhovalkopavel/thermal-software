@@ -1,0 +1,119 @@
+{
+  "materialId": "sae-1019",
+  "name": "1019",
+  "group": "steel",
+  "family": "carbon",
+  "aliases": {
+    "uns": "G10190",
+    "sae": "1019"
+  },
+  "composition": {
+    "C": 0.175,
+    "Mn": 0.85,
+    "P": 0.02,
+    "S": 0.025
+  },
+  "condition": "Unknown",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 12.2
+        },
+        {
+          "T_K": 673.15,
+          "value": 13.5
+        },
+        {
+          "T_K": 873.15,
+          "value": 14.7
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 11.42,
+            "b": 0.0008457,
+            "c": 3.333e-06
+          },
+          "min": 373.15,
+          "max": 873.15
+        },
+        "meanRelPct": 0.0,
+        "maxRelPct": 0.0
+      }
+    }
+  },
+  "sourceFiles": [
+    "carbon_steel.json",
+    "carbon_steel2.json",
+    "steel_thermal_expansion.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 987,
+    "Ac3_K": 1098,
+    "Ac1_C": 714,
+    "Ac3_C": 825,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-1025",
+        "mode": "full-series",
+        "why": "sae-1019 doesn't have electricalResistivity points; link sae-1025 series (same family carbon; ElMD=0.052092, L1=0.475 wt% [ΔMn=0.4%; ΔC=0.075%])",
+        "compositionDistance": 0.052092,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-1010",
+        "mode": "full-series",
+        "why": "sae-1019 doesn't have specificHeat points; link sae-1010 series (same family carbon; ElMD=0.055522, L1=0.47 wt% [ΔMn=0.4%; ΔC=0.07%])",
+        "compositionDistance": 0.055522,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "sae-1025",
+        "mode": "full-series",
+        "why": "sae-1019 doesn't have thermalConductivity points; link sae-1025 series (same family carbon; ElMD=0.052092, L1=0.475 wt% [ΔMn=0.4%; ΔC=0.075%])",
+        "compositionDistance": 0.052092,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalExpansion": {
+        "materialId": "sae-1020",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 373–873 K; link scaled sae-1020 outside (same family carbon; ElMD=0.023296, L1=0.43 wt% [ΔMn=0.4%; ΔC=0.03%])",
+        "compositionDistance": 0.023296,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 1.02197362,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.17989226,
+          "maxRelPct": 1.991055
+        }
+      }
+    }
+  }
+}

@@ -17,31 +17,36 @@ Last updated: 2026-03-07
 ```
 backend/src/modules/refractory/
 ├── constants/
-│   └── viscosity-parameters.ts          ← LAKATOS_1976_DIRECT_VTF_COEFFICIENTS [Table 6, production]
+│   └── viscosity-model-names.constants.ts ← VISCOSITY_MODEL_NAMES display labels
+├── data/
+│   └── viscosity-parameters.data.ts     ← LAKATOS_1976_DIRECT_VTF_COEFFICIENTS [Table 6, production]
 │                                            LAKATOS_1976_COEFFICIENTS            [Table 7, illustration]
-│                                            Fluegel, Hetherington constants
+│                                            Fluegel, Hetherington, Iida, Nakamoto constants
 ├── enums/
-│   └── viscosity-model.enum.ts          ← ViscosityModel, ViscosityModelType,
-│                                            ConfidenceLevel, ExtrapolationRisk
-├── interfaces/
-│   ├── viscosity-parameters.interface.ts ← VtfPoint, VtfParameters, LakatosIsokoms,
-│   │                                        FluegelIsokoms, SlagViscosityResult,
-│   │                                        ModelSelectionResult
-│   └── glass-viscosity.interface.ts     ← GlassViscosityResult, FixedPoints,
-│                                            ValidationStatus, ModelInfo, etc.
+│   ├── viscosity-model.enum.ts          ← ViscosityModel
+│   ├── viscosity-model-type.enum.ts     ← ViscosityModelType
+│   ├── confidence-level.enum.ts         ← ConfidenceLevel
+│   └── extrapolation-risk.enum.ts       ← ExtrapolationRisk
+├── types/                                 ← Phase 6.3: one `*.type.ts` per shape
+│   ├── vtf-point / vtf-parameters / lakatos-isokoms / fluegel-isokoms
+│   ├── slag-viscosity-result / model-selection-result
+│   └── glass-viscosity-result / fixed-points / validation-status / model-info …
 ├── utils/
-│   ├── glass-composition.util.ts        ← wtPctToMolPct, molPctToWtPct,
-│   │                                        normalizeComposition
-│   ├── glass-viscosity-vtf.util.ts      ← predictVtfDirectLakatos  [PRODUCTION: Lakatos Table 6]
-│   │                                        predictIsokomsLakatos   [ILLUSTRATION: Lakatos Table 7]
-│   │                                        predictIsokomsFluegel,
+│   ├── glass-composition.ts             ← GlassComposition
+│   │                                        normalizeComposition, wtPctToMolPct, molPctToWtPct
+│   ├── invalid-composition-error.ts     ← InvalidCompositionError
+│   ├── glass-viscosity-lakatos.ts       ← GlassViscosityLakatos
+│   │                                        predictVtfDirectLakatos [PRODUCTION: Table 6]
+│   │                                        checkLakatosValidity
+│   ├── glass-viscosity-lakatos-isokoms.ts ← GlassViscosityLakatosIsokoms
+│   │                                        predictIsokomsLakatos [ILLUSTRATION: Table 7]
+│   ├── glass-viscosity-fluegel.ts       ← GlassViscosityFluegel.predictIsokomsFluegel
+│   ├── glass-viscosity-vtf.ts           ← GlassViscosityVtf
 │   │                                        buildVtf, fitVtfThreePoints, evalVtf,
 │   │                                        temperatureAtLogViscosity,
-│   │                                        calculateFixedPointsFromVtf,
-│   │                                        checkLakatosValidity
-│   └── glass-viscosity-arrhenius.util.ts ← calcHetheringtonLogEta,
-│                                            hetheringtonTemperatureAtLogEta,
-│                                            buildHetheringtonResult
+│   │                                        calculateFixedPointsFromVtf
+│   ├── glass-viscosity-arrhenius.ts     ← GlassViscosityArrhenius (Hetherington)
+│   └── glass-viscosity-iida.ts          ← GlassViscosityIida (+ Mills liquidus)
 ├── services/
 │   └── glass-viscosity.service.ts       ← GlassViscosityService (NestJS @Injectable)
 │                                            selectModel, resolveModel,
@@ -63,7 +68,7 @@ backend/src/modules/refractory/
 
 ---
 
-## Constants (`viscosity-parameters.ts`)
+## Constants (`data/viscosity-parameters.data.ts`)
 
 | Constant | Status | Notes |
 |----------|--------|-------|
@@ -80,9 +85,9 @@ backend/src/modules/refractory/
 
 ---
 
-## Enums (`viscosity-model.enum.ts`)
+## Enums (`enums/viscosity-model*.enum.ts` and related)
 
-| Enum value | Status | Notes |
+| Enum value (`ViscosityModel`) | Status | Notes |
 |------------|--------|-------|
 | `LAKATOS_1976` | ✅ Active | VTF model for soda-lime-silica |
 | `FLUEGEL_2007` | ✅ Active | VFT model for broad silicate space |
@@ -91,47 +96,53 @@ backend/src/modules/refractory/
 | `NAKAMOTO_2007` | ✅ Active | Fluoride-bearing slag model (Nakamoto 2007) — preferred for high-CaF₂ slags; CaF₂ ≥ 5 mol% recommended |
 | `NOT_SUPPORTED` | ✅ Active | Returned when no model matches |
 
+Display names live in `constants/viscosity-model-names.constants.ts` (`VISCOSITY_MODEL_NAMES`).
+`ViscosityModelType`, `ConfidenceLevel`, and `ExtrapolationRisk` each have their own `enums/*.enum.ts` file.
+
 ---
 
 ## Utils
 
-### `glass-composition.util.ts`
+### `GlassComposition` (`glass-composition.ts`)
 
-| Function | Status | Spec Chapter |
+| Method | Status | Spec Chapter |
 |----------|--------|--------------|
 | `normalizeComposition` | ✅ Complete | Ch. 6 |
 | `wtPctToMolPct` | ✅ Complete | Ch. 6 |
 | `molPctToWtPct` | ✅ Complete | Ch. 6 |
 
-### `glass-viscosity-vtf.util.ts`
+### Static VTF / isokom classes (Phase 6.4)
 
-| Function | Status | Spec Chapter |
+| Class / method | Status | Spec Chapter |
 |----------|--------|--------------|
-| `checkLakatosValidity` | ✅ Complete | Ch. 3, 4 |
-| `predictIsokomsLakatos` | ✅ Complete | Ch. 4 |
-| `predictIsokomsFluegel` | ✅ Complete | Ch. 5 |
-| `buildVtf` | ✅ Complete | Ch. 7 — fits VTF from isokom output |
-| `fitVtfThreePoints` | ✅ Complete | Ch. 7 — analytical 3-point solve |
-| `evalVtf` | ✅ Complete | Ch. 7 |
-| `temperatureAtLogViscosity` | ✅ Complete | Ch. 7 |
-| `calculateFixedPointsFromVtf` | ✅ Complete | Ch. 8 — all ASTM C965-96 fixed points |
+| `GlassViscosityLakatos.checkLakatosValidity` | ✅ Complete | Ch. 3, 4 |
+| `GlassViscosityLakatos.predictVtfDirectLakatos` | ✅ Complete | Ch. 4 |
+| `GlassViscosityLakatosIsokoms.predictIsokomsLakatos` | ✅ Complete | Ch. 4 |
+| `GlassViscosityFluegel.predictIsokomsFluegel` | ✅ Complete | Ch. 5 |
+| `GlassViscosityVtf.buildVtf` | ✅ Complete | Ch. 7 — fits VTF from isokom output |
+| `GlassViscosityVtf.fitVtfThreePoints` | ✅ Complete | Ch. 7 — analytical 3-point solve |
+| `GlassViscosityVtf.evalVtf` | ✅ Complete | Ch. 7 |
+| `GlassViscosityVtf.temperatureAtLogViscosity` | ✅ Complete | Ch. 7 |
+| `GlassViscosityVtf.calculateFixedPointsFromVtf` | ✅ Complete | Ch. 8 — thin VTF adapter over `calculateFixedPoints` |
+| `calculateFixedPoints` | ✅ Complete | Shared ASTM fixed points; log η in `ASTM_FIXED_POINT_LOG_ETA` |
 
-### `glass-viscosity-arrhenius.util.ts`
+### `GlassViscosityArrhenius` / `GlassViscosityIida`
 
-| Function | Status | Spec Chapter |
+| Method | Status | Spec Chapter |
 |----------|--------|--------------|
-| `calcHetheringtonLogEta` | ✅ Complete | Ch. 1 (Hetherington model) |
-| `hetheringtonTemperatureAtLogEta` | ✅ Complete | Ch. 1 |
-| `buildHetheringtonResult` | ✅ Complete | — internal builder |
+| `GlassViscosityArrhenius.calcHetheringtonLogEta` | ✅ Complete | Ch. 1 (Hetherington model) |
+| `GlassViscosityArrhenius.hetheringtonTemperatureAtLogEta` | ✅ Complete | Ch. 1 |
+| `GlassViscosityArrhenius.buildHetheringtonResult` | ✅ Complete | — internal builder |
+| `GlassViscosityIida.estimateLiquidusMills` | ✅ Complete | Ch. 13 |
+| `GlassViscosityIida.calcIidaViscosity` | ✅ Complete | Ch. 13 |
 
-### Pending slag utils
+### Slag utils
 
-| File (planned) | Status | Spec Chapter |
+| File / method | Status | Spec Chapter |
 |----------------|--------|--------------|
-| `glass-viscosity-slag.util.ts` | ❌ Pending | Ch. 13 |
-| — `calcLiquidusMills` | ❌ Pending | Ch. 13 — liquidus safety guard |
-| — `calcIidaViscosity` | ❌ Pending | Ch. 13 — Iida model |
-| — `calcNakamotoViscosity` | ❌ Pending | Ch. 13 — Nakamoto 2007 model |
+| `GlassViscosityIida.estimateLiquidusMills` | ✅ Complete | Ch. 13 — liquidus safety guard |
+| `GlassViscosityIida.calcIidaViscosity` | ✅ Complete | Ch. 13 |
+| `calcNakamotoViscosity` (`glass-viscosity-nakamoto.util.ts`) | ✅ Complete | Ch. 13 — single-function util |
 
 ---
 
@@ -142,7 +153,7 @@ backend/src/modules/refractory/
 | Case | Status | Notes |
 |------|--------|-------|
 | SiO₂ > 99% → HETHERINGTON | ✅ Complete | |
-| Slag detection → IIDA / NAKAMOTO | ⚠️ Partial | Iida implementation present (`calcIidaViscosity`); Nakamoto coefficients present in `viscosity-parameters.ts`. Full slag endpoints and integration tests are pending. |
+| Slag detection → IIDA / NAKAMOTO | ⚠️ Partial | Iida via `GlassViscosityIida`; Nakamoto via `calcNakamotoViscosity`. Full slag endpoints and integration tests are pending. |
 | Lakatos validity check | ✅ Complete | |
 | Lakatos → LAKATOS_1976 | ✅ Complete | |
 | Fallback → FLUEGEL_2007 | ✅ Complete | |
@@ -181,11 +192,11 @@ Swagger UI: `GET /api/docs`
 
 | File | Status | Covers |
 |------|--------|--------|
-| `test/unit/refractory/utils/glass-composition.util.spec.ts` | ✅ Complete | `wtPctToMolPct`, `molPctToWtPct` |
-| `test/unit/refractory/utils/glass-viscosity-vtf.util.spec.ts` | ✅ Complete | `fitVtfThreePoints`, `evalVtf`, `temperatureAtLogViscosity` |
-| `test/unit/refractory/utils/glass-viscosity-isokom.spec.ts` | ✅ Complete | `predictIsokomsLakatos`, `predictIsokomsFluegel`, Hetherington self-check |
-| `test/unit/refractory/services/glass-viscosity-model-selection.spec.ts` | ✅ Complete | `selectModel` — all routing cases (Fluegel default, Lakatos reserve, slag/fluoride logic verified) |
-| `test/unit/refractory/services/glass-viscosity.service.spec.ts` | ✅ Complete | `calculateViscosity` integration — explicit-preference flow covered |
+| `test/unit/refractory/utils/glass-composition.spec.ts` | ✅ Complete | `GlassComposition` normalize / wt%↔mol% |
+| `test/unit/refractory/utils/glass-viscosity-vtf.spec.ts` | ✅ Complete | `GlassViscosityVtf.fitVtfThreePoints`, `evalVtf`, `temperatureAtLogViscosity` |
+| `test/unit/refractory/utils/glass-viscosity-isokom.spec.ts` | ✅ Complete | Lakatos direct VTF, Fluegel isokoms, Hetherington self-check |
+| `test/unit/refractory/services/composition/glass-viscosity-model-selection.spec.ts` | ✅ Complete | `selectModel` — all routing cases (Fluegel default, Lakatos reserve, slag/fluoride logic verified) |
+| `test/unit/refractory/services/composition/glass-viscosity.service.spec.ts` | ✅ Complete | `calculateViscosity` integration — explicit-preference flow covered |
 
 ### Validation Data (split)
 
@@ -222,6 +233,8 @@ To ease editor-based development the repository includes a small utility script 
 | IMPL-06 | Medium | Add slag model tests to `glass-viscosity-isokom.spec.ts` or new `slag-viscosity.spec.ts` |
 | IMPL-07 | Low | Fluegel isokom tolerance for some reference glasses is 5°C not 2°C; investigate coefficient rounding |
 | IMPL-08 | Low | D6 (BaO-bearing Lakatos glass) fails 2°C tolerance; check BaO coefficient sign in source CSV |
+| IMPL-09 | High | Fluorides are missing from `MOLAR_MASSES`, so `wtPctToMolPct` skips them: `selectModel` always sees CaF2 = 0 mol% (Nakamoto never chosen, Iida CaF2 limit warning never fires). Add `CaF2`, `NaF`, `KF`, `MgF2`, `AlF3`, `LiF` from `COMPOUND_LIBRARY` ([phase equilibrium, Step 6](../phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md)) |
+| IMPL-10 | High | Fluegel 2007 has an `F` term but receives `CaF2`, `NaF`, …, which it drops silently. Convert MFₓ → cation oxide + `F` per the paper's composition convention (verified in phase-diagram data step 2) in `utils/fluoride-to-fluegel.util.ts`; no Lakatos reserve when fluorides are present; Iida warns about fluorides other than CaF2 |
 
 ---
 

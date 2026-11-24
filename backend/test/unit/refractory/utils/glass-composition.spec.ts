@@ -1,0 +1,116 @@
+/**
+ * Unit tests for GlassComposition
+ *
+ * Covers: normalizeComposition, wtPctToMolPct, molPctToWtPct
+ */
+
+import { GlassComposition } from '../../../../src/modules/refractory/utils/glass-composition';
+import { InvalidCompositionError } from '../../../../src/modules/refractory/utils/invalid-composition-error';
+import {
+  FLUEGEL_VALIDATION_GLASSES,
+} from '../../../../src/modules/refractory/data/glass-viscosity-validation.data';
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('glass-composition — normalizeComposition', () => {
+  it('re-scales a composition that does not sum to 100, keeping proportions', () => {
+    const n = GlassComposition.normalizeComposition({ SiO2: 36.1, Na2O: 6.7, CaO: 5.6 });
+    expect(Object.values(n).reduce((s, v) => s + v, 0)).toBeCloseTo(100, 10);
+    expect(n['SiO2'] / n['Na2O']).toBeCloseTo(36.1 / 6.7, 10);
+  });
+
+  it('drops zero-valued components', () => {
+    expect(GlassComposition.normalizeComposition({ SiO2: 80, B2O3: 0, Na2O: 20 })).not.toHaveProperty('B2O3');
+  });
+
+  it.each([
+    ['empty', {}],
+    ['all-zero', { SiO2: 0 }],
+    ['negative', { SiO2: 80, Na2O: -5 }],
+    ['NaN', { SiO2: NaN }],
+    ['Infinity', { SiO2: Infinity }],
+    ['string', { SiO2: '72' as unknown as number }],
+  ])('throws InvalidCompositionError for %s input', (_, comp) => {
+    expect(() => GlassComposition.normalizeComposition(comp as Record<string, number>)).toThrow(InvalidCompositionError);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('glass-composition — wtPctToMolPct', () => {
+  it('mol% values sum to 100', () => {
+    const mol = GlassComposition.wtPctToMolPct({ SiO2: 72.2, Na2O: 13.4, CaO: 11.2, MgO: 1.5, Al2O3: 1.7 });
+    const sum = Object.values(mol).reduce((s, v) => s + v, 0);
+    expect(sum).toBeCloseTo(100, 5);
+  });
+
+  it('heavier oxide (BaO, M=153) gives fewer mol% than lighter oxide (Na2O, M=62) at equal wt%', () => {
+    const mol = GlassComposition.wtPctToMolPct({ SiO2: 50, Na2O: 25, BaO: 25 });
+    expect(mol['Na2O']).toBeGreaterThan(mol['BaO']!);
+  });
+
+  it('SiO₂ is dominant mol% in SLS glass', () => {
+    const mol = GlassComposition.wtPctToMolPct({ SiO2: 72.2, Na2O: 13.4, CaO: 11.2, MgO: 1.5, Al2O3: 1.7 });
+    for (const [k, v] of Object.entries(mol)) {
+      if (k !== 'SiO2') expect(mol['SiO2']).toBeGreaterThan(v);
+    }
+  });
+
+  it('NIST SRM 710A wt% → mol% matches source Table 1 to ±0.05 mol%', () => {
+    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 710A')!;
+    const mol = GlassComposition.wtPctToMolPct(glass.composition_wt_pct);
+    const src = glass.composition_mol_pct as Record<string, number>;
+    for (const [k, expected] of Object.entries(src)) {
+      if ((expected as number) > 0) {
+        expect(mol[k]).toBeCloseTo(expected as number, 1);
+      }
+    }
+  });
+
+  it('NIST SRM 711 (lead glass) wt% → mol% recovers PbO mol% correctly', () => {
+    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 711')!;
+    const mol = GlassComposition.wtPctToMolPct(glass.composition_wt_pct);
+    const src = glass.composition_mol_pct as Record<string, number>;
+    // PbO is very heavy (M=223.20) so mol% << wt%
+    expect(mol['PbO']).toBeCloseTo(src['PbO'], 1);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('glass-composition — molPctToWtPct', () => {
+  it('wt% values sum to 100', () => {
+    const wt = GlassComposition.molPctToWtPct({ SiO2: 74, Na2O: 15, CaO: 11 });
+    const sum = Object.values(wt).reduce((s, v) => s + v, 0);
+    expect(sum).toBeCloseTo(100, 5);
+  });
+
+  it('round-trip wtPct → molPct → wtPct is identity (±0.05 wt%)', () => {
+    const original = { SiO2: 72.2, Na2O: 13.4, CaO: 11.2, MgO: 1.5, Al2O3: 1.7 };
+    const mol = GlassComposition.wtPctToMolPct(original);
+    const recovered = GlassComposition.molPctToWtPct(mol);
+    for (const [k, v] of Object.entries(original)) {
+      expect(recovered[k]).toBeCloseTo(v, 1);
+    }
+  });
+
+  it('round-trip molPct → wtPct → molPct is identity (±0.05 mol%)', () => {
+    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 710A')!;
+    const original = glass.composition_mol_pct as Record<string, number>;
+    const wt = GlassComposition.molPctToWtPct(original);
+    const recovered = GlassComposition.wtPctToMolPct(wt);
+    for (const [k, v] of Object.entries(original)) {
+      if ((v as number) > 0) expect(recovered[k]).toBeCloseTo(v as number, 1);
+    }
+  });
+
+  it('NIST SRM 711 mol% → wt% matches derived table (heavy PbO shifts wt% up)', () => {
+    const glass = FLUEGEL_VALIDATION_GLASSES.find(g => g.id === 'NIST SRM 711')!;
+    const wt = GlassComposition.molPctToWtPct(glass.composition_mol_pct as Record<string, number>);
+    const expected = glass.composition_wt_pct;
+    for (const [k, v] of Object.entries(expected)) {
+      expect(wt[k]).toBeCloseTo(v as number, 1);
+    }
+  });
+});
+

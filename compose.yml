@@ -80,6 +80,8 @@ services:
       - thermal-network
     volumes:
       - ./backend:/app  # Bind mount entire backend folder
+      - ./shared:/app/shared
+      - ./docs:/docs:ro  # Read-only: file-length convention test measures docs/ (sibling of /app, same layout as the host)
       - backend_node_modules:/app/node_modules  # Override with volume for performance
     labels:
       - "app.version=${APP_VERSION}"
@@ -119,14 +121,19 @@ services:
 
   python:
     build:
-      context: ./python
-      dockerfile: ../docker/python/Dockerfile
+      context: .
+      dockerfile: docker/python/Dockerfile
       args:
         PYTHON_VERSION: ${PYTHON_VERSION}
+        TESSERACT_VERSION: ${TESSERACT_VERSION}
     container_name: thermal-python
     working_dir: /app
+    # PAGE_OCR_* / Modal OCR vars come from .env (no compose ${…} defaults/warnings).
+    env_file:
+      - .env
     environment:
       PYTHONUNBUFFERED: 1
+      PYTHONPATH: /app/src:/app/vendor/page-ocr/src:/app/vendor/source-extract/src
       DB_HOST: ${DB_HOST}
       DB_PORT: ${DB_PORT}
       DB_USERNAME: ${DB_USERNAME}
@@ -135,12 +142,21 @@ services:
       DISPLAY: ${DISPLAY}
       QT_X11_NO_MITSHM: ${QT_X11_NO_MITSHM}
       XAUTHORITY: /root/.Xauthority
+      LLAMA_CPP_BINARY: /opt/llama-cpp/llama-server
+      LD_LIBRARY_PATH: /opt/llama-cpp
     volumes:
       - ./python/src:/app/src
       - ./python/tests:/app/tests
+      - ./vendor/page-ocr:/app/vendor/page-ocr:ro
+      - ./vendor/source-extract:/app/vendor/source-extract:ro
       - ./tmp/reports/python:/app/reports
       - ./shared:/app/shared
+      - ./legacy:/app/legacy:ro  # compound_names.csv for name_to_formula exact dict
+      - ./backend/src/common/thermal/dto:/app/backend-dto:ro  # equation type sync test (compound_data)
       - python_packages:/usr/local/lib/python${PYTHON_VERSION_NUMBER}/site-packages
+      # page-ocr GGUF + Hugging Face caches (survive docker compose run --rm)
+      - surya_model_cache:/root/.cache/datalab
+      - huggingface_cache:/root/.cache/huggingface
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ${XAUTHORITY}:/root/.Xauthority:ro  # X11 authentication (host path from XAUTHORITY env var)
     devices:
@@ -194,3 +210,5 @@ volumes:
   frontend_node_modules:
   frontend_dist:  # Shared volume for built frontend files
   python_packages:
+  surya_model_cache:  # VLM GGUF models (~1.2GB); keeps nbs-index from re-downloading
+  huggingface_cache:

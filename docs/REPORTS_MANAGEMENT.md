@@ -1,164 +1,93 @@
-# Reports Management
+# Temporary Files and Reports (`tmp/`)
 
-## Overview
+## Rule
 
-The `tmp/reports/` directory is tracked in git (directory structure only), but actual report files are gitignored.
+`tmp/` is local scratch space. **ALL generated reports, logs and output files MUST be saved under `tmp/`**
+(reports in `tmp/reports/`), and **nothing in `tmp/` is committed** except `.gitkeep` and `.gitignore` files.
+
+The root `.gitignore` enforces this:
+
+```gitignore
+tmp/**
+!tmp/**/
+!tmp/**/.gitkeep
+!tmp/**/.gitignore
+```
+
+`scripts/verify-migration-setup.sh` fails if any other file under `tmp/` is tracked.
+
+## What Goes Where
+
+A file belongs in `tmp/` only if it can be deleted at any time without breaking anything. If code, a make target,
+a test or a doc depends on it, it belongs somewhere else:
+
+| Content                                                       | Location                                     |
+|---------------------------------------------------------------|----------------------------------------------|
+| Generated output: logs, test/benchmark results, renders, overlays, review lists | `tmp/reports/<area>/`      |
+| One-off scratch scripts, experiments, personal notes          | `tmp/` (any folder outside `tmp/reports/`)   |
+| Code used by the application, make targets or tests           | `backend/src/`, `python/src/`, `scripts/`    |
+| Specs, decisions, documentation                               | `docs/`                                      |
+| Source documents (PDFs, books, papers)                        | `shared/sources/`                            |
+| Curated data extracted from sources                           | `shared/processed/`                          |
+
+Docs may name a `tmp/` folder as an output location, but must not link to a specific file in `tmp/`: on a fresh
+clone that file does not exist.
+
+When a scratch file turns out to be needed, **move** it (do not copy) to its proper location and commit it there.
 
 ## Directory Structure
 
 ```
-tmp/reports/
-├── README.md                   # ✅ Tracked in git
-├── calculations/               # ✅ Directory tracked
-│   ├── .gitkeep                # ✅ Tracked in git
-│   └── *.log, *.txt, *.json    # ❌ Ignored (actual reports)
-├── migrations/                 # ✅ Directory tracked
-│   ├── .gitkeep                # ✅ Tracked in git
-│   └── *.log, *.txt            # ❌ Ignored (actual reports)
-├── performance/                # ✅ Directory tracked
-│   ├── .gitkeep                # ✅ Tracked in git
-│   └── *.json, *.csv           # ❌ Ignored (actual reports)
-└── tests/                      # ✅ Directory tracked
-    ├── .gitkeep                # ✅ Tracked in git
-    └── *.xml, *.json           # ❌ Ignored (actual reports)
+tmp/
+├── reports/
+│   ├── builds/            # .gitkeep tracked
+│   ├── calculations/      # .gitkeep tracked
+│   ├── migrations/        # .gitkeep tracked
+│   ├── performance/       # .gitkeep tracked
+│   ├── tests/             # .gitkeep tracked
+│   └── python/            # .gitkeep tracked; mounted as /app/reports in the python container (compose.yml)
+│       └── phase-diagrams/   # working files of the phase-diagram extraction
+└── <anything else>/       # local scratch, never tracked
 ```
 
-## .gitignore Configuration
+A folder that must exist on a fresh clone gets a `.gitkeep` (a plain `git add` works, the ignore rules allow it).
+A `tmp/<folder>/.gitignore` may hold extra local rules but cannot un-ignore other files.
 
-```gitignore
-# Ignore tmp/* but keep reports structure
-tmp/*
-!tmp/reports/
-!tmp/reports/README.md
-!tmp/reports/**/
-!tmp/reports/**/.gitkeep
+## Naming
 
-# Ignore all report files
-tmp/reports/**/*.log
-tmp/reports/**/*.txt
-tmp/reports/**/*.json
-tmp/reports/**/*.xml
-tmp/reports/**/*.csv
-tmp/reports/**/*.md
-!tmp/reports/README.md  # Exception: keep main README
-```
-
-## Usage Examples
-
-### Generate Calculation Report
+- One subfolder per tool or area: `tmp/reports/<area>/`.
+- Timestamped filenames for repeated runs: `<topic>-YYYYMMDD-HHMMSS.<ext>`.
 
 ```bash
-# NestJS backend
-npm run calculate > tmp/reports/calculations/calc-$(date +%Y%m%d-%H%M%S).log
-
-# Or in code
-import { writeFile } from 'fs/promises';
-
-const report = {
-  timestamp: new Date().toISOString(),
-  results: calculationResults
-};
-
-await writeFile(
-  `tmp/reports/calculations/calc-${Date.now()}.json`,
-  JSON.stringify(report, null, 2)
-);
-```
-
-### Generate Migration Report
-
-```bash
-# Run migration with logging
+npm run benchmark > tmp/reports/performance/benchmark-$(date +%Y%m%d-%H%M%S).json
+npm test -- --json --outputFile=tmp/reports/tests/test-results-$(date +%Y%m%d).json
 npm run typeorm migration:run > tmp/reports/migrations/migration-$(date +%Y%m%d).log 2>&1
-```
-
-### Generate Performance Report
-
-```bash
-# Benchmark results
-npm run benchmark > tmp/reports/performance/benchmark-$(date +%Y%m%d).json
-```
-
-### Generate Test Report
-
-```bash
-# Jest with JSON reporter
-npm test -- --json --outputFile=tmp/reports/tests/test-results.json
-
-# Or with coverage
-npm run test:cov > tmp/reports/tests/coverage-$(date +%Y%m%d).txt
 ```
 
 ## Cleanup
 
-### Manual Cleanup
-
 ```bash
-# Remove all reports
-rm -rf tmp/reports/calculations/*
-rm -rf tmp/reports/migrations/*
-rm -rf tmp/reports/performance/*
-rm -rf tmp/reports/tests/*
+# Remove all generated reports, keep the folder skeleton
+find tmp/reports -type f ! -name '.gitkeep' ! -name '.gitignore' -delete
 
-# Keep .gitkeep files
-find tmp/reports -type f ! -name '.gitkeep' ! -name 'README.md' -delete
+# Remove reports older than 30 days
+find tmp/reports -type f ! -name '.gitkeep' ! -name '.gitignore' -mtime +30 -delete
 ```
 
-### Automated Cleanup (older than 30 days)
+## CI/CD
 
-```bash
-# Add to cron or npm script
-find tmp/reports -type f -name "*.log" -mtime +30 -delete
-find tmp/reports -type f -name "*.json" -mtime +30 -delete
-find tmp/reports -type f -name "*.txt" -mtime +30 -delete
-```
-
-### Makefile Target
-
-Add to `Makefile`:
-
-```makefile
-clean-reports:
-	@echo "🧹 Cleaning old reports..."
-	@find tmp/reports -type f ! -name '.gitkeep' ! -name 'README.md' -mtime +30 -delete
-	@echo "✅ Old reports cleaned"
-```
-
-## CI/CD Integration
-
-### GitHub Actions Example
+Upload reports as build artifacts instead of committing them:
 
 ```yaml
-# .github/workflows/ci.yml
-- name: Run tests and generate reports
-  run: |
-    npm test -- --json --outputFile=tmp/reports/tests/test-results.json
-    
 - name: Upload test reports
-  uses: actions/upload-artifact@v3
+  uses: actions/upload-artifact@v4
   with:
     name: test-reports
     path: tmp/reports/tests/
     retention-days: 30
 ```
 
-## Benefits
-
-✅ **Directory structure in git** - Team knows where reports go  
-✅ **Actual files ignored** - No bloat in repository  
-✅ **Consistent location** - All reports in one place  
-✅ **Easy cleanup** - Simple scripts to manage old files  
-✅ **CI/CD friendly** - Can upload as artifacts  
-
-## Notes
-
-- Report files are temporary and should not be committed
-- Directory structure is tracked so all developers have the same layout
-- `.gitkeep` files ensure empty directories are tracked
-- Cleanup old reports regularly to save disk space
-
 ---
 
-**Created:** Feb 1, 2026  
-**Last Updated:** Feb 1, 2026
-
+**Created:** Feb 1, 2026
+**Last Updated:** Oct 6, 2026

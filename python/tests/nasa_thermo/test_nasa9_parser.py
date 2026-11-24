@@ -54,12 +54,13 @@ _H2_L2  = " 2T 2/17H   2.00         0   0   0  0     2.01588          0.000\n"
 # col 0=space, col 1='2' (n_intervals), col 2=space, cols 3-8='T 2/17'
 # col 51='0' (gaseous), cols 52-64=' 2.01588      ', cols 65-79='          0.000'
 
-def _make_line2(n: int, ref: str, phase: int, mw: float, hf: float) -> str:
+def _make_line2(n: int, ref: str, phase: int, mw: float, hf: float, formula: str = "") -> str:
     """Build an 80-char NASA-9 line 2.
 
     Parser reads:
       col  1      (0-idx): n_intervals
       cols 3-8   (0-idx): ref_code
+      cols 10-49 (0-idx): 5 × (A2 symbol + F6.2 count) formula slots
       col  51    (0-idx): phase_flag
       cols 52-64 (0-idx): MW
       cols 65-79 (0-idx): Hf298
@@ -67,7 +68,7 @@ def _make_line2(n: int, ref: str, phase: int, mw: float, hf: float) -> str:
     s = (
         f" {n} "                  # cols 0-2  (col 1=N, col 2=separator)
         + f"{ref:<6}"             # cols 3-8   ref_code
-        + " " * 42                # cols 9-50  formula fields (not parsed)
+        + f" {formula:<40} "      # cols 9-50  formula slots
         + f"{phase}"              # col  51    phase_flag
         + f"{mw:13.5f}"          # cols 52-64 MW  (13 chars)
         + f"{hf:15.3f}"          # cols 65-79 Hf298 (15 chars)
@@ -198,6 +199,23 @@ class TestParseNasa9OriginFormat:
         p = _write_tmp(tmp_path, _H2_FIXTURE_ORIGIN)
         sp = parse_nasa9([p])["H2"]
         assert sp.nasa9.ranges[0].H0 == pytest.approx(8448.714, rel=1e-4)
+
+    def test_elements_and_hf298(self, tmp_path):
+        fixture = _H2_FIXTURE_NEW.replace(
+            _make_line2(1, "T 2/17", 0, 2.01588, 0.0),
+            _make_line2(1, "g 8/99", 0, 16.04246, -74600.0, "C   1.00H   4.00"),
+        ).replace("H2   ", "CH4  ", 1)
+        sp = parse_nasa9([_write_tmp(tmp_path, fixture)])["CH4"]
+        assert sp.elements == {"C": 1.0, "H": 4.0}
+        assert sp.Hf298 == pytest.approx(-74600.0)
+        assert sp.to_dict()["elements"] == {"C": 1.0, "H": 4.0}
+
+    def test_upper_case_symbols_title_cased(self, tmp_path):
+        fixture = _H2_FIXTURE_NEW.replace(
+            _make_line2(1, "T 2/17", 0, 2.01588, 0.0),
+            _make_line2(1, "T 2/17", 0, 101.96, 0.0, "AL  2.00O   3.00"),
+        )
+        assert parse_nasa9([_write_tmp(tmp_path, fixture)])["H2"].elements == {"Al": 2.0, "O": 3.0}
 
 
 class TestParseNasa9NewFormat:

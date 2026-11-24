@@ -48,9 +48,10 @@ backend/src/common/thermal/
 ├── enum/
 │   └── ref-key.enum.ts                   ← enum RefKey — 23 entries (Szargut … NASA9)
 ├── interfaces/
-│   ├── equation.interface.ts             ← interface Equation<T> { calculate, calculateAverage, integral }
-│   ├── equation-value.interface.ts       ← interface EquationValue { type, ref: RefKey, page?, vars, min, max, k? }
-│   ├── compound-value.interface.ts       ← interface CompoundValue (name, Mr, nasa7?, nasa9?, heatCapacity, viscosity, thermalConductivity, …)
+│   └── equation.interface.ts             ← interface Equation<T> { calculate, calculateAverage, integral }
+├── types/
+│   ├── equation-value.type.ts            ← type EquationValue { type, ref: RefKey, page?, vars, min, max, k? }
+│   ├── compound-value.type.ts            ← type CompoundValue (name, Mr, nasa7Key?, nasa9Key?, heatCapacity, …)
 │   └── index.ts
 ├── type/
 │   ├── linear-equation.ts                ← type LinearEquation { a, b }
@@ -125,7 +126,7 @@ ThermodynamicsModule
     └── Nasa7EquationMethod    (from common/thermal/utils/ — for enthalpy/entropy/gibbs)
     └── Nasa9EquationMethod    (from common/thermal/utils/ — preferred modern format)
   TransportService
-    └── compound.sutherlandParams (from CompoundValue.sutherlandParams)
+    └── compound.viscosity.values (Sutherland EquationValue when present)
     └── Wilke mixing — own implementation (not in common/thermal)
   DiffusionService
     └── compound.collisionDiameter / epsilonToKb (from CompoundValue)

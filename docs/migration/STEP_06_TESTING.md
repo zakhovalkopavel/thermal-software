@@ -15,7 +15,7 @@
 
 #### Refractory Module
 ```typescript
-// refractory/services/phase-equilibrium.service.spec.ts
+// refractory/services/composition/phase-equilibrium.service.spec.ts
 describe('PhaseEquilibriumService', () => {
   it('should calculate liquid fraction correctly', () => {
     // Test with known inputs/outputs from legacy

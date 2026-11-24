@@ -1,0 +1,85 @@
+{
+  "system": "Al2O3-SiO2",
+  "components": ["Al2O3", "SiO2"],
+  "output": "systems/al2o3-sio2.json",
+  "idPrefix": "as",
+  "source": {
+    "ref": "slag-atlas-1995",
+    "figure": "Fig. 3.35",
+    "diagram": "Al2O3-SiO2 phase diagram with incongruent melting of mullite according to Klug et al. [1] (full lines, recommended version)",
+    "printedPage": 47,
+    "pdfPage": 67,
+    "alternative": { "figure": "Fig. 3.36", "diagram": "Al2O3-SiO2 phase diagram with congruent melting of mullite after Aramaki, Roy [4]", "printedPage": 47, "pdfPage": 67 },
+    "caption": "Atlas text (printed p. 47): 'Fig. 3.35. Al2O3-SiO2 phase diagram with incongruent melting of mullite (3Al2O3·2SiO2) according to Klug et al. [1] (full lines - recommended version of the phase diagram), Aksay, Pask [2] (dash-dot lines), and Shindo [3] (dashed lines). The version by Klug et al. [1] is also based on the previous results reported by Aramaki, Roy [4], Aksay, Pask [1] and Horibe, Kuwabara [5]. Earlier versions of the phase diagram with incongruent melting of mullite have been reported by Bowen, Greig [6], Shears, Archibald [7], Trömel et al. [8] and Welch [9]. As reported by Welch [9], Horibe, Kuwabara [5] and Shindo [3], the composition of liquid co-existing with mullite and Al2O3, in contrast to the phase diagram reported by Aksay, Pask [2], is rather close to the mullite composition.' References: [1] Klug, F. J., S. Prochazka, R. H. Doremus: J. Am. Ceram. Soc. 70 (1987) No. 10, p. 750/9; [2] Aksay, I. A., J. A. Pask: Science 183 (1973) No. 4120, p. 69/71; [3] Shindo, I.: Ceram. Trans. 6 /Mullite Mullite Matrix Compos./ (1990), p. 103/13; [4] Aramaki, S., S. Roy: J. Am. Ceram. Soc. 45 (1962) No. 5, p. 229/42; [5] Horibe, T., S. Kuwabara: Bull. Chem. Soc. Jap. 40 (1967) No. 4, p. 972/82; [6] Bowen, N. L., J. W. Greig: J. Am. Ceram. Soc. 7 (1924) No. 4, p. 238/54; [7] Shears, E. C., W. A. Archibald: Iron Steel 27 (1954) No. 2, p. 61/6; [8] Trömel, G., K.-H. Obst, K. Konopicky, H. Bauer, I. Patzak: Ber. Dtsch. Keram. Ges. 34 (1957) No. 12, p. 397/402; [9] Welch, J. W.: Nature 186 (1960) No. 4724, p. 546/7."
+  },
+  "frameSearchBox": [1400, 280, 3060, 1560],
+  "axes": {
+    "x": { "component": "SiO2", "ticks": [0, 10, 30, 40, 50, 60, 70, 80, 90, 100] },
+    "y": { "ticks": [2100, 2000, 1900, 1800, 1700, 1600, 1500] }
+  },
+  "strokeWidth_px": [5, 12],
+  "phases": ["silica", "mullite", "corundum"],
+  "endMembers": {
+    "corundum": { "x": 0, "labelTemperature": 2053 },
+    "silica": { "x": 100, "labelTemperature": 1725 }
+  },
+  "invariants": [
+    { "id": "as-mullite-peritectic", "type": "binary", "reaction": "peritectic", "phases": ["mullite", "corundum"],
+      "label": { "temperature": null, "composition": null },
+      "seedPixel": [1834, 748], "nbs": [],
+      "notes": "Incongruent melting of mullite (Klug et al.): mullite → corundum + liquid. Temperature and composition not printed. Liquid composition close to mullite, as the caption states. NSRDS-NBS 61 lists eutectics only, no cross-check possible." },
+    { "id": "as-eutectic", "type": "binary", "reaction": "eutectic", "phases": ["silica", "mullite"],
+      "label": { "temperature": null, "composition": null },
+      "seedPixel": [2852, 1329], "nbs": [5931],
+      "notes": "Temperature and composition not printed. NBS 5909 (1547 °C, approximate) disagrees and is not attached (`unmatchedSourcePoints`)." }
+  ],
+  "liquidus": [
+    { "phase": "corundum", "from": "end:corundum", "to": "as-mullite-peritectic",
+      "segments": [ { "kind": "trace", "seedPixel": [1654, 534] } ],
+      "grid": [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 23] },
+    { "phase": "mullite", "from": "as-mullite-peritectic", "to": "as-eutectic",
+      "segments": [ { "kind": "trace", "seedPixel": [2373, 908] } ],
+      "grid": [26, 28, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 84, 86, 88, 90, 91] },
+    { "phase": "silica", "from": "as-eutectic", "to": "end:silica",
+      "segments": [ { "kind": "trace", "seedPixel": [2912, 1166] } ],
+      "grid": [93, 94, 95, 96, 97, 98, 99, 100] }
+  ],
+  "junctionTolerance_wt": 1.5,
+  "verbatim": {
+    "variantChoice": {
+      "used": "Fig. 3.35 (incongruent mullite, Klug et al. 1987)",
+      "reason": "Atlas text: Fig. 3.35 full lines are the 'recommended version'; Fig. 3.36 caption: the version with incongruent melting 'represents the stable phase relations', the congruent version 'the metastable phase relations'. Consistent with Fig. 3.166."
+    },
+    "endMemberSources": [
+      { "phase": "corundum", "temperature_C": 2053,
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.35", "printedPage": 47, "pdfPage": 67, "read": "printed label '2053' at the Al2O3 axis, where the liquidus curves start" } },
+      { "phase": "silica", "temperature_C": 1725,
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.35", "printedPage": 47, "pdfPage": 67, "read": "printed label '1725' at the SiO2 axis, where the silica liquidus curves end" } }
+    ],
+    "solidSolutions": [
+      { "phase": "mullite", "modelledAs": "3Al2O3·2SiO2 (stoichiometric)",
+        "range_wt_SiO2": [ { "temperature_C": 1850, "from": 22.9, "to": 24.6 }, { "temperature_C": 1700, "from": 24.3, "to": 27.1 }, { "temperature_C": 1590, "from": 25.3, "to": 28.7 } ],
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.35", "printedPage": 47, "pdfPage": 67, "read": "digitized by hand before the extraction tool (thick lines bounding the mullite field); no pixels recorded" } }
+    ],
+    "unmatchedSourcePoints": [
+      { "ref": "nsrds-nbs-61-1", "entry": 5909, "pdfPage": 113, "printedPage": 105,
+        "reported": { "system": "Al2O3-SiO2", "composition_mol": { "Al2O3": 3.0, "SiO2": 97.0 }, "approximate": true, "temperature_C": 1547, "uncertainty_C": 5 },
+        "converted_wt": { "Al2O3": 5.0, "SiO2": 95.0 }, "originalReference": "941",
+        "notes": "Silica + mullite eutectic, ≈40 °C below the atlas and NBS 5931; rejected (OPEN_ITEMS section 1). Not used." },
+      { "ref": "nsrds-nbs-61-1", "entry": 5927, "pdfPage": 113, "printedPage": 105,
+        "reported": { "system": "Al2O3-SiO2", "composition_mol": { "Al2O3": 90.2, "SiO2": 9.8 }, "temperature_C": 1590, "uncertainty_C": null },
+        "converted_wt": { "Al2O3": 94.0, "SiO2": 6.0 }, "originalReference": "1152",
+        "notes": "Physically impossible as printed (94 wt% Al2O3 liquid at 1590 °C). The source is a porcelain-system paper; the entry is probably a transcription error. Not used." }
+    ],
+    "alternativeVersion": {
+      "figure": "Fig. 3.36", "diagram": "congruent mullite after Aramaki, Roy [4], revised by Davis, Pask and Staronka et al.", "printedPage": 47, "pdfPage": 67,
+      "use": "metastable phase relations (Fig. 3.36 caption); not used",
+      "invariantPoints": [
+        { "id": "as-mullite-congruent", "type": "compound-melting", "phases": ["mullite"], "temperature_C": 1848, "liquid_wt": null,
+          "read": "digitized by hand before the extraction tool (maximum of the Aramaki & Roy liquidus near A3S2); no pixel recorded" },
+        { "id": "as-mullite-corundum-eutectic", "type": "binary", "reaction": "eutectic", "phases": ["mullite", "corundum"], "temperature_C": 1839, "liquid_wt": null,
+          "read": "digitized by hand before the extraction tool (eutectic line of Aramaki & Roy); no pixel recorded" }
+      ]
+    }
+  }
+}

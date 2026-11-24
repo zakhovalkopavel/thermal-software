@@ -16,12 +16,11 @@
  * NOT for glasses below liquidus — no softening/annealing points.
  */
 
-import { NAKAMOTO_2007, MILLS_LIQUIDUS } from '../constants/viscosity-parameters';
-import { SlagViscosityResult } from '../interfaces/viscosity-parameters.interface';
-import { wtPctToMolPct } from './glass-composition.util';
-import { estimateLiquidusMills } from './glass-viscosity-iida.util';
-
-const R = NAKAMOTO_2007.R;
+import { NAKAMOTO_2007, MILLS_LIQUIDUS } from '../data/viscosity-parameters.data';
+import type { SlagViscosityResult } from '../types';
+import { GlassViscosityIida } from './glass-viscosity-iida';
+import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
+import { celsiusToKelvin } from '../../../common/thermal/utils/temperature';
 
 // ─── Main export ─────────────────────────────────────────────────────────────
 
@@ -36,10 +35,10 @@ export function calcNakamotoViscosity(
   temperature_C: number,
 ): SlagViscosityResult {
   const warnings: string[] = [];
-  const T_K = temperature_C + 273.15;
+  const T_K = celsiusToKelvin(temperature_C);
 
   // ── Liquidus safety check ─────────────────────────────────────────────────
-  const T_liq = estimateLiquidusMills(comp_wt_pct);
+  const T_liq = GlassViscosityIida.estimateLiquidusMills(comp_wt_pct);
   const thermalState =
     temperature_C <= T_liq      ? 'BELOW_LIQUIDUS' :
     temperature_C <= T_liq + 50 ? 'NEAR_LIQUIDUS'  : 'ABOVE_LIQUIDUS';
@@ -106,7 +105,7 @@ export function calcNakamotoViscosity(
   const A   = Math.exp(lnA);
 
   // ── η = A · T · exp(E / RT) ───────────────────────────────────────────────
-  const viscosity_Pas    = A * T_K * Math.exp(E_total / (R * T_K));
+  const viscosity_Pas    = A * T_K * Math.exp(E_total / (PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK * T_K));
   const logViscosity_Pas = Math.log10(viscosity_Pas);
 
   return {

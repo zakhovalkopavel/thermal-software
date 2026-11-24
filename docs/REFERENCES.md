@@ -4,7 +4,8 @@
 used in compound data files and equation implementations.
 
 **Usage:** Every `EquationValue` in a compound data file must carry a `ref` field set to the
-corresponding `RefKey` enum value (see `dto/ref-key.dto.ts`), plus a `page` field where applicable.
+corresponding `RefKey` enum value (see `enum/ref-key.enum.ts`), plus a `page` field where applicable.
+The keys and metadata come from one file, `shared/references/references.json` (see [Adding a New Reference](#adding-a-new-reference)).
 
 ```typescript
 // Example usage in a compound data file (TypeScript):
@@ -56,15 +57,18 @@ See [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) § 7 for the f
 
 ## Reference List
 
+<!-- references:start -->
+<!-- AUTO-GENERATED from shared/references/references.json by scripts/generate_references.py — do not edit; run `make references-generate`. -->
+
 | #  | Key (`RefKey`)   | Source |
 |----|------------------|--------|
-| 1  | `Szargut`        | Szargut, J. — *Termodynamika Techniczna* (Technical Thermodynamics). Wyd. Politechniki Śląskiej, multiple editions. Standard Cp polynomials (linearHyperbolic form: a + bT + d/T²). |
+| 1  | `Szargut`        | Szargut, J. — *Termodynamika Techniczna* (Technical Thermodynamics). Wyd. Politechniki Śląskiej, multiple editions. Standard Cp polynomials (Maier–Kelley form: a + bT + d/T²). |
 | 2  | `Incropera`      | Incropera, F.P.; DeWitt, D.P.; Bergman, T.L.; Lavine, A.S. — *Fundamentals of Heat and Mass Transfer*, 6th ed. Wiley, 2007. Thermal conductivity and viscosity tables/correlations. URL: https://booksite.elsevier.com/9780750683661/Appendix_C.pdf |
 | 3  | `NBS1955`        | Hilsenrath, J. et al. — *Tables of Thermal Properties of Gases*. NBS Circular 564, 1955. URL: https://www.govinfo.gov/content/pkg/GOVPUB-C13-89baf9f9b4a43e5f25820bd51b0f3f11/pdf/GOVPUB-C13-89baf9f9b4a43e5f25820bd51b0f3f11.pdf |
-| 4  | `Perry7`         | Perry, R.H.; Green, D.W. (eds.) — *Perry's Chemical Engineers' Handbook*, 7th ed. McGraw-Hill, 1997. Aly–Lee Cp coefficients (Table 2-150) and polynomial Cp data. |
+| 4  | `Perry7`         | Perry, R.H.; Green, D.W. (eds.) — *Perry's Chemical Engineers' Handbook*, 7th ed. McGraw-Hill, 1997. DIPPR 107 Cp coefficients, proposed by Aly and Lee (Table 2-150), and polynomial Cp data. |
 | 5  | `Borgnakke`      | Borgnakke, C.; Sonntag, R.E. — *Thermodynamic and Transport Properties*. Wiley, 1997. URL: https://engineering.wayne.edu/mechanical/pdfs/thermodynamic-_tables-updated.pdf |
 | 6  | `Yaws1999`       | Yaws, C.L. — *Chemical Properties Handbook: Physical, Thermodynamic, Environmental, Transport, Safety, and Health Related Properties for Organic and Inorganic Chemicals*. McGraw-Hill, 1999. |
-| 7  | `Poling5`        | Poling, B.E.; Prausnitz, J.M.; O'Connell, J.P. — *The Properties of Gases and Liquids*, **5th ed.** McGraw-Hill, 2000. |
+| 7  | `Poling5`        | Poling, B.E.; Prausnitz, J.M.; O'Connell, J.P. — *The Properties of Gases and Liquids*, **5th ed.** McGraw-Hill, 2000. Ideal-gas Cp databank; Lennard-Jones σ and ε/k from viscosity data (Appendix B). |
 | 8  | `NASA7`          | McBride, B.J.; Zehe, M.J.; Gordon, S. — *NASA Glenn Coefficients for Calculating Thermodynamic Properties of Individual Species*. NASA TM-2002-211556, 2002. NASA-7 polynomial coefficients. |
 | 9  | `Burcat2005`     | Burcat, A.; Ruscic, B. — *Third Millennium Ideal Gas and Condensed Phase Thermochemical Database for Combustion with Updates from Active Thermochemical Tables*. ANL-05/20, 2005. |
 | 10 | `Lemmon2004`     | Lemmon, E.W.; Jacobsen, R.T. — *Viscosity and Thermal Conductivity Equations for Nitrogen, Oxygen, Argon, and Air*. International Journal of Thermophysics, 25(1), 2004. URL: https://trc.nist.gov/refprop/FAQ/NAO.PDF |
@@ -73,24 +77,93 @@ See [`docs/PYTHON_CODE_STANDARDS.md`](./PYTHON_CODE_STANDARDS.md) § 7 for the f
 | 13 | `Sheindlin1974`  | Шейндлин А.Е. (ed.) — *Излучательные свойства твёрдых материалов. Справочник* (Emissive Properties of Solid Materials. Handbook). Energiya, Moscow, 1974. |
 | 14 | `Bentz07`        | Bentz, D.P.; Prasad, K. — *Thermal Performance of Fire Resistive Materials I. Characterization with Respect to Thermal Performance Models*. NISTIR 7401, 2007. URL: https://www.researchgate.net/publication/241211063 |
 | 15 | `NIST_Cryo`      | NIST Cryogenic Materials Properties Database. URL: https://trc.nist.gov/cryogenics/materials |
-| 16 | `Perry9`         | Perry, R.H.; Green, D.W. (eds.) — *Perry's Chemical Engineers' Handbook*, 9th ed. McGraw-Hill, 2019. DIPPR transport correlations (Eq. 102). |
+| 16 | `Perry9`         | Perry, R.H.; Green, D.W. (eds.) — *Perry's Chemical Engineers' Handbook*, 9th ed. McGraw-Hill, 2019. DIPPR transport correlations (Eq. 102); Table 2-95 (pp. 2-167–2-173) ideal-gas ΔHf, ΔGf at 298.15 K (DIPPR 801, 2016). |
 | 17 | `DIPPR_Doc`      | DIPPR Fit Equations documentation (Chemicals library). URL: https://chemicals.readthedocs.io/chemicals.dippr.html |
 | 18 | `WolframAlpha`   | WolframAlpha Online Integral Calculator — used to verify closed-form antiderivatives. URL: https://www.wolframalpha.com/calculators/integral-calculator/ |
 | 19 | `Asano2006`      | Asano, K. — *Mass Transfer: From Fundamentals to Modern Industrial Applications*. Wiley-VCH, 2006. Lennard-Jones collision parameters (σ, ε/kB). |
-| 20 | `White3`         | White, F.M. — *Viscous Fluid Flow*, 3rd ed. McGraw-Hill, 2006. Sutherland viscosity parameters (μ₀, T₀, S) in Appendix A. |
+| 20 | `White3`         | White, F.M. — *Viscous Fluid Flow*, 3rd ed. McGraw-Hill, 2006. Sutherland viscosity parameters (μ₀, T₀, S) in Appendix A. Power-law and Sutherland fits of viscosity and thermal conductivity (Tables 1-2, 1-3, A-6) and Lennard-Jones σ, ε/k (Table A-7) in `shared/sources/transport-parameters.json`. |
 | 21 | `Mikheev1977`    | Михеев М.А., Михеева И.М. — *Основы теплопередачи* (Fundamentals of Heat Transfer), 2nd ed. Энергия, 1977. Nu correlations for turbulent pipe flow (Mikheev equation); gas radiation heat transfer coefficients. |
 | 22 | `Whitaker1972`   | Whitaker, S. — *Forced Convection Heat Transfer Correlations for Flow in Pipes, Past Flat Plates, Single Cylinders, Single Spheres, and for Flow in Packed Beds and Tube Bundles*. AIChE Journal, 18(2), pp. 361–371, 1972. Nu correlations for external and internal forced convection. |
-| 23 | `NASA9`          | Burcat, A.; Ruscic, B. — *Third Millennium Ideal Gas and Condensed Phase Thermochemical Database for Combustion with Updates from Active Thermochemical Tables*. ANL-05/20, 2005. NASA-9 polynomial format coefficients for a wide range of species. URL: https://publications.anl.gov/anlpubs/2005/07/53802.pdf |
+| 23 | `NASA9`          | Burcat, A.; Ruscic, B. — *Third Millennium Ideal Gas and Condensed Phase Thermochemical Database for Combustion with Updates from Active Thermochemical Tables*. ANL-05/20, 2005. NASA-9 polynomial format coefficients for a wide range of species; the database (`shared/processed/NASA/nasa9.json`) also contains the McBride, B.J.; Gordon, S. NASA RP-1311 (1996) set ("NASA RP-1311 set" in compound files). URL: https://publications.anl.gov/anlpubs/2005/07/53802.pdf |
 | 24 | `CaltechSDT`     | California Institute of Technology Explosion Dynamics Laboratory — *Shock and Detonation Toolbox: Thermodynamic Data*. Caltech, maintained. Contains NASA-7 and NASA-9 coefficient databases. URL: https://shepherd.caltech.edu/EDL/PublicResources/sdt/thermo.html |
 | 25 | `BurcatELTE`     | Burcat, A.; Ruscic, B.; Goos, E. — *Extended Third Millennium Thermodynamic Database of New NASA Polynomials with Active Thermochemical Tables update*. Hosted at ELTE (Eötvös Loránd University), updated continuously. URL: https://respecth.elte.hu/burcat.php |
+| 26 | `Basu2006`       | Basu, P. — *Combustion and Gasification in Fluidized Beds*. CRC Press (Taylor & Francis), 2006, pp. 45–78. Solid fuel properties: `charcoal-briquette` preset (p. 67). |
+| 27 | `VanKrevelen1993` | Van Krevelen, D.W. — *Coal: Typology – Physics – Chemistry – Constitution*, 3rd ed. Elsevier, 1993, pp. 220–250. Solid fuel properties: `charcoal-oak` preset (p. 235). |
+| 28 | `Laurendeau1978` | Laurendeau, N.M. — *Heterogeneous Kinetics of Coal Char Gasification and Combustion*. Progress in Energy and Combustion Science, 4(4), pp. 221–270, 1978. Char surface reaction kinetics (`BED_REACTIONS`). |
+| 29 | `Turns2012`      | Turns, S.R. — *An Introduction to Combustion: Concepts and Applications*, 3rd ed. McGraw-Hill, 2012, pp. 120–145. Gas-phase reaction kinetics (`BED_REACTIONS`). |
+| 30 | `Higman2008`     | Higman, C.; van der Burgt, M. — *Gasification*, 2nd ed. Gulf Professional Publishing (Elsevier), 2008, pp. 78–95. Boudouard and water-gas reactions (`BED_REACTIONS`). |
+| 31 | `IUPAC2021`      | Prohaska, T. et al. — *Standard Atomic Weights of the Elements 2021 (IUPAC Technical Report)*. Pure and Applied Chemistry, 94(5), pp. 573–600, 2022. Conventional atomic weights (gas `Mr` values in `COMPOUND_LIBRARY`). URL: https://doi.org/10.1515/pac-2019-0603 |
+| 32 | `NISTWebBook`    | Linstrom, P.J.; Mallard, W.G. (eds.) — *NIST Chemistry WebBook*, NIST Standard Reference Database Number 69. National Institute of Standards and Technology, maintained. Reference data for fits (NH3 Sutherland viscosity); Shomate Cp coefficients. URL: https://webbook.nist.gov/chemistry/ |
+| 33 | `Ergun1952`      | Ergun, S. — *Fluid Flow through Packed Columns*. Chemical Engineering Progress, 48(2), pp. 89–94, 1952. Packed-bed pressure drop (`AerodynamicsService`). |
+| 34 | `Perry8`         | Green, D.W.; Perry, R.H. (eds.) — *Perry's Chemical Engineers' Handbook*, 8th ed. McGraw-Hill, 2008. DIPPR Eq. 102 coefficients: Table 2-312 (vapor viscosity) and Table 2-314 (vapor thermal conductivity) for the fuel gases C2H6 … C3H6. Machine-readable copies of both tables: CalebBell/chemicals, `chemicals/Viscosity/Table 2-312 …tsv` and `chemicals/Thermal Conductivity/Table 2-314 …tsv`. Also Cp (Tables 2-151, 2-153) and liquid viscosity (Table 2-313). URL: https://github.com/CalebBell/chemicals |
+| 35 | `Eakin1963`      | Eakin, B.E.; Ellington, R.T. — *Predicting the Viscosity of Pure Light Hydrocarbons*. Journal of Petroleum Technology, 15(2), pp. 210–214, 1963 (Trans. AIME 228). Table 1: Sutherland constants μ = B·T^1.5/(T + S) [μP, °R] for methane, ethane, propane, n-butane. URL: https://doi.org/10.2118/397-PA |
+| 36 | `NISTJANAF`      | Chase, M.W. Jr. — *NIST-JANAF Thermochemical Tables*, 4th ed. Journal of Physical and Chemical Reference Data, Monograph 9, 1998 (NIST Standard Reference Database 13). Cp, S, H−H(298), ΔfH, ΔfG, log Kf and phase-transition temperatures of condensed and gaseous species; tables cited by ID (e.g. `O-045`). Machine-readable copy: py-janaf (n-takumasa), `src/janaf/data`, URL: https://github.com/n-takumasa/py-janaf. URL: https://janaf.nist.gov |
+| 37 | `CRC95`          | Haynes, W.M.; Bruno, T.J.; Lide, D.R. (eds.) — *CRC Handbook of Chemistry and Physics*, 95th ed. CRC Press, 2014. Melting and boiling points, densities, heats of fusion, ΔfH°, ΔfG°, S° and Cp at 298.15 K. |
+| 38 | `Yaws2014`       | Yaws, C.L. — *Thermophysical Properties of Chemicals and Hydrocarbons*, 2nd ed. Gulf Professional Publishing, 2014. Critical constants, acentric factors, boiling points, gas ΔfH° and S°. |
+| 39 | `Zabransky1996`  | Zabransky, M.; Ruzicka, V. Jr.; Majer, V.; Domalski, E.S. — *Heat Capacity of Liquids: Critical Review and Recommended Values*. J. Phys. Chem. Ref. Data Monograph 6, 1996. Liquid Cp correlations. |
+| 40 | `TRC1994`        | Thermodynamics Research Center — *Thermodynamics of Organic Compounds in the Gas State*, Vol. II. TRC, 1994. Ideal-gas Cp coefficients. |
+| 41 | `VDI2010`        | VDI e.V. (ed.) — *VDI Heat Atlas*, 2nd ed. Springer, 2010. PPDS correlations: liquid and gas viscosity and thermal conductivity, liquid density, vapour pressure, enthalpy of vaporization, surface tension. |
+| 42 | `Magalhaes2013`  | Magalhães, A.L.; Lito, P.F.; Da Silva, F.A.; Silva, C.M. — *Simple and Accurate Correlations for Diffusion Coefficients of Solutes in Liquids and Supercritical Fluids over Wide Ranges of Temperature and Density*. The Journal of Supercritical Fluids, 76, pp. 94–114, 2013. Lennard-Jones σ and ε/k of about 320 compounds (chemicals `MagalhaesLJ.tsv`). URL: https://doi.org/10.1016/j.supflu.2013.02.002 |
+| 43 | `Svehla1962`     | Svehla, R.A. — *Estimated Viscosities and Thermal Conductivities of Gases at High Temperatures*. NASA Technical Report R-132, 1962. Lennard-Jones σ and ε/k (via White, Viscous Fluid Flow, Table A-7; `shared/sources/transport-parameters.json`). |
+| 44 | `Itean1961`      | Itean, E.C.; Glueck, A.R.; Svehla, R.A. — *Collision Integrals for a Modified Stockmayer Potential*. NASA Technical Note D-481, Lewis Research Center, 1961. Stockmayer σ, ε/k, δ and dipole moments of polar molecules (Table III; `shared/sources/transport-parameters.json`). |
+| 45 | `Svehla1995`     | Svehla, R.A. — *Transport Coefficients for the NASA Lewis Chemical Equilibrium Program*. NASA Technical Memorandum 4647, 1995. Data sources of the CEA transport fits: potentials (Lennard-Jones, Stockmayer, Exp-6, corresponding states), modified Eucken Z, binary diffusion pairs (Table I; `shared/sources/transport-parameters.json`). |
+| 46 | `Mamedov2014`    | Mamedov, B.A.; Somuncu, E. — *Analytical treatment of second virial coefficient over Lennard-Jones (2n–n) potential and its application to molecular systems*. Journal of Molecular Structure, 1068, pp. 164–169, 2014. Lennard-Jones σ and ε/k fitted to second virial coefficients (Table 1; `shared/sources/transport-parameters.json`). |
+| 47 | `NBS1982`        | Wagman, D.D.; Evans, W.H.; Parker, V.B.; Schumm, R.H.; Halow, I.; Bailey, S.M.; Churney, K.L.; Nuttall, R.L. — *The NBS Tables of Chemical Thermodynamic Properties. Selected values for inorganic and C1 and C2 organic substances in SI units*. Journal of Physical and Chemical Reference Data, 11, Suppl. 2 (1982). Erratum: Journal of Physical and Chemical Reference Data, 18(4), 1807–1812 (1989). Data files: https://data.nist.gov/pdr/metrics/mds2-2124 (DOI 10.18434/M32124; `shared/sources/NBS/NBS_Tables_with_ErratumValues.csv`). |
+| 48 | `NISTMoltenSalts` | NIST Properties of Molten Salts Database, formerly Standard Reference Database 27. Critically evaluated density, surface tension and viscosity of inorganic salts in the molten state, drawn from the Janz molten-salt series (literature 1890–1990). Distributed by NIST 1990–2004, not maintained since 1991, and no longer Standard Reference Data. Data files: https://data.nist.gov/pdr/lps/ark:/88434/mds2-2298 (`shared/sources/NIST-molten-salts/`). |
+| 49 | `Hirschfelder1954` | Hirschfelder, J.O.; Curtiss, C.F.; Bird, R.B. — *Molecular Theory of Gases and Liquids*. Wiley, New York, 1954. Lennard-Jones force constants (ε/k, σ) transcribed from University at Buffalo CE 407 Appendix 19: https://wwwcourses.sens.buffalo.edu/ce407/notes/ce407_notes_Lennard_Jones.pdf (`shared/sources/ce407_notes_Lennard_Jones.pdf`; table `hirschfelder1954-lj` in `shared/sources/transport-parameters.json`). |
+| 50 | `Huber2019`      | Huber, M.L. — VISCOSITY OF GASES. In *CRC Handbook of Chemistry and Physics*. CRC Press, Boca Raton, FL, 2019. Updated recommended dilute-gas viscosities vs temperature (generally at 100 kPa or saturation vapor pressure if lower; P=0 denotes the zero-density limit). NIST page: https://www.nist.gov/publications/viscosity-gases-0 (source `shared/sources/compound-data/viscosity/Dilute gas Transport Tables viscosity.2018.aug4.pdf.pdf`; processed `shared/processed/viscosity-gases/crc-huber-2019/`; compound-data join `shared/sources/viscosity-gases-huber-2019.json`, file key `huber2019Viscosity`). |
+| 51 | `Chung1988`      | Chung, T.H.; Ajlan, M.; Lee, L.L.; Starling, K.E. — *Generalized multiparameter correlation for nonpolar and polar fluid transport properties*. Industrial & Engineering Chemistry Research, 27(4), pp. 671–679, 1988. DOI: 10.1021/ie00076a024. High-pressure gas thermal conductivity and viscosity corresponding-states method as presented in Poling, Prausnitz & O'Connell, *The Properties of Gases and Liquids*, 5th ed., §§9–10. |
+| 52 | `CoolProp`       | Bell, I.H.; Wronski, J.; Quoilin, S.; Lemort, V. — *Pure and Pseudo-pure Fluid Thermophysical Property Evaluation and the Open-Source Thermophysical Property Library CoolProp*. Industrial & Engineering Chemistry Research, 53(6), pp. 2498–2508, 2014. DOI: 10.1021/ie4033999. Helmholtz EOS fluid files (`dev/fluids/*.json`), mixture binary pairs and departure functions (`dev/mixtures/`) vendored under `shared/sources/coolprop/` from https://github.com/CoolProp/CoolProp. |
+| 53 | `NISTIR8209`     | Huber, M.L. — *Models for Viscosity, Thermal Conductivity, and Surface Tension of Selected Pure Fluids as Implemented in REFPROP v10.0*. NIST Interagency/Internal Report (NISTIR) 8209, National Institute of Standards and Technology, Gaithersburg, MD, 2018. DOI: 10.6028/NIST.IR.8209. URL: https://nvlpubs.nist.gov/nistpubs/ir/2018/NIST.IR.8209.pdf. Pure-fluid λ = λ⁰(T) + λʳ(T,ρ) + λcrit as carried in CoolProp `TRANSPORT.conductivity` (dedicated polynomial / ECS residual forms). |
+| 54 | `AbuEishah2001`  | Abu-Eishah, S.I. — *Correlations for the Thermal Conductivity of Metals as a Function of Temperature*. International Journal of Thermophysics, 22(6), pp. 1855–1868, 2001. DOI: 10.1023/A:1013141728964. Multilinear fits k = a·T^b·e^(cT)·e^(d/T) (W·m⁻¹·K⁻¹); source tables under `shared/sources/metal-data/raw-tables/thermal_conductivity_metals*.json`. |
+| 55 | `AsmHandbook2005Vol1` | ASM International — *ASM Handbook, Volume 1: Properties and Selection: Irons, Steels, and High-Performance Alloys*. ASM International, 2005. Composition and physical-property tables for carbon/alloy/stainless/tool steels, heat-resistant steels, superalloys and hardfacing alloys; OCR’d under `shared/sources/metal-data/raw-tables/` and synthesized to `shared/processed/metal-data/`. |
+| 56 | `Andrews1965`    | Andrews, K.W. — *Empirical formulae for the calculation of some transformation temperatures*. Journal of the Iron and Steel Institute, 203, pp. 721–727, 1965. Ac1 / Ac3 (°C) from steel composition (wt%). |
+| 57 | `Inden1981`      | Inden, G. — *The role of magnetism in the calculation of phase diagrams*. Physica B+C, 103(1), pp. 82–100, 1981. Magnetic contribution to heat capacity: logarithmic Inden form in τ = T/Tc (LRO below Tc, SRO above). |
+| 58 | `HillertJarl1978` | Hillert, M.; Jarl, M. — *A model for alloying in ferromagnetic metals*. CALPHAD, 2(3), pp. 227–238, 1978. Truncated power-series form of Inden’s magnetic Cp used in CALPHAD; cited for context (metal-data Cp fits use Inden’s logarithmic shape). |
+| 59 | `Hargreaves2020ElMD` | Hargreaves, C.J.; Dyer, M.S.; Gaultois, M.W.; Kurlin, V.A.; Rosseinsky, M.J. — *The Earth Mover’s Distance as a Metric for the Space of Inorganic Compositions*. Chemistry of Materials, 32(24), pp. 10610–10620, 2020. DOI: 10.1021/acs.chemmater.0c03381. Open Python package `ElMD` (mod_petti scale); used for metal-data donor composition distance. |
+
+<!-- references:end -->
 
 ---
 
 ## Adding a New Reference
 
-1. Append a new row with the next sequential integer.
-2. Choose a descriptive key in `PascalCase` (e.g. `Author` or `AuthorYYYY`), unique in the enum.
-3. Add the key to the `RefKey` enum **and** `REFERENCES_META` constant in `dto/ref-key.dto.ts`.
-4. Include: author(s), title, edition/year, publisher, URL if freely available, and what data type it supplies.
-5. **Never renumber or rename existing entries** — all `ref:` fields in compound files depend on the stability of this list.
+References live in one file, [`shared/references/references.json`](../shared/references/references.json), shared by the backend, the Python service and this document. The `RefKey` enums, both `REFERENCES_META` and the table above are generated from it; never edit them by hand.
+
+1. Append an entry with the next sequential `index`.
+2. Choose a descriptive `key` in `PascalCase` (e.g. `Author` or `AuthorYYYY`), unique in the file.
+3. Fill `name` (short form for `REFERENCES_META`), `year`, `url` if freely available, and `citation` (the table row: author(s), title, edition/year, publisher, URL, and what data type it supplies).
+4. Run `make references-generate`. It rewrites `backend/src/common/thermal/enum/ref-key.enum.ts`, `backend/src/common/thermal/dto/ref-key.dto.ts`, `python/src/references/ref_key.py`, `python/src/references/references_meta.py` and the table above. `make references-check` fails when any of them differs from the JSON.
+5. **Never renumber, rename or remove existing entries** — all `ref:` fields in compound files depend on the stability of this list.
+
+---
+
+## TODO — free-text citations not yet registered
+
+These modules cite sources in comments / string fields (`Source:`, `Reference:`, `reference:`,
+"Author (year)") that have no `RefKey`. Register each source (an entry in `shared/references/references.json`,
+then `make references-generate`) and replace the free text with the key (+ page).
+
+- [ ] **`Perry9` conductivity entries** (Ar, N2, NH3, NO, SO2, SO3, Air; `page` 324–330) carry the same
+  DIPPR 102 coefficients as `Perry8` Table 2-314 — confirm the edition and page against the book.
+- [ ] **Nu correlations** — `backend/src/modules/thermodynamics/helpers/nu-formulas/*.nu.ts`
+  (pipe-duct, flat-plate, cylinder, sphere, tube-bank, natural-convection, special) and
+  `helpers/nu-coefficients.helper.ts`: Churchill (–Bernstein, –Chu), Hilpert, Zukauskas, Gunn 1978
+  (used by the combustion bed model), Wakao & Funazkri, Martin, McAdams, Raithby & Hollands, etc.
+- [ ] **Transport / radiation** — `modules/thermodynamics/services/diffusion.service.ts` (Neufeld et al. 1972;
+  may be cited as `Poling5`), `transport.service.ts`, `radiation.service.ts`.
+- [ ] **Refractory** — `modules/refractory/**`: glass viscosity (Lakatos 1976, Fluegel 2007, Nakamoto,
+  Iida, VTF/Arrhenius — `data/viscosity-parameters.data.ts`, `utils/glass-viscosity-*.util.ts`),
+  packing / PSD (de Larrard etc. — `constants/packing.constants.ts`, `services/packing.service.ts`),
+  Hetherington 1964 validation data, Mills 2011, phase equilibrium / eutectics, shrinkage,
+  refractoriness, water demand, blend optimizer, Maxwell–Eucken (`services/thermal-performance.service.ts`),
+  `constants/calculation.constants.ts` ("Reference: NIST database").
+- [ ] **Numerics** — `common/utils/quadrature/` (`gauss-legendre-tables.constants.ts`,
+  `gauss-legendre.util.ts`, `simpson.util.ts`; Abramowitz & Stegun).
+- [ ] **Chemistry** — `common/chemistry/elements/periodic-table.data.ts` (CIAAW Abridged Standard
+  Atomic Weights 2024, https://www.ciaaw.org/abridged-atomic-weights.htm).
+- [ ] **Other** — `modules/metals/data/materials/metal-thermal.data.ts`,
+  `common/thermal/compound/composition/air.composition.ts`,
+  `modules/thermal-distribution/utils/characteristic-length.ts`,
+  `modules/recuperator/services/*.ts`, `modules/thermal-exchange/services/*.ts` (check each citation).
 

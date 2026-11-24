@@ -40,20 +40,12 @@ build/
 */build/
 *.local
 
-# Temporary files & reports
+# Temporary files & reports (convention: docs/REPORTS_MANAGEMENT.md)
 *.tmp
-tmp/*
-!tmp/reports/
-!tmp/reports/README.md
-!tmp/reports/**/
-!tmp/reports/**/.gitkeep
-tmp/reports/**/*.log
-tmp/reports/**/*.txt
-tmp/reports/**/*.json
-tmp/reports/**/*.xml
-tmp/reports/**/*.csv
-tmp/reports/**/*.md
-!tmp/reports/README.md
+tmp/**
+!tmp/**/
+!tmp/**/.gitkeep
+!tmp/**/.gitignore
 temp/
 
 # Python: ignore cache and compiled files
@@ -105,3 +97,6 @@ backup-*/
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
+
+# vendor/page-ocr and vendor/source-extract are git submodules (see .gitmodules).
+# Keep vendor/README.md tracked; see docs/SHARED_LIBRARIES_SUBMODULES.md.

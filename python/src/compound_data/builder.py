@@ -1,0 +1,477 @@
+"""
+compound_data.builder — Run all parsers, merge by CAS, check the equations and attach JANAF, NASA and CoolProp keys.
+
+Besides the chemicals tables, the hand-transcribed transport parameters (``shared/sources/transport-parameters.json``)
+are parsed into the same entries; their pair rows are resolved to record ids for ``interactions.json``.
+Huber 2019 dilute-gas viscosity tables (``shared/sources/viscosity-gases-huber-2019.json``) join as ``raw``
+viscosity / gas rows.
+
+The build is offline: PubChem answers come only from the files that the second step
+(``make compound-data-pubchem``) fills from ``BuildResult.missing_cas`` and the records without CAS
+(formula searches, which give those records a ``cas`` field).
+
+Spec: docs/scripts/COMPOUND_DATA_SPEC.md
+"""
+from __future__ import annotations
+
+import logging
+from collections import Counter
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Optional
+
+from chemical_formula.organic_family import OrganicFamilyClassifier
+from chemicals_tables.chemicals_source import ChemicalsSource
+from chemicals_tables.parsers.identifiers import load_identifiers
+from chemicals_tables.parsers.provenance import read_chemicals_source
+from chemicals_tables.report_issue import report_issue
+from chemicals_tables.source_entries import parse_source_entries
+from chemicals_tables.table_spec import TableSpec
+from compound_data.compound_record import CompoundRecord
+from compound_data.constants.janaf_cas_index import JANAF_CAS_INDEX
+from compound_data.constants.coolprop_source import COOLPROP_DATASET
+from compound_data.constants.nasa_source import NASA7_DATASET, NASA7_FILE, NASA9_DATASET, NASA9_FILES
+from compound_data.constants.nbs_source import nbs_table
+from compound_data.coolprop_links import attach_coolprop, load_coolprop_fluids
+from compound_data.equation_check import check_equations
+from compound_data.molten_salt_links import attach_molten_salts
+from compound_data.molten_salt_mixtures import read_molten_salt_mixtures
+from compound_data.janaf_links import attach_janaf
+from compound_data.merger import MergeResult, merge_compounds, order_values
+from compound_data.nasa_links import attach_nasa, nasa7_species, nasa9_species
+from compound_data.nbs_links import attach_nbs
+from compound_data.parsers.book_gas_equations import BookGasEquations, parse_book_gas_equations
+from compound_data.parsers.janaf_cas_index import read_janaf_cas_index
+from compound_data.parsers.transport_parameters import TransportParameters, parse_transport_parameters
+from compound_data.parsers.viscosity_gases import ViscosityGases, parse_viscosity_gases
+from compound_data.pubchem_formula_links import attach_pubchem_formulas
+from compound_data.pubchem_identifiers import load_pubchem_identifiers
+from compound_data.pubchem_properties import attach_pubchem_properties
+from compound_data.pubchem_sources import PubchemSources, read_pubchem_sources
+from janaf.janaf_index import load_janaf_index
+from janaf.janaf_source import JanafSource
+from janaf.parsers.janaf_table import parse_janaf_tables
+from janaf.parsers.provenance import read_janaf_source
+from nasa_thermo.parsers.nasa7 import parse_nasa7
+from nasa_thermo.parsers.nasa9 import parse_nasa9
+from references import RefKey
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class BuildResult:
+    """Provenance, merged records and the report payload.
+
+    ``janaf`` is None when JANAF was not read; ``nasa`` is the ``sources.json`` block of the NASA files
+    when they were read; ``coolprop`` is the ``sources.json`` block of CoolProp fluid keys when attached;
+    ``pubchem_tables`` are the PubChem class files that were read;
+    ``missing_cas`` are the CAS numbers the chemicals identifier files do not have (input of the PubChem step).
+    ``transport_tables`` are the tables of the transport-parameters file that were read (for ``sources.json``),
+    ``interactions`` its pair rows with the record ids of their species (``interactions.json``).
+    ``nbs_tables`` is the corrected NBS CSV. ``molten_tables`` are the pure-salt files that were read.
+    ``molten_mixtures`` are the salt mixtures (no CAS), written apart from the compound files.
+    ``book_gas_tables`` are the hand-moved book gas equation tables.
+    ``viscosity_gases_tables`` are the Huber 2019 dilute-gas viscosity tables.
+    ``yaws1999_tables`` are the processed Yaws 1999 tables that were applied.
+    ``yaws1999_replace_log`` lists Yaws-linked values replaced by processed Yaws 1999.
+    ``yaws1999_issues_log`` lists table-only CAS and noRecord attach misses.
+    ``yaws1999_created_log`` lists compounds created from the Yaws appendix (for PubChem search).
+    """
+
+    chem: ChemicalsSource
+    merge: MergeResult
+    report: dict[str, Any]
+    janaf: Optional[JanafSource] = None
+    nasa: Optional[dict[str, Any]] = None
+    coolprop: Optional[dict[str, Any]] = None
+    pubchem_tables: list[TableSpec] = field(default_factory=list)
+    missing_cas: list[str] = field(default_factory=list)
+    transport_tables: list[TableSpec] = field(default_factory=list)
+    interactions: list[dict[str, Any]] = field(default_factory=list)
+    nbs_tables: list[TableSpec] = field(default_factory=list)
+    molten_tables: list[TableSpec] = field(default_factory=list)
+    molten_mixtures: list[dict[str, Any]] = field(default_factory=list)
+    molten_mixture_tables: list[TableSpec] = field(default_factory=list)
+    book_gas_tables: list[TableSpec] = field(default_factory=list)
+    viscosity_gases_tables: list[TableSpec] = field(default_factory=list)
+    yaws1999_tables: list[TableSpec] = field(default_factory=list)
+    yaws1999_replace_log: list[dict[str, Any]] = field(default_factory=list)
+    yaws1999_issues_log: list[dict[str, Any]] = field(default_factory=list)
+    yaws1999_created_log: list[dict[str, Any]] = field(default_factory=list)
+
+
+def build_compound_data(
+    source_dir: Path, janaf_dir: Optional[Path] = None, pubchem_dir: Optional[Path] = None,
+    nasa_dir: Optional[Path] = None, transport_file: Optional[Path] = None,
+    nbs_file: Optional[Path] = None, molten_dir: Optional[Path] = None,
+    book_gas_file: Optional[Path] = None,
+    yaws1999_dir: Optional[Path] = None,
+    viscosity_gases_file: Optional[Path] = None,
+    coolprop_dir: Optional[Path] = None,
+) -> BuildResult:
+    """Parse every table under ``source_dir`` (the chemicals copy with ``PROVENANCE.txt``).
+
+    ``janaf_dir`` is the NIST-JANAF copy (``py-janaf/data``, ``py-janaf/janaf.json``,
+    ``PROVENANCE.txt``); its table ids are attached to the records by Hill formula.
+    ``pubchem_dir`` holds the PubChem files (``pubchem-<class>.jsonl``), used for CAS numbers the
+    chemicals identifier files do not have, for the CAS of records without one (formula searches),
+    and for experimental melting points, boiling points and densities (cited ``pubchem`` + refNumber).
+    ``nasa_dir`` holds the NASA-7 / NASA-9 sources (``shared/sources/NASA``);
+    their species keys are attached by Hill formula, checked by ΔfH°(298.15). The polynomial
+    temperature bounds are not used as melting or boiling points.
+    ``transport_file`` is ``shared/sources/transport-parameters.json`` (White, TN D-481, Mamedov 2014, Svehla 1995).
+    ``nbs_file`` is the corrected NBS tables CSV. Its 298.15 K values fill a property and phase the record
+    does not already have.
+    ``molten_dir`` is the NIST molten-salts extract. A pure salt adds a liquid density, surface-tension
+    or viscosity equation, including when that property already has a different equation. A mixture
+    is kept on ``BuildResult.molten_mixtures`` and is not given a compound record.
+    ``book_gas_file`` is the hand-moved book gas equations (Perry 7, Borgnakke, Yaws 1999, Incropera,
+    Szargut) so a rebuild does not drop them.
+    ``viscosity_gases_file`` is Huber 2019 dilute-gas μ(T) (raw viscosity / gas; null cells omitted).
+    ``yaws1999_dir`` is ``shared/processed/yaws1999``; mappable tables fill compounds and replace
+    Yaws-linked values that differ from the processed rows.
+    ``coolprop_dir`` is ``shared/sources/coolprop/fluids``; CoolProp ``INFO.NAME`` keys are attached by CAS.
+    """
+    from compound_data.yaws1999_links import attach_yaws1999
+
+    chem = read_chemicals_source(source_dir / "PROVENANCE.txt")
+    entries, issues = parse_source_entries(source_dir, chem)
+    transport = _parse_transport(transport_file)
+    entries += transport.entries
+    issues += transport.issues
+    book_gas = _parse_book_gas(book_gas_file)
+    entries += book_gas.entries
+    issues += book_gas.issues
+    viscosity_gases = _parse_viscosity_gases(viscosity_gases_file)
+    entries += viscosity_gases.entries
+    issues += viscosity_gases.issues
+
+    wanted = {e.cas for e in entries if e.cas}
+    identifiers = load_identifiers(source_dir, chem, wanted)
+    chemicals_resolved = len(identifiers)
+    missing_cas = sorted(wanted - identifiers.keys())
+    pubchem = read_pubchem_sources(pubchem_dir, experimental=True) if pubchem_dir is not None else PubchemSources()
+    pubchem_counts: dict[str, int] = {}
+    if pubchem_dir is not None:
+        added, pubchem_counts, pubchem_issues = load_pubchem_identifiers(pubchem, set(missing_cas))
+        identifiers.update(added)
+        issues += pubchem_issues
+    logger.info("[identifiers] %d of %d CAS numbers resolved (%d from PubChem)",
+                len(identifiers), len(wanted), len(identifiers) - chemicals_resolved)
+
+    merge = merge_compounds(entries, identifiers, OrganicFamilyClassifier())
+
+    molten_counts: dict[str, int] = {}
+    molten_tables: list[TableSpec] = []
+    molten_mixtures: list[dict[str, Any]] = []
+    molten_mixture_tables: list[TableSpec] = []
+    if molten_dir is not None:
+        if molten_dir.is_dir():
+            molten_issues, molten_counts, molten_tables = attach_molten_salts(merge.records.values(), molten_dir)
+            issues += molten_issues
+            molten_mixtures, molten_mixture_tables, mixture_counts = read_molten_salt_mixtures(molten_dir)
+            molten_counts.update(mixture_counts)
+            logger.info("[molten-salts] %d equations, %d written (%d already stored); %d mixtures",
+                        molten_counts["moltenEquations"], molten_counts["moltenFilled"], molten_counts["moltenSame"],
+                        molten_counts["moltenMixtures"])
+        else:
+            logger.warning("[molten-salts] Not found: %s — molten salts skipped", molten_dir)
+
+    equation_issues, checks = check_equations(merge.records.values())
+
+    janaf_source, janaf_counts = None, {}
+    if janaf_dir is not None:
+        janaf_source, janaf_issues, janaf_counts = _attach_janaf(janaf_dir, source_dir / JANAF_CAS_INDEX, merge)
+        issues += janaf_issues
+
+    nasa_block, nasa_counts = None, {}
+    if nasa_dir is not None:
+        nasa_block, nasa_issues, nasa_counts = _attach_nasa(nasa_dir, merge)
+        issues += nasa_issues
+
+    coolprop_block, coolprop_counts = None, {}
+    if coolprop_dir is not None:
+        coolprop_block, coolprop_issues, coolprop_counts = _attach_coolprop(coolprop_dir, merge)
+        issues += coolprop_issues
+
+    if pubchem_dir is not None:
+        formula_issues, formula_counts = attach_pubchem_formulas(merge.records.values(), pubchem)
+        issues += formula_issues
+        pubchem_counts.update(formula_counts)
+        pubchem_counts.update(attach_pubchem_properties(list(merge.records.values()), pubchem))
+
+    nbs_counts: dict[str, int] = {}
+    nbs_tables: list[TableSpec] = []
+    if nbs_file is not None:
+        if nbs_file.is_file():
+            nbs_issues, nbs_counts = attach_nbs(merge.records.values(), nbs_file)
+            issues += nbs_issues
+            nbs_tables = [nbs_table(nbs_file)]
+            logger.info("[nbs] %d values, %d written where a phase was missing",
+                        nbs_counts["nbsValues"], nbs_counts["nbsFilled"])
+        else:
+            logger.warning("[nbs] Not found: %s — NBS tables skipped", nbs_file)
+
+    yaws1999_tables: list[TableSpec] = []
+    yaws1999_replace_log: list[dict[str, Any]] = []
+    yaws1999_issues_log: list[dict[str, Any]] = []
+    yaws1999_created_log: list[dict[str, Any]] = []
+    yaws1999_counts: dict[str, int] = {}
+    if yaws1999_dir is not None:
+        if yaws1999_dir.is_dir():
+            (
+                yaws_issues, yaws1999_replace_log, yaws1999_counts, yaws1999_tables,
+                yaws_unmatched, yaws_created, yaws1999_issues_log, yaws1999_created_log,
+            ) = attach_yaws1999(merge.records.values(), yaws1999_dir)
+            issues += yaws_issues
+            for record in yaws_created:
+                merge.records[record.id] = record
+            # Keep unmatched Yaws rows visible in unresolved.json for review.
+            merge.unresolved.extend(
+                {
+                    "cas": None,
+                    "labels": [row["name"]] if row.get("name") else [],
+                    "formulas": [row["formula"]] if row.get("formula") else [],
+                    "reason": f"yaws1999:{row.get('status')}",
+                    "values": [],
+                    "tableId": row.get("tableId"),
+                    "rowId": row.get("rowId"),
+                }
+                for row in yaws_unmatched
+            )
+            logger.info(
+                "[yaws1999] %d entries applied (%d filled, %d replaced, %d same); "
+                "%d created (%d table-only allow-list), %d with synonyms, "
+                "%d unmatched rows, %d issue-log rows",
+                yaws1999_counts.get("yaws1999Entries", 0),
+                yaws1999_counts.get("yaws1999Filled", 0),
+                yaws1999_counts.get("yaws1999Replaced", 0),
+                yaws1999_counts.get("yaws1999Same", 0),
+                yaws1999_counts.get("yaws1999Created", 0),
+                yaws1999_counts.get("yaws1999CreatedTableOnly", 0),
+                yaws1999_counts.get("yaws1999SynonymsAttached", 0),
+                yaws1999_counts.get("yaws1999Unmatched", 0),
+                len(yaws1999_issues_log),
+            )
+        else:
+            logger.warning("[yaws1999] Not found: %s — processed Yaws 1999 skipped", yaws1999_dir)
+
+    for record in merge.records.values():
+        order_values(record)
+
+    from compound_data.compound_id import assign_compound_ids
+    assign_compound_ids(merge.records.values())
+
+    interactions, interaction_issues = _resolve_interactions(transport.interactions, merge.records)
+    issues += interaction_issues
+    transport_counts = {
+        "transportEntries": len(transport.entries),
+        "transportRecords": sum(1 for r in merge.records.values() if r.transport),
+        "transportInteractions": len(interactions),
+    } if transport_file is not None else {}
+    book_gas_counts = {
+        "bookGasEntries": len(book_gas.entries),
+    } if book_gas_file is not None else {}
+    viscosity_gases_counts = {
+        "viscosityGasesEntries": len(viscosity_gases.entries),
+    } if viscosity_gases_file is not None else {}
+
+    grouped: dict[str, list[dict[str, Any]]] = {}
+    for issue in issues:
+        grouped.setdefault(issue["issue"], []).append(issue)
+    classes = Counter(r.compound_class for r in merge.records.values())
+    report = {
+        "repository": chem.repository,
+        "sourceCommit": chem.commit,
+        "counts": {
+            "entries": len(entries),
+            "records": len(merge.records),
+            "inorganic": classes["inorganic"],
+            "organic": classes["organic"],
+            "unresolved": len(merge.unresolved),
+            "casResolved": len(identifiers),
+            "casResolvedPubchem": len(identifiers) - chemicals_resolved,
+            "casTotal": len(wanted),
+            "casMissing": len(missing_cas),
+            **pubchem_counts,
+            "formulaConflicts": len(merge.conflicts),
+            "unknownCasMoved": len(merge.unknown_cas_moved),
+            "unknownCasKept": len(merge.unknown_cas_kept),
+            "noCasMoved": len(merge.no_cas_moved),
+            "noCasKept": len(merge.no_cas_kept),
+            "classOverridden": len(merge.class_overridden),
+            "classFromFormula": len(merge.class_from_formula),
+            "familyFromFormula": len(merge.family_from_formula),
+            "equationIssues": len(equation_issues),
+            **janaf_counts,
+            **nasa_counts,
+            **coolprop_counts,
+            **nbs_counts,
+            **molten_counts,
+            **transport_counts,
+            **book_gas_counts,
+            **viscosity_gases_counts,
+            **yaws1999_counts,
+            **{kind: len(items) for kind, items in sorted(grouped.items())},
+        },
+        "formulaConflicts": merge.conflicts,
+        "sharedFormulas": merge.shared_formulas,
+        "unknownCasMoved": merge.unknown_cas_moved,
+        "unknownCasKept": merge.unknown_cas_kept,
+        "noCasMoved": merge.no_cas_moved,
+        "noCasKept": merge.no_cas_kept,
+        "classOverridden": merge.class_overridden,
+        "classFromFormula": merge.class_from_formula,
+        "familyFromFormula": merge.family_from_formula,
+        **{kind: items for kind, items in sorted(grouped.items())},
+        "equationIssues": equation_issues,
+        "checks": checks,
+        "yaws1999ReplaceCount": len(yaws1999_replace_log),
+        "yaws1999IssuesLogCount": len(yaws1999_issues_log),
+        "yaws1999CreatedLogCount": len(yaws1999_created_log),
+    }
+    return BuildResult(chem=chem, merge=merge, report=report, janaf=janaf_source, nasa=nasa_block,
+                       coolprop=coolprop_block,
+                       pubchem_tables=list(pubchem.tables.values()), missing_cas=missing_cas, transport_tables=transport.tables,
+                       interactions=interactions, nbs_tables=nbs_tables, molten_tables=molten_tables,
+                       molten_mixtures=molten_mixtures, molten_mixture_tables=molten_mixture_tables,
+                       book_gas_tables=book_gas.tables, viscosity_gases_tables=viscosity_gases.tables,
+                       yaws1999_tables=yaws1999_tables,
+                       yaws1999_replace_log=yaws1999_replace_log,
+                       yaws1999_issues_log=yaws1999_issues_log,
+                       yaws1999_created_log=yaws1999_created_log)
+
+
+def _parse_viscosity_gases(viscosity_gases_file: Optional[Path]) -> ViscosityGases:
+    """Parse Huber 2019 viscosity tables; empty with a warning when the file is missing."""
+    if viscosity_gases_file is None:
+        return ViscosityGases()
+    if not viscosity_gases_file.is_file():
+        logger.warning(
+            "[viscosity-gases] Not found: %s — Huber 2019 viscosity tables skipped",
+            viscosity_gases_file,
+        )
+        return ViscosityGases()
+    parsed = parse_viscosity_gases(viscosity_gases_file)
+    logger.info("[parse] %-32s %6d values", "Viscosity of gases (Huber 2019)", len(parsed.entries))
+    return parsed
+
+
+def _parse_book_gas(book_gas_file: Optional[Path]) -> BookGasEquations:
+    """Parse the hand-moved book gas equations; empty with a warning when the file is missing."""
+    if book_gas_file is None:
+        return BookGasEquations()
+    if not book_gas_file.is_file():
+        logger.warning("[book-gas] Not found: %s — hand-moved book gas equations skipped", book_gas_file)
+        return BookGasEquations()
+    parsed = parse_book_gas_equations(book_gas_file)
+    logger.info("[parse] %-32s %6d values", "Book gas equations", len(parsed.entries))
+    return parsed
+
+
+def _parse_transport(transport_file: Optional[Path]) -> TransportParameters:
+    """Parse the transport-parameters file; empty with a warning when it is missing."""
+    if transport_file is None:
+        return TransportParameters()
+    if not transport_file.is_file():
+        logger.warning("[transport] Not found: %s — transport parameters skipped", transport_file)
+        return TransportParameters()
+    parsed = parse_transport_parameters(transport_file)
+    logger.info("[parse] %-32s %6d values, %d interactions", "Transport parameters", len(parsed.entries),
+                len(parsed.interactions))
+    return parsed
+
+
+def _resolve_interactions(
+    interactions: list[dict[str, Any]], records: dict[str, CompoundRecord],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Add ``ids`` (public ``compoundId`` of each species, by CAS or moved CAS; None without a record)."""
+    by_cas: dict[str, str] = {}
+    for record in records.values():
+        compound_id = getattr(record, "compound_id", None) or record.id
+        for cas in (record.cas, *record.other_cas):
+            if cas:
+                by_cas[cas] = compound_id
+    resolved, issues = [], []
+    for item in interactions:
+        ids = [by_cas.get(cas) if cas else None for cas in item["cas"]]
+        for species, cas, record_id in dict.fromkeys(zip(item["species"], item["cas"], ids)):
+            if cas and record_id is None:
+                issues.append(report_issue("transportInteractionNoRecord", item["ref"][2], item["ref"][1], cas,
+                                           species))
+        resolved.append({"species": item["species"], "ids": ids, **{k: v for k, v in item.items() if k != "species"}})
+    return resolved, issues
+
+
+def _attach_janaf(
+    janaf_dir: Path, cas_index_path: Path, merge: MergeResult,
+) -> tuple[Optional[JanafSource], list[dict[str, Any]], dict[str, int]]:
+    """Parse the JANAF copy and attach its table ids; skipped with a warning when the copy is missing.
+
+    Without ``cas_index_path`` every table is matched by formula.
+    """
+    data_dir, index_path = janaf_dir / "py-janaf" / "data", janaf_dir / "py-janaf" / "janaf.json"
+    if not data_dir.is_dir() or not index_path.is_file():
+        logger.warning("[janaf] Not found: %s or %s — JANAF links skipped", data_dir, index_path)
+        return None, [], {}
+    source = read_janaf_source(janaf_dir / "PROVENANCE.txt")
+    tables = parse_janaf_tables(data_dir, load_janaf_index(index_path))
+    if cas_index_path.is_file():
+        cas_index = read_janaf_cas_index(cas_index_path)
+    else:
+        logger.warning("[janaf] Not found: %s — tables matched by formula only", cas_index_path)
+        cas_index = {}
+    issues = attach_janaf(merge.records, tables, cas_index)
+    linked = sum(1 for r in merge.records.values() if r.janaf)
+    logger.info("[janaf] %d tables (%d CAS index rows) → %d records", len(tables), len(cas_index), linked)
+    return source, issues, {"janafTables": len(tables), "janafCasRows": len(cas_index), "janafRecords": linked}
+
+
+def _attach_nasa(
+    nasa_dir: Path, merge: MergeResult,
+) -> tuple[Optional[dict[str, Any]], list[dict[str, Any]], dict[str, int]]:
+    """Parse the NASA-7 / NASA-9 sources and attach their keys; skipped with a warning when a file is missing.
+
+    The parser warnings (duplicate keys, bad intervals) are those of ``make nasa-parse`` and are not repeated.
+    """
+    nasa7_path, nasa9_paths = nasa_dir / NASA7_FILE, [nasa_dir / name for name in NASA9_FILES]
+    missing = [p for p in (nasa7_path, *nasa9_paths) if not p.is_file()]
+    if missing:
+        logger.warning("[nasa] Not found: %s — NASA links skipped", ", ".join(map(str, missing)))
+        return None, [], {}
+    nasa_logger = logging.getLogger("nasa_thermo")
+    level = nasa_logger.level
+    nasa_logger.setLevel(logging.CRITICAL)
+    try:
+        species7, species9 = parse_nasa7(nasa7_path), parse_nasa9(nasa9_paths)
+    finally:
+        nasa_logger.setLevel(level)
+    issues7, counts7 = attach_nasa(merge.records, "nasa7", nasa7_species(species7))
+    issues9, counts9 = attach_nasa(merge.records, "nasa9", nasa9_species(species9))
+    logger.info("[nasa] NASA-7 %d species → %d records, NASA-9 %d species → %d records",
+                counts7["nasa7Species"], counts7["nasa7Records"], counts9["nasa9Species"], counts9["nasa9Records"])
+    block = {
+        "nasa7": {"ref": RefKey.NASA7.value, "dataset": NASA7_DATASET, "sources": [str(nasa7_path)]},
+        "nasa9": {"ref": RefKey.NASA9.value, "dataset": NASA9_DATASET, "sources": [str(p) for p in nasa9_paths]},
+    }
+    return block, issues7 + issues9, {**counts7, **counts9}
+
+
+def _attach_coolprop(
+    coolprop_dir: Path, merge: MergeResult,
+) -> tuple[Optional[dict[str, Any]], list[dict[str, Any]], dict[str, int]]:
+    """Attach CoolProp fluid names by CAS; skipped with a warning when the folder is missing."""
+    if not coolprop_dir.is_dir():
+        logger.warning("[coolprop] Not found: %s — CoolProp links skipped", coolprop_dir)
+        return None, [], {}
+    fluids = load_coolprop_fluids(coolprop_dir)
+    issues, counts = attach_coolprop(merge.records, fluids)
+    logger.info("[coolprop] %d fluids → %d records (%d linked)",
+                counts["coolpropFluids"], counts["coolpropRecords"], counts["coolpropLinked"])
+    block = {
+        "ref": RefKey.CoolProp.value,
+        "dataset": COOLPROP_DATASET,
+        "sources": [str(coolprop_dir)],
+    }
+    return block, issues, counts

@@ -1,94 +1,20 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags, ApiQuery } from '@nestjs/swagger';
-import { GasPropertiesService } from '../services/gas-properties.service';
+import { Body, Controller, Post } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DimensionlessCalculationService } from '../services/dimensionless-calculation.service';
-import { TransportService } from '../services/transport.service';
-import { DiffusionService } from '../services/diffusion.service';
-import { GasMixtureInputDto } from '../dto/gas-mixture-input.dto';
-import { GasPropertiesResultDto } from '../dto/gas-properties-result.dto';
-import { CpComparisonEntryDto } from '../dto/cp-comparison-entry.dto';
-import { DimensionlessInputDto } from '../dto/dimensionless-input.dto';
-import { DimensionlessResultDto } from '../dto/dimensionless-result.dto';
-import { BodyGeometryInputDto } from '../dto/body-geometry-input.dto';
-import { BodyGeometryResultDto } from '../dto/body-geometry-result.dto';
-import { ReynoldsInputDto } from '../dto/reynolds-input.dto';
-import { PrandtlInputDto } from '../dto/prandtl-input.dto';
-import { GrashofInputDto } from '../dto/grashof-input.dto';
-import { RayleighInputDto } from '../dto/rayleigh-input.dto';
-import { ScalarDimensionlessResultDto } from '../dto/scalar-dimensionless-result.dto';
-import { DimensionlessNumbersService } from '../services/dimensionless-numbers.service';
-import { Species } from '../enums/species.enum';
-
-// ── Controller ───────────────────────────────────────────────────────────────
+import { DimensionlessInputDto } from '../dto/dimensionless/dimensionless-input.dto';
+import { DimensionlessResultDto } from '../dto/dimensionless/dimensionless-result.dto';
+import { ReynoldsInputDto } from '../dto/dimensionless/reynolds-input.dto';
+import { PrandtlInputDto } from '../dto/dimensionless/prandtl-input.dto';
+import { GrashofInputDto } from '../dto/dimensionless/grashof-input.dto';
+import { RayleighInputDto } from '../dto/dimensionless/rayleigh-input.dto';
+import { ScalarDimensionlessResultDto } from '../dto/dimensionless/scalar-dimensionless-result.dto';
 
 @ApiTags('thermodynamics')
 @Controller('thermodynamics')
 export class ThermodynamicsController {
   constructor(
-    private readonly gasProps: GasPropertiesService,
-    private readonly transport: TransportService,
-    private readonly diffusion: DiffusionService,
-    private readonly dimensionless: DimensionlessNumbersService,
     private readonly calc: DimensionlessCalculationService,
   ) {}
-
-  // ── Gas mixture properties ───────────────────────────────────────────
-
-  @Post('properties')
-  @ApiOperation({ summary: 'Full thermophysical properties for a gas mixture' })
-  @ApiBody({
-    type: GasMixtureInputDto,
-    examples: {
-      air: {
-        summary: 'Dry air at 800 K',
-        value: { composition: { N2: 0.79, O2: 0.21 }, T_K: 800 },
-      },
-      flueGas: {
-        summary: 'Flue gas at 1200 K, 1 atm',
-        value: {
-          composition: { N2: 0.72, CO2: 0.12, H2O: 0.10, O2: 0.06 },
-          T_K: 1200,
-        },
-      },
-    },
-  })
-  getMixtureProperties(@Body() dto: GasMixtureInputDto): GasPropertiesResultDto {
-    const { composition, T_K, P_atm = 1.0 } = dto;
-    const mole   = composition as Partial<Record<Species, number>>;
-    const mu     = this.transport.viscosityMix(mole, T_K);
-    const cpBySp = Object.fromEntries(
-      (Object.keys(mole) as Species[]).map(sp => [sp, this.gasProps.cpSpecies(sp, T_K)]),
-    ) as Partial<Record<Species, number>>;
-    const lambda = this.transport.thermalConductivityMix(mole, T_K, cpBySp);
-    const D      = this.diffusion.getAllDiffusionCoefficients(mole, T_K, P_atm);
-    return this.gasProps.getFullMixtureProperties(mole, T_K, P_atm, mu, lambda, D);
-  }
-
-  @Get('cp-compare')
-  @ApiOperation({
-    summary: 'Compare all Cp approximations for a species at given T',
-    description:
-      'Returns one entry per registered equation type (polynomial, Aly-Lee, NASA-7, NASA-9, etc.) ' +
-      'so you can compare accuracy across approximation methods at the same temperature.',
-  })
-  @ApiQuery({
-    name: 'species',
-    enum: Species,
-    description: 'Gas species to compare. Note: "air" is a mixture alias — use GET /thermodynamics/fluid/cp instead.',
-    example: Species.N2,
-  })
-  @ApiQuery({
-    name: 'T_K',
-    type: Number,
-    description: 'Temperature [K] at which to evaluate Cp. Valid range depends on species data (typically 200–6000 K).',
-    example: 1000,
-  })
-  cpCompare(
-    @Query('species') species: Species,
-    @Query('T_K') T_K: string,
-  ): CpComparisonEntryDto[] {
-    return this.gasProps.cpCompare(species, parseFloat(T_K));
-  }
 
   // ── Individual dimensionless numbers ─────────────────────────────────
 
@@ -135,6 +61,7 @@ export class ThermodynamicsController {
       },
     },
   })
+  @ApiCreatedResponse({ type: ScalarDimensionlessResultDto })
   calcReynolds(@Body() dto: ReynoldsInputDto): ScalarDimensionlessResultDto {
     return this.calc.reynolds(dto);
   }
@@ -159,6 +86,7 @@ export class ThermodynamicsController {
       },
     },
   })
+  @ApiCreatedResponse({ type: ScalarDimensionlessResultDto })
   calcPrandtl(@Body() dto: PrandtlInputDto): ScalarDimensionlessResultDto {
     return this.calc.prandtl(dto);
   }
@@ -185,6 +113,7 @@ export class ThermodynamicsController {
       },
     },
   })
+  @ApiCreatedResponse({ type: ScalarDimensionlessResultDto })
   calcGrashof(@Body() dto: GrashofInputDto): ScalarDimensionlessResultDto {
     return this.calc.grashof(dto);
   }
@@ -209,6 +138,7 @@ export class ThermodynamicsController {
       },
     },
   })
+  @ApiCreatedResponse({ type: ScalarDimensionlessResultDto })
   calcRayleigh(@Body() dto: RayleighInputDto): ScalarDimensionlessResultDto {
     return this.calc.rayleigh(dto);
   }
@@ -258,6 +188,7 @@ export class ThermodynamicsController {
       },
     },
   })
+  @ApiCreatedResponse({ type: DimensionlessResultDto })
   calcNusselt(@Body() dto: DimensionlessInputDto): DimensionlessResultDto {
     return this.calc.nusselt(dto);
   }
@@ -296,6 +227,7 @@ export class ThermodynamicsController {
       },
     },
   })
+  @ApiCreatedResponse({ type: DimensionlessResultDto })
   calcHTC(@Body() dto: DimensionlessInputDto): DimensionlessResultDto {
     return this.calc.nusselt(dto);
   }
@@ -348,43 +280,9 @@ export class ThermodynamicsController {
       },
     },
   })
+  @ApiCreatedResponse({ type: DimensionlessResultDto })
   calcDimensionless(@Body() dto: DimensionlessInputDto): DimensionlessResultDto {
     return this.calc.nusselt(dto);
   }
 
-  // ── Body geometry ─────────────────────────────────────────────────────
-
-  @Post('body-geometry')
-  @ApiOperation({
-    summary: 'Surface area, volume, mean beam length for any body shape',
-    description:
-      'Returns geometric properties of the body. ' +
-      'Required `dimensions` fields depend on `geometry` (see GET /thermodynamics/geometry/list).',
-  })
-  @ApiBody({
-    type: BodyGeometryInputDto,
-    examples: {
-      sphere: {
-        summary: 'Sphere, D = 0.1 m',
-        value: { geometry: 'sphere', dimensions: { a: 0.1 } },
-      },
-      cube: {
-        summary: 'Cube, side = 0.2 m',
-        value: { geometry: 'cube', dimensions: { a: 0.2 } },
-      },
-      cylinder: {
-        summary: 'Cylinder, D = 0.1 m, H = 0.3 m',
-        value: { geometry: 'cylinder', dimensions: { a: 0.1, b: 0.3 } },
-      },
-    },
-  })
-  bodyGeometry(@Body() dto: BodyGeometryInputDto): BodyGeometryResultDto {
-    const { geometry, dimensions, h = 0 } = dto;
-    return {
-      surface:              this.dimensionless.bodyArea(geometry, dimensions, h),
-      volume:               this.dimensionless.bodyVolume(geometry, dimensions),
-      meanBeamLength:       this.dimensionless.meanBeamLength(geometry, dimensions),
-      characteristicLength: Math.max(dimensions.a ?? 0, dimensions.b ?? 0, dimensions.c ?? 0),
-    };
-  }
 }

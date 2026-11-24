@@ -33,7 +33,8 @@ make --version
 ## First-Time Setup (new machine or fresh clone)
 
 ```bash
-# 1. Create .env from template
+# 1. Clone main repo, then setup (inits submodules + .env + vendor envs)
+git clone <this-repo> thermal-software && cd thermal-software
 make setup
 
 # 2. Generate secure secrets (JWT + DB password) into .env
@@ -45,6 +46,19 @@ make up
 
 That's it. Docker builds the images, installs all npm/Python dependencies inside the
 containers, and starts every service.
+
+Shared OCR / extract code is under `vendor/page-ocr` and `vendor/source-extract`
+(mounted into the python container). Re-sync env after editing OCR keys, or refresh
+vendor checkouts:
+
+```bash
+make sync-vendor-env
+make update-submodules   # fetch latest remote tips for vendor/*
+```
+
+The `page-ocr` package is always on the python container `PYTHONPATH`. `./install.sh --all`
+only provisions/refreshes llama + GGUFs when the image stack is missing (see [../../SETUP.md](../../SETUP.md)).
+Details: [../SHARED_LIBRARIES_SUBMODULES.md](../SHARED_LIBRARIES_SUBMODULES.md).
 
 ---
 
@@ -87,7 +101,7 @@ inside the container.
 
 ```bash
 # Example: edit a service
-vim backend/src/modules/refractory/services/blend-optimizer.service.ts
+vim backend/src/modules/refractory/services/particle-packing/blend-optimizer.service.ts
 
 # Backend hot-reloads automatically (NestJS --watch mode)
 make logs-backend
@@ -139,7 +153,7 @@ Same applies for `frontend/package.json` and `python/pyproject.toml`.
 # All backend tests
 make test-backend
 
-# All frontend tests
+# Full frontend gate (typecheck, lint, tests, build, duplication, contract)
 make test-frontend
 
 # Specific service

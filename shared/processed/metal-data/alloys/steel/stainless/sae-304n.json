@@ -1,0 +1,109 @@
+{
+  "materialId": "sae-304n",
+  "name": "304N",
+  "group": "steel",
+  "family": "stainless",
+  "aliases": {
+    "uns": "S30451",
+    "sae": "304N"
+  },
+  "composition": {
+    "C": 0.04,
+    "Cr": 19.0,
+    "Ni": 9.25,
+    "N": 0.13
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8000.0
+        }
+      ]
+    },
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 7.200000000000001e-07
+        }
+      ]
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 323.15,
+          "value": 500.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [],
+      "points": []
+    }
+  },
+  "sourceFiles": [
+    "stainless_heat_resistant_composition.json",
+    "stainless_steel.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1161,
+    "Ac3_K": 1002,
+    "Ac1_C": 888,
+    "Ac3_C": 729,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-4130",
+        "mode": "full-series",
+        "why": "only 1 electricalResistivity point; link sae-4130 series (same group steel; ElMD=3.41665, L1=28.6825 wt% [ΔCr=18.05%; ΔNi=9.25%; ΔMn=0.5%; ΔC=0.265%; ΔSi=0.25%; ΔMo=0.2%; ΔN=0.13%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 3.416647,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-4130",
+        "mode": "full-series",
+        "why": "only 1 specificHeat point; link sae-4130 series (same group steel; ElMD=3.41665, L1=28.6825 wt% [ΔCr=18.05%; ΔNi=9.25%; ΔMn=0.5%; ΔC=0.265%; ΔSi=0.25%; ΔMo=0.2%; ΔN=0.13%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 3.416647,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "aisi-m2",
+        "mode": "full-series",
+        "why": "sae-304n doesn't have thermalConductivity points; link aisi-m2 series (same group steel; ElMD=1.57845, L1=37.845 wt% [ΔCr=14.875%; ΔNi=9.1%; ΔW=6.125%; ΔMo=5%; ΔV=1.975%; ΔSi=0.325%; ΔMn=0.275%; ΔN=0.13%; ΔC=0.04%])",
+        "compositionDistance": 1.578449,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalExpansion": {
+        "materialId": "aisi-m2",
+        "mode": "full-series",
+        "why": "sae-304n doesn't have thermalExpansion points; link aisi-m2 series (same group steel; ElMD=1.57845, L1=37.845 wt% [ΔCr=14.875%; ΔNi=9.1%; ΔW=6.125%; ΔMo=5%; ΔV=1.975%; ΔSi=0.325%; ΔMn=0.275%; ΔN=0.13%; ΔC=0.04%])",
+        "compositionDistance": 1.578449,
+        "distanceMetric": "ElMD-mod_petti"
+      }
+    }
+  }
+}

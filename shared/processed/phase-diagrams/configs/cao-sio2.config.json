@@ -1,0 +1,122 @@
+{
+  "system": "CaO-SiO2",
+  "components": ["CaO", "SiO2"],
+  "output": "systems/cao-sio2.json",
+  "idPrefix": "cs",
+  "source": {
+    "ref": "slag-atlas-1995",
+    "figure": "Fig. 3.70",
+    "diagram": "CaO-SiO2 phase diagram after Muan, Osborn [1], based mainly on the work of Rankin, Wright [2], and with revisions according to Tewhey, Hess [3] and Hageman et al. [4] (miscibility gap), Welch, Gutt [5], Gutt [6] and Gutt, Russell [7] (melting relations involving 3CaO·SiO2) and Trömel et al. [8] (CaO excess in 2CaO·SiO2)",
+    "printedPage": 63,
+    "pdfPage": 83,
+    "caption": "Atlas text (printed p. 63): 'Fig. 3.70. CaO-SiO2 phase diagram after Muan, Osborn [1], based mainly on the work of Rankin, Wright [2], and with revisions according to Tewhey, Hess [3] and Hageman et al. [4] (miscibility gap), Welch, Gutt [5], Gutt [6] and Gutt, Russell [7] (melting relations involving 3CaO·SiO2) and Trömel et al. [8] (CaO excess in 2CaO·SiO2). An alternative version of the system in the CaO-rich region, with the stability range of 3CaO·SiO2 between 1300 and 1800 °C, was reported by Trömel et al. [8]. For the polymorphism in 2CaO·SiO2, see also Foster [9] and Hanic et al. [10]. For thermodynamic assessments of the system and calculated phase diagrams, see an Mey [11], Taylor, Dinsdale [12], Eriksson et al. [13] and Hillert et al. [14, 15] (Figs. 3.I to 3.IV).' References: [1] A. Muan, E. F. Osborn: Phase Equilibria Among Oxides in Steelmaking, Ed.: Addison-Wesley Publishing Company, Inc., Reading Massachusetts, (1965); [2] G. A. Rankin, F. E. Wright: Am. J. Sci., 4th Ser. 39 (1915), p. 1/79; [3] J. D. Tewhey, P. C. Hess: Phys. Chem. Glasses 20 (1979) No. 3, p. 41/53; [4] V. B. M. Hageman, G. J. K. Van den Berg, H. J. Janssen, H. A. J. Oonk: Phys. Chem. Glasses 27 (1986) No. 2, p. 100/6; [5] J. H. Welch, W. Gutt: J. Am. Ceram. Soc. 42 (1959) No. 1, p. 11/5; [6] W. Gutt: Building Research Current Papers, CP90/68 (1968), 22 p.; [7] W. Gutt, A. D. Russell: J. Mater. Sci. 12 (1977) No. 9, p. 1869/78; [8] G. Trömel, W. Fix, R. Heinke: Tonind.-Ztg. 93 (1969) No. 1, p. 1/8; [9] W. R. Foster: J. Am. Ceram. Soc. 51 (1968) No. 6, p. 353/4; [10] F. Hanic, I. Kaprálik, V. Figus, J. Stracelský: Trans. J. Br. Ceram. Soc. 82 (1983), p. 205/7; [11] S. an Mey: PhD Thesis, RWTH Aachen, Germany, (1988), p. 118; [12] J. R. Taylor, A. T. Dinsdale: CALPHAD 14 (1990) No. 1, p. 71/88; [13] G. Eriksson, P. Wu, A. D. Pelton: Canad. Metall. Q. 33 (1994) 13/21; [14] M. Hillert, B. Sundman, X. Wang: Metall. Trans. B 21B (1990) No. 2, p. 303/12; [15] M. Hillert, B. Sundman, X. Wang, T. Barry: CALPHAD 15 (1991) No. 1, p. 53/58."
+  },
+  "frameSearchBox": [1400, 280, 3060, 1600],
+  "axes": {
+    "x": { "component": "SiO2", "ticks": [0, 10, 20, 40, 50, 60, 70, 80, 90, 100] },
+    "y": { "ticks": [2600, 2400, 2200, 2000, 1800, 1600, 1400, 1200, 1000, 800, 600] }
+  },
+  "phases": ["lime", "tricalcium-silicate", "dicalcium-silicate", "rankinite", "wollastonite", "silica"],
+  "endMembers": {
+    "lime": { "x": 0, "labelTemperature": 2612 },
+    "silica": { "x": 100, "labelTemperature": 1725 }
+  },
+  "invariants": [
+    { "id": "cs-2150", "type": "binary", "reaction": "peritectic", "phases": ["lime", "tricalcium-silicate"],
+      "label": { "temperature": 2150, "composition": null },
+      "seedPixel": [1893, 609], "nbs": [],
+      "notes": "Lime + liquid → 3CaO·SiO2. The line runs from the CaO axis to the 3CaO·SiO2 line; the dashed lime liquidus meets it there. Liquid composition not printed." },
+    { "id": "cs-2050", "type": "binary", "reaction": "eutectic", "phases": ["tricalcium-silicate", "dicalcium-silicate"],
+      "label": { "temperature": 2050, "composition": null },
+      "seedPixel": [1933, 667], "nbs": [6120],
+      "notes": "Solid phases: 3CaO·SiO2 and α-2CaO·SiO2 with CaO in solid solution (Trömel et al. [8]). Liquid composition not printed." },
+    { "id": "cs-dicalcium-silicate-melting", "type": "compound-melting", "reaction": null, "phases": ["dicalcium-silicate"],
+      "label": { "temperature": 2130, "composition": null },
+      "seedPixel": [2023, 622], "nbs": [],
+      "notes": "Congruent (α-2CaO·SiO2)." },
+    { "id": "cs-1464", "type": "binary", "reaction": "peritectic", "phases": ["dicalcium-silicate", "rankinite"],
+      "label": { "temperature": 1464, "composition": null },
+      "seedPixel": [2165, 1005], "nbs": [],
+      "notes": "Incongruent melting of 3CaO·2SiO2: α-2CaO·SiO2 + liquid → 3CaO·2SiO2. Drawn 4 °C (≈2 px) above the 1460 eutectic line; the line detector does not separate the two lines (both read 1462.5 °C). Liquid composition not printed; the 2CaO·SiO2 and CaO·SiO2 liquidus curves meet the lines 0.6 wt% apart." },
+    { "id": "cs-1460", "type": "binary", "reaction": "eutectic", "phases": ["rankinite", "wollastonite"],
+      "label": { "temperature": 1460, "composition": null },
+      "seedPixel": [2182, 1005], "nbs": [5874],
+      "notes": "Liquid composition not printed." },
+    { "id": "cs-wollastonite-melting", "type": "compound-melting", "reaction": null, "phases": ["wollastonite"],
+      "label": { "temperature": 1544, "composition": null },
+      "seedPixel": [2276, 956], "nbs": [],
+      "notes": "Congruent; field labelled CaO·SiO2 (pseudowollastonite at the melting point)." },
+    { "id": "cs-1436", "type": "binary", "reaction": "eutectic", "phases": ["wollastonite", "silica"],
+      "label": { "temperature": 1436, "composition": 63 },
+      "seedPixel": [2450, 1016], "nbs": [5858],
+      "notes": "Silica is tridymite (between the 1470 and 870 °C lines). Composition printed as '(63)'." },
+    { "id": "cs-1695", "type": "monotectic", "reaction": "monotectic", "phases": ["silica"],
+      "label": { "temperature": 1695, "composition": null, "secondComposition": null },
+      "seedPixel": [2589, 870], "secondSeedPixel": [2965, 870], "nbs": [],
+      "notes": "Liquid → cristobalite + SiO2-rich liquid. Miscibility gap after Tewhey, Hess [3] and Hageman et al. [4]. Compositions not printed." }
+  ],
+  "liquidus": [
+    { "phase": "lime", "from": "end:lime", "to": "cs-2150",
+      "segments": [ { "kind": "trace", "seedPixel": [1620, 397], "waypoints": [[1747, 465], [1853, 553]] } ],
+      "grid": [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26] },
+    { "phase": "tricalcium-silicate", "from": "cs-2150", "to": "cs-2050",
+      "segments": [ { "kind": "trace" } ],
+      "grid": [27, 28, 29] },
+    { "phase": "dicalcium-silicate", "from": "cs-2050", "to": "cs-dicalcium-silicate-melting",
+      "segments": [ { "kind": "trace", "seedPixel": [1973, 636] } ],
+      "grid": [30, 31, 32, 33, 34, 34.9] },
+    { "phase": "dicalcium-silicate", "from": "cs-dicalcium-silicate-melting", "to": "cs-1464",
+      "segments": [ { "kind": "trace", "seedPixel": [2131, 817], "waypoints": [[2161, 900]] } ],
+      "grid": [34.9, 36, 37, 38, 39, 40, 41, 42, 43, 44] },
+    { "phase": "rankinite", "from": "cs-1464", "to": "cs-1460",
+      "segments": [ { "kind": "straight" } ],
+      "grid": [] },
+    { "phase": "wollastonite", "from": "cs-1460", "to": "cs-wollastonite-melting",
+      "segments": [ { "kind": "trace" } ],
+      "grid": [46, 47, 48, 49, 50, 51, 51.7] },
+    { "phase": "wollastonite", "from": "cs-wollastonite-melting", "to": "cs-1436",
+      "segments": [ { "kind": "trace", "seedPixel": [2381, 977] } ],
+      "grid": [51.7, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63] },
+    { "phase": "silica", "from": "cs-1436", "to": "end:silica",
+      "segments": [
+        { "kind": "trace", "to": "cs-1695", "seedPixel": [2510, 927] },
+        { "kind": "flat", "from": "cs-1695", "to": "cs-1695:second" },
+        { "kind": "trace", "from": "cs-1695:second" }
+      ],
+      "grid": [64, 65, 66, 67, 68, 69, 70, 71, 72, 100] }
+  ],
+  "liquidImmiscibility": {
+    "monotectic": "cs-1695",
+    "seedPixel": [2850, 773],
+    "waypoints": [],
+    "grid": [74, 76, 78, 80, 82, 84, 86, 88, 90, 92, 94, 96, 97, 98],
+    "criticalPointNotes": "Miscibility gap after Tewhey, Hess [3] and Hageman et al. [4] (caption).",
+    "notes": "No crystals inside the dome; it does not change the liquidus (cristobalite disappears at 1695 °C across the gap). Not modelled."
+  },
+  "junctionTolerance_wt": 1.5,
+  "verbatim": {
+    "endMemberSources": [
+      { "phase": "lime", "temperature_C": 2612,
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.66", "printedPage": 61, "pdfPage": 81, "read": "printed label '2612' (CaO-MgO, systems/cao-mgo.json)" },
+        "notes": "Not printed in Fig. 3.70: the dashed lime liquidus leaves the frame at the 2600 °C edge near 1 wt% SiO2 (traced axis intercept 2603 °C). The liquidus point at 0 wt% uses the Fig. 3.66 value." },
+      { "phase": "silica", "temperature_C": 1725,
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.70", "printedPage": 63, "pdfPage": 83, "read": "printed label '1725' with an arrow to the SiO2 axis" } }
+    ],
+    "solidSolutions": [
+      { "phase": "dicalcium-silicate", "modelledAs": "2CaO·SiO2 (stoichiometric)",
+        "range_wt_SiO2": [ { "temperature_C": 2050, "from": 32.4, "to": 34.9 } ],
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.70", "printedPage": 63, "pdfPage": 83, "read": "CaO-side end of the 2050 line at x 1989 px (32.4 wt% SiO2); the solvus runs from there to the 2CaO·SiO2 line at the 1420 line" },
+        "notes": "α-2CaO·SiO2 with CaO in solid solution (Trömel et al. [8], caption)." }
+    ],
+    "inversions": [
+      { "phase": "silica", "change": "cristobalite → tridymite", "temperature_C": 1470, "source": "printed label '1470' on the line from the silica liquidus to the SiO2 axis (line reads 1467.5, merged with nearby strokes); arrows 'Cristobalite' / 'Tridymite' at the SiO2 axis. The line meets the silica liquidus between 63 and 64 wt% SiO2 (traced liquidus 1468 °C at 64 wt%), so the liquidus between 1436 and 1470 °C is the tridymite liquidus." },
+      { "phase": "silica", "change": "tridymite → quartz", "temperature_C": 870, "source": "printed label '870' on the line from the CaO·SiO2 line to the SiO2 axis (line reads 870); arrows 'Tridymite' / 'Quartz'" },
+      { "phase": "dicalcium-silicate", "change": "α-2CaO·SiO2 → α'-2CaO·SiO2", "temperature_C": 1420, "source": "printed label '1420' on the line from the 3CaO·SiO2 line to the 2CaO·SiO2 line (line reads 1417.5); fields labelled α-2CaO·SiO2 above, α'-2CaO·SiO2 below" },
+      { "phase": "dicalcium-silicate", "change": "α'-2CaO·SiO2 → γ-2CaO·SiO2", "temperature_C": 725, "source": "printed label '725' on the line from the CaO axis to the 3CaO·2SiO2 line (line reads 724–726); label 'γ-2CaO·SiO2' with an arrow below it" },
+      { "phase": "wollastonite", "change": "CaO·SiO2 polymorphism", "temperature_C": null, "source": "not drawn; field labelled CaO·SiO2" }
+    ],
+    "subsolidus": [
+      { "change": "3CaO·SiO2 → lime + α'-2CaO·SiO2 (lower stability limit of 3CaO·SiO2)", "temperature_C": 1250, "source": "printed label '1250' on the line from the CaO axis to the 2CaO·SiO2 line, where the 3CaO·SiO2 line ends (line reads 1250.5)", "notes": "The caption cites an alternative stability range of 3CaO·SiO2 between 1300 and 1800 °C (Trömel et al. [8]); not drawn." }
+    ]
+  }
+}

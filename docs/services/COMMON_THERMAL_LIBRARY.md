@@ -1,7 +1,8 @@
 # Common Thermal Library — Reference
 
 **Path:** `backend/src/common/thermal/`  
-**Last Updated:** May 2026  
+**Last Updated:** November 2026  
+
 **Purpose:** Shared, framework-agnostic thermophysical data and utilities used by
 the thermodynamics module and any future modules that need gas-phase property data.
 
@@ -10,6 +11,10 @@ the thermodynamics module and any future modules that need gas-phase property da
 ## Structure
 
 ```
+shared/processed/NASA/
+├── nasa7.json                  ← NASA-7 database, read at runtime
+└── nasa9.json                  ← NASA-9 database, read at runtime
+
 backend/src/common/thermal/
 ├── index.ts                    ← barrel export
 ├── compound/
@@ -22,12 +27,12 @@ backend/src/common/thermal/
 │       ├── air.composition.ts  ← AIR_MOLE_COMPOSITION (dry air mole fractions)
 │       └── index.ts
 ├── interfaces/
-│   ├── compound-value.interface.ts   ← CompoundValue (core data shape)
-│   └── equation-value.interface.ts  ← EquationValue (one correlation entry)
-├── type/                       ← coefficient type aliases (one per file)
+│   └── equation.interface.ts   ← Equation<T> (behavioural contract only)
+├── types/                      ← data shapes (CompoundValue, EquationValue, EquationValidity, …)
+├── type/                       ← coefficient type aliases (one per file; legacy singular)
 │   ├── nasa7-equation.ts
 │   ├── nasa9-equation.ts
-│   ├── aly-lee-equation.ts
+│   ├── dippr-n107-equation.ts
 │   ├── quartic-equation.ts
 │   └── …
 ├── enum/
@@ -35,13 +40,22 @@ backend/src/common/thermal/
 ├── dto/
 │   ├── equation-type.dto.ts    ← EquationTypeDto enum
 │   └── ref-key.dto.ts          ← (legacy path, kept for compat)
-└── utils/
-    ├── common.ts               ← Common constants (R, g, σ, pAtm, …)
-    ├── compound-property-resolver.ts  ← CompoundPropertyResolver
-    ├── nasa7-equation-method.ts
-    ├── gauss-legendre.util.ts
-    ├── numeric-format.util.ts
-    └── numeric.util.ts
+├── constants/
+│   ├── physical.constants.ts           ← PHYSICAL_CONSTANTS (R, k_B, N_A, σ, g)
+│   ├── standard-conditions.constants.ts ← STANDARD_CONDITIONS (p, T, T_ref)
+│   └── index.ts
+└── utils/                      ← one export per file, each folder has an index.ts
+    ├── common.ts               ← Common helper methods (static)
+    ├── equation-validity.ts    ← EquationValidity (warn-and-clamp boundary helpers)
+    ├── equation-methods/       ← one class per correlation (NASA-7/9, DIPPR, …)
+    ├── nasa/                   ← loader + NasaThermo/NasaMethod interfaces; species shapes in types/
+    ├── compound-properties/    ← CompoundPropertyResolver, heatCapacityEntries
+    └── compound-data/          ← loaders + static helper classes (CompoundText, CompoundValueBuilder,
+                                   CompoundSearch, CompoundGasBounds); JSON shapes in types/
+
+backend/src/common/chemistry/   ← elements, formulas, compound molar masses (see below)
+backend/src/common/utils/       ← numerics: bessel/, root-finding/, optimization/, regression/,
+                                   linear-algebra/, quadrature/, interpolation/, math/, numeric-format/
 ```
 
 ---
@@ -57,81 +71,114 @@ Sixteen pure-species compounds, keyed by the `Species` enum from the thermodynam
 |-----|------|-------------|--------------|
 | `N2` | Nitrogen | 0.028014 | NASA-7 (GRI-Mech), Yaws quartic Cp, Sutherland μ (White 2006) |
 | `O2` | Oxygen | 0.031999 | NASA-7, Yaws quartic Cp, Sutherland μ |
-| `CO2` | Carbon dioxide | 0.044010 | NASA-7, Aly-Lee Cp (Perry 7th ed.) |
+| `CO2` | Carbon dioxide | 0.044010 | NASA-7, DIPPR 107 Cp (Perry 7th ed.) |
 | `H2O` | Water vapour | 0.018015 | NASA-7, polynomial Cp |
 | `CO` | Carbon monoxide | 0.028010 | NASA-7, polynomial Cp |
 | `H2` | Hydrogen | 0.002016 | NASA-7, polynomial Cp |
-| `CH4` | Methane | 0.016043 | NASA-7, Aly-Lee Cp |
+| `CH4` | Methane | 0.016043 | NASA-7, DIPPR 107 Cp |
 | `NH3` | Ammonia | 0.017031 | Polynomial Cp |
 | `NO` | Nitric oxide | 0.030006 | NASA-7 |
 | `NO2` | Nitrogen dioxide | 0.046006 | Polynomial Cp |
 | `SO2` | Sulphur dioxide | 0.064065 | Polynomial Cp |
 | `SO3` | Sulphur trioxide | 0.080064 | Polynomial Cp |
 | `AR` | Argon | 0.039948 | Monatomic: Cp = 5R/2M; Sutherland μ |
+| `C2H6`, `C3H8`, `C4H10`, `iC4H10`, `C2H2`, `C3H4`, `aC3H4`, `C3H6` | Fuel gases | IUPAC 2021 sums | Cp NASA-9/NASA-7 only (no tabulated Cp); ΔHf, ΔGf Perry 9th ed. Table 2-95 (DIPPR 801); μ, λ DIPPR 102 (Perry 8th ed. Tables 2-312 / 2-314); LJ Poling 5th ed. App. B (none for allene); Sutherland μ only for C2H6, C3H8, C4H10 (Eakin & Ellington 1963) |
 | `air` | Dry air (alias) | 0.028951 | Mixture over `AIR_MOLE_COMPOSITION` |
 
 Each compound object (`CompoundValue`) carries:
 - `Mr` — molar mass [kg/mol]
-- `enthalpyFormation298`, `gibbsEnergy298` — formation data [J/mol]
-- `collisionDiameter` [Å], `epsilonToKb` [K] — Lennard-Jones parameters for Chapman-Enskog
-- `sutherlandParams: { mu0, T0, S }` — Sutherland viscosity parameters
-- `nasa7: { Tswitch, low: {a1…a7}, high: {a1…a7} }` — NASA-7 coefficients
-- `nasa9?: { ranges: [{Tmin, Tmax, coeffs: {a1…a9}}] }` — NASA-9 (preferred when available)
-- `heatCapacity: { def, values: EquationValue[] }` — polynomial Cp correlations
+- `enthalpyFormation298?`, `gibbsEnergy298?` — formation data [J/mol]; optional with a NASA key
+- `collisionDiameter?` [Å], `epsilonToKb?` [K] — Lennard-Jones parameters for Chapman–Enskog; absent when
+  no published value exists (`DiffusionService` / CE \(\mu\) then throw)
+- `stockmayerDelta?` [-] — Stockmayer polar parameter when published (CE Stockmayer branch)
+- `viscosity: { def, values }` — gas viscosity equations; `def` is the Huber2019 MAPE winner when that
+  table covers the species (else the Perry8 → Yaws1999 → VDI2010 → White3 list head). Sutherland is a
+  normal `EquationValue` row, used only when it is `def`.
+- `nasa7Key?` — exact species key in `shared/processed/NASA/nasa7.json` (e.g. `"N2"`, `"C4H10,isobutane"`)
+- `nasa9Key?` — exact species key in `shared/processed/NASA/nasa9.json` (e.g. `"N2"`, `"Air"`)
+- `heatCapacity?: { def, values: EquationValue[] }` — tabulated Cp correlations; optional when a NASA key is given
+
+NASA coefficients are **not** stored in the compound files. Every registry species has a `nasa7Key`;
+all except CO2, O2 and NO2 have a `nasa9Key` (in `nasa9.json` those keys hold other species — see below).
 
 ---
 
-## CompoundValue Interface
+## CompoundValue
 
-**File:** `interfaces/compound-value.interface.ts`
+**File:** `types/compound-value.type.ts` (data shape — `export type`, not `interface`)
 
 ```typescript
-export interface CompoundValue {
+export type CompoundValue = {
   name: string;
   chemicalFormula: string;
   Mr: number;                           // kg/mol
-  enthalpyFormation298: number;         // J/mol
-  gibbsEnergy298: number;               // J/mol
-  collisionDiameter: number;            // Å (Lennard-Jones σ)
-  epsilonToKb: number;                  // K  (Lennard-Jones ε/k)
-  sutherlandParams?: { mu0: number; T0: number; S: number };
-  nasa7?: {
-    Tswitch: number;
-    low:  { a1: number; a2: number; a3: number; a4: number; a5: number; a6: number; a7: number };
-    high: { a1: number; a2: number; a3: number; a4: number; a5: number; a6: number; a7: number };
-  };
-  nasa9?: {
-    ranges: Array<{
-      Tmin: number;
-      Tmax: number;
-      coeffs: { a1: number; a2: number; a3: number; a4: number; a5: number;
-                a6: number; a7: number; a8: number; a9: number };
-    }>;
-  };
-  heatCapacity: {
+  enthalpyFormation298?: number;        // J/mol (optional when a NASA key is present)
+  gibbsEnergy298?: number;              // J/mol (optional when a NASA key is present)
+  collisionDiameter?: number;           // Å (Lennard-Jones σ; absent without a published value)
+  epsilonToKb?: number;                 // K  (Lennard-Jones ε/k)
+  stockmayerDelta?: number;             // [-] Stockmayer δ (polar CE)
+  criticalTemperature?: number;         // K
+  criticalPressure?: number;            // Pa (Peng–Robinson fallback)
+  criticalVolume?: number;              // m³/mol
+  acentricFactor?: number;              // [-]
+  coolpropKey?: string;                 // CoolProp fluid NAME → Helmholtz ρ + TRANSPORT λ
+  nasa7Key?: string;                    // key in shared/processed/NASA/nasa7.json
+  nasa9Key?: string;                    // key in shared/processed/NASA/nasa9.json
+  heatCapacity?: {                      // optional when a NASA key is present
     def: number;                        // index of default equation
     values: EquationValue[];
   };
-}
+  viscosity: { def: number; values: EquationValue[] };
+  thermalConductivity: { def: number; values: EquationValue[] };
+};
 ```
+
+`coolpropKey` is compound-data `coolprop[0]` (CoolProp `INFO.NAME` matched by CAS)
+and links `shared/sources/coolprop/fluids/<NAME>.json` for Helmholtz \(\rho(T,P)\)
+and NIST IR 8209 `TRANSPORT.conductivity` residual \(\lambda^r\)
+(`docs/algorithms/thermodynamics/NISTIR_8209_THERMAL_CONDUCTIVITY.md`).
+Density solvers live in `modules/thermodynamics/utils/density/`;
+conductivity in `utils/conductivity/`; viscosity mixers in `utils/viscosity/`
+(see [`HELMHOLTZ_DENSITY.md`](../algorithms/thermodynamics/HELMHOLTZ_DENSITY.md)).
+
+### NASA databases (`utils/nasa-database.ts`)
+
+`shared/processed/NASA/nasa7.json` and `nasa9.json` are the parser output (`make nasa-parse`).
+They are read with `fs` on first use and cached
+— not imported, so the TypeScript compiler never type-checks the 5 MB files. The directory is found
+by walking up from the module, so it works from `src/` (ts-jest, ts-node) and from `dist/`.
+
+| Function | Returns |
+|----------|---------|
+| `nasa7Species(key)` | `{ name, comment, phase, MW, Tmin, Tmax, nasa7 }` — throws on unknown key |
+| `nasa9Species(key)` | `{ name, comment, refCode, phase, MW, Hf298, nasa9 }` — throws on unknown key |
+| `compoundNasa7(compound)` / `compoundNasa9(compound)` | the record for `nasa7Key` / `nasa9Key`, or `undefined` |
+
+The NASA-7 validity range comes from the record (`Tmin`/`Tmax`, 200–6000 K for all registry species).
+
+### Heat capacity entries (`utils/heat-capacity-entries.ts`)
+
+`heatCapacityEntries(compound)` → `{ def, values }` is the list every Cp consumer uses:
+`heatCapacity.values` (indices kept), then a NASA-9 entry (`nasa9Key`), then a NASA-7 entry
+(`nasa7Key`). `def` points to NASA-9, else NASA-7, else `heatCapacity.def` (compounds without NASA data).
 
 ---
 
-## EquationValue Interface
+## EquationValue
 
-**File:** `interfaces/equation-value.interface.ts`
+**File:** `types/equation-value.type.ts` (data shape — `export type`)
 
 One correlation entry inside `heatCapacity.values[]`:
 
 ```typescript
-export interface EquationValue {
+export type EquationValue = {
   type: EquationTypeDto;        // equation family (see below)
   ref: RefKey;                  // literature key — never a raw number
   page?: number;                // page in the reference
   vars: object;                 // coefficient shape depends on `type`
   min: number;                  // valid range lower bound [K]
   max: number;                  // valid range upper bound [K]
-}
+};
 ```
 
 ### Supported equation types (`EquationTypeDto`)
@@ -142,20 +189,60 @@ export interface EquationValue {
 | `quadratic` | a + b·T + c·T² | `{ a, b, c }` |
 | `cubic` | + d·T³ | `{ a, b, c, d }` |
 | `quartic` | + e·T⁴ | `{ a, b, c, d, e }` |
-| `linearHyperbolic` | a + b·T + c/T² | `{ a, b, c }` |
-| `alyLee` | DIPPR-107: c1 + c2·[c3/T / sinh(c3/T)]² + c4·[c5/T / cosh(c5/T)]² | `{ c1, c2, c3, c4, c5 }` |
+| `maierKelley` | a + b·T + d/T² | `{ a, b, d }` |
+| `dipprN107` | DIPPR 107 (Aly–Lee): c1 + c2·[c3/T / sinh(c3/T)]² + c4·[c5/T / cosh(c5/T)]² | `{ c1, c2, c3, c4, c5 }` |
 | `dipprN102` | c1·T^c2 / (1 + c3/T + c4/T²) | `{ c1, c2, c3, c4 }` |
-| `nasa7` | 7-coefficient polynomial (Cp, H, S, G) | — stored in `CompoundValue.nasa7`, not here |
-| `nasa9` | 9-coefficient (variable ranges) | — stored in `CompoundValue.nasa9`, not here |
+| `nasa7` | 7-coefficient polynomial (Cp, H, S, G) | — read from `nasa7.json` by `nasa7Key`, not here |
+| `nasa9` | 9-coefficient (variable ranges) | — read from `nasa9.json` by `nasa9Key`, not here |
+| `dipprN114` | DIPPR-114: c1²/τ + c2 − 2·c1·c3·τ − … − c4²·τ⁵/5, τ = 1 − T/Tc (RangeError at T ≥ Tc) | `{ Tc, c1, c2, c3, c4 }` |
+| `trcCp` | TRC: a0 + (a1/T²)·e^(−a2/T) + a3·y² + (a4 − a5/(T − a7)²)·y⁸ (Cp/R, k = R) | `{ a0, …, a7, I, J }` |
+| `shomate` | a + b·T + c·T² + d·T³ + e/T², piecewise | `{ ranges: [{ Tmin, Tmax, a, b, c, d, e }] }` |
+| `zabranskySpline` | a1 + a2·θ + a3·θ² + a4·θ³, θ = T/100, piecewise (Cp/R, k = R) | `{ ranges: [{ Tmin, Tmax, a1, …, a4 }] }` |
+| `zabranskyQuasiPolynomial` | a1·ln(1 − Tr) + a2/(1 − Tr) + a3 + a4·Tr + a5·Tr² + a6·Tr³ (Cp/R, k = R; RangeError at T ≥ Tc) | `{ Tc, a1, …, a6 }` |
+| `dipprN101` | DIPPR-101: exp(c1 + c2/T + c3·ln T + c4·T^c5) | `{ c1, c2, c3, c4, c5 }` |
+| `ppds9` | PPDS 9: e·exp(a·s^(1/3) + b·s^(4/3)), s = (c − T)/(T − d) | `{ a, b, c, d, e }` |
+| `ppds10` | PPDS 10: ρc + a·τ^0.35 + b·τ^(2/3) + c·τ + d·τ^(4/3) (ρc above Tc) | `{ Tc, rhoc, a, b, c, d }` |
+| `ppds12` | PPDS 12: R·Tc·(a·τ^(1/3) + b·τ^(2/3) + c·τ + d·τ² + e·τ⁶) (0 above Tc) | `{ Tc, a, b, c, d, e }` |
+| `dipprN106` | DIPPR-106: c1·τ^(c2 + c3·Tr + c4·Tr² + c5·Tr³) (0 above Tc) | `{ Tc, c1, …, c5 }` |
+| `wagner25` | Wagner 2.5/5: Pc·exp((a·τ + b·τ^1.5 + c·τ^2.5 + d·τ⁵)/Tr) (Pc above Tc) | `{ Tc, Pc, a, b, c, d }` |
+| `sutherland` | y0·(T/T0)^1.5·(T0 + S)/(T + S) | `{ y0, T0, S }` |
+| `powerLaw` | y0·(T/T0)^n | `{ y0, T0, n }` |
 
-> `nasa7`/`nasa9` are **top-level fields** on `CompoundValue`, not `heatCapacity.values[]` entries.
+> The types from `dipprN114` down are specified in [NEW_EQUATION_TYPES_SPEC.md](NEW_EQUATION_TYPES_SPEC.md).
+> `dipprN101`, `ppds9`, `dipprN106` and `wagner25` have no closed-form antiderivative: `integral` uses
+> `gaussLegendre20` from `min` (298.15 K when `min` is unbounded). The piecewise types (`shomate`,
+> `zabranskySpline`) integrate cumulatively from `ranges[0].Tmin`, continuous across range boundaries.
+
+> NASA data is referenced by key on `CompoundValue`, never written into `heatCapacity.values[]`.
 > See [CONVENTIONS.md §6](../CONVENTIONS.md) for the rule.
+
+---
+
+## EquationValidity
+
+**File:** `utils/equation-validity.ts`  
+**Data shape:** `types/equation-validity.type.ts` (same name in the type space — import the class
+from `utils/`, the status object from `types/`).
+
+Static helpers for warn-and-clamp boundary metadata on compound equation evaluations:
+
+| Method | Role |
+|--------|------|
+| `clampLimits(min, max)` | Null range → ±Infinity + `rangeUnknown` |
+| `buildTemperatureValidity(T, min, max, opts?)` | Single-T status (`none` / `clamped` / `extrapolated`) |
+| `buildAverageValidity(T1, T2, min, max)` | Endpoint merge for averages |
+| `evaluateEquation(entry, T)` | Value + validity at T |
+| `evaluateEquationAverage(entry, T1, T2)` | Average over effective interval |
+| `aggregateMixtureValidity(components)` | Mixture `allInRange` roll-up |
+
+Used by `CompoundPropertyResolver`, `CompoundGasBounds`, NASA thermo evaluation, and gas/transport
+services. Policy: empirical equations clamp; NASA H/S/G may extrapolate with boundary Cp.
 
 ---
 
 ## CompoundPropertyResolver
 
-**File:** `utils/compound-property-resolver.ts`  
+**File:** `utils/compound-properties/compound-property-resolver.ts`  
 **Usage:** All property evaluations **must** go through this class — never call equation-method
 classes directly from business logic (see [CONVENTIONS.md §7](../CONVENTIONS.md)).
 
@@ -169,41 +256,96 @@ const cp = resolver.heatCapacity(1000);
 const cp = resolver.heatCapacity(1000, RefKey.Yaws1999);
 const cp = resolver.heatCapacity(1000, 0);
 
-// Enthalpy, entropy, Gibbs from NASA-9 (preferred) or NASA-7
+// Enthalpy, entropy, Gibbs from NASA-9, else NASA-7 (NaN without NASA keys)
 const h = resolver.enthalpy(1000);     // J/mol
 const s = resolver.entropy(1000);      // J/(mol·K)
 const g = resolver.gibbsEnergy(1000);  // J/mol
 ```
 
-Resolution priority for `heatCapacity`: nasa9 > nasa7 > `def` index polynomial.
+Default for `heatCapacity`, `enthalpy`, `entropy`, `gibbsEnergy`: **NASA-9 > NASA-7** (> `def` index
+polynomial for Cp). NASA-7 stays selectable with `preferred = RefKey.NASA7`.
+
+### NASA thermodynamics (`utils/nasa-thermo.ts`)
+
+`compoundNasaThermo(compound)` → `{ ref, Tmin, Tmax, cp, enthalpy, entropy, gibbsEnergy }` from NASA-9
+(`nasa9Key`), else NASA-7 (`nasa7Key`), else `undefined`. H is formation-referenced, S absolute;
+outside `[Tmin, Tmax]` H and S are extrapolated with the boundary Cp and G = H − T·S. Used by
+`CompoundPropertyResolver` and `GasPropertiesService`.
 
 ---
 
-## Common Constants (`utils/common.ts`)
+## Physical Constants (`constants/`)
+
+Exported from `common/thermal` as two grouped objects:
 
 ```typescript
-Common.R         = 8.31446   // Universal gas constant [J/(mol·K)]
-Common.g         = 9.80665   // Standard gravity [m/s²]
-Common.sigma     = 5.6704e-8 // Stefan-Boltzmann constant [W/(m²·K⁴)]
-Common.pAtm      = 101_325   // Standard atmospheric pressure [Pa]
-Common.Tstandart = 298.15    // Standard temperature [K]
+PHYSICAL_CONSTANTS = {                     // CODATA 2018
+  GAS_CONSTANT_J_MOLK:     8.31446261815324, // Universal gas constant [J/(mol·K)]
+  BOLTZMANN_J_K:           1.380649e-23,     // Boltzmann constant [J/K]
+  AVOGADRO_PER_MOL:        6.02214076e23,    // Avogadro constant [1/mol]
+  STEFAN_BOLTZMANN_W_M2K4: 5.67037441918e-8, // Stefan–Boltzmann constant [W/(m²·K⁴)]
+  STANDARD_GRAVITY_M_S2:   9.80665,          // Standard gravity [m/s²]
+}
+STANDARD_CONDITIONS = {
+  PRESSURE_PA:    101_325,                   // Standard atmospheric pressure [Pa]
+  TEMPERATURE_K:  293.15,                    // Standard reference temperature [K] (20 °C)
+  THERMOCHEMICAL_REFERENCE_TEMPERATURE_K: 298.15, // Reference temperature of formation enthalpies [K]
+}
 ```
+
+The objects are not `as const`: a literal type would break default parameters such as
+`P_Pa = STANDARD_CONDITIONS.PRESSURE_PA`.
+
+`Common` (`utils/common.ts`) keeps only the helper methods (`logarithmicAverage`, `average`, `validInterval`, `isValidInterval`, `equation`).
+
+Compound-data and boundary helpers follow the same **static utility class** pattern (not free-function
+`*.util.ts` files): `CompoundText`, `CompoundValueBuilder`, `CompoundSearch`, `CompoundGasBounds`,
+`EquationValidity`. See [CONVENTIONS.md §1](../CONVENTIONS.md).
 
 ---
 
-## Numeric Utilities
+## Chemistry Library (`backend/src/common/chemistry/`)
 
-### `gauss-legendre.util.ts`
-Gauss-Legendre quadrature for numerical integration.  
+| Folder | Exports |
+|---|---|
+| `elements/` | `PERIODIC_TABLE` (118 elements, CIAAW Abridged Standard Atomic Weights 2024; `null` for elements without a standard atomic weight), `ElementSymbol`, `atomicMass(symbol)` [kg/mol] |
+| `formula/` | `parseFormula(formula)` — nested `()`/`[]` groups, decimal counts, `·`/`*` adducts; `calculateMolarMass(formula)` [kg/mol] |
+| `compounds/` | `COMPOUND_LIBRARY` — every compound the application uses, keyed by formula, with its molar mass [kg/mol]; `molarMass(formula)` (library value, else calculated from the formula); `molarMassGramsPerMol`, `molarMassTableGramsPerMol` for models that work in g/mol |
+| `constants/` | `CHEMISTRY.GRAMS_PER_KILOGRAM` |
+
+`COMPOUND_LIBRARY` is the single source of molar masses:
+
+- gas compounds link to it (`Mr: COMPOUND_LIBRARY.CO2.molarMass_kg_mol`);
+- the refractory viscosity tables (`MOLAR_MASSES`, `NAKAMOTO_2007.molarMass`, Iida η₀ᵢ) list
+  only their component keys and take the values from the library;
+- combustion `ATOMIC_MASS` is built from `atomicMass()`.
+
+A new compound (e.g. a new equilibrium species) gets its molar mass from `molarMass(formula)`
+without a library entry; add an entry only when a tabulated value must be used.
+
+---
+
+## Numeric Utilities (`backend/src/common/utils/`)
+
+One function per `*.util.ts` file, grouped by topic; import from the folder (`index.ts`).
+
+### `quadrature/`
+Gauss-Legendre (`gaussLegendre`, `gaussLegendre20`, `GAUSS_LEGENDRE_TABLES`), Simpson,
+Clenshaw-Curtis and `adaptiveIntegrate`.  
 Used only when no closed-form antiderivative exists (e.g., `dipprN102` with non-integer
 exponent — see [CONVENTIONS.md §4](../CONVENTIONS.md)).
 
-### `numeric.util.ts`
-Internal wrappers for Brent root-finding (`brentq`) and Nelder-Mead optimisation.  
-**Never import these directly in business logic** — use the `/api/v1/numeric` endpoints
-or the approved service-layer wrappers (see [NUMERICAL_METHODS_CONVENTION.md](../NUMERICAL_METHODS_CONVENTION.md)).
+### `root-finding/`, `optimization/`, `regression/`, `linear-algebra/`, `interpolation/`
+Wrappers named after their SciPy equivalents (`brentq`, `brent`, `nelderMead`, `luSolve`,
+`cubicSpline`, …).  
+**Never import underlying packages directly in business logic** — use these wrappers
+(see [NUMERICAL_METHODS_CONVENTION.md](../NUMERICAL_METHODS_CONVENTION.md)).  
+`cubicSpline` is used by `MetalThermalService` for tabulated alloy properties.
 
-### `numeric-format.util.ts`
+### `bessel/`, `math/`
+Bessel functions J₀, J₁, Y₀, Y₁ and J₀ roots; `logMean`.
+
+### `numeric-format/`
 Formula-string builders for regression responses.  
 All `/numeric/regression/*` endpoints must use these helpers — never construct formula
 strings inline in a controller.
@@ -226,14 +368,19 @@ Every coefficient set that originates from a literature source **must** referenc
 value. Never use raw integers as reference identifiers.
 
 See [REFERENCES.md](../REFERENCES.md) for the full bibliography (author, year, ISBN/URL)
-keyed by `RefKey`.
+keyed by `RefKey`. The enum is generated from `shared/references/references.json`
+(`make references-generate`), together with `REFERENCES_META` and the Python mirror.
 
 ---
 
 ## Adding a New Gas Compound
 
 1. Create `compound/gas/<formula>.ts` exporting one `const` of type `CompoundValue`.
-2. Add `nasa7` or `nasa9` block (preferred) plus at least one `heatCapacity.values[]` entry.
+2. Set `nasa7Key` / `nasa9Key` to the exact species keys in `shared/processed/NASA/nasa7.json` /
+   `nasa9.json` (isomers carry a suffix, e.g. `"C3H4,propyne"`). `heatCapacity` only for tabulated
+   fits that are not NASA polynomials; omit it when there are none. Check that NASA-9 H(298.15) equals
+   `enthalpyFormation298` — some `nasa9.json` keys (CO2, O2, NO2) hold data of another species;
+   the `NASA-9 datasets` test in `gas-compounds.spec.ts` does this for the registry.
 3. Every `EquationValue` must have `ref: RefKey.Xxx` pointing to `docs/REFERENCES.md`.
 4. Add the compound to `compound/gas/registry.ts` under the matching `Species` key.
 5. Add a `Species` enum entry if it doesn't exist yet.

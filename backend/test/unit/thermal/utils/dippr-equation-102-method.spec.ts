@@ -14,7 +14,7 @@
  *   - clamping behaviour
  */
 
-import { DipprEquation102Method } from '../../../../src/common/thermal/utils/dippr-equation-102-method';
+import { DipprEquation102Method } from '../../../../src/common/thermal/utils/equation-methods/dippr-equation-102-method';
 
 describe('DipprEquation102Method', () => {
   const m = new DipprEquation102Method();

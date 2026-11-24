@@ -1,9 +1,7 @@
 import { IsString, IsNumber, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { RefractoryThermalMaterial } from '../../refractory/enums/refractory-thermal-material.enum';
-import { MetalMaterial } from '../../metals/enums/metal-material.enum';
-
-export type WallMaterialKey = RefractoryThermalMaterial | MetalMaterial;
+import { WallMaterialKey } from '../types/wall-material-key.type';
 
 export class LayerDto {
   @ApiProperty({

@@ -2,7 +2,7 @@
  * Unit tests for CompoundPropertyResolver.
  *
  * Verifies:
- *   - Default heatCapacity uses nasa7 when present (CO2, N2)
+ *   - Default heatCapacity / H / S / G use NASA-9 (N2), NASA-7 when there is no NASA-9 (CO2)
  *   - Explicit preferred index selects correct values[] entry
  *   - Explicit preferred RefKey selects correct values[] entry
  *   - Unknown preferred falls back to def
@@ -13,12 +13,14 @@
  *   - G = H − T·S via resolver
  */
 
-import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-property-resolver';
+import { CompoundPropertyResolver } from '../../../../src/common/thermal/utils/compound-properties/compound-property-resolver';
 import { RefKey } from '../../../../src/common/thermal/enum/ref-key.enum';
-import { CO2 } from '../../../../src/common/thermal/compound/gas/co2';
-import { N2  } from '../../../../src/common/thermal/compound/gas/n2';
-import { CompoundValue } from '../../../../src/common/thermal/interfaces/compound-value.interface';
+import { CH4, CO2, N2 } from '../../../../src/common/thermal/compound/gas';
+import { CompoundValue } from '../../../../src/common/thermal/types/compound-value.type';
 import { EquationTypeDto } from '../../../../src/common/thermal/dto/equation-type.dto';
+import { compoundNasa7, compoundNasa9 } from '../../../../src/common/thermal/utils/nasa';
+import { Nasa7EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa7-equation-method';
+import { Nasa9EquationMethod } from '../../../../src/common/thermal/utils/equation-methods/nasa9-equation-method';
 
 // ─── Helper — minimal CompoundValue without nasa7 ─────────────────────────────
 
@@ -91,22 +93,22 @@ describe('CompoundPropertyResolver — nasa7 default (CO2)', () => {
 describe('CompoundPropertyResolver — preferred by index (N2)', () => {
   const resolver = new CompoundPropertyResolver(N2);
 
-  it('preferred=0 selects quartic (Yaws1999) — bypasses nasa7', () => {
+  it('preferred=0 selects the first compound-data Cp (Perry8) — bypasses NASA', () => {
     const cp = resolver.heatCapacity(300, 0);
     expect(cp).toBeGreaterThan(28);
     expect(cp).toBeLessThan(31);
+    expect(cp).not.toBeCloseTo(resolver.heatCapacity(300), 4);
   });
 
-  it('preferred=1 selects cubic (Borgnakke)', () => {
+  it('preferred=1 selects the second compound-data Cp (Poling5)', () => {
     const cp = resolver.heatCapacity(300, 1);
     expect(cp).toBeGreaterThan(28);
     expect(cp).toBeLessThan(31);
+    expect(cp).not.toBeCloseTo(resolver.heatCapacity(300, 0), 4);
   });
 
-  it('preferred=99 (out of range) falls back to def', () => {
-    const def      = resolver.heatCapacity(300, N2.heatCapacity.def);
-    const fallback = resolver.heatCapacity(300, 99);
-    expect(fallback).toBeCloseTo(def, 8);
+  it('preferred=99 (out of range) falls back to the default', () => {
+    expect(resolver.heatCapacity(300, 99)).toBeCloseTo(resolver.heatCapacity(300), 8);
   });
 });
 
@@ -115,23 +117,41 @@ describe('CompoundPropertyResolver — preferred by index (N2)', () => {
 describe('CompoundPropertyResolver — preferred by RefKey (N2)', () => {
   const resolver = new CompoundPropertyResolver(N2);
 
-  it('preferred=RefKey.Yaws1999 selects quartic entry', () => {
-    const cp = resolver.heatCapacity(300, RefKey.Yaws1999);
-    expect(cp).toBeGreaterThan(28);
-    expect(cp).toBeLessThan(31);
+  it('preferred=RefKey.Perry8 selects the Perry8 row', () => {
+    expect(resolver.heatCapacity(300, RefKey.Perry8)).toBeCloseTo(resolver.heatCapacity(300, 0), 8);
   });
 
-  it('preferred=RefKey.Borgnakke selects cubic entry', () => {
-    const cp = resolver.heatCapacity(300, RefKey.Borgnakke);
-    expect(cp).toBeGreaterThan(28);
-    expect(cp).toBeLessThan(31);
+  it('preferred=RefKey.Poling5 selects the Poling5 row', () => {
+    expect(resolver.heatCapacity(300, RefKey.Poling5)).toBeCloseTo(resolver.heatCapacity(300, 1), 8);
   });
 
-  it('preferred=RefKey that is absent falls back to def', () => {
+  it('preferred=RefKey that is absent falls back to the default', () => {
     // Asano2006 is not a ref for N2 heatCapacity entries
-    const def      = resolver.heatCapacity(300, N2.heatCapacity.def);
-    const fallback = resolver.heatCapacity(300, RefKey.Asano2006);
-    expect(fallback).toBeCloseTo(def, 8);
+    expect(resolver.heatCapacity(300, RefKey.Asano2006)).toBeCloseTo(resolver.heatCapacity(300), 8);
+  });
+});
+
+// ─── NASA-9 default, NASA-7 secondary ────────────────────────────────────────
+
+describe('CompoundPropertyResolver — NASA-9 default (N2)', () => {
+  const resolver = new CompoundPropertyResolver(N2);
+  const nasa9 = compoundNasa9(N2)!.nasa9;
+  const nasa7 = compoundNasa7(N2)!.nasa7;
+  const m9 = new Nasa9EquationMethod();
+  const m7 = new Nasa7EquationMethod();
+
+  it('heatCapacity() without preferred is NASA-9', () => {
+    expect(resolver.heatCapacity(1500)).toBeCloseTo(m9.calculate(1500, nasa9, 200, 20000), 10);
+  });
+
+  it('preferred=RefKey.NASA7 selects NASA-7', () => {
+    expect(resolver.heatCapacity(1500, RefKey.NASA7)).toBeCloseTo(m7.calculate(1500, nasa7, 200, 6000), 10);
+  });
+
+  it('enthalpy, entropy, gibbsEnergy are NASA-9', () => {
+    expect(resolver.enthalpy(1500)).toBeCloseTo(m9.enthalpy(1500, nasa9), 6);
+    expect(resolver.entropy(1500)).toBeCloseTo(m9.entropy(1500, nasa9), 8);
+    expect(resolver.gibbsEnergy(1500)).toBeCloseTo(m9.gibbsEnergy(1500, nasa9), 6);
   });
 });
 
@@ -181,6 +201,20 @@ describe('CompoundPropertyResolver — transport (CO2)', () => {
 
   it('viscosity increases with T (quadratic fit for CO2)', () => {
     expect(resolver.viscosity(800)).toBeGreaterThan(resolver.viscosity(300));
+  });
+});
+
+describe('CompoundPropertyResolver — CH4 viscosity outside all published windows', () => {
+  const resolver = new CompoundPropertyResolver(CH4);
+
+  it('clamps via a ranged correlation instead of unbounded VDI (non-physical μ)', () => {
+    // def is VDI2010 quartic (no min/max); Perry/Yaws tops out at ≤1000 K.
+    // At bed flame temperatures the unbounded quartic goes negative — resolveEntry
+    // must pick a ranged equation and clamp.
+    const result = resolver.viscosityResult(2300);
+    expect(result.value).toBeGreaterThan(0);
+    expect(result.validity.action).toBe('clamped');
+    expect(result.validity.max).toBeLessThanOrEqual(1000);
   });
 });
 

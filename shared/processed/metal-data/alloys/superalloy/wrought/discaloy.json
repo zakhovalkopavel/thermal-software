@@ -1,0 +1,130 @@
+{
+  "materialId": "discaloy",
+  "name": "Discaloy",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "Discaloy",
+    "form": "Bar",
+    "base": "Iron base"
+  },
+  "composition": {
+    "Ni": 26.0,
+    "Cr": 13.5,
+    "Mo": 2.7,
+    "Al": 0.1,
+    "Ti": 1.7,
+    "Fe": 54.0,
+    "Mn": 0.9,
+    "Si": 0.8,
+    "C": 0.04,
+    "B": 0.005
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 7970.0
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 196.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 154.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 145.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 13.3
+        },
+        {
+          "T_K": 811.15,
+          "value": 21.1
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 811.15,
+          "value": 17.1
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "super_alloys_composition.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "Discaloy",
+      "group": "Iron base",
+      "form": "Bar",
+      "rupture_strength_1000h": {
+        "650": 275,
+        "760": 60
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "Discaloy",
+      "group": "Iron base",
+      "form": "Bar",
+      "values": {
+        "21": 196,
+        "540": 154,
+        "650": 145
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "Discaloy",
+      "group": "Iron base",
+      "form": "Bar",
+      "yield_strength_0.2_offset": {
+        "21": 730,
+        "540": 650,
+        "650": 630,
+        "760": 430
+      },
+      "tensile_elongation": {
+        "540": 19,
+        "650": 16,
+        "760": 19
+      }
+    }
+  }
+}

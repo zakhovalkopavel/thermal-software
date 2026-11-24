@@ -1,0 +1,234 @@
+{
+  "materialId": "sae-4130",
+  "name": "4130",
+  "group": "steel",
+  "family": "low-alloy",
+  "aliases": {
+    "sae": "4130",
+    "uns": "G41300"
+  },
+  "composition": {
+    "C": 0.30500000000000005,
+    "Mn": 0.5,
+    "P": 0.0175,
+    "S": 0.02,
+    "Si": 0.25,
+    "Cr": 0.9500000000000001,
+    "Mo": 0.2
+  },
+  "condition": "Hardened and tempered",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [
+        "electrical_resistivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 293.15,
+          "value": 2.23e-07
+        },
+        {
+          "T_K": 373.15,
+          "value": 2.7100000000000003e-07
+        },
+        {
+          "T_K": 473.15,
+          "value": 3.42e-07
+        },
+        {
+          "T_K": 673.15,
+          "value": 5.29e-07
+        },
+        {
+          "T_K": 873.15,
+          "value": 7.86e-07
+        },
+        {
+          "T_K": 1073.15,
+          "value": 1.1029999999999999e-06
+        },
+        {
+          "T_K": 1273.15,
+          "value": 1.1709999999999999e-06
+        },
+        {
+          "T_K": 1473.15,
+          "value": 1.222e-06
+        }
+      ],
+      "approximation": {
+        "Tswitch": 1089,
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 1.3696068359999983e-07,
+            "b": 6.958e-11,
+            "c": 7.684e-13
+          },
+          "min": 293.15,
+          "max": 1089.0
+        },
+        "meanRelPct": 0.26,
+        "maxRelPct": 0.58,
+        "joinContinuous": true,
+        "high": {
+          "type": "linear",
+          "vars": {
+            "a": 8.463e-07,
+            "b": 2.55e-10
+          },
+          "min": 1089.0,
+          "max": 1473.15
+        }
+      }
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [
+        "specific_heat.json"
+      ],
+      "points": [
+        {
+          "T_K": 348.15,
+          "value": 477.0
+        },
+        {
+          "T_K": 448.15,
+          "value": 515.0
+        },
+        {
+          "T_K": 548.15,
+          "value": 544.0
+        },
+        {
+          "T_K": 648.15,
+          "value": 595.0
+        },
+        {
+          "T_K": 748.15,
+          "value": 657.0
+        },
+        {
+          "T_K": 848.15,
+          "value": 737.0
+        },
+        {
+          "T_K": 948.15,
+          "value": 825.0
+        },
+        {
+          "T_K": 1048.15,
+          "value": 833.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "thermal_conductivity.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 42.7
+        },
+        {
+          "T_K": 573.15,
+          "value": 40.6
+        },
+        {
+          "T_K": 773.15,
+          "value": 37.3
+        },
+        {
+          "T_K": 973.15,
+          "value": 31.0
+        },
+        {
+          "T_K": 1273.15,
+          "value": 28.1
+        },
+        {
+          "T_K": 1473.15,
+          "value": 30.1
+        }
+      ],
+      "approximation": {
+        "Tswitch": 1089,
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 39.43382901999999,
+            "b": 0.01907,
+            "c": -2.862e-05
+          },
+          "min": 373.15,
+          "max": 1089.0
+        },
+        "meanRelPct": 0.37,
+        "maxRelPct": 0.89,
+        "joinContinuous": true,
+        "high": {
+          "type": "linear",
+          "vars": {
+            "a": 15.37,
+            "b": 0.01
+          },
+          "min": 1089.0,
+          "max": 1473.15
+        }
+      }
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 12.2
+        },
+        {
+          "T_K": 673.15,
+          "value": 13.7
+        },
+        {
+          "T_K": 873.15,
+          "value": 14.6
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 10.08,
+            "b": 0.006046,
+            "c": -1e-06
+          },
+          "min": 373.15,
+          "max": 873.15
+        },
+        "meanRelPct": 0.0,
+        "maxRelPct": 0.0
+      }
+    }
+  },
+  "sourceFiles": [
+    "electrical_resistivity.json",
+    "low-alloy_steel.json",
+    "specific_heat.json",
+    "steel1.json",
+    "steel_thermal_expansion.json",
+    "thermal_conductivity.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1014,
+    "Ac3_K": 1089,
+    "Ac1_C": 741,
+    "Ac3_C": 815,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  }
+}

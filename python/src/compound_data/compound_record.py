@@ -1,0 +1,167 @@
+"""
+compound_data.compound_record — Merged record of one compound (one CAS, or one formula without CAS).
+
+Spec: docs/scripts/COMPOUND_DATA_SPEC.md
+"""
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+from typing import Any, Optional
+
+_SPACE = re.compile(r"\s+")
+
+from chemicals_tables.constants.planned_equation_types import PLANNED_EQUATION_TYPES
+from chemicals_tables.equation_value import EquationValue
+from chemicals_tables.property_value import PropertyValue
+from chemicals_tables.raw_value import RawValue
+from chemicals_tables.source_link import SourceLink
+from chemicals_tables.transport_value import TransportValue
+from compound_data.constants.viscosity_gas_priority import preferred_viscosity_gas_index
+from references import RefKey
+
+
+@dataclass
+class CompoundRecord:
+    """All values of one compound, grouped by property (and phase for equations).
+
+    Equation values are kept in source priority order; ``def`` is the first one whose type
+    the backend implements (not in ``PLANNED_EQUATION_TYPES``), or ``None`` when all are planned types. ``janaf`` lists the NIST-JANAF
+    table ids with the same Hill formula; the tables themselves are in ``shared/processed/JANAF/``.
+    ``nasa7`` / ``nasa9`` list the species keys of ``shared/processed/NASA/nasa7.json`` / ``nasa9.json``
+    (all phases) whose formula and ΔfH°(298.15) match the record (see nasa_links).
+    ``coolprop`` lists CoolProp fluid ``INFO.NAME`` keys matched by CAS (see coolprop_links);
+    Helmholtz JSON stays under ``shared/sources/coolprop/fluids/``.
+    ``transport`` holds, per property (viscosity, thermalConductivity), how a source obtained it
+    (Svehla 1995 methods, see transport_parameters).
+    ``other_cas`` are source CAS numbers whose rows were moved onto this record (unknown CAS, see merger).
+    ``pubchem_cas`` is the CAS a PubChem formula search found for a record without CAS (it keeps its
+    ``formula:`` key), with ``pubchem_cas_source`` (see pubchem_formula_links).
+    ``display_formula`` is the conventional / standard formula people read (IUPAC element order for
+    inorganic compounds via ``iupac_formula``, an accepted name→formula standard when overridden,
+    else ``hill`` for organics). ``hill`` is the Hill-notation lookup key. Both are always set.
+    """
+
+    id: str
+    cas: Optional[str]
+    formula: str
+    hill: str
+    display_formula: str
+    elements: list[str]
+    compound_class: str
+    group: str
+    #: Public catalogue id (name slug; ``_1``/``_2``/… when names collide). Set by ``assign_compound_ids``.
+    compound_id: Optional[str] = None
+    name: Optional[str] = None
+    synonyms: list[str] = field(default_factory=list)
+    Mr: Optional[float] = None
+    smiles: Optional[str] = None
+    inchikey: Optional[str] = None
+    pubchem_cid: Optional[int] = None
+    families: list[str] = field(default_factory=list)
+    identifier_source: Optional[SourceLink] = None
+    properties: dict[str, list[PropertyValue]] = field(default_factory=dict)
+    equations: dict[str, dict[str, list[EquationValue]]] = field(default_factory=dict)
+    raw: list[RawValue] = field(default_factory=list)
+    transport: dict[str, list[TransportValue]] = field(default_factory=dict)
+    janaf: list[str] = field(default_factory=list)
+    nasa7: list[str] = field(default_factory=list)
+    nasa9: list[str] = field(default_factory=list)
+    coolprop: list[str] = field(default_factory=list)
+    other_cas: list[str] = field(default_factory=list)
+    pubchem_cas: Optional[str] = None
+    pubchem_cas_source: Optional[SourceLink] = None
+
+    def refs(self) -> list[str]:
+        """Sorted ref keys used by any value of the record."""
+        keys = {v.ref.value for values in self.properties.values() for v in values if v.ref is not None}
+        keys |= {v.ref.value for phases in self.equations.values() for values in phases.values() for v in values}
+        keys |= {r.ref.value for r in self.raw}
+        keys |= {v.ref.value for values in self.transport.values() for v in values}
+        if self.janaf:
+            keys.add(RefKey.NISTJANAF.value)
+        if self.nasa7:
+            keys.add(RefKey.NASA7.value)
+        if self.nasa9:
+            keys.add(RefKey.NASA9.value)
+        if self.coolprop:
+            keys.add(RefKey.CoolProp.value)
+        return sorted(keys)
+
+    def equation_phases(self) -> dict[str, list[str]]:
+        """Which phases each equation property has, e.g. ``{"heatCapacity": ["gas", "solid"]}``."""
+        return {prop: sorted(phases) for prop, phases in sorted(self.equations.items())}
+
+    def to_dict(self) -> dict:
+        """Entry of the compound file: the CAS is its key, Hill formula and elements are file fields, so they are not repeated.
+
+        ``compoundId`` is the public catalogue id (compound name with spaces as ``_``; ``_1``/``_2``/…
+        when several records share the name). ``formula`` is the conventional/standard form when it
+        differs from ``hill`` (IUPAC order, accepted structural formulas, isotopes, charges); the file
+        also always carries ``displayFormula`` + ``hill``. ``cas`` / ``casRef`` only on records without
+        CAS that a PubChem formula search identified; null and empty fields are left out.
+        """
+        # Prefer display (standard) over the raw stored string when writing the entry formula.
+        written_formula = self.display_formula if self.display_formula != self.hill else (
+            self.formula if self.formula != self.hill else None
+        )
+        out: dict[str, Any] = {
+            "compoundId": self.compound_id or self._fallback_compound_id(),
+            "formula": written_formula,
+            "cas": self.pubchem_cas,
+            "casRef": self.pubchem_cas_source.to_ref() if self.pubchem_cas_source else None,
+            "name": self.name,
+            "synonyms": self.synonyms,
+            "Mr": self.Mr,
+            "smiles": self.smiles,
+            "inchikey": self.inchikey,
+            "pubchemCid": self.pubchem_cid,
+            "families": self.families,
+            "identifierRef": self.identifier_source.to_ref() if self.identifier_source else None,
+            "otherCas": self.other_cas,
+            "properties": {
+                prop: [v.to_dict() for v in values] for prop, values in sorted(self.properties.items())
+            },
+            "equations": {
+                prop: {
+                    phase: _equation_list(
+                        values,
+                        preferred_viscosity_gas_index(values, self.cas)
+                        if prop == "viscosity" and phase == "gas" else None,
+                    )
+                    for phase, values in sorted(phases.items())
+                }
+                for prop, phases in sorted(self.equations.items())
+            },
+            "raw": [r.to_dict() for r in self.raw],
+            "transport": {
+                prop: [v.to_dict() for v in values] for prop, values in sorted(self.transport.items())
+            },
+            "janaf": self.janaf,
+            "nasa7": self.nasa7,
+            "nasa9": self.nasa9,
+            "coolprop": self.coolprop,
+        }
+        return {k: v for k, v in out.items() if v is not None and v != [] and v != {}}
+
+    def _fallback_compound_id(self) -> str:
+        """Name slug without collision index — used only when ``assign_compound_ids`` has not run."""
+        for candidate in (self.name, self.display_formula, self.hill, self.formula, self.id):
+            if candidate and str(candidate).strip():
+                stem = _SPACE.sub("_", str(candidate).strip().replace(":", "_"))
+                if stem:
+                    return stem
+        return self.id.replace(":", "_")
+
+
+def _equation_list(
+    values: list[EquationValue], preferred_def: Optional[int] = None,
+) -> dict:
+    if preferred_def is not None and 0 <= preferred_def < len(values):
+        default = preferred_def
+    else:
+        default = next(
+            (i for i, v in enumerate(values) if v.type.value not in PLANNED_EQUATION_TYPES),
+            None,
+        )
+    return {"def": default, "values": [v.to_dict() for v in values]}

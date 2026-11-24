@@ -1,0 +1,128 @@
+{
+  "materialId": "ren-95",
+  "name": "René 95",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "René 95",
+    "form": "Bar",
+    "base": "Nickel base"
+  },
+  "composition": {
+    "C": 0.08,
+    "Cr": 12.8,
+    "Co": 8.1,
+    "Mo": 3.6,
+    "W": 3.6,
+    "Nb": 3.6,
+    "Al": 3.6,
+    "Ti": 2.6,
+    "B": 0.01,
+    "Zr": 0.053,
+    "Ni": 61.957
+  },
+  "condition": "HIPed at 1121 °C (2050 °F)",
+  "properties": {
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 209.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 183.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 176.0
+        },
+        {
+          "T_K": 1033.15,
+          "value": 168.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 8.7
+        },
+        {
+          "T_K": 811.15,
+          "value": 17.4
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "super_alloys_composition_powder_metallurgy.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json",
+    "superalloys_mechanical_properties.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "René 95",
+      "group": "Nickel base",
+      "form": "Bar",
+      "rupture_strength_1000h": {
+        "650": 860
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "René 95",
+      "group": "Nickel base",
+      "form": "Bar",
+      "values": {
+        "21": 209,
+        "540": 183,
+        "650": 176,
+        "760": 168
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "René 95",
+      "group": "Nickel base",
+      "form": "Bar",
+      "yield_strength_0.2_offset": {
+        "21": 1310,
+        "540": 1255,
+        "650": 1220,
+        "760": 1100
+      },
+      "tensile_elongation": {
+        "21": 15,
+        "540": 12,
+        "650": 14,
+        "760": 15
+      }
+    },
+    "superalloys_mechanical_properties.json": {
+      "alloy": "René 95",
+      "group": "Nickel base (P/M)",
+      "condition": "HIPed at 1121 °C (2050 °F)",
+      "properties_at_25_C": {
+        "yield_strength_0.2_offset": 1215,
+        "ultimate_tensile_strength": 1636,
+        "reduction_in_area": 15
+      },
+      "properties_at_649_C": {
+        "yield_strength_0.2_offset": 1120,
+        "ultimate_tensile_strength": 1514,
+        "elongation": 17
+      }
+    }
+  }
+}

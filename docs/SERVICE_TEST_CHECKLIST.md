@@ -18,7 +18,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 1. PSDCalculatorService
 **File:** `psd-calculator.service.ts`  
-**Test File:** `test/unit/refractory/services/psd-calculator.service.spec.ts`
+**Test File:** `test/unit/refractory/services/particle-packing/psd-calculator.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -36,7 +36,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 2. PackingService
 **File:** `packing.service.ts`  
-**Test File:** `test/unit/refractory/services/packing.service.spec.ts`
+**Test File:** `test/unit/refractory/services/particle-packing/packing.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -60,7 +60,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 3. ShrinkageService
 **File:** `shrinkage.service.ts`  
-**Test File:** `test/unit/refractory/services/shrinkage.service.spec.ts`
+**Test File:** `test/unit/refractory/services/thermal/shrinkage.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -82,26 +82,25 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 4. BlendOptimizerService
 **File:** `blend-optimizer.service.ts`  
-**Test File:** `test/unit/refractory/services/blend-optimizer.service.spec.ts`
+**Test File:** `test/unit/refractory/services/particle-packing/blend-optimizer.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
-| `optimize(request)` | ❌ | ❌ NEEDED | Main optimization method with ranking |
-| (Private: applyConstraints) | - | - | Internal filtering |
-| (Private: calculateScoresAndRank) | - | - | Internal scoring |
+| `optimize(request)` | ✅ | ✅ DONE | Mocked evaluate/expand unit spec + live demo |
+| Ranking (`BlendOptimizerRanking`) | ✅ | ✅ DONE | `blend-optimizer-ranking.spec.ts` |
 
 **Checklist:**
-- [ ] optimize() basic flow
-- [ ] Fixed fractions support (isFixed: true)
-- [ ] Optimization goals (maxDensity, minPorosity, minWater, minShrinkage, balanced)
-- [ ] Constraint filtering (minPackingEfficiency, maxWaterDemand, maxPorosity)
-- [ ] Result ranking and scoring
-- [ ] Top N results
-- [ ] Multiple combinations (methods × q × scenarios × packing models)
-- [ ] All scenario types
-- [ ] Output validation (optimizationScore, rank fields)
-- [ ] Water demand integration
-- [ ] Edge cases (all fixed, all variable, mixed)
+- [x] optimize() basic flow
+- [x] Fixed fractions support (isFixed: true) — forwarded to evaluate
+- [x] Optimization goals (maxDensity covered in service; all five in ranking spec)
+- [x] Constraint filtering (minPackingEfficiency, maxWaterDemand, maxPorosity)
+- [x] Result ranking and scoring
+- [x] Top N results
+- [x] Multiple combinations (methods × q × scenarios × packing models)
+- [ ] All scenario types (defaults exercised as 64-call grid; not each label asserted)
+- [x] Output validation (optimizationScore, rank fields)
+- [ ] Water demand integration (covered via evaluate service / demo, not this unit file)
+- [x] Edge cases (empty after constraints; evaluate error propagation; autoExpand)
 
 **Priority:** HIGH - Main service with new features
 
@@ -116,7 +115,7 @@ This document lists all public methods in refractory services and tracks test im
 ---
 ### 5. WaterDemandService ⭐ NEW
 **File:** `water-demand.service.ts`  
-**Test File:** `test/unit/refractory/services/water-demand.service.spec.ts`
+**Test File:** `test/unit/refractory/services/particle-packing/water-demand.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -156,7 +155,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### 7. GlassViscosityService
 **File:** `glass-viscosity.service.ts`  
-**Test File:** `test/unit/refractory/services/glass-viscosity.service.spec.ts`
+**Test File:** `test/unit/refractory/services/composition/glass-viscosity.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -170,25 +169,9 @@ This document lists all public methods in refractory services and tracks test im
 
 ---
 
-### 8. MineralPhaseService
-**File:** `mineral-phase.service.ts`  
-**Test File:** `test/unit/refractory/services/mineral-phase.service.spec.ts`
-
-| Public Method | Tests | Status | Notes |
-|---------------|-------|--------|-------|
-| ? | ? | ? | Need to review source |
-
-**Checklist:**
-- [ ] Review all public methods
-- [ ] Create test cases
-
-**Priority:** MEDIUM
-
----
-
-### 9. PhaseEquilibriumService
+### 8. PhaseEquilibriumService
 **File:** `phase-equilibrium.service.ts`  
-**Test File:** `test/unit/refractory/services/phase-equilibrium.service.spec.ts`
+**Test File:** `test/unit/refractory/services/composition/phase-equilibrium.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -202,9 +185,9 @@ This document lists all public methods in refractory services and tracks test im
 
 ---
 
-### 10. ThermalPerformanceService
+### 9. ThermalPerformanceService
 **File:** `thermal-performance.service.ts`  
-**Test File:** `test/unit/refractory/services/thermal-performance.service.spec.ts`
+**Test File:** `test/unit/refractory/services/thermal/thermal-performance.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -218,9 +201,9 @@ This document lists all public methods in refractory services and tracks test im
 
 ---
 
-### 11. RefractorynessService
+### 10. RefractorynessService
 **File:** `refractoriness.service.ts`  
-**Test File:** `test/unit/refractory/services/refractoriness.service.spec.ts`
+**Test File:** `test/unit/refractory/services/composition/refractoriness.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -234,9 +217,9 @@ This document lists all public methods in refractory services and tracks test im
 
 ---
 
-### 12. ParticipationService
+### 11. ParticipationService
 **File:** `participation.service.ts`  
-**Test File:** `test/unit/refractory/services/participation.service.spec.ts`
+**Test File:** `test/unit/refractory/services/particle-packing/participation.service.spec.ts`
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
@@ -257,11 +240,10 @@ This document lists all public methods in refractory services and tracks test im
 | PSDCalculatorService | ? | ✅ | High |
 | PackingService | 5+ | ⚠️ 2/5 | 40% |
 | ShrinkageService | ? | ✅ | ? |
-| BlendOptimizerService | 1 | ❌ 0/1 | 0% |
+| BlendOptimizerService | 1 | ✅ 1/1 | unit + demo |
 | WaterDemandService | 5 | ⏳ 2/5 | 40% |
 | ViscosityService | ? | ? | ? |
 | GlassViscosityService | ? | ? | ? |
-| MineralPhaseService | ? | ? | ? |
 | PhaseEquilibriumService | ? | ? | ? |
 | ThermalPerformanceService | ? | ? | ? |
 | RefractorynessService | ? | ? | ? |
@@ -284,9 +266,9 @@ This document lists all public methods in refractory services and tracks test im
    - [ ] Add CompositionAnalyzer tests
 
 3. **BlendOptimizerService** (Main service)
-   - [ ] Add optimize() tests
-   - [ ] Test all combination scenarios
-   - [ ] Validate results
+   - [x] Add optimize() tests (`blend-optimizer.service.spec.ts`)
+   - [x] Combination grid + constraints + topN + autoExpand
+   - [x] Ranking util covered separately
 
 ### 🟡 MEDIUM PRIORITY (Review needed)
 
@@ -299,7 +281,7 @@ This document lists all public methods in refractory services and tracks test im
 
 ### Example: WaterDemandService
 ```
-backend/test/unit/refractory/services/water-demand.service.spec.ts
+backend/test/unit/refractory/services/particle-packing/water-demand.service.spec.ts
 ├── describe('WaterDemandService')
 │   ├── describe('calculateWaterDemand')
 │   │   ├── it('should calculate water demand for standard workability')
@@ -353,10 +335,10 @@ backend/test/unit/refractory/services/water-demand.service.spec.ts
 2. Add tests for: resolveBeta0, resolveMaxPhi, CompositionAnalyzer
 3. Target: 100% public method coverage
 
-### Phase 3: BlendOptimizerService (Next)
-1. Create blend-optimizer.service.spec.ts
-2. Test optimize() with all scenarios
-3. Validate output format
+### Phase 3: BlendOptimizerService — done
+1. ✅ `blend-optimizer.service.spec.ts` (mocked deps)
+2. ✅ `blend-optimizer-ranking.spec.ts`
+3. Demo spec retained for live-material smoke
 
 ### Phase 4: Other Services (Later)
 1. Review each service for public methods

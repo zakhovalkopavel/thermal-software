@@ -33,16 +33,29 @@ Files must use lowercase with hyphens separating words:
 
 **Specific File Patterns:**
 ```
-Services:       service-name.service.ts
-DTOs:           dto-name.dto.ts
-Controllers:    controller-name.controller.ts
-Entities:       entity-name.entity.ts
-Repositories:   repository-name.repository.ts
-Utilities:      util-name.util.ts
-Data files:     data-name.data.ts
-Interfaces:     interface-name.interface.ts
-Documentation:  DOCUMENT_NAME.md (UPPER_SNAKE_CASE)
+Services:          service-name.service.ts
+DTOs:              dto-name.dto.ts
+Controllers:       controller-name.controller.ts
+Entities:          entity-name.entity.ts
+Repositories:      repository-name.repository.ts
+Utility classes:   class-name.ts            # e.g. compound-text.ts → CompoundText (static helpers)
+Thin util adapters: util-name.util.ts       # single free function when not part of a helper class
+Data files:        data-name.data.ts
+Interfaces:        name.interface.ts
+Types:             name.type.ts
+Enums:             name.enum.ts
+Constants:         name.constants.ts
+Documentation:     DOCUMENT_NAME.md (UPPER_SNAKE_CASE)
 ```
+
+Each suffix has a dedicated folder (`*.type.ts` → `types/`, `*.interface.ts` → `interfaces/`,
+`*.dto.ts` → `dto/`, `*.enum.ts` → `enums/`, `*.constants.ts` → `constants/`, `*.service.ts` →
+`services/`, …). The full mapping and placement rules are in
+[`CONVENTIONS.md`](./CONVENTIONS.md) § Construct → folder → file → export.
+
+Prefer a **utility class with static methods** for related domain helpers (see
+[`CONVENTIONS.md`](./CONVENTIONS.md) §1). Do not invent one `*.util.ts` free function per helper
+when those helpers share a concern.
 
 ---
 

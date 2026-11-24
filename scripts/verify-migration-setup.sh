@@ -209,18 +209,25 @@ for dir in calculations migrations performance tests; do
     fi
 done
 
-# Check README exists
-if [ -f "tmp/reports/README.md" ]; then
-    pass "tmp/reports/README.md exists"
+# Check tmp/ convention doc exists
+if [ -f "docs/REPORTS_MANAGEMENT.md" ]; then
+    pass "docs/REPORTS_MANAGEMENT.md exists"
 
-    # Check for "ALL reports" requirement
-    if grep -qi "ALL.*reports.*MUST" tmp/reports/README.md; then
-        pass "Reports README emphasizes ALL reports requirement"
+    if grep -qi "ALL.*reports.*MUST" docs/REPORTS_MANAGEMENT.md; then
+        pass "tmp/ convention emphasizes ALL reports requirement"
     else
-        warn "Reports README doesn't emphasize requirement"
+        warn "tmp/ convention doesn't emphasize requirement"
     fi
 else
-    fail "tmp/reports/README.md missing"
+    fail "docs/REPORTS_MANAGEMENT.md missing"
+fi
+
+# Check nothing but .gitkeep/.gitignore is tracked under tmp/
+tracked_tmp=$(git ls-files tmp | grep -Ev '(^|/)\.git(keep|ignore)$' || true)
+if [ -z "$tracked_tmp" ]; then
+    pass "Only .gitkeep/.gitignore files are tracked under tmp/"
+else
+    fail "Files tracked under tmp/ (see docs/REPORTS_MANAGEMENT.md): $(echo "$tracked_tmp" | wc -l)"
 fi
 
 echo ""

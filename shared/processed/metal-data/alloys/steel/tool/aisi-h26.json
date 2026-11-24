@@ -1,0 +1,105 @@
+{
+  "materialId": "aisi-h26",
+  "name": "H26",
+  "group": "steel",
+  "family": "tool",
+  "aliases": {
+    "uns": "T20826",
+    "sae": "H26"
+  },
+  "composition": {
+    "C": 0.5,
+    "Mn": 0.275,
+    "Si": 0.275,
+    "Cr": 4.125,
+    "Ni": 0.15,
+    "W": 18.125,
+    "V": 1.0
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "tool_steel_thermal_expansion_and_density.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8670.0
+        }
+      ]
+    },
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "tool_steel_thermal_expansion_and_density.json"
+      ],
+      "points": [
+        {
+          "T_K": 813.15,
+          "value": 12.4
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "tool_steel_composition.json",
+    "tool_steel_thermal_expansion_and_density.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1184,
+    "Ac3_K": 1391,
+    "Ac1_C": 911,
+    "Ac3_C": 1118,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-4140",
+        "mode": "full-series",
+        "why": "aisi-h26 doesn't have electricalResistivity points; link sae-4140 series (same group steel; ElMD=1.80146, L1=23.4075 wt% [ΔW=18.125%; ΔCr=3.175%; ΔV=1%; ΔMn=0.6%; ΔMo=0.2%; ΔNi=0.15%; ΔC=0.095%; ΔSi=0.025%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 1.80146,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-5140",
+        "mode": "full-series",
+        "why": "aisi-h26 doesn't have specificHeat points; link sae-5140 series (same group steel; ElMD=1.84506, L1=23.2825 wt% [ΔW=18.125%; ΔCr=3.325%; ΔV=1%; ΔMn=0.525%; ΔNi=0.15%; ΔC=0.095%; ΔSi=0.025%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 1.845061,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "aisi-m2",
+        "mode": "full-series",
+        "why": "aisi-h26 doesn't have thermalConductivity points; link aisi-m2 series (same family tool; ElMD=0.49568, L1=18.525 wt% [ΔW=12%; ΔMo=5%; ΔV=0.975%; ΔC=0.5%; ΔSi=0.05%])",
+        "compositionDistance": 0.49568,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalExpansion": {
+        "materialId": "aisi-m2",
+        "mode": "full-series",
+        "why": "only 1 thermalExpansion point; link aisi-m2 series (same family tool; ElMD=0.49568, L1=18.525 wt% [ΔW=12%; ΔMo=5%; ΔV=0.975%; ΔC=0.5%; ΔSi=0.05%])",
+        "compositionDistance": 0.49568,
+        "distanceMetric": "ElMD-mod_petti"
+      }
+    }
+  }
+}

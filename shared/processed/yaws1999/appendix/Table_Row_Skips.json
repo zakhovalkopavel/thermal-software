@@ -1,0 +1,110 @@
+{
+  "id": "YAWS1999_TABLE_ROW_SKIPS",
+  "title": "Yaws1999 table rows skipped (identity unresolved / do not auto-match)",
+  "refKey": "Yaws1999",
+  "kind": "tableRowSkips",
+  "updated": "2026-11-17T00:06:57.275573+00:00",
+  "policy": "Rows listed here stay unmatched on purpose. Do not assign CAS from name/formula heuristics or correction batches. Keep the printed Yaws fields as-is.",
+  "rows": [
+    {
+      "tableId": "20-1",
+      "rowId": 311,
+      "name": "3-PHENYLCYCLOPENTYLUREA",
+      "formula": "C14H20N2O",
+      "MW": 374.144,
+      "Koc_at_20_C": 232.0,
+      "rejectedCandidate": {
+        "cas": "19095-79-5",
+        "name": "1-CYCLOHEPTYL-3-PHENYLUREA",
+        "formula": "C14H20N2O",
+        "reason": "Formula matches cycloheptyl urea (PubChem MW ~232) but table MW is 374.144 (Koc is 232). Real compound unknown — skip; do not assign 19095-79-5."
+      },
+      "note": "User decision 2026-11-16: skip; identity unknown."
+    },
+    {
+      "tableId": "20-1",
+      "rowId": 120,
+      "name": "3-(TRIFLOROMETHYL)ACETANILIDE",
+      "formula": "C8H6CL3NO",
+      "MW": 238.507,
+      "rejectedCandidate": {
+        "cas": "351-36-0",
+        "name": "N-[3-(TRIFLUOROMETHYL)PHENYL]ACETAMIDE",
+        "formula": "C9H8F3NO",
+        "reason": "User 2026-11-16: unknown; skip. Printed formula has Cl3 and MW≈238.5 does not match trifluoro acetanilide."
+      },
+      "note": "User decision 2026-11-16: skip; identity unknown."
+    },
+    {
+      "tableId": "20-1",
+      "rowId": 300,
+      "name": "2-PHENYLCYCLOHEXYLUREA",
+      "formula": "C13H18N2O",
+      "MW": 218.29,
+      "note": "User 2026-11-17: no CAS; skip. Same-Hill isomers (info only): 1-Cyclohexyl-3-phenylurea 886-59-9; 1-(1-Phenylcyclohexyl)urea 68592-12-1 (PubChem CAS collision / uncertain).",
+      "isomerInfo": [
+        {
+          "name": "1-Cyclohexyl-3-phenylurea",
+          "formula": "C13H18N2O",
+          "cas": "886-59-9"
+        },
+        {
+          "name": "1-(1-Phenylcyclohexyl)urea",
+          "formula": "C13H18N2O",
+          "cas": "68592-12-1"
+        }
+      ]
+    },
+    {
+      "tableId": "20-1",
+      "rowId": 92,
+      "name": "3-(TRICHLOROMETHYL)ANILINE",
+      "formula": "C7H6Cl3N",
+      "MW": 196.489,
+      "rejectedCandidate": {
+        "cas": "634-91-3",
+        "name": "3,4,5-TRICHLOROANILINE",
+        "formula": "C6H4Cl3N",
+        "reason": "User 2026-11-17: revert; keep trichloromethyl aniline. Unstable → no CAS; skip."
+      },
+      "note": "User 2026-11-17: 3-(TRICHLOROMETHYL)ANILINE is unstable, no CAS; skip."
+    },
+    {
+      "tableId": "20-1",
+      "rowId": 20,
+      "name": "TRICHLOROETHANE",
+      "formula": "C2H3Cl3",
+      "note": "User 2026-11-17: underspecified isomer; skip. Appendix has 71-55-6 (1,1,1) and 79-00-5 (1,1,2); no mixture CAS.",
+      "candidates": [
+        {
+          "cas": "71-55-6",
+          "name": "1,1,1-TRICHLOROETHANE"
+        },
+        {
+          "cas": "79-00-5",
+          "name": "1,1,2-TRICHLOROETHANE"
+        }
+      ],
+      "MW": 133.415
+    },
+    {
+      "tableId": "20-1",
+      "rowId": 22,
+      "name": "DIBROMOETHANE",
+      "formula": "C2H4Br2",
+      "note": "User 2026-11-17: underspecified isomer; skip. Appendix has 106-93-4 (1,2) and 557-91-5 (1,1); no mixture CAS.",
+      "candidates": [
+        {
+          "cas": "106-93-4",
+          "name": "1,2-DIBROMOETHANE"
+        },
+        {
+          "cas": "557-91-5",
+          "name": "1,1-DIBROMOETHANE"
+        }
+      ],
+      "MW": 187.884
+    }
+  ],
+  "count": 6
+}

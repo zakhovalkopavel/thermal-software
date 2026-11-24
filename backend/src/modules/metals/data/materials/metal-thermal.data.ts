@@ -14,7 +14,7 @@
  */
 
 import { MetalMaterial } from '../../enums/metal-material.enum';
-import { MetalThermalEntry } from '../interfaces/metal-thermal.interface';
+import { MetalThermalEntry } from '../../types/metal-thermal-entry.type';
 
 export const METAL_THERMAL_MATERIALS: MetalThermalEntry[] = [
 

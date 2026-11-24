@@ -32,8 +32,57 @@ python/
 │   │   └── parsers/
 │   │       ├── nasa7.py      # NASA-7 (SP-273/1971) parser
 │   │       └── nasa9.py      # NASA-9 (RP-1311/1996 + Burcat) parser
+│   ├── janaf/            # NIST-JANAF table parser package (py-janaf copy)
+│   │   ├── __init__.py          # Public API re-exports
+│   │   ├── janaf_row.py         # JanafRow dataclass
+│   │   ├── janaf_transition.py  # JanafTransition dataclass
+│   │   ├── janaf_table.py       # JanafTable dataclass
+│   │   ├── janaf_source.py      # JanafSource dataclass (py-janaf repo, commit, links)
+│   │   ├── janaf_index.py       # load_janaf_index (janaf.json)
+│   │   ├── janaf_formula.py     # janaf_counts / janaf_charge (JANAF formula → element counts, ion charge)
+│   │   ├── janaf_classes.py     # JanafClasses (class and family of carbon compounds from the compound-data index)
+│   │   ├── janaf_file.py        # JanafFile dataclass (one compound file)
+│   │   ├── janaf_files.py       # janaf_files (tables → inorganic/<Element>/, organic/<family>/ files)
+│   │   ├── writers.py           # compound files, index.json, units.json, sources.json
+│   │   ├── constants/           # JANAF_UNITS
+│   │   └── parsers/
+│   │       ├── janaf_table.py   # table file parser
+│   │       └── provenance.py    # PROVENANCE.txt reader
+│   ├── chemical_formula/ # formula parsing, Hill and IUPAC formulas, main element, inorganic/organic class (formula and RDKit bond rules), RDKit families
+│   ├── dataset_layout/   # compound file names, collision handling, output folder clearing (compound-data + JANAF)
+│   ├── chemicals_tables/ # CalebBell/chemicals tables → source entries (one export per file)
+│   │   ├── *.py                 # models (SourceLink, PropertyValue, EquationValue, TransportValue, SourceEntry, Identifier, ...)
+│   │   ├── source_entries.py    # parse_source_entries (all parsers + identity overrides)
+│   │   ├── equation_eval.py     # evaluate_equation (backend calculate, all equation types)
+│   │   ├── constants/           # tables, coefficient layouts, equation types, identity overrides
+│   │   └── parsers/             # one parser per table family + provenance, identifiers
+│   ├── pubchem/          # polite PubChem lookups (CAS, formula, name searches) + resumable per-class files
+│   ├── compound_data/    # source entries → compound JSON (one export per file)
+│   │   ├── __init__.py          # Public API re-exports
+│   │   ├── merger.py            # merge_compounds (by CAS, formula resolution, detach)
+│   │   ├── builder.py           # build_compound_data (parsers → merge → checks → JANAF ids → interaction ids)
+│   │   ├── pubchem_identifiers.py  # PubChem records → identifiers
+│   │   ├── pubchem_formula_links.py  # PubChem formula searches → cas of records without CAS
+│   │   ├── janaf_links.py       # attach_janaf (JANAF table ids by CAS, then Hill formula)
+│   │   ├── compound_files.py    # compound_files (records → one file per inorganic formula / organic compound)
+│   │   ├── compound_units.py    # compound_units (units.json content)
+│   │   ├── writers.py           # compound files, unresolved.json, index.json, units.json, sources.json, interactions.json, missing-cas.txt
+│   │   ├── constants/           # formula overrides, class overrides, source priority, PubChem table, transport tables, units
+│   │   └── parsers/             # JANAF CAS index, transport-parameters.json
+│   ├── yaws1999/         # Yaws Chemical Properties Handbook (1999) DjVu → one JSON per table
+│   ├── phase_diagrams/   # Slag Atlas / NSRDS-NBS 61 phase-diagram extraction (one export per file)
+│   │   ├── __init__.py       # Public API re-exports
+│   │   ├── constants/  models/  config/      # constants, dataclasses, configs + source registry
+│   │   ├── rendering/  detection/  tracing/  # page images, frame/ticks/lines/junctions, curves
+│   │   ├── figures/  nbs/                    # caption + label OCR, NSRDS-NBS 61 matching
+│   │   └── builders/  output/  validation/   # system build, JSON + review writers, dataset rules
 │   └── scripts/          # Production scripts
 │       ├── parse_nasa_thermo.py  # NASA thermo CLI (thin wrapper)
+│       ├── parse_janaf.py        # NIST-JANAF CLI (thin wrapper)
+│       ├── build_compound_data.py  # Compound data CLI (thin wrapper)
+│       ├── fetch_pubchem_identifiers.py  # Compound data step 2: missing CAS + records without CAS → PubChem files (network)
+│       ├── pubchem_search.py     # On-demand PubChem search by formula, name or CAS (network)
+│       ├── extract_phase_diagram.py  # Phase-diagram CLI (thin wrapper)
 │       ├── extract_tables.py
 │       └── README.md     # Scripts documentation
 └── tests/                # Test files
@@ -43,6 +92,13 @@ python/
     │   ├── test_nasa7_parser.py
     │   ├── test_nasa9_parser.py
     │   └── test_writers.py
+    ├── janaf/            # JANAF parser, placement and writer tests
+    ├── chemical_formula/ # Formula, main element, class and family tests
+    ├── dataset_layout/   # File name, collision and clearing tests
+    ├── chemicals_tables/ # Chemicals table parser tests (fixtures from real chemicals rows, shared)
+    ├── pubchem/          # PubChem client (throttling, pauses), results, searches, class file tests
+    ├── compound_data/    # Merge, writers, JANAF links, PubChem identifiers and formula links, transport parameters tests
+    ├── phase_diagrams/   # Phase-diagram extraction tests (synthetic images, golden files)
     └── ocr/              # OCR module tests
         ├── test_coordinate_parsing.py
         ├── test_document_extraction.py
@@ -100,6 +156,73 @@ make nasa-parse          # parse both databases
 make nasa-parse-nasa7    # NASA-7 only
 make nasa-parse-nasa9    # NASA-9 only
 make nasa-test           # run unit tests
+```
+
+### JANAF Parser (`src/janaf/`)
+
+Converts the NIST-JANAF thermochemical tables (4th ed., py-janaf copy) into JSON, one file per compound (all phases of one Hill formula), in the compound-data layout: inorganic compounds under their main element and named with the IUPAC formula (TiO₂ → `inorganic/Ti/TiO2-titanium-oxide.json`, NH₃ → `inorganic/N/NH3-ammonia.json`), organic ones under the RDKit family of their compound-data record (`organic/aldehydes/CH2O-formaldehyde.json`). Carbon compounds take their class from the compound-data record, so HCN and CO₂ are inorganic and CCl₄ organic in both datasets. Each table carries its rows, phase transitions and `ref: [RefKey, line, tableId]`; `sources.json` holds the py-janaf repository, commit and license and the URL templates that turn a ref into a link to the py-janaf file at the downloaded commit (or the NIST page). Units are in `units.json`; the JSON format is described by the backend interfaces in `backend/src/common/thermal/utils/janaf/`.
+
+**Spec**: [docs/scripts/JANAF_PARSER_SPEC.md](../docs/scripts/JANAF_PARSER_SPEC.md)
+
+**Source files**: `shared/sources/compound-data/nist-janaf/` (`py-janaf/data/`, `py-janaf/janaf.json`, `PROVENANCE.txt`)
+
+**Output**: `shared/processed/JANAF/` (`inorganic/<Element>/`, `organic/<family>/`, `index.json` with every table, its file and lookups by formula, element and family, `units.json`, `sources.json`); the folder is cleared before writing
+
+**Make commands**:
+```bash
+make compound-data-build          # first: carbon compound classes and organic families come from its index.json
+make janaf-parse                  # all tables (clears shared/processed/JANAF first)
+make janaf-test                   # run unit tests (janaf + dataset_layout)
+```
+
+### Compound Data (`src/chemical_formula/`, `src/chemicals_tables/`, `src/pubchem/`, `src/dataset_layout/`, `src/compound_data/`)
+
+Merges the CRC, Perry, Poling, Yaws, TRC, Zabransky, NIST WebBook Shomate and VDI PPDS tables from CalebBell/chemicals into one record per CAS. Inorganic compounds go to `inorganic/<main element>/`, one file per formula holding all its CAS entries (Al₂O₃ → `inorganic/Al/Al2O3-electrocorundum.json`, TiO₂ → `inorganic/Ti/TiO2-titanium-dioxide.json`, NH₃ → `inorganic/N/NH3-ammonia.json`); the main element is the metal, else the least electronegative element, ignoring O and H. Inorganic files are named with the IUPAC formula (`displayFormula`: TiF4, ZnB4O9, HNO3); `hill` stays the lookup key. Organic compounds go to `organic/<family>/`, one file per compound (`organic/alcohols/C2H6O-ethanol.json`), by RDKit SMARTS family. A carbon compound is organic when its structure has a C–H or C–halogen bond (or, without a metal, a C–C bond, a C–NH bond or a carbon ring), with a few CAS overrides (HCN inorganic) and a formula fallback for compounds without SMILES; those also get the family their formula alone fixes (halocarbons → `halogenated`, CnH2n+2 → `alkanes`). Every coefficient row is a backend `EquationValue` (`{type, ref, vars, min, max, k}`); types the backend does not implement yet are marked `planned` in `index.json` and never become `def`. Every value cites its source row as `ref: [RefKey, line, fileKey]`; `sources.json` maps the file keys to the files at the pinned chemicals commit. The build also parses the NIST-JANAF copy (`janaf` package) and lists the matching JANAF table ids in each record (`janaf`). It also parses the NASA-7 / NASA-9 sources (`nasa_thermo` package) and lists the matching species keys (`nasa7`, `nasa9`, all phases), matched by Hill formula and name suffix and checked by ΔfH°(298.15) against the record, so a key that names another species (NASA-9 `CO2`, `O2`, `C6H6`) stays off. Lennard-Jones σ and ε/k come from the Poling and Magalhães tables (`collisionDiameter` in m, `epsilonToKb` in K, tagged `potential`). The hand-transcribed `shared/sources/transport-parameters.json` adds White's power-law and Sutherland fits of gas viscosity and conductivity (planned types `powerLaw`, `sutherland`), Lennard-Jones and Stockmayer parameters (White A-7, NASA TN D-481, Mamedov 2014), and Svehla 1995's transport methods: pure species as a `transport` block on the record, species pairs in `interactions.json`. The build is offline and writes the CAS numbers that the chemicals identifier files miss (`missing-cas.txt`); a separate, slow second step (`make compound-data-pubchem`, `pubchem` package) looks them up in PubChem into a local cache, pacing itself by PubChem's throttling header and stopping when PubChem refuses, then rebuilds. Units are in `units.json`; the JSON format is described by the backend interfaces in `backend/src/common/thermal/utils/compound-data/`.
+
+**Spec**: [docs/scripts/COMPOUND_DATA_SPEC.md](../docs/scripts/COMPOUND_DATA_SPEC.md)
+
+**Source files**: `shared/sources/compound-data/chemicals/` (`chemicals/<repo path>`, `dev/data/janaf/janaf_tables_index.csv`, `PROVENANCE.txt`), `shared/sources/compound-data/nist-janaf/` (optional; `--no-janaf` skips it), `shared/sources/compound-data/pubchem/pubchem-{inorganic,organic,unclassified}.jsonl` (optional; `--no-pubchem` skips them) and `shared/sources/transport-parameters.json` (optional; `--no-transport` skips it)
+
+**Output**: `shared/processed/compound-data/` (`inorganic/`, `organic/`, `unresolved.json`, `index.json`, `units.json`, `sources.json`, `interactions.json`; cleared before writing); report `tmp/reports/python/compound-data/report.json`
+
+**Make commands**:
+```bash
+make compound-data-build   # step 1: build all files + report + missing-cas.txt (offline)
+make compound-data-pubchem # step 2: missing CAS + records without CAS → PubChem → one file per class (slow, resumable)
+make pubchem-search Q="CaAl2O4"  # on demand: formula, name or CAS → PubChem (printed, kept in the class files)
+make pubchem-search QUERY_FILE=shared/sources/pubchem-queries.txt  # the 551 formulas without a compound-data record
+make compound-data-test    # run unit tests of the five packages (needs rdkit in the python_packages volume)
+```
+
+### Phase-Diagram Extraction (`src/phase_diagrams/`)
+
+Turns Slag Atlas figures into the phase-diagram dataset: calibrates the axes, traces the
+liquidus curves, checks invariants against NSRDS-NBS 61 and validates the dataset. Printed
+labels stay authoritative; digitized values are only checks.
+
+**Spec**: [docs/scripts/phase-diagrams/](../docs/scripts/phase-diagrams/README.md)
+
+**Source files**: `shared/sources/compound-data/` (atlas, NSRDS-NBS 61 and JANAF PDFs, listed in `sources.json`)
+
+**Input / output**: `shared/processed/phase-diagrams/configs/*.config.json` → candidates,
+renders, tiles, overlays and review lists in `tmp/reports/python/phase-diagrams/`; a
+candidate reaches `shared/processed/phase-diagrams/systems/` only through `pd-promote`
+after user validation. All commands run in the `python` container.
+
+**Make commands**:
+```bash
+make pd-calibrate SYSTEM=mgo-sio2         # frame, ticks, residuals, calibration overlay
+make pd-extract SYSTEM=mgo-sio2           # binary config → candidate + comparison with the dataset file
+make pd-new SYSTEM=cao-feox-sio2          # new ternary: figure (FIGURE= if several), triangle, corners → starting file + curves config
+make pd-nodes SYSTEM=cao-mgo-sio2         # node map + topology report of a ternary
+make pd-curves SYSTEM=cao-mgo-sio2        # ternary boundary curves → candidate with polyline_wt
+make pd-compare SYSTEM=mgo-sio2           # candidate vs dataset file (exit 1 on differences)
+make pd-promote SYSTEM=mgo-sio2           # candidate → dataset (after validation; refused on errors)
+make pd-tile PAGE=108 BOX="x0 y0 x1 y1"   # zoom tile with pixel rulers
+make pd-nbs-index                         # dump and parse NSRDS-NBS 61 (once)
+make pd-nbs-suggest COMPONENTS="MgO SiO2" # candidate NBS entries
+make pd-validate                          # dataset rules PD001–PD018
+make pd-test                              # unit + regression tests
 ```
 
 ### OCR Package (`src/ocr/`)
@@ -185,6 +308,16 @@ python /app/src/scripts/extract_tables.py
 # NASA thermo parser tests
 make nasa-test
 docker compose run --rm python python -m pytest /app/tests/nasa_thermo/ -v
+
+# JANAF parser tests
+make janaf-test
+
+# Compound data tests
+make compound-data-test
+
+# Phase-diagram extraction tests
+make pd-test
+docker compose run --rm python python -m pytest /app/tests/phase_diagrams/ -v
 
 # OCR tests
 docker-compose exec python python /app/tests/ocr/test_coordinate_parsing.py

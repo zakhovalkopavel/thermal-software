@@ -69,6 +69,19 @@ python src/nasa_thermo/...
 
 ---
 
+## Vendor libraries (page-ocr / source-extract)
+
+```bash
+make setup                 # init-submodules + .env + sync-vendor-env
+make init-submodules       # checkout pinned SHAs for vendor/*
+make update-submodules     # fetch latest remote tips for vendor/*
+make sync-vendor-env       # copy PAGE_OCR_* from .env → vendor/*/.env
+# page-ocr code is always on PYTHONPATH; install.sh only provisions llama/models:
+cd vendor/page-ocr && ./install.sh --all  # optional runtime refresh (image usually has it)
+```
+
+First-time flow: [SETUP.md](SETUP.md). Design: [docs/SHARED_LIBRARIES_SUBMODULES.md](docs/SHARED_LIBRARIES_SUBMODULES.md).
+
 ## Installing Packages
 
 ```bash
@@ -91,7 +104,7 @@ poetry add <pkg>
 
 ```bash
 make test-backend                                           # All backend tests
-make test-frontend                                         # All frontend tests
+make test-frontend                                         # Full frontend gate (npm run verify)
 docker compose exec backend npm run test:watch             # Watch mode
 docker compose exec backend npm run test:cov               # Coverage report
 docker compose exec backend npm run test -- <file>.spec    # Single file

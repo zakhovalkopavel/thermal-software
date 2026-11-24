@@ -1,0 +1,18 @@
+export type MaterialGroup =
+  | 'oxide'
+  | 'silicate'
+  | 'glass'
+  | 'clay'
+  | 'flux'
+  | 'binder'
+  | 'carbide'
+  | 'nitride'
+  | 'boride'
+  | 'fluoride'
+  | 'borate'
+  | 'phosphate'
+  | 'rare_earth'
+  | 'glass_former'
+  | 'hydroxide'
+  | 'gel'
+  | 'carbonate';

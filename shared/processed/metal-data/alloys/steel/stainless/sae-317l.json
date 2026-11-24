@@ -1,0 +1,126 @@
+{
+  "materialId": "sae-317l",
+  "name": "317L",
+  "group": "steel",
+  "family": "stainless",
+  "aliases": {
+    "uns": "S31703",
+    "sae": "317L"
+  },
+  "composition": {
+    "C": 0.0175,
+    "Cr": 19.0,
+    "Ni": 13.0,
+    "Mo": 3.5
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8000.0
+        }
+      ]
+    },
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 7.900000000000001e-07
+        }
+      ]
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 14.4
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 16.5
+        },
+        {
+          "T_K": 811.15,
+          "value": 18.1
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "stainless_heat_resistant_composition.json",
+    "stainless_steel.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1098,
+    "Ac3_K": 1069,
+    "Ac1_C": 824,
+    "Ac3_C": 796,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-4130",
+        "mode": "full-series",
+        "why": "only 1 electricalResistivity point; link sae-4130 series (same group steel; ElMD=3.96223, L1=35.425 wt% [ΔCr=18.05%; ΔNi=13%; ΔMo=3.3%; ΔMn=0.5%; ΔC=0.2875%; ΔSi=0.25%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 3.962234,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-1008",
+        "mode": "full-series",
+        "why": "sae-317l doesn't have specificHeat points; link sae-1008 series (same group steel; ElMD=3.88734, L1=35.9775 wt% [ΔCr=19%; ΔNi=13%; ΔMo=3.5%; ΔMn=0.4%; ΔC=0.0325%; ΔS=0.025%; ΔP=0.02%])",
+        "compositionDistance": 3.88734,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "aisi-m2",
+        "mode": "full-series",
+        "why": "only 1 thermalConductivity point; link aisi-m2 series (same group steel; ElMD=2.0957, L1=37.9425 wt% [ΔCr=14.875%; ΔNi=12.85%; ΔW=6.125%; ΔV=1.975%; ΔMo=1.5%; ΔSi=0.325%; ΔMn=0.275%; ΔC=0.0175%])",
+        "compositionDistance": 2.095699,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalExpansion": {
+        "materialId": "aisi-m2",
+        "mode": "scaled-series",
+        "why": "only 2 own points; link scaled aisi-m2 curve (same group steel; ElMD=2.0957, L1=37.9425 wt% [ΔCr=14.875%; ΔNi=12.85%; ΔW=6.125%; ΔV=1.975%; ΔMo=1.5%; ΔSi=0.325%; ΔMn=0.275%; ΔC=0.0175%])",
+        "compositionDistance": 2.095699,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 1.56914072,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.6046643,
+          "maxRelPct": 3.949568
+        }
+      }
+    }
+  }
+}

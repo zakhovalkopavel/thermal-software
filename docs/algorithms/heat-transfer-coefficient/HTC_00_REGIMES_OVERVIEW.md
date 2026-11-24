@@ -2,7 +2,7 @@
 
 > **Role:** This document is the **primary entry point** and state machine for computing the instantaneous heat transfer coefficient $\alpha(T_s)$ at each discrete time step $\Delta\tau_k$. It evaluates the local solid surface state and routes calculations to the correct regime handler.
 >
-> **Used by:** The nonlinear time-stepping loop in [HEAT_CONDUCTION_06_TIME_STEPPING.md](../heat-conduction/HEAT_CONDUCTION_06_TIME_STEPPING.md), specifically at Step 4 (Non-Linear Coefficient Adaptation).
+> **Used by:** The nonlinear time-stepping loop in [HEAT_CONDUCTION_14_TIME_STEPPING.md](../heat-conduction/HEAT_CONDUCTION_14_TIME_STEPPING.md), specifically at Step 4 (Non-Linear Coefficient Adaptation).
 
 ---
 

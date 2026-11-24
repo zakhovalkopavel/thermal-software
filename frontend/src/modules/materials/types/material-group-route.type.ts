@@ -1,0 +1,18 @@
+export type MaterialGroupRoute =
+  | 'oxides'
+  | 'silicates'
+  | 'glasses'
+  | 'clays'
+  | 'fluxes'
+  | 'binders'
+  | 'carbides'
+  | 'nitrides'
+  | 'borides'
+  | 'fluorides'
+  | 'borates'
+  | 'phosphates'
+  | 'rare-earths'
+  | 'glass-formers'
+  | 'hydroxides'
+  | 'gels'
+  | 'carbonates';

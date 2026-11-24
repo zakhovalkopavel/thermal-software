@@ -1,0 +1,656 @@
+{
+  "generatedAt": "2026-11-17T00:37:58.020537+00:00",
+  "repository": "https://github.com/CalebBell/chemicals",
+  "sourceCommit": "e79047588b30cfabc564c79fb26d760c746877d7",
+  "sourceTree": "https://github.com/CalebBell/chemicals/tree/e79047588b30cfabc564c79fb26d760c746877d7",
+  "license": "MIT",
+  "lineUrl": "{url}#L{line}",
+  "files": {
+    "crcConstants": {
+      "name": "CRC inorganic constants",
+      "path": "chemicals/Misc/Physical Constants of Inorganic Compounds.csv",
+      "ref": "CRC95",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Misc/Physical%20Constants%20of%20Inorganic%20Compounds.csv"
+    },
+    "crcHfus": {
+      "name": "CRC heat of fusion",
+      "path": "chemicals/Phase Change/CRC Handbook Heat of Fusion.tsv",
+      "ref": "CRC95",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Phase%20Change/CRC%20Handbook%20Heat%20of%20Fusion.tsv"
+    },
+    "crcStdThermo": {
+      "name": "CRC standard thermodynamic",
+      "path": "chemicals/Heat Capacity/CRC Standard Thermodynamic Properties of Chemical Substances.tsv",
+      "ref": "CRC95",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Heat%20Capacity/CRC%20Standard%20Thermodynamic%20Properties%20of%20Chemical%20Substances.tsv"
+    },
+    "crcSolidDensity": {
+      "name": "CRC solid densities",
+      "path": "chemicals/Density/CRC Solid Inorganic Constant Densities.tsv",
+      "ref": "CRC95",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Density/CRC%20Solid%20Inorganic%20Constant%20Densities.tsv"
+    },
+    "yawsCritical": {
+      "name": "Yaws critical properties",
+      "path": "chemicals/Critical Properties/Yaws Collection.tsv",
+      "ref": "Yaws2014",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Critical%20Properties/Yaws%20Collection.tsv"
+    },
+    "yawsTb": {
+      "name": "Yaws boiling points",
+      "path": "chemicals/Phase Change/Yaws Boiling Points.tsv",
+      "ref": "Yaws2014",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Phase%20Change/Yaws%20Boiling%20Points.tsv"
+    },
+    "yawsHfS0g": {
+      "name": "Yaws Hf S0 gas",
+      "path": "chemicals/Reactions/Yaws Hf S0 (g).tsv",
+      "ref": "Yaws2014",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Reactions/Yaws%20Hf%20S0%20%28g%29.tsv"
+    },
+    "polingLJ": {
+      "name": "Poling Lennard-Jones",
+      "path": "chemicals/Viscosity/PolingLJ.tsv",
+      "ref": "Poling5",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Viscosity/PolingLJ.tsv"
+    },
+    "magalhaesLJ": {
+      "name": "Magalhaes Lennard-Jones",
+      "path": "chemicals/Viscosity/MagalhaesLJ.tsv",
+      "ref": "Magalhaes2013",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Viscosity/MagalhaesLJ.tsv"
+    },
+    "poling": {
+      "name": "Poling databank",
+      "path": "chemicals/Heat Capacity/PolingDatabank.tsv",
+      "ref": "Poling5",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Heat%20Capacity/PolingDatabank.tsv"
+    },
+    "perry153Dippr100": {
+      "name": "Perry 2-153 DIPPR 100",
+      "path": "chemicals/Heat Capacity/Perry_Table_2-153_DIPPR_100.tsv",
+      "ref": "Perry8",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Heat%20Capacity/Perry_Table_2-153_DIPPR_100.tsv"
+    },
+    "perry153Dippr114": {
+      "name": "Perry 2-153 DIPPR 114",
+      "path": "chemicals/Heat Capacity/Perry_Table_2-153_DIPPR_114.tsv",
+      "ref": "Perry8",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Heat%20Capacity/Perry_Table_2-153_DIPPR_114.tsv"
+    },
+    "perry312": {
+      "name": "Perry 2-312",
+      "path": "chemicals/Viscosity/Table 2-312 Vapor Viscosity of Inorganic and Organic Substances.tsv",
+      "ref": "Perry8",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Viscosity/Table%202-312%20Vapor%20Viscosity%20of%20Inorganic%20and%20Organic%20Substances.tsv"
+    },
+    "perry313": {
+      "name": "Perry 2-313",
+      "path": "chemicals/Viscosity/Table 2-313 Viscosity of Inorganic and Organic Liquids.tsv",
+      "ref": "Perry8",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Viscosity/Table%202-313%20Viscosity%20of%20Inorganic%20and%20Organic%20Liquids.tsv"
+    },
+    "perry314": {
+      "name": "Perry 2-314",
+      "path": "chemicals/Thermal Conductivity/Table 2-314 Vapor Thermal Conductivity of Inorganic and Organic Substances.tsv",
+      "ref": "Perry8",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Thermal%20Conductivity/Table%202-314%20Vapor%20Thermal%20Conductivity%20of%20Inorganic%20and%20Organic%20Substances.tsv"
+    },
+    "trcGasCp": {
+      "name": "TRC gas Cp",
+      "path": "chemicals/Heat Capacity/TRC Thermodynamics of Organic Compounds in the Gas State.tsv",
+      "ref": "TRC1994",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Heat%20Capacity/TRC%20Thermodynamics%20of%20Organic%20Compounds%20in%20the%20Gas%20State.tsv"
+    },
+    "perry151": {
+      "name": "Perry 2-151",
+      "path": "chemicals/Heat Capacity/Perrys Table 2-151.tsv",
+      "ref": "Perry8",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Heat%20Capacity/Perrys%20Table%202-151.tsv"
+    },
+    "crcMoltenDensity": {
+      "name": "CRC molten densities",
+      "path": "chemicals/Density/CRC Inorganics densties of molten compounds and salts.tsv",
+      "ref": "CRC95",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Density/CRC%20Inorganics%20densties%20of%20molten%20compounds%20and%20salts.tsv"
+    },
+    "shomate": {
+      "name": "WebBook Shomate",
+      "path": "chemicals/Heat Capacity/webbook_shomate_coefficients.json",
+      "ref": "NISTWebBook",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Heat%20Capacity/webbook_shomate_coefficients.json"
+    },
+    "zabransky": {
+      "name": "Zabransky",
+      "path": "chemicals/Heat Capacity/Zabransky.tsv",
+      "ref": "Zabransky1996",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Heat%20Capacity/Zabransky.tsv"
+    },
+    "vdiGasViscosity": {
+      "name": "VDI gas viscosity",
+      "path": "chemicals/Viscosity/VDI PPDS Dynamic viscosity of gases polynomials.tsv",
+      "ref": "VDI2010",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Viscosity/VDI%20PPDS%20Dynamic%20viscosity%20of%20gases%20polynomials.tsv"
+    },
+    "vdiLiquidViscosity": {
+      "name": "VDI liquid viscosity",
+      "path": "chemicals/Viscosity/VDI PPDS Dynamic viscosity of saturated liquids polynomials.tsv",
+      "ref": "VDI2010",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Viscosity/VDI%20PPDS%20Dynamic%20viscosity%20of%20saturated%20liquids%20polynomials.tsv"
+    },
+    "vdiGasConductivity": {
+      "name": "VDI gas thermal conductivity",
+      "path": "chemicals/Thermal Conductivity/VDI PPDS Thermal conductivity of gases.tsv",
+      "ref": "VDI2010",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Thermal%20Conductivity/VDI%20PPDS%20Thermal%20conductivity%20of%20gases.tsv"
+    },
+    "vdiLiquidConductivity": {
+      "name": "VDI liquid thermal conductivity",
+      "path": "chemicals/Thermal Conductivity/VDI PPDS Thermal conductivity of saturated liquids.tsv",
+      "ref": "VDI2010",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Thermal%20Conductivity/VDI%20PPDS%20Thermal%20conductivity%20of%20saturated%20liquids.tsv"
+    },
+    "vdiLiquidDensity": {
+      "name": "VDI liquid density",
+      "path": "chemicals/Density/VDI PPDS Density of Saturated Liquids.tsv",
+      "ref": "VDI2010",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Density/VDI%20PPDS%20Density%20of%20Saturated%20Liquids.tsv"
+    },
+    "vdiEnthalpyVaporization": {
+      "name": "VDI enthalpy of vaporization",
+      "path": "chemicals/Phase Change/VDI PPDS Enthalpies of vaporization.tsv",
+      "ref": "VDI2010",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Phase%20Change/VDI%20PPDS%20Enthalpies%20of%20vaporization.tsv"
+    },
+    "vdiSurfaceTension": {
+      "name": "VDI surface tension",
+      "path": "chemicals/Interface/VDI PPDS surface tensions.tsv",
+      "ref": "VDI2010",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Interface/VDI%20PPDS%20surface%20tensions.tsv"
+    },
+    "vdiVaporPressure": {
+      "name": "VDI vapor pressure",
+      "path": "chemicals/Vapor Pressure/VDI PPDS Boiling temperatures at different pressures.tsv",
+      "ref": "VDI2010",
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Vapor%20Pressure/VDI%20PPDS%20Boiling%20temperatures%20at%20different%20pressures.tsv"
+    },
+    "idInorganic": {
+      "name": "Inorganic db",
+      "path": "chemicals/Identifiers/Inorganic db.tsv",
+      "ref": null,
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Identifiers/Inorganic%20db.tsv"
+    },
+    "idPubchemSmall": {
+      "name": "pubchem small",
+      "path": "chemicals/Identifiers/chemical identifiers pubchem small.tsv",
+      "ref": null,
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Identifiers/chemical%20identifiers%20pubchem%20small.tsv"
+    },
+    "idPubchemLarge": {
+      "name": "pubchem large",
+      "path": "chemicals/Identifiers/chemical identifiers pubchem large.tsv",
+      "ref": null,
+      "url": "https://github.com/CalebBell/chemicals/blob/e79047588b30cfabc564c79fb26d760c746877d7/chemicals/Identifiers/chemical%20identifiers%20pubchem%20large.tsv"
+    },
+    "idPubchemRestInorganic": {
+      "name": "PubChem REST (inorganic)",
+      "path": "shared/sources/compound-data/pubchem/pubchem-inorganic.jsonl",
+      "ref": null,
+      "url": null
+    },
+    "idPubchemRestOrganic": {
+      "name": "PubChem REST (organic)",
+      "path": "shared/sources/compound-data/pubchem/pubchem-organic.jsonl",
+      "ref": null,
+      "url": null
+    },
+    "idPubchemRestUnclassified": {
+      "name": "PubChem REST (unclassified)",
+      "path": "shared/sources/compound-data/pubchem/pubchem-unclassified.jsonl",
+      "ref": null,
+      "url": null
+    },
+    "white12": {
+      "name": "White Table 1-2",
+      "path": "shared/sources/transport-parameters.json",
+      "ref": "White3",
+      "url": null
+    },
+    "white13": {
+      "name": "White Table 1-3",
+      "path": "shared/sources/transport-parameters.json",
+      "ref": "White3",
+      "url": null
+    },
+    "whiteA6": {
+      "name": "White Table A-6",
+      "path": "shared/sources/transport-parameters.json",
+      "ref": "White3",
+      "url": null
+    },
+    "whiteA7": {
+      "name": "White Table A-7",
+      "path": "shared/sources/transport-parameters.json",
+      "ref": "White3",
+      "url": null
+    },
+    "itean1961T3": {
+      "name": "TN D-481 Table III",
+      "path": "shared/sources/transport-parameters.json",
+      "ref": "Itean1961",
+      "url": null
+    },
+    "mamedov2014T1": {
+      "name": "Mamedov 2014 Table 1",
+      "path": "shared/sources/transport-parameters.json",
+      "ref": "Mamedov2014",
+      "url": null
+    },
+    "hirschfelder1954LJ": {
+      "name": "Hirschfelder 1954 Lennard-Jones force constants",
+      "path": "shared/sources/transport-parameters.json",
+      "ref": "Hirschfelder1954",
+      "url": null
+    },
+    "svehla1995T1": {
+      "name": "Svehla 1995 Table I",
+      "path": "shared/sources/transport-parameters.json",
+      "ref": "Svehla1995",
+      "url": null
+    },
+    "nbsTables": {
+      "name": "NBS tables",
+      "path": "shared/sources/NBS/NBS_Tables_with_ErratumValues.csv",
+      "ref": "NBS1982",
+      "url": null
+    },
+    "moltenSaltDensity": {
+      "name": "Molten salt density",
+      "path": "shared/sources/NIST-molten-salts/density-csv.csv",
+      "ref": "NISTMoltenSalts",
+      "url": null
+    },
+    "moltenSaltSurfaceTension": {
+      "name": "Molten salt surface tension",
+      "path": "shared/sources/NIST-molten-salts/s-tension-csv.csv",
+      "ref": "NISTMoltenSalts",
+      "url": null
+    },
+    "moltenSaltViscosity": {
+      "name": "Molten salt viscosity",
+      "path": "shared/sources/NIST-molten-salts/viscosity-csv.txt",
+      "ref": "NISTMoltenSalts",
+      "url": null
+    },
+    "perry7Gas": {
+      "name": "Perry's Chemical Engineers' Handbook 7th ed.",
+      "path": "shared/sources/book-gas-equations.json",
+      "ref": "Perry7",
+      "url": null
+    },
+    "borgnakkeGas": {
+      "name": "Borgnakke & Sonntag — Thermodynamic and Transport Properties",
+      "path": "shared/sources/book-gas-equations.json",
+      "ref": "Borgnakke",
+      "url": null
+    },
+    "yaws1999Gas": {
+      "name": "Yaws — Chemical Properties Handbook",
+      "path": "shared/sources/book-gas-equations.json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "incroperaGas": {
+      "name": "Incropera et al. — Fundamentals of Heat and Mass Transfer 6th ed.",
+      "path": "shared/sources/book-gas-equations.json",
+      "ref": "Incropera",
+      "url": null
+    },
+    "szargutGas": {
+      "name": "Szargut — Termodynamika Techniczna",
+      "path": "shared/sources/book-gas-equations.json",
+      "ref": "Szargut",
+      "url": null
+    },
+    "yaws1999Table1_1": {
+      "name": "CRITICAL PROPERTIES AND ACENTRIC FACTOR - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Critical_properties_and_acentric_factor_of_organic_compounds_(table_1-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table1_2": {
+      "name": "CRITICAL PROPERTIES AND ACENTRIC FACTOR - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Critical_properties_and_acentric_factor_of_inorganic_compounds_(table_1-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table2_1": {
+      "name": "HEAT CAPACITY OF GAS - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Heat_capacity_of_gas_of_organic_compounds_(table_2-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table2_2": {
+      "name": "HEAT CAPACITY OF GAS - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Heat_capacity_of_gas_of_inorganic_compounds_(table_2-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table3_1": {
+      "name": "HEAT CAPACITY OF LIQUID - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Heat_capacity_of_liquid_of_organic_compounds_(table_3-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table3_2": {
+      "name": "HEAT CAPACITY OF LIQUID - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Heat_capacity_of_liquid_of_inorganic_compounds_(table_3-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table4_1": {
+      "name": "HEAT CAPACITY OF SOLID - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Heat_capacity_of_solid_of_organic_compounds_(table_4-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table4_2": {
+      "name": "HEAT CAPACITY OF SOLID - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Heat_capacity_of_solid_of_inorganic_compounds_(table_4-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table5_1": {
+      "name": "ENTHALPY OF VAPORIZATION - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Enthalpy_of_vaporization_of_organic_compounds_(table_5-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table5_2": {
+      "name": "ENTHALPY OF VAPORIZATION - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Enthalpy_of_vaporization_of_inorganic_compounds_(table_5-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table6_1": {
+      "name": "ENTHALPY OF FUSION - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Enthalpy_of_fusion_of_organic_compounds_(table_6-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table6_2": {
+      "name": "ENTHALPY OF FUSION - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Enthalpy_of_fusion_of_inorganic_compounds_(table_6-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table7_1": {
+      "name": "VAPOR PRESSURE - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Vapor_pressure_of_organic_compounds_(table_7-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table7_2": {
+      "name": "VAPOR PRESSURE - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Vapor_pressure_of_inorganic_compounds_(table_7-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table8_1": {
+      "name": "DENSITY OF LIQUID - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Density_of_liquid_of_organic_compounds_(table_8-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table8_2": {
+      "name": "DENSITY OF LIQUID - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Density_of_liquid_of_inorganic_compounds_(table_8-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table9_1": {
+      "name": "SURFACE TENSION - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Surface_tension_of_organic_compounds_(table_9-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table9_2": {
+      "name": "SURFACE TENSION - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Surface_tension_of_inorganic_compounds_(table_9-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table10_1": {
+      "name": "REFRACTIVE INDEX, DIPOLE MOMENT, AND RADIUS OF GYRATION - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Refractive_index_dipole_moment_and_radius_of_gyration_of_organic_compounds_(table_10-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table10_2": {
+      "name": "REFRACTIVE INDEX, DIPOLE MOMENT, AND RADIUS OF GYRATION - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Refractive_index_dipole_moment_and_radius_of_gyration_of_inorganic_compounds_(table_10-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table11_1": {
+      "name": "ENTROPY AND ENTROPY OF FORMATION OF GAS - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Entropy_and_entropy_of_formation_of_gas_of_organic_compounds_(table_11-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table11_2": {
+      "name": "ENTROPY AND ENTROPY OF FORMATION OF GAS - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Entropy_and_entropy_of_formation_of_gas_of_inorganic_compounds_(table_11-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table12_1": {
+      "name": "ENTHALPY OF FORMATION OF GAS - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Enthalpy_of_formation_of_gas_of_organic_compounds_(table_12-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table12_2": {
+      "name": "ENTHALPY AND INTERNAL ENERGY OF FORMATION - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Enthalpy_and_internal_energy_of_formation_of_inorganic_compounds_(table_12-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table13_1": {
+      "name": "GIBBS ENERGY OF FORMATION OF GAS - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Gibbs_energy_of_formation_of_gas_of_organic_compounds_(table_13-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table13_2": {
+      "name": "GIBBS AND HELMHOLTZ ENERGY OF FORMATION - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Gibbs_and_helmholtz_energy_of_formation_of_inorganic_compounds_(table_13-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table14_1": {
+      "name": "SOLUBILITY PARAMETER, LIQUID VOLUME, AND VAN DER WAALS AREA AND VOLUME - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Solubility_parameter_liquid_volume_and_van_der_waals_area_and_volume_of_organic_compounds_(table_14-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table14_2": {
+      "name": "SOLUBILITY PARAMETER, LIQUID VOLUME, AND VAN DER WAALS AREA AND VOLUME - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Solubility_parameter_liquid_volume_and_van_der_waals_area_and_volume_of_inorganic_compounds_(table_14-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table15_1": {
+      "name": "SOLUBILITY IN WATER AND OCTANOL-WATER PARTITION COEFFICIENT- ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Solubility_in_water_and_octanol_of_water_partition_coefficient_of_organic_compounds_(table_15-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table16_1": {
+      "name": "SOLUBILITY IN SALT WATER - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Solubility_in_salt_water_of_organic_compounds_(table_16-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table17_1": {
+      "name": "SOLUBILITY IN WATER - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Solubility_in_water_of_organic_compounds_(table_17-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table18_1": {
+      "name": "HENRY'S LAW CONSTANT FOR COMPOUND IN WATER - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Henry_s_law_constant_for_compound_in_water_of_organic_compounds_(table_18-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table19_1": {
+      "name": "ADSORPTION CAPACITY OF ACTIVATED CARBON",
+      "path": "shared/processed/yaws1999/tables/Adsorption_capacity_of_activated_carbon_(table_19-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table20_1": {
+      "name": "SOIL SORPTION COEFFICIENT - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Soil_sorption_coefficient_of_organic_compounds_(table_20-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table21_1": {
+      "name": "VISCOSITY OF GAS - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Viscosity_of_gas_of_organic_compounds_(table_21-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table21_2": {
+      "name": "VISCOSITY OF GAS - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Viscosity_of_gas_of_inorganic_compounds_(table_21-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table22_1": {
+      "name": "VISCOSITY OF LIQUID - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Viscosity_of_liquid_of_organic_compounds_(table_22-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table22_2": {
+      "name": "VISCOSITY OF LIQUID - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Viscosity_of_liquid_of_inorganic_compounds_(table_22-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table23_1": {
+      "name": "THERMAL CONDUCTIVITY OF GAS - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Thermal_conductivity_of_gas_of_organic_compounds_(table_23-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table23_2": {
+      "name": "THERMAL CONDUCTIVITY OF GAS - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Thermal_conductivity_of_gas_of_inorganic_compounds_(table_23-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table24_1": {
+      "name": "THERMAL CONDUCTIVITY OF LIQUID - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Thermal_conductivity_of_liquid_of_organic_compounds_(table_24-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table24_2": {
+      "name": "THERMAL CONDUCTIVITY OF LIQUID AND SOLID - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Thermal_conductivity_of_liquid_and_solid_of_inorganic_compounds_(table_24-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table25_1": {
+      "name": "EXPLOSION LIMITS IN AIR, FLASH POINT, AND AUTOIGNITION TEMPERATURE - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Explosion_limits_in_air_flash_point_and_autoignition_temperature_of_organic_compounds_(table_25-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table25_2": {
+      "name": "EXPLOSION LIMITS IN AIR, FLASH POINT, AND AUTOIGNITION TEMPERATURE - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Explosion_limits_in_air_flash_point_and_autoignition_temperature_of_inorganic_compounds_(table_25-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table26_1": {
+      "name": "ENTHALPY OF COMBUSTION - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Enthalpy_of_combustion_of_organic_compounds_(table_26-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table27_1": {
+      "name": "EXPOSURE LIMITS - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Exposure_limits_of_organic_compounds_(table_27-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table27_2": {
+      "name": "EXPOSURE LIMITS - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Exposure_limits_of_inorganic_compounds_(table_27-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table28_1": {
+      "name": "COEFFICIENT OF THERMAL EXPANSION - ORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Coefficient_of_thermal_expansion_of_organic_compounds_(table_28-1).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "yaws1999Table28_2": {
+      "name": "COEFFICIENT OF THERMAL EXPANSION - INORGANIC COMPOUNDS",
+      "path": "shared/processed/yaws1999/tables/Coefficient_of_thermal_expansion_of_inorganic_compounds_(table_28-2).json",
+      "ref": "Yaws1999",
+      "url": null
+    },
+    "huber2019Viscosity": {
+      "name": "Huber — Viscosity of Gases (CRC Handbook, 2019)",
+      "path": "shared/sources/viscosity-gases-huber-2019.json",
+      "ref": "Huber2019",
+      "url": null
+    }
+  },
+  "janaf": {
+    "ref": "NISTJANAF",
+    "repository": "https://github.com/n-takumasa/py-janaf",
+    "sourceCommit": "c8ed6be3ba31a61835061091bd3c521270b484ec",
+    "dataset": "shared/processed/JANAF/index.json",
+    "tableUrl": "https://github.com/n-takumasa/py-janaf/blob/c8ed6be3ba31a61835061091bd3c521270b484ec/src/janaf/data/{id}.txt",
+    "nistUrl": "https://janaf.nist.gov/tables/{id}.html"
+  },
+  "nasa": {
+    "nasa7": {
+      "ref": "NASA7",
+      "dataset": "shared/processed/NASA/nasa7.json",
+      "sources": [
+        "shared/sources/NASA/nasa7-origin.dat"
+      ]
+    },
+    "nasa9": {
+      "ref": "NASA9",
+      "dataset": "shared/processed/NASA/nasa9.json",
+      "sources": [
+        "shared/sources/NASA/nasa9-origin.dat",
+        "shared/sources/NASA/nasa9-new.dat"
+      ]
+    }
+  },
+  "pubchem": {
+    "api": "https://pubchem.ncbi.nlm.nih.gov/rest/pug",
+    "cache": "shared/sources/compound-data/pubchem",
+    "compoundUrl": "https://pubchem.ncbi.nlm.nih.gov/compound/{cid}",
+    "references": "shared/sources/compound-data/pubchem/pubchem-references.jsonl",
+    "ref": "pubchem{refNumber}",
+    "refNote": "pubchem151 is refNumber 151 in references (source, refCode). The same refNumber is on the citation in the class file (pubchem-inorganic.jsonl or pubchem-organic.jsonl). It is not a key of the main references database."
+  },
+  "coolprop": {
+    "ref": "CoolProp",
+    "dataset": "shared/sources/coolprop/fluids",
+    "sources": [
+      "shared/sources/coolprop/fluids"
+    ]
+  }
+}

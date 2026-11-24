@@ -1,0 +1,65 @@
+{
+  "system": "Al2O3-MgO",
+  "components": ["Al2O3", "MgO"],
+  "output": "systems/al2o3-mgo.json",
+  "idPrefix": "am",
+  "source": {
+    "ref": "slag-atlas-1995",
+    "figure": "Fig. 3.30",
+    "diagram": "Al2O3-MgO phase diagram based mainly on the results of Rankin, Merwin [1], Alper et al. [2] (sub-system MgO-MgO·Al2O3) and Viechnicki et al. [3] (sub-system Al2O3-MgO·Al2O3)",
+    "printedPage": 44,
+    "pdfPage": 64,
+    "caption": "Atlas text (printed p. 44): solid-state boundaries re-investigated by Roy, Coble [4] and Ando, Momoda [5] (solubility of MgO in Al2O3), Stubican, Roy [6], Henriksen, Kingery [7] and Mori [8] (solubility of Al2O3 in MgO), Roy et al. [9], Shirasuka, Yamaguchi [10], Viertel, Seifert [11] and Panda, Raj [12] (MgO·Al2O3 phase boundary). Solubility of Al2O3 in MgO determined by Alper et al. [2] confirmed with minor changes in [6-8]. Maximum solubility of MgO in Al2O3 does not exceed 0.001 mass% [5]. Thermodynamic evaluations: Hallstedt, Hillert [16], Howald, Roy [17], Hallstedt [18], Eriksson et al. [19]. 'In the last assessment made by Hallstedt [18], a minimum on the MgO·Al2O3 liquidus curve instead of a eutectic between MgO·Al2O3 and Al2O3 has been proposed.' References: [1] G. A. Rankin, H. E. Merwin, J. Am. Chem. Soc. 38 (1916) 568/88; [2] A. M. Alper, R. N. McNally, P. H. Ribbe, R. C. Doman, J. Am. Ceram. Soc. 45 (1962) 263/8; [3] D. Viechnicki, F. Schmid, J. W. McCauley, J. Am. Ceram. Soc. 57 (1974) 47/8; [18] B. Hallstedt, Report TRITA-MAC-0399, Royal Institute of Technology, Stockholm (1989)."
+  },
+  "frameSearchBox": [1300, 1750, 3100, 3100],
+  "axes": {
+    "x": { "component": "MgO", "ticks": [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] },
+    "y": { "ticks": [2800, 2600, 2400, 2200, 2000, 1800, 1600, 1400, 1200] }
+  },
+  "phases": ["corundum", "spinel", "periclase"],
+  "endMembers": {
+    "corundum": { "x": 0, "labelTemperature": 2053 },
+    "periclase": { "x": 100, "labelTemperature": 2822 }
+  },
+  "invariants": [
+    { "id": "am-1975", "type": "binary", "reaction": "eutectic", "phases": ["corundum", "spinel"],
+      "label": { "temperature": 1975, "composition": 4 },
+      "seedPixel": [1530, 2515], "nbs": [6077, 6097],
+      "notes": "Both NBS entries are approximate and differ from each other by 75 °C; the atlas value lies between them. Spinel at the eutectic is the Al2O3-rich solid solution (printed '6.5' mass% MgO). The atlas text reports that Hallstedt's assessment proposes a liquidus minimum instead of a eutectic here. Fig. 3.187 edge: 97.6 wt% Al2O3, no temperature (mas-edge-spinel-corundum)." },
+    { "id": "am-spinel-melting", "type": "compound-melting", "reaction": null, "phases": ["spinel"],
+      "label": { "temperature": 2105, "composition": null },
+      "seedPixel": [1893, 2437], "nbs": [],
+      "notes": "Congruent. Fig. 3.187 prints '~2135'." },
+    { "id": "am-1995", "type": "binary", "reaction": "eutectic", "phases": ["spinel", "periclase"],
+      "label": { "temperature": 1995, "composition": 45 },
+      "seedPixel": [2141, 2509], "nbs": [6095, 6096],
+      "notes": "Solid phases at the eutectic: spinel ss at 39 and periclase ss at 82 mass% MgO (printed labels). Fig. 3.187 edge prints 1850 °C at 45.2 wt% MgO (mas-edge-periclase-spinel)." }
+  ],
+  "liquidus": [
+    { "phase": "corundum", "from": "end:corundum", "to": "am-1975",
+      "segments": [ { "kind": "trace", "seedPixel": [1498, 2482] } ],
+      "grid": [0, 1, 2, 3, 4] },
+    { "phase": "spinel", "from": "am-1975", "to": "am-spinel-melting",
+      "segments": [ { "kind": "trace", "seedPixel": [1557, 2499], "waypoints": [[1707, 2454]] } ],
+      "grid": [5, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26] },
+    { "phase": "spinel", "from": "am-spinel-melting", "to": "am-1995",
+      "segments": [ { "kind": "trace", "seedPixel": [2037, 2469] } ],
+      "grid": [30, 32, 34, 36, 38, 40, 42, 44] },
+    { "phase": "periclase", "from": "am-1995", "to": "end:periclase",
+      "segments": [ { "kind": "trace", "seedPixel": [2519, 2222] } ],
+      "grid": [46, 48, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 98, 100] }
+  ],
+  "junctionTolerance_wt": 1.5,
+  "verbatim": {
+    "solidSolutions": [
+      { "phase": "spinel", "modelledAs": "MgO·Al2O3 (stoichiometric)",
+        "range_wt_MgO": [ { "temperature_C": 1975, "from": 6.5, "to": null }, { "temperature_C": 1995, "from": null, "to": 39 } ],
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.30", "printedPage": 44, "pdfPage": 64, "read": "printed labels '6.5' (Al2O3-rich limit at the corundum eutectic) and '39' (MgO-rich limit at the periclase eutectic)" },
+        "notes": "Wide Al2O3-rich solubility at high temperature (to 93.5 wt% Al2O3), narrowing on cooling (dashed solvus). The '6.5' label is circled by hand in the scan." },
+      { "phase": "periclase", "modelledAs": "MgO (stoichiometric)",
+        "range_wt_MgO": [ { "temperature_C": 1995, "from": 82, "to": 100 } ],
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.30", "printedPage": 44, "pdfPage": 64, "read": "printed label '82.' at the end of the eutectic line" },
+        "notes": "Up to 18 wt% Al2O3 dissolved in MgO at the eutectic (Alper et al. [2]); solvus falls steeply on cooling." }
+    ]
+  }
+}

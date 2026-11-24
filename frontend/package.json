@@ -6,7 +6,19 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint src tests --report-unused-disable-directives --max-warnings 0",
+    "lint:refactor": "LINT_REFACTOR=1 eslint src",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "test": "vitest run --project unit --project component --project smoke",
+    "test:unit": "vitest run --project unit",
+    "test:component": "vitest run --project component",
+    "test:smoke": "vitest run --project smoke",
+    "test:contract": "vitest run --project contract --passWithNoTests",
+    "test:watch": "vitest --project unit --project component",
+    "fixtures:record": "RECORD_FIXTURES=1 vitest run --project smoke",
+    "duplication": "jscpd src --config .jscpd.json",
+    "verify": "node scripts/verify.mjs",
+    "verify:offline": "node scripts/verify.mjs --offline"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -15,6 +27,8 @@
     "@mui/material": "^7.3.7",
     "@tanstack/react-query": "^5.90.20",
     "axios": "^1.13.4",
+    "highcharts": "^13.1.1",
+    "highcharts-react-official": "^3.2.3",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.71.1",
@@ -22,15 +36,24 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
+    "@types/node": "^24.19.0",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
-    "@typescript-eslint/eslint-plugin": "^8.54.0",
-    "@typescript-eslint/parser": "^8.54.0",
     "@vitejs/plugin-react": "^5.1.2",
-    "eslint": "^9.39.2",
-    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint": "^10.11.0",
+    "eslint-plugin-check-file": "^3.3.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.0",
+    "globals": "^17.12.0",
+    "jscpd": "^5.4.0",
+    "jsdom": "^29.1.1",
     "typescript": "^5.9.3",
-    "vite": "^7.3.1"
+    "typescript-eslint": "^8.71.0",
+    "vite": "^7.3.1",
+    "vitest": "^5.0.3"
   }
 }

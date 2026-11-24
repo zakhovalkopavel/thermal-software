@@ -9,16 +9,17 @@
 `CompoundValue` stores multiple approximations per property in buckets:
 
 ```typescript
-// interfaces/compound-value.interface.ts
-interface CompoundValue {
-  nasa7?: Nasa7Equation;            // top-level — covers Cp, H, S, G simultaneously
-  heatCapacity: { def: number; values: EquationValue[] };
+// types/compound-value.type.ts — NASA via nasa7Key/nasa9Key (not inlined coeffs)
+type CompoundValue = {
+  nasa7Key?: string;
+  nasa9Key?: string;
+  heatCapacity?: { def: number; values: EquationValue[] };
   viscosity:    { def: number; values: EquationValue[] };
   thermalConductivity: { def: number; values: EquationValue[] };
-}
+};
 
-// interfaces/equation-value.interface.ts
-interface EquationValue {
+// types/equation-value.type.ts
+type EquationValue = {
   type: EquationTypeDto;   // selects the evaluation class
   ref:  RefKey;            // enum → docs/REFERENCES.md — never a raw number
   page?: number;
@@ -26,7 +27,7 @@ interface EquationValue {
   min: number;             // valid T range [K]
   max: number;
   k?: number;              // optional post-multiply scaling factor
-}
+};
 ```
 
 Each property bucket carries multiple entries from different sources. `def` picks the default.

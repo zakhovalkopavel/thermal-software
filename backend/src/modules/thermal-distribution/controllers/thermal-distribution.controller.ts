@@ -1,16 +1,12 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ThermalDistributionService } from '../services/thermal-distribution.service';
-import {
-  ProfileRequestDto,
-  ProfileAtDepthsRequestDto,
-  TemperatureAtDepthResultDto,
-  TemperatureProfileResultDto,
-  AverageTemperatureResultDto,
-  ThermalCriteriaDto,
-} from '../dto/profile-request.dto';
-import type { ProfileOptions } from '../type/profile-options.type';
-import type { AverageOptions } from '../type/average-options.type';
+import { ProfileRequestDto } from '../dto/profile-request.dto';
+import { ProfileAtDepthsRequestDto } from '../dto/profile-at-depths-request.dto';
+import { TemperatureAtDepthResultDto } from '../dto/temperature-at-depth-result.dto';
+import { TemperatureProfileResultDto } from '../dto/temperature-profile-result.dto';
+import { AverageTemperatureResultDto } from '../dto/average-temperature-result.dto';
+import { ThermalCriteriaDto } from '../dto/thermal-criteria.dto';
 
 @ApiTags('thermal-distribution')
 @Controller('thermal-distribution')
@@ -22,8 +18,9 @@ export class ThermalDistributionController {
   @Post('criteria')
   @ApiOperation({ summary: 'Compute Bi, Fo, Rdist, Rbi for given configuration' })
   @ApiBody({ type: ProfileRequestDto })
+  @ApiCreatedResponse({ type: ThermalCriteriaDto })
   computeCriteria(@Body() dto: ProfileRequestDto): ThermalCriteriaDto {
-    return this.service.computeCriteria(toOpts(dto));
+    return this.service.computeCriteria(this.service.toProfileOptions(dto));
   }
 
   // ── Temperature at depth ────────────────────────────────────────────────────
@@ -46,11 +43,12 @@ export class ThermalDistributionController {
       },
     },
   })
+  @ApiCreatedResponse({ type: TemperatureAtDepthResultDto })
   temperatureAtDepth(
     @Body() dto: ProfileRequestDto & { relDepth?: number },
   ): TemperatureAtDepthResultDto {
-    const opts = toOpts(dto);
-    const relDepth = (dto as any).relDepth ?? 0;
+    const opts = this.service.toProfileOptions(dto);
+    const relDepth = (dto as { relDepth?: number }).relDepth ?? 0;
     const temperature = this.service.temperatureAtDepth(relDepth, opts);
     const criteria    = this.service.computeCriteria(opts);
     return { temperature, criteria };
@@ -61,8 +59,9 @@ export class ThermalDistributionController {
   @Post('temperature/profile')
   @ApiOperation({ summary: 'Temperature distribution over an array of normalised depths' })
   @ApiBody({ type: ProfileAtDepthsRequestDto })
+  @ApiCreatedResponse({ type: TemperatureProfileResultDto })
   temperatureProfile(@Body() dto: ProfileAtDepthsRequestDto): TemperatureProfileResultDto {
-    const opts = toOpts(dto);
+    const opts = this.service.toProfileOptions(dto);
     const temperatures = this.service.temperatureProfile(dto.relativeDepths, opts);
     const criteria     = this.service.computeCriteria(opts);
     return { temperatures, criteria };
@@ -73,39 +72,11 @@ export class ThermalDistributionController {
   @Post('temperature/average')
   @ApiOperation({ summary: 'Volume-average temperature T̄(τ)' })
   @ApiBody({ type: ProfileRequestDto })
+  @ApiCreatedResponse({ type: AverageTemperatureResultDto })
   averageTemperature(@Body() dto: ProfileRequestDto): AverageTemperatureResultDto {
-    const opts = toOpts(dto);
+    const opts = this.service.toProfileOptions(dto);
     const temperature = this.service.averageTemperature(opts);
     const criteria    = this.service.computeCriteria(opts);
     return { temperature, criteria };
   }
-}
-
-// ── DTO → ProfileOptions adapter ───────────────────────────────────────────────
-
-function toOpts(dto: ProfileRequestDto): ProfileOptions {
-  const avgDto = dto.avg;
-  const avg: AverageOptions = {
-    mode:        avgDto?.mode        ?? 'series',
-    gaussNodes:  avgDto?.gaussNodes  ?? 32,
-    simpsonNodes: avgDto?.simpsonNodes ?? 128,
-  };
-  return {
-    bcType:            dto.bcType,
-    Tc:                dto.Tc,
-    T0:                dto.T0,
-    tau:               dto.tau,
-    alpha:             dto.alpha,
-    lambda:            dto.lambda,
-    thermalDiffusivity: dto.thermalDiffusivity,
-    shape:             dto.shape,
-    rDistMode:         dto.rDistMode,
-    initialProfile:    dto.initialProfile,
-    T0Ctr:             dto.T0Ctr,
-    T0Surf:            dto.T0Surf,
-    biPerAxis:         dto.biPerAxis,
-    biCylinder:        dto.biCylinder,
-    seriesTerms:       dto.seriesTerms,
-    avg,
-  };
 }

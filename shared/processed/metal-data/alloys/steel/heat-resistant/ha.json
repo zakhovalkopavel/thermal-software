@@ -1,0 +1,92 @@
+{
+  "materialId": "ha",
+  "name": "HA",
+  "group": "steel",
+  "family": "heat-resistant",
+  "aliases": {
+    "trade": "HA"
+  },
+  "composition": {},
+  "condition": null,
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "heat_resistent_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 26.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 27.2
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "heat_resistent_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 813.15,
+          "value": 12.8
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "heat_resistent_steel.json"
+  ],
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-1524",
+        "mode": "full-series",
+        "why": "ha doesn't have electricalResistivity points; link sae-1524 series (same group steel; ElMD=0.190705, L1=1.735 wt% [ΔMn=1.475%; ΔC=0.215%; ΔS=0.025%; ΔP=0.02%])",
+        "compositionDistance": 0.190705,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-1008",
+        "mode": "full-series",
+        "why": "ha doesn't have specificHeat points; link sae-1008 series (same group steel; ElMD=0.058509, L1=0.495 wt% [ΔMn=0.4%; ΔC=0.05%; ΔS=0.025%; ΔP=0.02%])",
+        "compositionDistance": 0.058509,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "sae-1008",
+        "mode": "scaled-series",
+        "why": "only 2 own points; link scaled sae-1008 curve (same group steel; ElMD=0.058509, L1=0.495 wt% [ΔMn=0.4%; ΔC=0.05%; ΔS=0.025%; ΔP=0.02%])",
+        "compositionDistance": 0.058509,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.52636697,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 5.56166083,
+          "maxRelPct": 23.90901
+        }
+      },
+      "thermalExpansion": {
+        "materialId": "sae-1008",
+        "mode": "full-series",
+        "why": "only 1 thermalExpansion point; link sae-1008 series (same group steel; ElMD=0.058509, L1=0.495 wt% [ΔMn=0.4%; ΔC=0.05%; ΔS=0.025%; ΔP=0.02%])",
+        "compositionDistance": 0.058509,
+        "distanceMetric": "ElMD-mod_petti"
+      }
+    }
+  }
+}

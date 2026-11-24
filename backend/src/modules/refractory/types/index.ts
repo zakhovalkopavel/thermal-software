@@ -1,0 +1,125 @@
+export type { PSDFraction } from './psd-fraction.type';
+export type { PSDCalculationOptions } from './psd-calculation-options.type';
+export type { PSDCalculationRequest } from './psd-calculation-request.type';
+export type { PSDResult } from './psd-result.type';
+export type { PSDValidationResult } from './psd-validation-result.type';
+export type { PSDValidationError } from './psd-validation-error.type';
+export type { PSDValidationWarning } from './psd-validation-warning.type';
+
+export type { PackingInput } from './packing-input.type';
+export type { CPMCalibration } from './cpm-calibration.type';
+export type { CPMInput } from './cpm-input.type';
+export type { MaterialBasis } from './material-basis.type';
+export type { FurnasInput } from './furnas-input.type';
+export type { PackingResult } from './packing-result.type';
+export type { PackingResultDetailed } from './packing-result-detailed.type';
+export type { PackingValidationResult } from './packing-validation-result.type';
+export type { PackingValidationError } from './packing-validation-error.type';
+export type { PackingValidationWarning } from './packing-validation-warning.type';
+export type { SortedFractions } from './sorted-fractions.type';
+export type { CompositionCharacteristics } from './composition-characteristics.type';
+
+export type { ShrinkageMaterial } from './shrinkage-material.type';
+export type { CementType } from './cement-type.type';
+export type { ShrinkageInput } from './shrinkage-input.type';
+export type { ShrinkageStage } from './shrinkage-stage.type';
+export type { DryingShrinkage } from './drying-shrinkage.type';
+export type { FiringShrinkage } from './firing-shrinkage.type';
+export type { ShrinkageResult } from './shrinkage-result.type';
+export type { ShrinkageMetadata } from './shrinkage-metadata.type';
+export type { ShrinkageValidationResult } from './shrinkage-validation-result.type';
+export type { ShrinkageValidationError } from './shrinkage-validation-error.type';
+export type { ShrinkageValidationWarning } from './shrinkage-validation-warning.type';
+
+export type { Fraction } from './fraction.type';
+export type { BlendOptimizationOptions } from './blend-optimization-options.type';
+export type { BlendOptimizationRequest } from './blend-optimization-request.type';
+export type { BlendOptimizationResult } from './blend-optimization-result.type';
+export type { BlendOptimizationResults } from './blend-optimization-results.type';
+export type { ViableCompositionRange } from './viable-composition-range.type';
+export type { ValidationResult } from './validation-result.type';
+export type { ValidationError } from './validation-error.type';
+export type { ValidationWarning } from './validation-warning.type';
+// Blend-local PSDResult / PackingResult: import from
+// ./blend-optimizer-psd-result.type and ./blend-optimizer-packing-result.type
+// (same names as calculator types; not re-exported here to avoid collision).
+
+export type { PhaseEquilibriumInput } from './phase-equilibrium-input.type';
+export type { PhaseComponent } from './phase-component.type';
+export type { MineralPhase } from './mineral-phase.type';
+export type { PhaseData } from './phase-data.type';
+export type { SolidPhaseData } from './solid-phase-data.type';
+export type { PhaseEquilibriumMetadata } from './phase-equilibrium-metadata.type';
+export type { PhaseEquilibriumResult } from './phase-equilibrium-result.type';
+export type { PhaseEquilibriumValidationResult } from './phase-equilibrium-validation-result.type';
+export type { PhaseEquilibriumValidationError } from './phase-equilibrium-validation-error.type';
+export type { PhaseEquilibriumValidationWarning } from './phase-equilibrium-validation-warning.type';
+export type { EutecticPoint } from './eutectic-point.type';
+export type { EutecticSystemPoint } from './eutectic-system-point.type';
+export type { LiquidusResult } from './liquidus-result.type';
+
+export type { MineralPhaseData } from './mineral-phase-data.type';
+export type { MineralPhaseInput } from './mineral-phase-input.type';
+export type { MineralPhaseResult } from './mineral-phase-result.type';
+export type { MineralPhaseMetadata } from './mineral-phase-metadata.type';
+export type { PhaseDistribution } from './phase-distribution.type';
+export type { PhaseStability } from './phase-stability.type';
+export type { MineralPhaseValidationResult } from './mineral-phase-validation-result.type';
+export type { MineralPhaseValidationError } from './mineral-phase-validation-error.type';
+export type { MineralPhaseValidationWarning } from './mineral-phase-validation-warning.type';
+export type { PhaseTemperatureComparison } from './phase-temperature-comparison.type';
+
+export type { RefractorinessStandard } from './refractoriness-standard.type';
+export type { RefractorinessInput } from './refractoriness-input.type';
+export type { ISO1893Result } from './iso1893-result.type';
+export type { ASTMC24Result } from './astm-c24-result.type';
+export type { GOST4069Result } from './gost-4069-result.type';
+export type { DutyClassification } from './duty-classification.type';
+export type { RefractorinessResult } from './refractoriness-result.type';
+export type { ComponentRefractorinesEffect } from './component-refractorines-effect.type';
+export type { RefractorinessMetadata } from './refractoriness-metadata.type';
+export type { RefractorinessValidationResult } from './refractoriness-validation-result.type';
+export type { RefractorinessValidationError } from './refractoriness-validation-error.type';
+export type { RefractorinessValidationWarning } from './refractoriness-validation-warning.type';
+export type { RefractorinessComparison } from './refractoriness-comparison.type';
+
+export type { ThermalInput } from './thermal-input.type';
+export type { ThermalConductivityInput } from './thermal-conductivity-input.type';
+export type { SpecificHeatInput } from './specific-heat-input.type';
+export type { ThermalExpansionInput } from './thermal-expansion-input.type';
+export type { ComponentThermalProperties } from './component-thermal-properties.type';
+export type { WeightedThermalProperty } from './weighted-thermal-property.type';
+export type { ThermalConductivityResult } from './thermal-conductivity-result.type';
+export type { SpecificHeatResult } from './specific-heat-result.type';
+export type { ThermalExpansionResult } from './thermal-expansion-result.type';
+export type { ThermalPerformanceResult } from './thermal-performance-result.type';
+export type { ThermalPerformanceMetadata } from './thermal-performance-metadata.type';
+export type { ThermalValidationResult } from './thermal-validation-result.type';
+export type { ThermalValidationError } from './thermal-validation-error.type';
+export type { ThermalValidationWarning } from './thermal-validation-warning.type';
+export type { TemperatureDependentProperty } from './temperature-dependent-property.type';
+export type { PropertyCurve } from './property-curve.type';
+
+export type { GlassViscosityInput } from './glass-viscosity-input.type';
+export type { ASTMFixedPoint } from './astm-fixed-point.type';
+export type { ModelParameters } from './model-parameters.type';
+export type { ModelInfo } from './model-info.type';
+export type { FixedPointSpans } from './fixed-point-spans.type';
+export type { FixedPoints } from './fixed-points.type';
+export type { CompositionIssue } from './composition-issue.type';
+export type { ValidationStatus } from './validation-status.type';
+export type { ComponentEffect } from './component-effect.type';
+export type { ComponentBreakdown } from './component-breakdown.type';
+export type { GlassViscosityMetadata } from './glass-viscosity-metadata.type';
+export type { GlassViscosityResult } from './glass-viscosity-result.type';
+export type { GlassProcessingWindow } from './glass-processing-window.type';
+export type { GlassViscosityValidationResult } from './glass-viscosity-validation-result.type';
+export type { GlassViscosityValidationError } from './glass-viscosity-validation-error.type';
+export type { GlassViscosityValidationWarning } from './glass-viscosity-validation-warning.type';
+
+export type { VtfPoint } from './vtf-point.type';
+export type { VtfParameters } from './vtf-parameters.type';
+export type { LakatosIsokoms } from './lakatos-isokoms.type';
+export type { FluegelIsokoms } from './fluegel-isokoms.type';
+export type { SlagViscosityResult } from './slag-viscosity-result.type';
+export type { ModelSelectionResult } from './model-selection-result.type';

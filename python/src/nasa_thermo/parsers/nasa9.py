@@ -27,7 +27,7 @@ from nasa_thermo.nasa9_coeffs   import Nasa9Coeffs
 from nasa_thermo.nasa9_equation import Nasa9Equation
 from nasa_thermo.nasa9_range    import Nasa9Range
 from nasa_thermo.nasa9_species  import Nasa9Species
-from nasa_thermo.utils import parse_d
+from nasa_thermo.utils import parse_d, parse_element_slots
 
 logger = logging.getLogger(__name__)
 
@@ -154,10 +154,11 @@ def _parse_file(
             errors += 1
             continue
 
-        ref_code  = line2[3:9].strip()  if len(line2) > 9  else ""
-        phase_str = line2[51:52].strip() if len(line2) > 51 else ""
-        mw_str    = line2[52:65].strip() if len(line2) > 65 else ""
-        hf_str    = line2[65:80].strip() if len(line2) > 80 else ""
+        ref_code  = line2[3:9].strip()
+        elements  = parse_element_slots(line2[10:50], 5, 8)
+        phase_str = line2[51:52].strip()
+        mw_str    = line2[52:65].strip()
+        hf_str    = line2[65:80].strip()
 
         try:
             phase_flag = int(phase_str) if phase_str else 0
@@ -239,6 +240,7 @@ def _parse_file(
             MW=mw,
             Hf298=hf298,
             nasa9=Nasa9Equation(ranges=ranges),
+            elements=elements,
         )
 
         if name in species:
@@ -256,6 +258,7 @@ def _parse_file(
                 MW=entry.MW,
                 Hf298=entry.Hf298,
                 nasa9=entry.nasa9,
+                elements=entry.elements,
             )
             species[new_name] = entry
         else:

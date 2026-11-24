@@ -1,0 +1,139 @@
+{
+  "materialId": "nimonic-80a",
+  "name": "Nimonic 80A",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "Nimonic 80A",
+    "form": "Bar",
+    "base": "Nickel base"
+  },
+  "composition": {},
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8160.0
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 219.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 188.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 179.0
+        },
+        {
+          "T_K": 1033.15,
+          "value": 170.0
+        },
+        {
+          "T_K": 1143.15,
+          "value": 157.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 8.7
+        },
+        {
+          "T_K": 811.15,
+          "value": 15.9
+        },
+        {
+          "T_K": 1144.15,
+          "value": 22.5
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 811.15,
+          "value": 13.9
+        },
+        {
+          "T_K": 1144.15,
+          "value": 15.5
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "Nimonic 80A",
+      "group": "Nickel base",
+      "form": "Bar",
+      "rupture_strength_1000h": {
+        "650": 420,
+        "760": 160
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "Nimonic 80A",
+      "group": "Nickel base",
+      "form": "Bar",
+      "values": {
+        "21": 219,
+        "540": 188,
+        "650": 179,
+        "760": 170,
+        "870": 157
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "Nimonic 80A",
+      "group": "Nickel base",
+      "form": "Bar",
+      "yield_strength_0.2_offset": {
+        "21": 620,
+        "540": 530,
+        "650": 550,
+        "760": 505,
+        "870": 260
+      },
+      "tensile_elongation": {
+        "21": 39,
+        "540": 37,
+        "650": 21,
+        "760": 17,
+        "870": 30
+      }
+    }
+  }
+}

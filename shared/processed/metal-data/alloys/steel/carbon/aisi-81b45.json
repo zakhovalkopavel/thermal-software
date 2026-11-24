@@ -1,0 +1,89 @@
+{
+  "materialId": "aisi-81b45",
+  "name": "81B45",
+  "group": "steel",
+  "family": "carbon",
+  "aliases": {
+    "sae": "81B45"
+  },
+  "composition": {},
+  "condition": "Unknown",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 11.9
+        },
+        {
+          "T_K": 473.15,
+          "value": 12.6
+        },
+        {
+          "T_K": 573.15,
+          "value": 13.3
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "steel_thermal_expansion.json"
+  ],
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-1025",
+        "mode": "full-series",
+        "why": "aisi-81b45 doesn't have electricalResistivity points; link sae-1025 series (same family carbon; ElMD=0.205966, L1=0.745 wt% [ΔMn=0.45%; ΔC=0.25%; ΔS=0.025%; ΔP=0.02%])",
+        "compositionDistance": 0.205966,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-1010",
+        "mode": "full-series",
+        "why": "aisi-81b45 doesn't have specificHeat points; link sae-1010 series (same family carbon; ElMD=0.099639, L1=0.6 wt% [ΔMn=0.45%; ΔC=0.105%; ΔS=0.025%; ΔP=0.02%])",
+        "compositionDistance": 0.099639,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "sae-1008",
+        "mode": "full-series",
+        "why": "aisi-81b45 doesn't have thermalConductivity points; link sae-1008 series (same family carbon; ElMD=0.058509, L1=0.495 wt% [ΔMn=0.4%; ΔC=0.05%; ΔS=0.025%; ΔP=0.02%])",
+        "compositionDistance": 0.058509,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalExpansion": {
+        "materialId": "sae-1010",
+        "mode": "scaled-series",
+        "why": "only 3 own points; link scaled sae-1010 curve (same family carbon; ElMD=0.099639, L1=0.6 wt% [ΔMn=0.45%; ΔC=0.105%; ΔS=0.025%; ΔP=0.02%])",
+        "compositionDistance": 0.099639,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.97688416,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.08714145,
+          "maxRelPct": 0.842585
+        }
+      }
+    }
+  }
+}

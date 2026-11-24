@@ -1,0 +1,104 @@
+{
+  "materialId": "sae-8630",
+  "name": "8630",
+  "group": "steel",
+  "family": "low-alloy",
+  "aliases": {
+    "uns": "G86300",
+    "sae": "8630"
+  },
+  "composition": {
+    "C": 0.30500000000000005,
+    "Mn": 0.8,
+    "P": 0.0175,
+    "S": 0.02,
+    "Si": 0.25,
+    "Ni": 0.55,
+    "Cr": 0.5,
+    "Mo": 0.2
+  },
+  "condition": "Unknown",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 368.15,
+          "value": 11.3
+        },
+        {
+          "T_K": 923.15,
+          "value": 14.6
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "low-alloy_steel.json",
+    "steel_thermal_expansion.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 994,
+    "Ac3_K": 1080,
+    "Ac1_C": 721,
+    "Ac3_C": 807,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-5132",
+        "mode": "full-series",
+        "why": "sae-8630 doesn't have electricalResistivity points; link sae-5132 series (same family low-alloy; ElMD=0.058462, L1=1.245 wt% [ΔNi=0.55%; ΔCr=0.375%; ΔMo=0.2%; ΔMn=0.1%; ΔC=0.02%])",
+        "compositionDistance": 0.058462,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-5132",
+        "mode": "full-series",
+        "why": "sae-8630 doesn't have specificHeat points; link sae-5132 series (same family low-alloy; ElMD=0.058462, L1=1.245 wt% [ΔNi=0.55%; ΔCr=0.375%; ΔMo=0.2%; ΔMn=0.1%; ΔC=0.02%])",
+        "compositionDistance": 0.058462,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "sae-5132",
+        "mode": "full-series",
+        "why": "sae-8630 doesn't have thermalConductivity points; link sae-5132 series (same family low-alloy; ElMD=0.058462, L1=1.245 wt% [ΔNi=0.55%; ΔCr=0.375%; ΔMo=0.2%; ΔMn=0.1%; ΔC=0.02%])",
+        "compositionDistance": 0.058462,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalExpansion": {
+        "materialId": "sae-6150",
+        "mode": "scaled-series",
+        "why": "only 2 own points; link scaled sae-6150 curve (same family low-alloy; ElMD=0.29479, L1=1.975 wt% [ΔV=0.575%; ΔNi=0.55%; ΔCr=0.45%; ΔMo=0.2%; ΔC=0.2%])",
+        "compositionDistance": 0.29479,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.97156369,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.51037079,
+          "maxRelPct": 4.894486
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "materialId": "aisi-50b60",
+  "name": "50B60",
+  "group": "steel",
+  "family": "low-alloy",
+  "aliases": {
+    "sae": "50B60"
+  },
+  "composition": {},
+  "condition": "Unknown",
+  "properties": {
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [],
+      "points": []
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [],
+      "points": []
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "steel_thermal_expansion.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 11.9
+        },
+        {
+          "T_K": 473.15,
+          "value": 12.4
+        },
+        {
+          "T_K": 573.15,
+          "value": 12.9
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "steel_thermal_expansion.json"
+  ],
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-5132",
+        "mode": "full-series",
+        "why": "aisi-50b60 doesn't have electricalResistivity points; link sae-5132 series (same family low-alloy; ElMD=0.475915, L1=2.1875 wt% [ΔCr=0.875%; ΔMn=0.7%; ΔC=0.325%; ΔSi=0.25%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 0.475915,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-5132",
+        "mode": "full-series",
+        "why": "aisi-50b60 doesn't have specificHeat points; link sae-5132 series (same family low-alloy; ElMD=0.475915, L1=2.1875 wt% [ΔCr=0.875%; ΔMn=0.7%; ΔC=0.325%; ΔSi=0.25%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 0.475915,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "sae-5132",
+        "mode": "full-series",
+        "why": "aisi-50b60 doesn't have thermalConductivity points; link sae-5132 series (same family low-alloy; ElMD=0.475915, L1=2.1875 wt% [ΔCr=0.875%; ΔMn=0.7%; ΔC=0.325%; ΔSi=0.25%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 0.475915,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalExpansion": {
+        "materialId": "sae-6150",
+        "mode": "scaled-series",
+        "why": "only 3 own points; link scaled sae-6150 curve (same family low-alloy; ElMD=0.721905, L1=3.1175 wt% [ΔCr=0.95%; ΔMn=0.8%; ΔV=0.575%; ΔC=0.505%; ΔSi=0.25%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 0.721905,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.97373824,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.0370232,
+          "maxRelPct": 0.393168
+        }
+      }
+    }
+  }
+}

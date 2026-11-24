@@ -3,13 +3,14 @@ import { ThermodynamicsModule } from '../thermodynamics/thermodynamics.module';
 import { CombustionModule } from '../combustion/combustion.module';
 import { ThermalExchangeModule } from '../thermal-exchange/thermal-exchange.module';
 import { RecuperatorGeometryService } from './services/recuperator-geometry.service';
+import { RecuperatorBalanceService } from './services/recuperator-balance.service';
 import { RecuperatorService } from './services/recuperator.service';
 import { RecuperatorController } from './controllers/recuperator.controller';
 
 @Module({
   imports: [ThermodynamicsModule, CombustionModule, ThermalExchangeModule],
   controllers: [RecuperatorController],
-  providers: [RecuperatorGeometryService, RecuperatorService],
+  providers: [RecuperatorGeometryService, RecuperatorBalanceService, RecuperatorService],
   exports: [RecuperatorService, RecuperatorGeometryService],
 })
 export class RecuperatorModule {}

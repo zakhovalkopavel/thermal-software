@@ -1,18 +1,9 @@
+import type { EutecticSystemPoint } from '../types/eutectic-system-point.type';
+
 /**
- * Eutectic Systems Data
- * Static phase diagram data for refractory calculations
+ * Static eutectic / phase-diagram lookup for refractory calculations.
+ * Nested as system key → entry key → {@link EutecticSystemPoint}.
  */
-
-export interface EutecticPoint {
-  name: string;
-  temperature: number; // °C
-  composition: {
-    [oxide: string]: number; // wt%
-  };
-  system: string;
-  references?: string[];
-}
-
 export const EUTECTIC_SYSTEMS = {
   // CAS System (CaO-Al2O3-SiO2)
   CAS: {
@@ -88,28 +79,4 @@ export const EUTECTIC_SYSTEMS = {
       system: 'CaO-SiO2',
     },
   },
-};
-
-/**
- * Get eutectic data by system and name
- */
-export function getEutectic(system: string, name: string): EutecticPoint | undefined {
-  const systemData = EUTECTIC_SYSTEMS[system as keyof typeof EUTECTIC_SYSTEMS];
-  if (!systemData) return undefined;
-  return systemData[name as keyof typeof systemData] as EutecticPoint;
-}
-
-/**
- * Get all eutectics for a system
- */
-export function getSystemEutectics(system: string): Record<string, EutecticPoint> {
-  return EUTECTIC_SYSTEMS[system as keyof typeof EUTECTIC_SYSTEMS] || {};
-}
-
-/**
- * List all available systems
- */
-export function listSystems(): string[] {
-  return Object.keys(EUTECTIC_SYSTEMS);
-}
-
+} as const satisfies Record<string, Record<string, EutecticSystemPoint>>;

@@ -310,7 +310,7 @@ python/src/
 │   │   └── <format>.py
 │   ├── writers.py              # serialisation helpers
 │   └── utils.py                # low-level helpers
-├── references/                 # mirror of TypeScript RefKey + REFERENCES_META
+├── references/                 # RefKey + REFERENCES_META, generated from shared/references/references.json
 │   ├── __init__.py
 │   ├── ref_key.py              # RefKey enum
 │   └── references_meta.py      # REFERENCES_META dict + ReferenceMeta TypedDict

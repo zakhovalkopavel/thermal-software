@@ -1,0 +1,51 @@
+{
+  "system": "CaO-MgO",
+  "components": ["CaO", "MgO"],
+  "output": "systems/cao-mgo.json",
+  "idPrefix": "cm",
+  "source": {
+    "ref": "slag-atlas-1995",
+    "figure": "Fig. 3.66",
+    "diagram": "CaO-MgO phase diagram after Doman et al. [1] (solid lines); calculated phase equilibria of Hillert, Wang [4] with the higher melting temperature of CaO (dashed lines)",
+    "printedPage": 61,
+    "pdfPage": 81,
+    "caption": "Atlas text (printed p. 61): 'The solubility of CaO in MgO between 1100 and 1180 °C has later been re-investigated by Henney, Jones [2]. The mutual solubility at 1500 °C was also investigated by Shirasuka et al. [3]. The thermodynamics of the system and calculated phase equilibria in which the higher melting temperature of CaO is accepted have been reported by Hillert, Wang [4]. Their results are shown in the figure with dashed lines. For recent thermodynamic assessment and discussion of the system, see Jin, Du [5] Howald [6] and Wu at al. [7]' References: [1] R. C. Doman, J. B. Barr, R. N. McNally, A. M. Alper, J. Am. Ceram. Soc. 46 (1963) No. 7, p. 313/6; [2] J. W. Henney, J. W. S. Jones, Trans. J. Br. Ceram. Soc. 68 (1969), p. 201/3; [3] K. Shirasuka, G. Yamaguchi, M. Sekiya, Sekko To Sekkai (1975) No. 139, p. 223/6; [4] M. Hillert, X. Wang, CALPHAD 13 (1989) No. 3, p. 267/72; [5] Z. Jin, Y. Du, CALPHAD 16 (1992) No. 1, p. 33/36; [6] R. A. Howald, CALPHAD 16 (1992) No. 1, p. 25/32; [7] P. Wu, G. Eriksson, A. D. Pelton, J. Am. Ceram. Soc. 76 (1993) No. 8, p. 2065/75."
+  },
+  "frameSearchBox": [1400, 290, 3050, 1610],
+  "axes": {
+    "x": { "component": "MgO", "ticks": [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100] },
+    "y": { "ticks": [3000, 2600, 2400, 2200, 2000, 1800, 1600] }
+  },
+  "phases": ["lime", "periclase"],
+  "endMembers": {
+    "lime": { "x": 0, "labelTemperature": 2612 },
+    "periclase": { "x": 100, "labelTemperature": 2822 }
+  },
+  "invariants": [
+    { "id": "cm-2370", "type": "binary", "reaction": "eutectic", "phases": ["lime", "periclase"],
+      "label": { "temperature": 2370, "composition": 33 },
+      "seedPixel": [1974, 860], "nbs": [6180],
+      "notes": "Solid phases at the eutectic: lime ss at 17 and periclase ss at 92.2 mass% MgO (printed labels). The dashed Hillert-Wang liquidus curves meet slightly to the MgO side of the printed junction; that eutectic has no printed label. Fig. 3.249 edge: 67.0 wt% CaO, no temperature (cms-edge-lime-periclase)." }
+  ],
+  "liquidus": [
+    { "phase": "lime", "from": "end:lime", "to": "cm-2370",
+      "segments": [ { "kind": "trace", "seedPixel": [1874, 806] } ],
+      "grid": [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32] },
+    { "phase": "periclase", "from": "cm-2370", "to": "end:periclase",
+      "segments": [ { "kind": "trace", "seedPixel": [2074, 803] } ],
+      "grid": [34, 36, 38, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 98, 100] }
+  ],
+  "junctionTolerance_wt": 1.5,
+  "verbatim": {
+    "solidSolutions": [
+      { "phase": "lime", "modelledAs": "CaO (stoichiometric)",
+        "range_wt_MgO": [ { "temperature_C": 2370, "from": 0, "to": 17 } ],
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.66", "printedPage": 61, "pdfPage": 81, "read": "printed label '17' at the CaO-side end of the eutectic line" },
+        "notes": "Field labelled 'CaO ss'; the solvus falls steeply on cooling." },
+      { "phase": "periclase", "modelledAs": "MgO (stoichiometric)",
+        "range_wt_MgO": [ { "temperature_C": 2370, "from": 92.2, "to": 100 } ],
+        "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.66", "printedPage": 61, "pdfPage": 81, "read": "printed label '92.2' at the MgO-side end of the eutectic line" },
+        "notes": "Field labelled 'MgO ss'; the solvus falls steeply on cooling." }
+    ]
+  }
+}

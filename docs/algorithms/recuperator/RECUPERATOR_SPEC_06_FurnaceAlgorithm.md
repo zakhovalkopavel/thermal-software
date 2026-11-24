@@ -67,7 +67,7 @@ Used for natural convection and radiation at the outer surface.
 
 ---
 
-## 6.5 Algorithm: Binary Search on Inner Surface Temperature
+## 6.5 Algorithm: Root Finding (brentq) on Inner Surface Temperature
 
 ### 6.5.1 Overview
 
@@ -76,15 +76,16 @@ The algorithm finds `T_inner` such that:
 Q_inner (from gas to inner surface) = Q_outer (from outer surface to ambient)
 ```
 
-### 6.5.2 Binary search bounds
+### 6.5.2 Bracket
 
 ```
-T_inner_min = T_ambient
-T_inner_max = T_flame
-T_inner     = logMean(T_inner_min, T_inner_max)
+T_inner ∈ [T_ambient, T_flame]
 ```
 
-### 6.5.3 Iteration loop (up to 50 steps)
+At `T_ambient` the traverse (Step B) falls below ambient, so `h = Q_inner > 0`.
+At `T_flame` `Q_inner = 0`, so `h = −Q_outer < 0`. The interval therefore always brackets a root.
+
+### 6.5.3 Residual `h(T_inner)` (Steps A–D)
 
 **Step A — Inner heat flux from gas to wall:**
 
@@ -124,17 +125,22 @@ Where `getFullNaturalConvectionAlpha` applies:
 - If `T_outer ≤ 423 K`: `α = 9.8 + 0.07 × (T_outer − T_room)`
 - Else: `α = α_natural_conv + α_solid_radiation`
 
-**Step D — Convergence check:**
+**Step D — Residual:**
 
 ```
-error = 2 × |Q_inner − Q_outer| / (Q_inner + Q_outer)
-IF error ≤ 0.001: CONVERGED
+h(T_inner) = Q_inner − Q_outer
+IF T_current < T_ambient during Step B (wall too cold): Q_outer = 0, so h = Q_inner
 ```
 
-**Binary search update:**
-- If `T_current < T_ambient` (wall too cold): raise `T_inner_min`
-- If `Q_inner > Q_outer`: raise `T_inner_min`
-- If `Q_inner < Q_outer`: lower `T_inner_max`
+Just above the "too cold" boundary `T_outer ≈ T_ambient`, so `Q_outer ≈ 0`, and the definition keeps `h` continuous in sign.
+
+**Root finding:**
+
+```
+T_inner = brentq(h, T_ambient, T_flame, tol = 1e-6)
+```
+
+Steps A–C are then evaluated once more at `T_inner` to produce the outputs.
 
 ---
 

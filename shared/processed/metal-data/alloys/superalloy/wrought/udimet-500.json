@@ -1,0 +1,140 @@
+{
+  "materialId": "udimet-500",
+  "name": "Udimet 500",
+  "group": "superalloy",
+  "family": "wrought",
+  "aliases": {
+    "trade": "Udimet 500",
+    "form": "Bar",
+    "base": "Nickel base"
+  },
+  "composition": {},
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 8020.0
+        }
+      ]
+    },
+    "elasticModulus": {
+      "unit": "GPa",
+      "sources": [
+        "superalloy3.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 222.0
+        },
+        {
+          "T_K": 813.15,
+          "value": 191.0
+        },
+        {
+          "T_K": 923.15,
+          "value": 183.0
+        },
+        {
+          "T_K": 1033.15,
+          "value": 173.0
+        },
+        {
+          "T_K": 1143.15,
+          "value": 161.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 294.15,
+          "value": 11.1
+        },
+        {
+          "T_K": 811.15,
+          "value": 18.3
+        },
+        {
+          "T_K": 1144.15,
+          "value": 24.5
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "superalloys.json"
+      ],
+      "points": [
+        {
+          "T_K": 811.15,
+          "value": 14.0
+        },
+        {
+          "T_K": 1144.15,
+          "value": 16.1
+        }
+      ]
+    }
+  },
+  "sourceFiles": [
+    "1000h_strength.json",
+    "superalloy3.json",
+    "superalloys.json",
+    "superalloys2.json"
+  ],
+  "mechanical": {
+    "1000h_strength.json": {
+      "alloy": "Udimet 500",
+      "group": "Nickel base",
+      "form": "Bar",
+      "rupture_strength_1000h": {
+        "650": 760,
+        "760": 325,
+        "870": 125
+      }
+    },
+    "superalloy3.json": {
+      "alloy": "Udimet 500",
+      "group": "Nickel base",
+      "form": "Bar",
+      "values": {
+        "21": 222,
+        "540": 191,
+        "650": 183,
+        "760": 173,
+        "870": 161
+      }
+    },
+    "superalloys2.json": {
+      "alloy": "Udimet 500",
+      "group": "Nickel base",
+      "form": "Bar",
+      "yield_strength_0.2_offset": {
+        "21": 840,
+        "540": 795,
+        "650": 760,
+        "760": 730,
+        "870": 495
+      },
+      "tensile_elongation": {
+        "21": 72,
+        "540": 32,
+        "650": 28,
+        "760": 28,
+        "870": 39
+      }
+    }
+  }
+}

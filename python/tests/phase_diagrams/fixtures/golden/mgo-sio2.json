@@ -1,0 +1,75 @@
+{
+  "system": "MgO-SiO2",
+  "components": ["MgO", "SiO2"],
+  "units": { "temperature_C": "°C", "liquid_wt": "wt%", "liquidus": "[wt% SiO2, °C]" },
+  "source": {
+    "ref": "slag-atlas-1995",
+    "figure": "Fig. 3.125",
+    "diagram": "MgO-SiO2 phase diagram based mainly on the results of Bowen, Andersen [1], Smyth [2], Henriksen, Kingery [3], Henney, Jones [4] and Hageman, Oonk [5]",
+    "printedPage": 88,
+    "pdfPage": 108,
+    "caption": "Atlas text (printed p. 88): 'Contrary to previous results by Schlaudt, Roy [6], no solubility of SiO2 in MgO was reported by Henney, Jones [4] and Henriksen, Kingery [3]. The polymorphism in MgO·SiO2 has been investigated by Foster [7], Atlas [8], Sarver, Hummel [9] and Smyth [2]. The miscibility gap in the system MgO-SiO2 has been investigated by Greig [10], Olshansky [11] and recently by Hageman, Oonk [5]. The critical temperature reported by Hageman, Oonk [5], which is considerably below the previous reported values, has been adopted. The recent investigations of liquidus relations at 1600 and 1700 °C by Kambayashi, Kato [12, 13] (dashed line in the figure) suggest congruent melting of MgO·SiO2.' References: [1] N. L. Bowen, O. Andersen, Am. J. Sci., 4th Ser. 37 (1914) No. 222, 487/501; [2] J. R. Smyth, Am. Mineral. 59 (1974) 345/52; [3] A. F. Henriksen, W. D. Kingery, Ceramurgia Int. 5 (1979) No. 1, 11/7; [4] J. W. Henney, J. W. S. Jones, Trans. J. Br. Ceram. Soc. 68 (1969) 201/3; [5] V. B. Hageman, H. A. Oonk, Phys. Chem. Glasses 27 (1986) No. 5, 194/8; [6] C. M. Schlaudt, D. M. Roy, J. Am. Ceram. Soc. 48 (1965) No. 5, 248/51; [7] W. R. Foster, J. Am. Ceram. Soc. 34 (1951) No. 9, 255/9; [8] L. Atlas, J. Geol. 60 (1952) 125/47; [9] J. F. Sarver, F. A. Hummel, J. Am. Ceram. Soc. 45 (1962) No. 4, 152/6; [10] J. W. Greig, Am. J. Sci., 5th Ser. 13 (1927) No. 73, 1/154; [11] Ya. I. Olshansky, Dokl. Akad. Nauk SSSR 76 (1951) No. 1, 94/6; [12] S. Kambayashi, E. Kato, J. Chem. Thermodyn. 15 (1983) No. 8, 701/7; [13] S. Kambayashi, E. Kato, J. Chem. Thermodyn. 16 (1984) No. 3, 241/8."
+  },
+  "nbsCrossCheck": {
+    "ref": "nsrds-nbs-61-1",
+    "result": "No MgO-SiO2 binary entry. The system index (PDF p. 140, printed p. 132) lists MgO-Sc2O3 followed by MgO-SiO2-SrO; no Mg2SiO4-MgSiO3 or MgSiO3-SiO2 join either. All values below are atlas-only (status 'extracted')."
+  },
+  "digitization": {
+    "render": "pdfPage 108 at 400 dpi (3306 × 4673 px), full page coordinates",
+    "calibration": "x: mass% SiO2 ticks every 10 % at 1425.5, 1574.5, 1724.5, 1872.5, 2023.5, 2175, 2322.5, 2473.5, 2622.5, 2772, 2920 (piecewise linear); y: ticks 3000 … 1000 °C every 200 °C at 2174.5, 2287.5, 2398, 2511, 2622.75, 2734.25, 2846, 2960.25, 3072.25, 3183.5, 3296.5; scan rotation: +1.5 px over 1450 px",
+    "method": "Liquidus and miscibility gap traced along the stroke centre, column by column (row by row on the steep SiO2-side branch); invariant lines from the horizontal strokes.",
+    "check": "Compound lines at 42.7 and 59.9 wt% SiO2 (stoichiometric Mg2SiO4 42.7, MgSiO3 59.9). Invariant lines read 1849 / 1556 / 1541 / 1695 / 1468.5 °C (labels 1850 / 1557 / 1543 / 1695 / 1470). Forsterite maximum 1887 °C (label 1890); periclase liquidus meets the MgO axis at 2830 °C (label 2822); cristobalite liquidus meets the SiO2 axis at 1725 °C (label 1725). Digitized vs printed composition labels: 61.2 / '61', 63.4 / '64', but 39.3 / '38' and 68.9 / '70' wt% SiO2 (drawn ≈1.2 wt% from the label)."
+  },
+  "phases": ["periclase", "forsterite", "enstatite", "silica"],
+  "invariantPoints": [
+    { "id": "ms-1850", "type": "binary", "reaction": "eutectic", "phases": ["periclase", "forsterite"],
+      "temperature_C": 1850, "liquid_wt": { "MgO": 62.0, "SiO2": 38.0 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.125", "printedPage": 88, "pdfPage": 108, "temperature": "printed label '1850' on the eutectic line; line reads 1849", "composition": "printed label '38' (mass% SiO2) under the junction; drawn junction at 39.3", "pixel": [2013, 2819] } ],
+      "notes": "Fig. 3.187 edge prints ~1860 °C at 36.2 wt% SiO2 (mas-edge-periclase-forsterite)." },
+    { "id": "ms-forsterite-melting", "type": "compound-melting", "reaction": null, "phases": ["forsterite"],
+      "temperature_C": 1890, "liquid_wt": { "MgO": 57.3, "SiO2": 42.7 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.125", "printedPage": 88, "pdfPage": 108, "temperature": "printed label '1890' at the liquidus maximum; digitized 1887", "composition": "Mg2SiO4 line at 42.7 wt% SiO2", "pixel": [2062, 2796] } ],
+      "notes": "Congruent. Fig. 3.187 prints '~1900'." },
+    { "id": "ms-1557", "type": "binary", "reaction": "peritectic", "phases": ["forsterite", "enstatite"],
+      "temperature_C": 1557, "liquid_wt": { "MgO": 39.0, "SiO2": 61.0 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.125", "printedPage": 88, "pdfPage": 108, "temperature": "printed label '1557' on the peritectic line; line reads 1556", "composition": "printed label '61' (mass% SiO2); digitized 61.2", "pixel": [2341, 2985] } ],
+      "notes": "Incongruent melting of (proto)enstatite: MgSiO3 → forsterite + liquid. Fig. 3.187 edge: 1557 °C at 60.6 wt% SiO2 (mas-edge-forsterite-enstatite). The dashed line in the enstatite field (Kambayashi, Kato [12, 13]) suggests congruent melting; not used." },
+    { "id": "ms-1543", "type": "binary", "reaction": "eutectic", "phases": ["enstatite", "silica"],
+      "temperature_C": 1543, "liquid_wt": { "MgO": 36.0, "SiO2": 64.0 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.125", "printedPage": 88, "pdfPage": 108, "temperature": "printed label '1543' on the eutectic line; line reads 1541", "composition": "printed label '64' (mass% SiO2) under the junction; digitized 63.4", "pixel": [2374, 2993] } ],
+      "notes": "Silica is cristobalite. Fig. 3.187 edge: 1543 °C at 65.0 wt% SiO2 (mas-edge-enstatite-silica)." },
+    { "id": "ms-1695", "type": "monotectic", "reaction": "monotectic", "phases": ["silica"],
+      "temperature_C": 1695, "liquid_wt": { "MgO": 30.0, "SiO2": 70.0 }, "secondLiquid_wt": { "MgO": 1.1, "SiO2": 98.9 }, "status": "extracted",
+      "sources": [ { "ref": "slag-atlas-1995", "figure": "Fig. 3.125", "printedPage": 88, "pdfPage": 108, "temperature": "printed label '1695' on the monotectic line; line reads 1695", "composition": "printed label '70' (mass% SiO2) at the MgO-rich end, drawn at 68.9; SiO2-rich liquid not labelled, digitized 98.9", "pixel": [2457, 2905] } ],
+      "notes": "Liquid (70 wt% SiO2) → cristobalite + SiO2-rich liquid (98.9 wt% SiO2). Fig. 3.187 prints 1703 °C for the two-liquid limits on this edge (MgO-rich limit 69.2 wt% SiO2)." }
+  ],
+  "liquidImmiscibility": {
+    "region": "Two liquids above the monotectic ms-1695 between 70 and 98.9 wt% SiO2",
+    "criticalPoint": { "temperature_C": 1967, "wt_SiO2": 87.8, "status": "extracted", "pixel": [2733, 2752],
+      "read": "top of the dome, not labelled; flat between 87.4 and 88.2 wt% SiO2", "notes": "Critical temperature after Hageman, Oonk [5], adopted by the atlas." },
+    "boundary": [[70.0, 1695], [72, 1764], [74, 1806], [76, 1846], [78, 1878], [80, 1907], [82, 1929], [84, 1949], [86, 1961], [87.8, 1967], [90, 1964], [92, 1953], [94, 1930], [95, 1913], [96, 1888], [97, 1854], [98, 1797], [98.9, 1695]],
+    "notes": "No crystals inside the dome; it does not change the liquidus (cristobalite disappears at 1695 °C for 70–98.9 wt% SiO2). Not modelled."
+  },
+  "solidSolutions": [
+    { "phase": "periclase", "modelledAs": "MgO (stoichiometric)", "range_wt_SiO2": null,
+      "source": { "ref": "slag-atlas-1995", "figure": "Fig. 3.125", "printedPage": 88, "pdfPage": 108, "read": "atlas text" },
+      "notes": "No solubility of SiO2 in MgO (Henney, Jones [4]; Henriksen, Kingery [3]), contrary to Schlaudt, Roy [6]." }
+  ],
+  "inversions": [
+    { "phase": "silica", "change": "cristobalite → tridymite", "temperature_C": 1470, "source": "printed label '1470' on the line across the silica-rich side (line reads 1468.5); arrows 'Cristobalite' / 'Tridymite' at the SiO2 axis" },
+    { "phase": "enstatite", "change": "MgSiO3 polymorphism (Foster [7], Atlas [8], Sarver, Hummel [9], Smyth [2])", "temperature_C": null, "source": "atlas text; not drawn; modelled as enstatite (MS)" }
+  ],
+  "liquidus": [
+    { "phase": "periclase", "from": "periclase melting point", "to": "ms-1850", "status": "extracted",
+      "points": [[0, 2822], [2, 2807], [5, 2768], [10, 2694], [15, 2606], [20, 2503], [25, 2379], [30, 2236], [32, 2171], [34, 2097], [36, 2015], [38.0, 1850]] },
+    { "phase": "forsterite", "from": "ms-1850", "to": "ms-forsterite-melting", "status": "extracted",
+      "points": [[38.0, 1850], [40, 1866], [41, 1880], [42, 1886], [42.7, 1890]] },
+    { "phase": "forsterite", "from": "ms-forsterite-melting", "to": "ms-1557", "status": "extracted",
+      "points": [[42.7, 1890], [44, 1884], [46, 1875], [48, 1856], [50, 1824], [52, 1790], [54, 1748], [56, 1704], [58, 1655], [59, 1628], [60, 1597], [61.0, 1557]] },
+    { "phase": "enstatite", "from": "ms-1557", "to": "ms-1543", "status": "extracted",
+      "points": [[61.0, 1557], [64.0, 1543]] },
+    { "phase": "silica", "from": "ms-1543", "to": "silica melting point", "status": "extracted",
+      "points": [[64.0, 1543], [65, 1586], [66, 1619], [67, 1647], [68, 1674], [70.0, 1695], [98.9, 1695], [100, 1725]] }
+  ],
+  "liquidusSource": { "ref": "slag-atlas-1995", "figure": "Fig. 3.125", "printedPage": 88, "pdfPage": 108, "read": "digitized stroke centre; end points set to the printed invariant and melting-point labels (2822, 1850 at 38, 1890, 1557 at 61, 1543 at 64, 1695 at 70, 1725). Digitized points within 1.5 wt% of the junctions drawn away from their labels (38, 70) are omitted. The enstatite branch is a short segment between the two invariants; the silica branch is flat at the monotectic between 70 and 98.9 wt% SiO2." }
+}

@@ -1,7 +1,7 @@
 # RECUPERATOR SPEC — 03 Materials
 
 **Module split:**
-- **19 refractory materials** → `backend/src/modules/refractory/services/refractory-thermal.service.ts`
+- **19 refractory materials** → `backend/src/modules/refractory/services/catalog/refractory-thermal.service.ts`
   - Enum: `refractory/enums/refractory-thermal-material.enum.ts`
 - **2 metal materials** → `backend/src/modules/metals/services/metal-thermal.service.ts`
   - Enum: `metals/enums/metal-material.enum.ts`

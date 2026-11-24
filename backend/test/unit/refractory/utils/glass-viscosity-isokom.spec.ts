@@ -8,14 +8,13 @@
  */
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { GlassViscosityService } from '../../../../src/modules/refractory/services/glass-viscosity.service';
-import { ViscosityModelType } from '../../../../src/modules/refractory/enums/viscosity-model.enum';
-import {
-  predictVtfDirectLakatos,
-  predictIsokomsFluegel,
-  temperatureAtLogViscosity,
-} from '../../../../src/modules/refractory/utils/glass-viscosity-vtf.util';
-import { wtPctToMolPct } from '../../../../src/modules/refractory/utils/glass-composition.util';
+import { GlassViscosityService } from '../../../../src/modules/refractory/services/composition/glass-viscosity.service';
+import { ViscosityModelType } from '../../../../src/modules/refractory/enums/viscosity-model-type.enum';
+import { GlassViscosityLakatos } from '../../../../src/modules/refractory/utils/glass-viscosity-lakatos';
+import { GlassViscosityFluegel } from '../../../../src/modules/refractory/utils/glass-viscosity-fluegel';
+import { GlassViscosityVtf } from '../../../../src/modules/refractory/utils/glass-viscosity-vtf';
+import { GlassComposition } from '../../../../src/modules/refractory/utils/glass-composition';
+import { kelvinToCelsius } from '../../../../src/common/thermal/utils/temperature';
 import {
   LAKATOS_VALIDATION_GLASSES,
   FLUEGEL_VALIDATION_GLASSES,
@@ -27,10 +26,10 @@ import {
 describe('predictVtfDirectLakatos — direct VTF regression vs paper Table 1A/1B (PRODUCTION)', () => {
   for (const glass of LAKATOS_VALIDATION_GLASSES) {
     it(`${glass.id} (${glass.description}): isokom T within 20°C of paper`, () => {
-      const { vtf } = predictVtfDirectLakatos(glass.composition_wt_pct);
-      const T1 = temperatureAtLogViscosity(vtf, 1);
-      const T3 = temperatureAtLogViscosity(vtf, 3);
-      const T5 = temperatureAtLogViscosity(vtf, 5);
+      const { vtf } = GlassViscosityLakatos.predictVtfDirectLakatos(glass.composition_wt_pct);
+      const T1 = GlassViscosityVtf.temperatureAtLogViscosity(vtf, 1);
+      const T3 = GlassViscosityVtf.temperatureAtLogViscosity(vtf, 3);
+      const T5 = GlassViscosityVtf.temperatureAtLogViscosity(vtf, 5);
       const [p1, p2, p3] = glass.isokoms;
 
       const tolerance = glass.tolerance_model_C;
@@ -42,7 +41,7 @@ describe('predictVtfDirectLakatos — direct VTF regression vs paper Table 1A/1B
 
   it('produces B > 0 and T₀ > 0 for all validation glasses', () => {
     for (const glass of LAKATOS_VALIDATION_GLASSES) {
-      const { vtf } = predictVtfDirectLakatos(glass.composition_wt_pct);
+      const { vtf } = GlassViscosityLakatos.predictVtfDirectLakatos(glass.composition_wt_pct);
       expect(vtf.B).toBeGreaterThan(0);
       expect(vtf.T0).toBeGreaterThan(0);
     }
@@ -50,26 +49,26 @@ describe('predictVtfDirectLakatos — direct VTF regression vs paper Table 1A/1B
 
   it('produces strictly decreasing T with increasing viscosity for all validation glasses', () => {
     for (const glass of LAKATOS_VALIDATION_GLASSES) {
-      const { vtf } = predictVtfDirectLakatos(glass.composition_wt_pct);
-      const T1 = temperatureAtLogViscosity(vtf, 1);
-      const T3 = temperatureAtLogViscosity(vtf, 3);
-      const T5 = temperatureAtLogViscosity(vtf, 5);
+      const { vtf } = GlassViscosityLakatos.predictVtfDirectLakatos(glass.composition_wt_pct);
+      const T1 = GlassViscosityVtf.temperatureAtLogViscosity(vtf, 1);
+      const T3 = GlassViscosityVtf.temperatureAtLogViscosity(vtf, 3);
+      const T5 = GlassViscosityVtf.temperatureAtLogViscosity(vtf, 5);
       expect(T1).toBeGreaterThan(T3);
       expect(T3).toBeGreaterThan(T5);
     }
   });
 
   it('warns when Na₂O exceeds Lakatos upper bound', () => {
-    const { warnings } = predictVtfDirectLakatos({ SiO2: 65, Na2O: 19, CaO: 10, MgO: 3, Al2O3: 1 });
+    const { warnings } = GlassViscosityLakatos.predictVtfDirectLakatos({ SiO2: 65, Na2O: 19, CaO: 10, MgO: 3, Al2O3: 1 });
     expect(warnings.some(w => w.includes('Na'))).toBe(true);
   });
 
   it('throws for zero SiO₂', () => {
-    expect(() => predictVtfDirectLakatos({ Na2O: 25, CaO: 75 })).toThrow();
+    expect(() => GlassViscosityLakatos.predictVtfDirectLakatos({ Na2O: 25, CaO: 75 })).toThrow();
   });
 
   it('warns about non-Lakatos components > 2 wt%', () => {
-    const iso = predictVtfDirectLakatos({ SiO2: 70, Na2O: 13, CaO: 10, Fe2O3: 5, MgO: 2 });
+    const iso = GlassViscosityLakatos.predictVtfDirectLakatos({ SiO2: 70, Na2O: 13, CaO: 10, Fe2O3: 5, MgO: 2 });
     expect(iso.warnings.some(w => /Fe2O3|not modelled/i.test(w))).toBe(true);
   });
 });
@@ -79,7 +78,7 @@ describe('predictVtfDirectLakatos — direct VTF regression vs paper Table 1A/1B
 describe('predictIsokomsFluegel — regression vs Fluegel 2007 Table 12', () => {
   for (const glass of FLUEGEL_VALIDATION_GLASSES) {
     it(`${glass.id} (${glass.description}): isokom T matches Table 12 model to <${glass.tolerance_model_C}°C`, () => {
-      const iso = predictIsokomsFluegel(glass.composition_wt_pct);
+      const iso = GlassViscosityFluegel.predictIsokomsFluegel(glass.composition_wt_pct);
       const [p1, p2, p3] = glass.isokoms;
       const tolerance = glass.tolerance_model_C;
       expect(Math.abs(iso.T_logEta1_5 - p1.T_model_C)).toBeLessThan(tolerance);
@@ -90,7 +89,7 @@ describe('predictIsokomsFluegel — regression vs Fluegel 2007 Table 12', () => 
 
   it('produces strictly decreasing T with increasing viscosity for all validation glasses', () => {
     for (const glass of FLUEGEL_VALIDATION_GLASSES) {
-      const iso = predictIsokomsFluegel(glass.composition_wt_pct);
+      const iso = GlassViscosityFluegel.predictIsokomsFluegel(glass.composition_wt_pct);
       expect(iso.T_logEta1_5).toBeGreaterThan(iso.T_logEta6_6);
       expect(iso.T_logEta6_6).toBeGreaterThan(iso.T_logEta12);
     }
@@ -116,7 +115,7 @@ describe('Hetherington 1964 — Arrhenius formula self-check', () => {
   for (const pt of glass.isokoms) {
     it(`T at log η=${pt.logEta} → ${pt.T_model_C}°C (±1°C)`, () => {
       const T_K = B / (pt.logEta - A);
-      expect(T_K - 273.15).toBeCloseTo(pt.T_model_C, 0);
+      expect(kelvinToCelsius(T_K)).toBeCloseTo(pt.T_model_C, 0);
       const r = service.calculateViscosity(glass.composition_wt_pct, pt.T_model_C);
       expect(r.logViscosity).toBeCloseTo(pt.logEta, 1);
     });

@@ -1,4 +1,32 @@
-ARG PYTHON_VERSION=3.14.3-slim
+ARG PYTHON_VERSION
+ARG TESSERACT_VERSION
+
+# Build context: repository root (so vendor/page-ocr and vendor/source-extract can be copied).
+
+# Debian ships Tesseract 5.5.0 only; build the upstream release on the same base image
+FROM python:${PYTHON_VERSION} AS tesseract-build
+ARG TESSERACT_VERSION
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    pkg-config \
+    curl \
+    ca-certificates \
+    libleptonica-dev \
+    && rm -rf /var/lib/apt/lists/*
+RUN curl -fsSL "https://github.com/tesseract-ocr/tesseract/archive/refs/tags/${TESSERACT_VERSION}.tar.gz" \
+      | tar -xz -C /tmp && \
+    cmake -S "/tmp/tesseract-${TESSERACT_VERSION}" -B /tmp/tesseract-build \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=/usr/local \
+      -DBUILD_SHARED_LIBS=ON \
+      -DBUILD_TRAINING_TOOLS=OFF \
+      -DBUILD_TESTS=OFF \
+      -DGRAPHICS_DISABLED=ON \
+      -DDISABLE_ARCHIVE=ON \
+      -DDISABLE_CURL=ON && \
+    cmake --build /tmp/tesseract-build -j"$(nproc)" && \
+    DESTDIR=/opt/tesseract cmake --install /tmp/tesseract-build
 
 FROM python:${PYTHON_VERSION}
 
@@ -20,7 +48,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext6 \
     libxrender-dev \
     libgomp1 \
-    tesseract-ocr \
+    libleptonica6 \
+    tesseract-ocr-osd \
     tesseract-ocr-eng \
     tesseract-ocr-fra \
     tesseract-ocr-deu \
@@ -32,6 +61,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr-chi-sim \
     tesseract-ocr-chi-tra \
     poppler-utils \
+    djvulibre-bin \
     ghostscript \
     default-jre-headless \
     libjpeg-dev \
@@ -42,11 +72,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+COPY --from=tesseract-build /opt/tesseract/usr/local/ /usr/local/
+RUN ldconfig && tesseract --version
+
+# Surya 0.23 drives recognition through llama.cpp's llama-server (CPU ubuntu x64 build).
+ARG LLAMA_CPP_RELEASE=b12061
+RUN curl -fsSL \
+      "https://github.com/ggml-org/llama.cpp/releases/download/${LLAMA_CPP_RELEASE}/llama-${LLAMA_CPP_RELEASE}-bin-ubuntu-x64.tar.gz" \
+      | tar -xz -C /opt && \
+    mv /opt/llama-${LLAMA_CPP_RELEASE} /opt/llama-cpp && \
+    ln -sf /opt/llama-cpp/llama-server /usr/local/bin/llama-server && \
+    llama-server --version
+
 # Set working directory
 WORKDIR /app
 
-# Copy pyproject and requirements
-COPY pyproject.toml poetry.lock* ./
+# Copy pyproject and requirements (from python/ in the repo root context)
+COPY python/pyproject.toml python/poetry.lock* ./
 
 # Install Poetry
 ENV POETRY_HOME="/opt/poetry"
@@ -65,17 +107,37 @@ RUN poetry config virtualenvs.create false --local && \
     poetry install --no-root --no-interaction --no-ansi || \
     (echo "Retrying installation..." && poetry install --no-root --no-interaction --no-ansi)
 
-# Copy remaining source files
-COPY src/ /app/src/
-COPY tests/ /app/tests/
+# page-ocr local engine (Surya VLM via llama-server). Poetry cannot resolve
+# torch/triton for Python 3.14 — install via pip.
+RUN pip install --no-cache-dir \
+      --timeout 600 \
+      --retries 5 \
+      "torch==2.15.0" \
+      --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir \
+      --timeout 600 \
+      --retries 5 \
+      "surya-ocr==0.23.0" \
+      "modal>=1.6,<2" \
+      "ElMD==0.5.15"
+    # surya-ocr pins pillow>=10.2,<11; leave that version (do not force Pillow 12).
+    # modal>=1.6: Python 3.14 client (0.x raises on 3.14); tokens via env only.
+
+# App adapters + vendor libraries (baked into the image for production; still overridable by compose mounts in dev)
+COPY python/src/ /app/src/
+COPY python/tests/ /app/tests/
+COPY vendor/page-ocr/src/ /app/vendor/page-ocr/src/
+COPY vendor/source-extract/src/ /app/vendor/source-extract/src/
 
 # Create necessary directories
 RUN mkdir -p /app/shared/sources /app/shared/processed /app/reports
 
-# Add src to Python path
-ENV PYTHONPATH="/app/src:${PYTHONPATH}"
+# App adapters + vendor libraries (page-ocr, source-extract)
+ENV PYTHONPATH="/app/src:/app/vendor/page-ocr/src:/app/vendor/source-extract/src:${PYTHONPATH}"
 ENV PYTHONUNBUFFERED=1
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/5/tessdata
+ENV LLAMA_CPP_BINARY=/opt/llama-cpp/llama-server
+ENV LD_LIBRARY_PATH=/opt/llama-cpp
 
 # Default command
 CMD ["tail", "-f", "/dev/null"]

@@ -3,11 +3,32 @@ export enum EquationTypeDto {
   quadratic                   = 'quadratic',
   cubic                       = 'cubic',
   quartic                     = 'quartic',
-  linearHyperbolic            = 'linearHyperbolic',
-  linearHyperbolicLogarithmic = 'linearHyperbolicLogarithmic',
-  alyLee                      = 'alyLee',
+  maierKelley                 = 'maierKelley',
+  dipprN107                   = 'dipprN107',
   dipprN102                   = 'dipprN102',
   nasa7                       = 'nasa7',
   nasa9                       = 'nasa9',
+  dipprN114                   = 'dipprN114',
+  trcCp                       = 'trcCp',
+  shomate                     = 'shomate',
+  zabranskySpline             = 'zabranskySpline',
+  zabranskyQuasiPolynomial    = 'zabranskyQuasiPolynomial',
+  dipprN101                   = 'dipprN101',
+  ppds9                       = 'ppds9',
+  ppds10                      = 'ppds10',
+  ppds12                      = 'ppds12',
+  dipprN106                   = 'dipprN106',
+  wagner25                    = 'wagner25',
+  sutherland                  = 'sutherland',
+  powerLaw                    = 'powerLaw',
+  /** Yaws 1999: log10(P/mmHg) = A + B/T + C log10(T) + D T + E T² */
+  yawsVaporPressure           = 'yawsVaporPressure',
+  /** Yaws 1999: log10(μ/cP) = A + B/T + C T + D T² */
+  yawsLiquidViscosity         = 'yawsLiquidViscosity',
+  /** Yaws 1999: log10(k) = A + B (1 − T/C)^(2/7) */
+  yawsLiquidConductivity      = 'yawsLiquidConductivity',
+  /** Yaws 1999: ρ = A · B^(-(1 − T/Tc)^n) */
+  yawsLiquidDensity           = 'yawsLiquidDensity',
+  /** Yaws 1999: log10(S/ppm wt) = A + B/T + C/T² */
+  yawsWaterSolubility         = 'yawsWaterSolubility',
 }
-

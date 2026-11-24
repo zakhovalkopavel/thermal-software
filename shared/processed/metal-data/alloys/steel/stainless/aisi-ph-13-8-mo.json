@@ -1,0 +1,161 @@
+{
+  "materialId": "aisi-ph-13-8-mo",
+  "name": "PH 13-8 Mo",
+  "group": "steel",
+  "family": "stainless",
+  "aliases": {
+    "uns": "S13800",
+    "sae": "PH-13-8-MO"
+  },
+  "composition": {
+    "C": 0.05,
+    "Cr": 12.5,
+    "Ni": 8.0,
+    "Mo": 2.25
+  },
+  "condition": null,
+  "properties": {
+    "density": {
+      "unit": "kg/m³",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 7800.0
+        }
+      ]
+    },
+    "electricalResistivity": {
+      "unit": "Ω·m",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 298.15,
+          "value": 1.02e-06
+        }
+      ]
+    },
+    "specificHeat": {
+      "unit": "J/(kg·K)",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 323.15,
+          "value": 460.0
+        }
+      ]
+    },
+    "thermalConductivity": {
+      "unit": "W/(m·K)",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 14.0
+        },
+        {
+          "T_K": 773.15,
+          "value": 22.0
+        }
+      ]
+    },
+    "thermalExpansion": {
+      "unit": "1e-6/K",
+      "sources": [
+        "stainless_steel.json"
+      ],
+      "points": [
+        {
+          "T_K": 373.15,
+          "value": 10.6
+        },
+        {
+          "T_K": 588.15,
+          "value": 11.2
+        },
+        {
+          "T_K": 811.15,
+          "value": 11.9
+        }
+      ],
+      "approximation": {
+        "low": {
+          "type": "quadratic",
+          "vars": {
+            "a": 9.733,
+            "b": 0.002026,
+            "c": 7.952e-07
+          },
+          "min": 373.15,
+          "max": 811.15
+        },
+        "meanRelPct": 0.0,
+        "maxRelPct": 0.0
+      }
+    }
+  },
+  "sourceFiles": [
+    "stainless_heat_resistant_composition.json",
+    "stainless_steel.json"
+  ],
+  "criticalTemperatures": {
+    "Ac1_K": 1072,
+    "Ac3_K": 1087,
+    "Ac1_C": 799,
+    "Ac3_C": 814,
+    "method": "Andrews1965",
+    "ref": "Andrews1965"
+  },
+  "provenance": {
+    "donors": {
+      "electricalResistivity": {
+        "materialId": "sae-4130",
+        "mode": "full-series",
+        "why": "only 1 electricalResistivity point; link sae-4130 series (same group steel; ElMD=2.59837, L1=22.6425 wt% [ΔCr=11.55%; ΔNi=8%; ΔMo=2.05%; ΔMn=0.5%; ΔC=0.255%; ΔSi=0.25%; ΔS=0.02%; ΔP=0.0175%])",
+        "compositionDistance": 2.598369,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "specificHeat": {
+        "materialId": "sae-1008",
+        "mode": "full-series",
+        "why": "only 1 specificHeat point; link sae-1008 series (same group steel; ElMD=2.52347, L1=23.195 wt% [ΔCr=12.5%; ΔNi=8%; ΔMo=2.25%; ΔMn=0.4%; ΔS=0.025%; ΔP=0.02%])",
+        "compositionDistance": 2.523475,
+        "distanceMetric": "ElMD-mod_petti"
+      },
+      "thermalConductivity": {
+        "materialId": "aisi-m2",
+        "mode": "scaled-series",
+        "why": "only 2 own points; link scaled aisi-m2 curve (same group steel; ElMD=0.737879, L1=27.725 wt% [ΔCr=8.375%; ΔNi=7.85%; ΔW=6.125%; ΔMo=2.75%; ΔV=1.975%; ΔSi=0.325%; ΔMn=0.275%; ΔC=0.05%])",
+        "compositionDistance": 0.737879,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 0.75907058,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 2.04006681,
+          "maxRelPct": 16.055179
+        }
+      },
+      "thermalExpansion": {
+        "materialId": "aisi-m2",
+        "mode": "extend-outside-range",
+        "why": "own approx covers 373–811 K; link scaled aisi-m2 outside (same group steel; ElMD=0.737879, L1=27.725 wt% [ΔCr=8.375%; ΔNi=7.85%; ΔW=6.125%; ΔMo=2.75%; ΔV=1.975%; ΔSi=0.325%; ΔMn=0.275%; ΔC=0.05%])",
+        "compositionDistance": 0.737879,
+        "distanceMetric": "ElMD-mod_petti",
+        "scale": 1.05008214,
+        "scaleQuality": "wide-range",
+        "error": {
+          "rmse": 0.5256741,
+          "maxRelPct": 6.242666
+        }
+      }
+    }
+  }
+}

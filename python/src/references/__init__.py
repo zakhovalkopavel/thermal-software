@@ -1,11 +1,12 @@
 """
-references — Python mirror of the project's literature reference system.
+references — The project's literature reference keys and metadata.
 
-Provides ``RefKey`` and ``REFERENCES_META`` matching the TypeScript definitions:
+``RefKey`` and ``REFERENCES_META`` are generated, like the TypeScript
   backend/src/common/thermal/enum/ref-key.enum.ts
   backend/src/common/thermal/dto/ref-key.dto.ts
+and the table in docs/REFERENCES.md, from one file:
 
-Source of truth: docs/REFERENCES.md
+Source of truth: shared/references/references.json  (make references-generate)
 
 Usage
 -----
@@ -23,4 +24,3 @@ from references.ref_key      import RefKey
 from references.references_meta import REFERENCES_META
 
 __all__ = ['RefKey', 'REFERENCES_META']
-

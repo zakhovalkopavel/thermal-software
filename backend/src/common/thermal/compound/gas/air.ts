@@ -1,30 +1,36 @@
-import { CompoundValue } from '../../interfaces/compound-value.interface';
+import { CompoundValue } from '../../types/compound-value.type';
 import { EquationTypeDto } from '../../dto/equation-type.dto';
 import { RefKey } from '../../enum/ref-key.enum';
+import { COMPOUND_LIBRARY } from '../../../chemistry';
 
 /**
- * Air — dry atmospheric air treated as a pseudo-pure compound.
+ * Air — dry atmospheric air treated as a compound.
  *
- * Marked with `isComposition: true` because air is not a single pure substance —
- * its exact mole-fraction breakdown is provided in
- * `compound/composition/air.composition.ts` (`AIR_MOLE_COMPOSITION`).
+ * Bulk Cp / λ correlations live on this object; when a bucket is empty (viscosity),
+ * fall back to `composition` and evaluate the mixture of registry species.
  *
- * Thermophysical property correlations (Cp, λ) are valid for the bulk mixture
- * without requiring per-species resolution.
- *
- * References:
- *   ICAO Doc 7488/3 — Manual of the ICAO Standard Atmosphere, 3rd ed. (1993).
- *   ISO 2533:1975   — Standard Atmosphere.
+ * Composition: ICAO Doc 7488/3 / ISO 2533:1975 dry-air mole fractions
+ * (Ne/He/Kr omitted, < 0.001 % effect).
  */
 export const Air: CompoundValue = {
   name: 'Air',
   chemicalFormula: '78.084%(v) N2, 20.946%(v) O2, 0.934%(v) Ar, 0.040%(v) CO2',
-  Mr: 0.028951,
+  Mr: COMPOUND_LIBRARY.Air.molarMass_kg_mol,
   isComposition: true,
+  composition: {
+    N2:  0.78084,
+    O2:  0.20946,
+    Ar:  0.00934,
+    CO2: 0.00040,
+  },
   enthalpyFormation298: 0,
   gibbsEnergy298: 0,
   collisionDiameter: 3.6,
   epsilonToKb: 103.3,
+  /** CoolProp fluid for Helmholtz ρ and TRANSPORT residual λ */
+  coolpropKey: 'Air',
+  /** NASA RP-1311 set; N2 78.084, O2 20.9476, Ar 0.9365, CO2 0.0319 % (nasa7.json has no Air) */
+  nasa9Key: 'Air',
   heatCapacity: {
     def: 0,
     values: [
@@ -35,7 +41,7 @@ export const Air: CompoundValue = {
         min: 273, max: 1800,
       },
       {
-        type: EquationTypeDto.alyLee,
+        type: EquationTypeDto.dipprN107,
         ref: RefKey.Perry7, page: 223, k: 1e-3,
         vars: { c1: 0.2896e5, c2: 0.0939e5, c3: 3.012e3, c4: 0.0758e5, c5: 1484 },
         min: 50, max: 1500,

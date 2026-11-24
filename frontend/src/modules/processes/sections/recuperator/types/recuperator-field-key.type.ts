@@ -1,0 +1,15 @@
+export type RecuperatorFieldKey =
+  | 'tAirStart_K'
+  | 'd0_m'
+  | 'h0_m'
+  | 'refractoryThickness_m'
+  | 'nAir'
+  | 'nSmoke'
+  | 'nPasses'
+  | 'wantedRecuperatorLength_m'
+  | 'thermalInsulationThickness_m'
+  | 'refractoryLambda_WmK'
+  | 'refractoryEmissivity'
+  | 'surfaceEmissivity'
+  | 'surfaceArea_m2'
+  | 'airPreheat_K';
