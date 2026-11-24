@@ -26,6 +26,7 @@
 | **Thermophysical** | 0% | Not started |
 | **Database migrations** | 0% | Not started |
 | **E2E tests** | 0% | Not started |
+| **Project roadmap (docs)** | Planned | [`docs/PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) — human roadmap added; technical plans under `docs/plans/` follow (source-extractor, database + versioning, legacy gaps, heat-treatment data, quench engine, geometry/fields/properties) |
 
 ---
 
