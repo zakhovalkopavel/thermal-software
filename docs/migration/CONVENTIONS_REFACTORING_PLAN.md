@@ -1,6 +1,6 @@
 # Conventions Refactoring Plan
 
-**Status:** Complete — Phase 8 close-out done (structure + file-length baselines empty; codemods removed).  
+**Status:** Complete — Phase 8 close-out done (structure + file-length baselines empty; codemods removed; coverage ≥ 80 %).  
 
 
 
@@ -208,7 +208,7 @@ Do it as several PRs, in this order (each PR is one sub-step, each passes C1–C
 | Step | Action | Checkpoint |
 |------|--------|-----------|
 | 8.1 | All structure and length baselines empty (or each remaining entry has a written, agreed exception). | ✅ Structure + file-length baselines empty. Remaining multi-exports split/merged (packing/water/phase/thermal-distribution constants; DTOs one class/file; fluid catalogue shapes → `types/`; correlation-families `.constants.ts` + private map). `ComponentProperty` → `types/component-property.type.ts`. |
-| 8.2 | Coverage ≥ 80 % for touched services (Definition of Done). | ⏸ Host `tsc` + conventions Jest green; full `test:cov` when Docker is available (`docker compose exec backend npm run test:cov`). |
+| 8.2 | Coverage ≥ 80 % for touched services (Definition of Done). | ✅ `docker compose exec backend npm run test:cov` (2026-11-24): 98 suites / 1385 passed; All files **87.17 %** stmts / **88.32 %** lines (branch 68.39 %, funcs 77.4 %). |
 | 8.3 | Remove temporary tooling (`codemod-*.mjs`) if no longer needed; update `CONVENTIONS.md` with lessons / amendments (D2 exception, any new rule). | ✅ `codemod-split.mjs` / `codemod-tidy.mjs` deleted; lessons in `CONVENTIONS.md`. |
 | 8.4 | Decide on lint enforcement (ESLint `no-restricted-syntax` / `max-classes-per-file`) to complement the tests. | ✅ **Decision:** no backend ESLint for export/class limits. Jest structure + file-length ratchets remain the only enforcement (backend has no ESLint config; frontend ESLint is unrelated). |
 

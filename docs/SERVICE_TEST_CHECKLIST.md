@@ -86,22 +86,21 @@ This document lists all public methods in refractory services and tracks test im
 
 | Public Method | Tests | Status | Notes |
 |---------------|-------|--------|-------|
-| `optimize(request)` | ❌ | ❌ NEEDED | Main optimization method with ranking |
-| (Private: applyConstraints) | - | - | Internal filtering |
-| (Private: calculateScoresAndRank) | - | - | Internal scoring |
+| `optimize(request)` | ✅ | ✅ DONE | Mocked evaluate/expand unit spec + live demo |
+| Ranking (`BlendOptimizerRanking`) | ✅ | ✅ DONE | `blend-optimizer-ranking.spec.ts` |
 
 **Checklist:**
-- [ ] optimize() basic flow
-- [ ] Fixed fractions support (isFixed: true)
-- [ ] Optimization goals (maxDensity, minPorosity, minWater, minShrinkage, balanced)
-- [ ] Constraint filtering (minPackingEfficiency, maxWaterDemand, maxPorosity)
-- [ ] Result ranking and scoring
-- [ ] Top N results
-- [ ] Multiple combinations (methods × q × scenarios × packing models)
-- [ ] All scenario types
-- [ ] Output validation (optimizationScore, rank fields)
-- [ ] Water demand integration
-- [ ] Edge cases (all fixed, all variable, mixed)
+- [x] optimize() basic flow
+- [x] Fixed fractions support (isFixed: true) — forwarded to evaluate
+- [x] Optimization goals (maxDensity covered in service; all five in ranking spec)
+- [x] Constraint filtering (minPackingEfficiency, maxWaterDemand, maxPorosity)
+- [x] Result ranking and scoring
+- [x] Top N results
+- [x] Multiple combinations (methods × q × scenarios × packing models)
+- [ ] All scenario types (defaults exercised as 64-call grid; not each label asserted)
+- [x] Output validation (optimizationScore, rank fields)
+- [ ] Water demand integration (covered via evaluate service / demo, not this unit file)
+- [x] Edge cases (empty after constraints; evaluate error propagation; autoExpand)
 
 **Priority:** HIGH - Main service with new features
 
@@ -241,7 +240,7 @@ This document lists all public methods in refractory services and tracks test im
 | PSDCalculatorService | ? | ✅ | High |
 | PackingService | 5+ | ⚠️ 2/5 | 40% |
 | ShrinkageService | ? | ✅ | ? |
-| BlendOptimizerService | 1 | ❌ 0/1 | 0% |
+| BlendOptimizerService | 1 | ✅ 1/1 | unit + demo |
 | WaterDemandService | 5 | ⏳ 2/5 | 40% |
 | ViscosityService | ? | ? | ? |
 | GlassViscosityService | ? | ? | ? |
@@ -267,9 +266,9 @@ This document lists all public methods in refractory services and tracks test im
    - [ ] Add CompositionAnalyzer tests
 
 3. **BlendOptimizerService** (Main service)
-   - [ ] Add optimize() tests
-   - [ ] Test all combination scenarios
-   - [ ] Validate results
+   - [x] Add optimize() tests (`blend-optimizer.service.spec.ts`)
+   - [x] Combination grid + constraints + topN + autoExpand
+   - [x] Ranking util covered separately
 
 ### 🟡 MEDIUM PRIORITY (Review needed)
 
@@ -336,10 +335,10 @@ backend/test/unit/refractory/services/particle-packing/water-demand.service.spec
 2. Add tests for: resolveBeta0, resolveMaxPhi, CompositionAnalyzer
 3. Target: 100% public method coverage
 
-### Phase 3: BlendOptimizerService (Next)
-1. Create blend-optimizer.service.spec.ts
-2. Test optimize() with all scenarios
-3. Validate output format
+### Phase 3: BlendOptimizerService — done
+1. ✅ `blend-optimizer.service.spec.ts` (mocked deps)
+2. ✅ `blend-optimizer-ranking.spec.ts`
+3. Demo spec retained for live-material smoke
 
 ### Phase 4: Other Services (Later)
 1. Review each service for public methods

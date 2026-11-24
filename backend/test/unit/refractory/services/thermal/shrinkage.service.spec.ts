@@ -54,7 +54,9 @@ describe('ShrinkageService', () => {
         waterCementRatio: 0.35,
         cementContent: 0.15,
       });
-      expect(withDefaults.metadata).toEqual(explicit.metadata);
+      const { calculatedAt: _a, ...defaultsMeta } = withDefaults.metadata as Record<string, unknown>;
+      const { calculatedAt: _b, ...explicitMeta } = explicit.metadata as Record<string, unknown>;
+      expect(defaultsMeta).toEqual(explicitMeta);
       expect(withDefaults.drying).toEqual(explicit.drying);
     });
 

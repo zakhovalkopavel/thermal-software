@@ -56,7 +56,7 @@
 
 | Service | Lines | Tests | Notes |
 |---------|-------|-------|-------|
-| `blend-optimizer.service.ts` | 115 | ✅ Full (`blend-optimizer-demo.spec.ts`) | + evaluate/expand services; `BlendOptimizerRanking` |
+| `blend-optimizer.service.ts` | 115 | ✅ Full (`blend-optimizer.service.spec.ts` + demo) | + evaluate/expand; ranking unit spec |
 | `glass-viscosity.service.ts` | 283 | ✅ Full (206 + 88 + utils specs) | Model selection / result meta → static utils |
 | `phase-equilibrium.service.ts` | 275 | ✅ Expanded | eutectic/liquidus regimes, mineral phases, validation |
 | `packing.service.ts` | 112 | ✅ Good (83 lines) | CPMCalibration → `types/`; Furnas/fractions/resolve utils |
@@ -326,7 +326,7 @@ Spec: [`STEP_05_DATABASE_MIGRATION.md`](STEP_05_DATABASE_MIGRATION.md)
 
 | Area | Spec files | Lines | Status |
 |------|-----------|-------|--------|
-| Refractory services | 12+ | expanded | ✅ Expanded beyond stubs (blend-optimizer still demo-oriented) |
+| Refractory services | 12+ | expanded | ✅ Expanded; blend-optimizer has mocked unit spec (+ demo) |
 | Refractory data / utils | several | — | ✅ Component properties + eutectic systems specs |
 | Thermodynamics services | 9 | — | ✅ Aerodynamics, diffusion, dimensionless, gas-props, radiation, transport, … |
 | Thermodynamics controllers | 1+ | — | ✅ Fluid controller covered |
@@ -350,10 +350,10 @@ Per-service checklist: [`docs/SERVICE_TEST_CHECKLIST.md`](../SERVICE_TEST_CHECKL
 1. ~~**Expand thin refractory test files**~~ — done
 2. ~~**Add thermodynamics service tests**~~ — done
 3. ~~**Frontend: Phase Equilibrium + Blend Optimizer**~~ — already in `mineral-compositions/`; gas charts now sync T unit + plot present keys
-4. **Phase 8.2 coverage report** — `docker compose exec backend npm run test:cov` when Docker is available
+4. ~~**Phase 8.2 coverage report**~~ — done: 98 suites / 1385 passed; 87.17 % stmts / 88.32 % lines (`test:cov` 2026-11-24)
 5. **Frontend verify** — restore full `frontend/node_modules` (vitest/highcharts) and run `npm test` / `npm run typecheck`
 6. ~~**Furnace module**~~ — superseded by Combustion + Thermodynamics (see section above)
-7. **Blend-optimizer unit tests** — replace/augment demo spec per `SERVICE_TEST_CHECKLIST.md`
+7. ~~**Blend-optimizer unit tests**~~ — `blend-optimizer.service.spec.ts` (mocked evaluate/expand) + `blend-optimizer-ranking.spec.ts`; demo retained
 
 ### Conventions refactoring (complete on `refactoring`)
 
@@ -370,7 +370,7 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 - [x] **Phase 6.4** — refractory utils: VTF split; `ViableRangeFormatter`; `GlassComposition` + `InvalidCompositionError`; `CompositionCharacteristics` → `types/`; `GlassViscosityArrhenius`; `GlassViscosityIida`. Refractory `exportedFreeFunctions` baseline empty.
 - [x] **Phase 6.5** — refractory services/controller under 300: packing (`CPMCalibration` type + Furnas/resolve utils); mix-thermal private round helpers; shrinkage models/stages + constants; glass-viscosity model-selection/result-meta; blend-optimizer evaluate/expand/ranking; controller split into composition/packing/thermal (routes identical). File-length + packing structure baselines cleared.
 - [x] **Phase 7** — split all 15 docs over 500 lines into topic files + parent indexes; file-length baseline empty; stale heat-conduction/compound-data links fixed; `make doc-links` green.
-- [x] **Phase 8** — structure baseline cleared (constants merge/split, one DTO/enum per file, fluid catalogue → `types/`, `ComponentProperty` → `types/component-property.type.ts`); `codemod-*.mjs` removed; `CONVENTIONS.md` lessons + lint decision (Jest ratchets only, no backend ESLint). Coverage report when Docker available.
+- [x] **Phase 8** — structure baseline cleared; `codemod-*.mjs` removed; Jest ratchets only; **8.2** `test:cov` 87.17 % stmts / 88.32 % lines (98 suites / 1385 passed, 2026-11-24).
 - [x] **Huber 2019 viscosity-of-gases → compound-data** — OCR’d `shared/processed/viscosity-gases/crc-huber-2019/`; source `shared/sources/viscosity-gases-huber-2019.json`; parser `compound_data.parsers.viscosity_gases` joins 35 CAS rows as `raw` viscosity/gas (null μ cells omitted; Air skipped). RefKey `Huber2019` only (2011 table not retained). Tests: `python/tests/compound_data/test_viscosity_gases.py`. Spec: [`COMPOUND_DATA_SPEC.md`](../scripts/COMPOUND_DATA_SPEC.md).
 - [x] **Gas-viscosity equation precision order** — Huber2019 MAPE ranks sources Perry8 → Yaws1999 → VDI2010 → White3 (`VISCOSITY_GAS_SOURCE_PRIORITY`); per-CAS `def` from `shared/sources/viscosity-gas-defaults.json` (35 compounds). Huber `raw` stores `bestEquation`, `mape_pct`, `max_abs_pct` (2 decimal %), `nCompared`. Report: `tmp/reports/python/compound-data/viscosity-equation-precision.json`. Tests: `test_viscosity_gas_priority.py`, `test_viscosity_gases.py`.
 - [x] **Transport μ uses viscosity `def`** — removed Sutherland hard-preference in `TransportService` / `CompoundFluidPropsService`; both call `CompoundPropertyResolver` so Huber-ranked defaults apply.
