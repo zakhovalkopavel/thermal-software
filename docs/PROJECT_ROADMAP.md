@@ -13,7 +13,7 @@
 
 1. **Source-extractor becomes the one door to every source.** Console, API (with Swagger) and a web GUI in the same stack as our frontend. It runs OCR and LLM models (Gemini first, later OpenAI, Anthropic, local ones), lets us query OCR for a zone with adjustable settings, and gives many parameters to tune how curves, nodes and zones are recognised. The Python folder of this repository turns into *adapters* for specific sources (Slag Atlas, NBS, Yaws and so on); general logic lives in the extractor. The main frontend gets a link to it.
 2. **Database with versioned datasets.** The newest dataset and images stay in one folder, older versions in another (removable once we are satisfied). The database keeps the history: versions, a flag for the latest one, prompts, models, parameters, and a log of what changed (corrected formulas, coefficients, new coefficients). Everything goes through migrations; history tables are only extended, never rewritten. Processed datasets stay in the repository as the current state and as seeds for a fresh install; the backend then reads the database only.
-3. **Close the gaps left from the legacy code.** Salt thermophysical library, refractory leftovers (mix library, strain-based lifetime), recuperator fixes (conductivity of real materials as a function of temperature must show in plots), quenchant tables.
+3. **Close the remaining legacy gap that still matters.** Recuperator: use material `λ(T)` in the calculation and show it in plots (data already exists; the scalar paste path is what is wrong). Salt library, mix-preset persistence and other refractory leftovers are skipped for now.
 4. **Collect heat-treatment data through the extractor.** Digitised cooling curves of real quenchants (heat transfer coefficient versus medium temperature, surface temperature, agitation), CCT diagrams of steels and other alloys, boiling points and phase diagrams of water-salt solutions (NaCl, CaCl₂, MgCl₂, NaNO₃, Ca(NO₃)₂, Mg(NO₃)₂ first). Viscosity and conductivity of salt solutions are the open risk: we digitise where sources exist, infer where they do not, and always mark confidence. Theory is checked against experiment; for oils experiment is the main source.
 5. **Quench and heat-treatment engine.** Boiling window of salt solutions, transition to convection, inverse problems (time and cooling rate), Kondratiev sizing, and process options such as austempering, martempering and interrupted intensive quenching in water-based media instead of toxic hot-salt baths.
 6. **Complex parts and temperature fields.** A new *plan-to-3D* module builds a 3D model and a calculation mesh from a 2D part drawing (Blender driven by AI agents). On top of it: Kondratiev number for real shapes, finite-element solution, visualisation and animation of heating and cooling.
@@ -42,6 +42,8 @@ The chain ends with a temperature field of the part and its final properties
 ![Thermal field during quenching and resulting properties](images/quench-fields-properties.png)
 
 ## Technical plans
+
+Index: [`docs/plans/README.md`](plans/README.md)
 
 - Source-extractor migration — [`docs/plans/SOURCE_EXTRACTOR_MIGRATION.md`](plans/SOURCE_EXTRACTOR_MIGRATION.md)
 - Database and dataset versioning — [`docs/plans/DATABASE_AND_VERSIONING.md`](plans/DATABASE_AND_VERSIONING.md)
