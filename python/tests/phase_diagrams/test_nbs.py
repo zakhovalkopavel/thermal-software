@@ -344,3 +344,43 @@ def test_append_nbs_page_merges_without_overwriting_other_pages(tmp_path):
     assert "\f" not in raw
     assert "BF3-SO2" not in raw
     assert "Al2O3-SiO2" in raw
+
+
+def test_load_nbs_finds_eutectic_data_when_dataset_nbs_missing(tmp_path):
+    """extract looks in shared/processed/eutectic-data after dataset/nbs/."""
+    import json
+    from pathlib import Path
+
+    from phase_diagrams.cli.common import _load_nbs, _nbs_entries_candidates
+
+    processed = tmp_path / "processed"
+    dataset = processed / "phase-diagrams"
+    eutectic = processed / "eutectic-data"
+    work = tmp_path / "work"
+    eutectic.mkdir(parents=True)
+    (eutectic / "nsrds-nbs-61-1.entries.json").write_text(
+        json.dumps(
+            [
+                {
+                    "entry": 6095,
+                    "system": "Al2O3-MgO",
+                    "components": ["Al2O3", "MgO"],
+                    "composition_mol": [32.6, 67.4],
+                    "temperature_C": 1995.0,
+                    "uncertainty_C": None,
+                    "approximateComposition": False,
+                    "approximateTemperature": False,
+                    "references": ["1442"],
+                    "notes": [],
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    paths = _nbs_entries_candidates(work, dataset)
+    assert paths[0] == dataset / "nbs" / "nsrds-nbs-61-1.entries.json"
+    assert paths[1] == eutectic / "nsrds-nbs-61-1.entries.json"
+    nbs = _load_nbs(work, dataset)
+    assert nbs is not None
+    assert nbs.entry(6095).temperature_C == 1995.0
+    assert Path(paths[1]).is_file()

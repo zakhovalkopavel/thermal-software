@@ -406,7 +406,8 @@ def _cmd_nbs_suggest(args, work: Path, dataset: Path | None = None) -> int:
     nbs = _load_nbs(work, dataset)
     if nbs is None:
         raise FileNotFoundError(
-            "NBS index not found; expected dataset/nbs/*.entries.json or work nbs/ (run nbs-index)"
+            "NBS index not found; expected dataset/nbs/*.entries.json, "
+            "shared/processed/eutectic-data/*.entries.json, or work nbs/ (run nbs-index / promote)"
         )
     rows = nbs.suggest(args.components)
     for entry, wt in rows:

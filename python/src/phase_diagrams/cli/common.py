@@ -46,13 +46,22 @@ def _line_scale(command: str, mask: np.ndarray, line_width_px: float | None) -> 
     return scale
 
 
-def _load_nbs(work: Path, dataset: Path | None = None) -> NbsMatcher | None:
-    """Load Table I entries: prefer ``dataset/nbs/``, fall back to working ``nbs/``."""
-    candidates = []
+def _nbs_entries_candidates(work: Path, dataset: Path | None = None) -> list[Path]:
+    """Search order for the promoted / working NSRDS-NBS 61 Table I index."""
+    name = f"{_NBS}.entries.json"
+    candidates: list[Path] = []
     if dataset is not None:
-        candidates.append(dataset / "nbs" / f"{_NBS}.entries.json")
-    candidates.append(work / "nbs" / f"{_NBS}.entries.json")
-    path = next((p for p in candidates if p.is_file()), None)
+        # Documented promote target next to configs/systems
+        candidates.append(dataset / "nbs" / name)
+        # OCR product also shipped as refractory eutectic-data (sibling of phase-diagrams/)
+        candidates.append(dataset.parent / "eutectic-data" / name)
+    candidates.append(work / "nbs" / name)
+    return candidates
+
+
+def _load_nbs(work: Path, dataset: Path | None = None) -> NbsMatcher | None:
+    """Load Table I entries: ``dataset/nbs/``, then ``eutectic-data/``, then working ``nbs/``."""
+    path = next((p for p in _nbs_entries_candidates(work, dataset) if p.is_file()), None)
     if path is None:
         return None
     return NbsMatcher([NbsEntry.from_dict(e) for e in json.loads(path.read_text(encoding="utf-8"))])

@@ -334,6 +334,12 @@ def build_binary_system(
         "digitization": {
             "render": f"pdfPage {config.pdf_page} at 400 dpi ({page_size[0]} × {page_size[1]} px), full page coordinates",
             "calibration": _calibration_text(config, calibration_result),
+            # Structured axes for review UIs (pixel ↔ wt% / °C). Prose stays in ``calibration``.
+            "axes": {
+                **cal.to_dict(),
+                "xComponent": x_name,
+                "otherComponent": other,
+            },
             "method": _METHOD,
             "check": _check_text(config, cal, frame, mask, lines, measured_t, drawn, compositions, stoichiometric, traced_data, refs),
         },
