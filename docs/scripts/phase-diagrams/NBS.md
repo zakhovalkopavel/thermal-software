@@ -50,7 +50,8 @@ that look like entries but do not parse go to `nsrds-nbs-61-1.unparsed.txt`.
   Writes `nsrds-nbs-61-1.anomalies.txt` for T-order breaks and composition/T suspicions
   (no auto-fix of systems or mol%). Promote the finished indexes into
   `shared/processed/phase-diagrams/nbs/` (`*.entries.json`, `*.bibliography.json`); `extract` /
-  `nbs-suggest` prefer that dataset copy over the working `reports/.../nbs/` dump.
+  `nbs-suggest` prefer that dataset copy, then `shared/processed/eutectic-data/` (same OCR
+  product used by refractory), then the working `reports/.../nbs/` dump.
 
 ### Bibliography
 

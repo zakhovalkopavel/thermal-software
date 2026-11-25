@@ -26,7 +26,8 @@
 | **Thermophysical** | 0% | Not started |
 | **Database migrations** | 0% | Not started |
 | **E2E tests** | 0% | Not started |
-| **Project roadmap (docs)** | Planned | [`docs/PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) — human roadmap; technical plans in [`docs/plans/`](../plans/README.md): source-extractor, database + versioning, remaining legacy gap (recuperator `λ(T)`), heat-treatment data, quench engine, geometry/fields/properties (plans only) |
+| **Project roadmap (docs)** | In progress | [`docs/PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) — human roadmap; technical plans in [`docs/plans/`](../plans/README.md) |
+| **Source-extractor (SE)** | ~85% | Phases 0–5 + full review port into SE (`source_extract/review/` split domain, `/api/v1/review`, React editor with tools/Analyze/Confirm/Undo). Host adapters + compose/nginx/`pd-*` shim. §12 cutover (Analyze GUI, NBS, OCR/LLM, history; delete local diagram-review) still open — [`SOURCE_EXTRACTOR_MIGRATION.md`](../plans/SOURCE_EXTRACTOR_MIGRATION.md) |
 
 ---
 
@@ -395,6 +396,23 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 6. ~~**Furnace module**~~ — superseded (combustion bed + thermodynamics)
 7. **Database migrations** — required before any persistent data features
 8. ~~**Refresh [`ROADMAP.md`](ROADMAP.md)**~~ — module-map statuses updated
+
+### Source-extractor migration (November 2026)
+
+- [x] SE FastAPI `/api/v1` + `/docs` + CLI `python -m source_extract.cli`
+- [x] `SourceAdapter` registry (`SE_ADAPTER_MODULES` + entry points); host `phase_diagrams.adapter` / `yaws1999.adapter`
+- [x] CommandSpec/ParamSpec; job runner; make `pd-*` → SE CLI; `extract_phase_diagram.py` shim
+- [x] LLM client factory (Google/OpenAI/Anthropic/compatible) + call recorder; OCR region + assist tools
+- [x] Dataset current/history + file `RunRecorder` + history commands; promote archives previous
+- [x] Review spine + React GUI screens; nginx `/source-extractor/`; main-frontend nav link
+- [x] Full port of diagram-review domain into `source_extract/review/` (split ≤300-line modules; adapter roots via `review_paths` / `SE_WORK_ROOT`)
+- [x] Review REST: sessions, geometry edits, Analyze→JobRunner, confirm, guidance heuristics
+- [x] React Review editor: systems+sessions rail, canvas engine (`view` pixels), tool modes, Analyze/Confirm/Undo (binary + ternary)
+- [x] Unit tests: barycentric/retrace, draft resolve prefers rich candidate, binary axes, move/undo
+- [ ] §12 cutover gate remaining: Analyze+reload in GUI end-to-end, NBS-backed extract, OCR zone re-query, LLM proposal apply, history diff
+- [ ] Delete host `phase_diagrams/cli` handlers and local diagram-review after cutover
+
+Plan: [`docs/plans/SOURCE_EXTRACTOR_MIGRATION.md`](../plans/SOURCE_EXTRACTOR_MIGRATION.md).
 
 ---
 

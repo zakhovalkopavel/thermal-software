@@ -6,7 +6,8 @@
 # Spec: docs/scripts/phase-diagrams/README.md
 # Implementation: python/src/phase_diagrams/
 
-PD_CLI   := docker-compose run --rm python python src/scripts/extract_phase_diagram.py
+# Prefer source-extractor CLI (single entry point). Host shim script also delegates here.
+PD_CLI   := docker compose run --rm --no-deps source-extractor python -m source_extract.cli
 PD_PAGES ?= 40-200
 SCALE    ?= 1
 

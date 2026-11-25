@@ -1,6 +1,7 @@
 # Plan: Source-extractor as the single entry point (Roadmap phase 1)
 
-Status: 🟡 in progress (design accepted) · Part of [`PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) ·
+Status: 🟡 in progress (phases 0–5 scaffold; review domain+API+React editor full-ported; §12 cutover gate still open for Analyze/NBS/OCR/LLM/history) ·
+Part of [`PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) ·
 Next plan: [`DATABASE_AND_VERSIONING.md`](DATABASE_AND_VERSIONING.md)
 
 ## 1. Goal
@@ -214,14 +215,14 @@ flowchart LR
 
 ## 11. Work breakdown
 
-| Phase | Content | Done when |
-|---|---|---|
-| 0 Guard + scaffold | `services/` in `.git/info/exclude`; SE app skeleton (FastAPI `/docs`, `/health`, CLI `--help`, empty Vite app, Dockerfile, compose for SE + page-ocr, mounts for `shared/`, `tmp/reports/python/`, adapter `PYTHONPATH`) | `git status` shows nothing from `services/`; SE container serves `/docs` |
-| 1 Adapters + commands | `SourceAdapter` protocol and registry; `phase-diagrams` adapter wraps current package; `CommandSpec`/`ParamSpec`; pd-* subcommands as SE commands; job runner replaces the Docker shell-out of `services/diagram-review/app/jobs/analyze.py` | CLI and `POST /jobs` run the same commands; make targets alias to the SE CLI |
-| 2 Models + assist | LLM client, providers, recorder; OCR runners, region query, own-OCR fallback; assist tools; guidance cards ported; parameters exposed per command | a zone can be re-OCR'd with other settings from CLI, API and GUI; every call is recorded |
-| 3 Dataset store | current/history roots, format registry, change notes, manifests, file `RunRecorder`, history commands; first formats for system JSON and NBS entries | a promote moves the old version to history and writes a manifest |
-| 4 Review + GUI | review code moved to `source_extract/review/` with adapter config; React GUI at parity; generated API client; main-frontend link and nginx route | parity checklist (§12) passes in the GUI |
-| 5 Slim host + cutover | host CLI logic deleted; `extract_phase_diagram.py` becomes a shim and is then removed; `services/diagram-review` deleted locally; docs refreshed; submodule pointer bumped | parity checklist passes without `services/` |
+| Phase | Content | Done when | Session status |
+|---|---|---|---|
+| 0 Guard + scaffold | `services/` in `.git/info/exclude`; SE app skeleton (FastAPI `/docs`, `/health`, CLI `--help`, empty Vite app, Dockerfile, compose for SE + page-ocr, mounts for `shared/`, `tmp/reports/python/`, adapter `PYTHONPATH`) | `git status` shows nothing from `services/`; SE container serves `/docs` | done |
+| 1 Adapters + commands | `SourceAdapter` protocol and registry; `phase-diagrams` adapter wraps current package; `CommandSpec`/`ParamSpec`; pd-* subcommands as SE commands; job runner replaces the Docker shell-out of `services/diagram-review/app/jobs/analyze.py` | CLI and `POST /jobs` run the same commands; make targets alias to the SE CLI | done |
+| 2 Models + assist | LLM client, providers, recorder; OCR runners, region query, own-OCR fallback; assist tools; guidance cards ported; parameters exposed per command | a zone can be re-OCR'd with other settings from CLI, API and GUI; every call is recorded | done (guidance cards not fully ported) |
+| 3 Dataset store | current/history roots, format registry, change notes, manifests, file `RunRecorder`, history commands; first formats for system JSON and NBS entries | a promote moves the old version to history and writes a manifest | done |
+| 4 Review + GUI | review code moved to `source_extract/review/` with adapter config; React GUI at parity; generated API client; main-frontend link and nginx route | parity checklist (§12) passes in the GUI | **full port landed** — split domain (`session_*`, contours, barycentric, binary axes, …), review REST (`/api/v1/review/*`), React editor (systems+sessions rail, canvas, tools, Analyze/Confirm/Undo). Dry-run: open ternary `cao-al2o3-sio2` + binary `al2o3-cao`, move/undo. Remaining §12: Analyze+reload in GUI, NBS extract, OCR/LLM, history. `services/diagram-review` stays local reference |
+| 5 Slim host + cutover | host CLI logic deleted; `extract_phase_diagram.py` becomes a shim and is then removed; `services/diagram-review` deleted locally; docs refreshed; submodule pointer bumped | parity checklist passes without `services/` | shim + docs done; host CLI modules + local diagram-review kept until §12 green |
 
 ## 12. Parity checklist (cutover gate)
 

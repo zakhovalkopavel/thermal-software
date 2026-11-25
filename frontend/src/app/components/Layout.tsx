@@ -1,6 +1,6 @@
 import { AppBar, Box, Button, Container, Toolbar, Typography } from '@mui/material';
 import { NavLink, Outlet } from 'react-router-dom';
-import { APP_NAV } from '@/app/constants/app-nav.constants';
+import { APP_NAV, SOURCE_EXTRACTOR_URL } from '@/app/constants/app-nav.constants';
 
 export function Layout() {
   return (
@@ -22,6 +22,13 @@ export function Layout() {
               {item.label}
             </Button>
           ))}
+          <Button
+            color="inherit"
+            href={SOURCE_EXTRACTOR_URL}
+            sx={{ ml: 1 }}
+          >
+            Source Extractor
+          </Button>
         </Toolbar>
       </AppBar>
       <Container maxWidth="xl" sx={{ flex: 1, py: 3 }}>

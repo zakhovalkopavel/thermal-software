@@ -42,6 +42,11 @@ pytest-cov = "^4.1"
 black = "^24.3"
 isort = "^5.12"
 
+# Discovered by source-extract AdapterRegistry (entry-point group).
+[tool.poetry.plugins."source_extract.adapters"]
+"phase-diagrams" = "phase_diagrams.adapter:get_adapter"
+"yaws1999" = "yaws1999.adapter:get_adapter"
+
 [build-system]
 requires = ["poetry-core>=1.5.0"]
 build-backend = "poetry.core.masonry.api"

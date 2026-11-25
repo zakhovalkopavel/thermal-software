@@ -4,9 +4,11 @@ Part of the [phase-diagram extraction specification](README.md).
 
 Generic diagram CV (config, detection, tracing, rendering, most models/builders/figures)
 lives in `vendor/source-extract` (`source_extract.diagrams`). The host package under
-`python/src/phase_diagrams/` keeps Atlas/NBS adapters (CLI, compounds, NBS matching,
-host builders/output) and re-exports a public API from `__init__.py` for convenience.
-Callers should prefer `source_extract.diagrams.*` for generic symbols.
+`python/src/phase_diagrams/` keeps Atlas/NBS adapters (compounds, NBS matching,
+host builders/output) plus `adapter.py` (`SourceAdapter` for the SE registry).
+CLI make targets (`pd-*`) call `python -m source_extract.cli`, which delegates into
+this adapter. The host package still re-exports a public API from `__init__.py`;
+callers should prefer `source_extract.diagrams.*` for generic symbols.
 
 ## Implementation layout
 
@@ -20,6 +22,7 @@ python/
   src/
     phase_diagrams/
       __init__.py                    ← public API re-exports
+      adapter.py                     ← SourceAdapter for source-extract (SE CLI/API)
       constants/
         atomic_mass.py               ← ATOMIC_MASS (standard atomic weights; molar masses via formula_molar_mass)
         oxide_formulas.py            ← OXIDE_FORMULAS (caption display)

@@ -43,7 +43,7 @@ flowchart TB
 
 ## 2 — `source-extract`
 
-One package with submodules:
+One package with extract libraries **and** the single entry point (CLI / FastAPI / React GUI):
 
 | Subpackage | Role |
 | --- | --- |
@@ -51,15 +51,19 @@ One package with submodules:
 | `source_extract.diagrams` | Figure/diagram CV (detect, trace, calibrate, overlay) |
 | `source_extract.papers` | Mixed papers (scaffold) |
 | `source_extract.pipeline` | `extract_and_save(ExtractRequest)` — high-level write path |
+| `source_extract.adapters` | `SourceAdapter` protocol + registry (entry points / `SE_ADAPTER_MODULES`) |
+| `source_extract.commands` / `params` / `jobs` | CommandSpec + ParamSpec + async job runner |
+| `source_extract.models` / `assist` / `review` / `versioning` | LLM/OCR, assist tools, review spine, current/history store |
+| `source_extract.api` / `cli` | FastAPI `/api/v1` (+ `/docs`) and `python -m source_extract.cli` |
 
-OCR stays in `page-ocr`; only `source-extract` depends on it. Diagram/table/paper **kinds** share one repo because they share the same job: ingest a source and persist results.
+OCR stays in `page-ocr`; only `source-extract` depends on it. Host compose runs `source-extractor` + `source-extractor-ui` behind nginx `/source-extractor/`.
 
 ## Adapters in this repo
 
 | Adapter | Uses |
 | --- | --- |
-| `yaws1999/` | `source_extract.tables` (dataset, export, naming, progress, columns) |
-| `phase_diagrams/` | `source_extract.diagrams` directly for generic CV; host code for Atlas/NBS/CLI/compounds |
+| `yaws1999/` (+ `adapter.py`) | `source_extract.tables`; SE registry stub for tables |
+| `phase_diagrams/` (+ `adapter.py`) | `source_extract.diagrams` for CV; Atlas/NBS/CLI/compounds stay host-side; SE commands delegate here |
 | future paper package | `source_extract.papers` / optionally `pipeline` |
 
 Production and image builds copy `vendor/*/src` into `/app/vendor/*/src` and set `PYTHONPATH` accordingly (`docker/python/Dockerfile`, `compose.production.yml`). Dev Compose still bind-mounts the vendor trees for live edits.
@@ -79,7 +83,7 @@ thermal-software/
 | Path | Contents |
 | --- | --- |
 | `vendor/page-ocr/` | OCR client + Modal app + Surya engine + PDF render |
-| `vendor/source-extract/` | tables + diagrams + papers + `extract_and_save` (depends on page-ocr) |
+| `vendor/source-extract/` | tables + diagrams + papers + CLI/API/GUI entry point (depends on page-ocr) |
 
 Tracked via `.gitmodules`.
 
