@@ -27,6 +27,7 @@
 | **Database migrations** | 0% | Not started |
 | **E2E tests** | 0% | Not started |
 | **Project roadmap (docs)** | In progress | [`docs/PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) — human roadmap; technical plans in [`docs/plans/`](../plans/README.md) |
+| **Heat-treatment data (plan, phase 4)** | Plan only | Gaps G1–G10, new dataset kinds, steps D7–D11; no-legacy and no-tuning rules. Split into [`QUENCH_SOURCE_PICKLIST.md`](../plans/QUENCH_SOURCE_PICKLIST.md), [`SOLUTION_PROPERTY_ALGORITHM.md`](../plans/SOLUTION_PROPERTY_ALGORITHM.md), [`SOLUTION_VERIFICATION_EXAMPLES.md`](../plans/SOLUTION_VERIFICATION_EXAMPLES.md); main plan [`HEAT_TREATMENT_DATA.md`](../plans/HEAT_TREATMENT_DATA.md) |
 | **Source-extractor (SE)** | ~85% | Phases 0–5 + full review port into SE (`source_extract/review/` split domain, `/api/v1/review`, React editor with tools/Analyze/Confirm/Undo). Host adapters + compose/nginx/`pd-*` shim. §12 cutover (Analyze GUI, NBS, OCR/LLM, history; delete local diagram-review) still open — [`SOURCE_EXTRACTOR_MIGRATION.md`](../plans/SOURCE_EXTRACTOR_MIGRATION.md) |
 
 ---

@@ -3,7 +3,10 @@
 Status: 🟣 research / data risk · Part of [`PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) ·
 Depends on [`SOURCE_EXTRACTOR_MIGRATION.md`](SOURCE_EXTRACTOR_MIGRATION.md) (adapters, OCR zone queries) and
 [`DATABASE_AND_VERSIONING.md`](DATABASE_AND_VERSIONING.md) (tables, translators) ·
-Feeds [`QUENCH_ENGINE.md`](QUENCH_ENGINE.md)
+Feeds [`QUENCH_ENGINE.md`](QUENCH_ENGINE.md) ·
+Details: [`QUENCH_SOURCE_PICKLIST.md`](QUENCH_SOURCE_PICKLIST.md) (sources and what to pick),
+[`SOLUTION_PROPERTY_ALGORITHM.md`](SOLUTION_PROPERTY_ALGORITHM.md) (prediction of solution properties),
+[`SOLUTION_VERIFICATION_EXAMPLES.md`](SOLUTION_VERIFICATION_EXAMPLES.md) (examples from sources)
 
 ## 1. Goal
 
@@ -32,6 +35,41 @@ file names from these folders into plans or `RefKey`s.
 | `tmp/sources/quenching/` | aqueous salt solution properties, cooling-curve plots, intensive quench and oils (experiments and papers) |
 | `tmp/sources/thermal_exchange/` | heat-transfer handbooks: boiling and convection theory, Kondratiev regular thermal regime, thermotechnical tables (supports HTC models and inverse sizing, not only quench data) |
 
+### 2.1 Sources
+
+The local pool was read once by hand; the result is a per-source list of what to pick, the dataset it
+goes to, the extraction method, priority and state — in
+[`QUENCH_SOURCE_PICKLIST.md`](QUENCH_SOURCE_PICKLIST.md) (pool items A1–A9 for properties and phase
+equilibria, B1–B19 for quenching theory and experiments, §4 problems found in the files, §5 sources to
+acquire). Main findings:
+
+- The pool already contains primary material for the central data: CaCl₂ and LiCl formulas (Conde), 20 °C
+  property tables for NaCl, CaCl₂, MgCl₂, LiCl, NaNO₃, scanned phase diagrams of CaCl₂ and MgCl₂, boiling-heat-transfer
+  chapters of Kutateladze and Mikheev, cooling-time tables (French & Hamill) and cooling curves (Petrash, Grabov et al.).
+- Some files are wrong or unusable: one table of "saturated solutions" is rejected; one file labelled as the
+  NaNO₂ study contains another paper; two books have no text layer; one file is a composite of two papers.
+
+### 2.2 Gaps
+
+| # | Gap | Why it matters | Closing action | Priority |
+|---|---|---|---|---|
+| G1 | Density, surface tension, viscosity, conductivity, heat capacity formulas of CaCl₂ and LiCl in the Conde report are not extracted | only primary source at high concentration | read the formulas on the page images (A1) | high |
+| G2 | MgCl₂ solubility above 116.7 °C and boiling above ≈ 125 °C; the Mg set of the Pitzer model is biased near 45 % | saturation at the boiling temperature; solution boiling point `T_S` of the quench model | digitise the MgCl₂ diagram of the Russian handbook (A3: 116.7 °C 46.2 %; 181–182 °C 55.8 %; saturated solution boils at 193 °C, 55.6 %) and cross-check with A4 | high |
+| G3 | Boiling point versus pressure and saturated concentration at the boiling temperature, per salt | water under pressure; near-saturation CaCl₂ crystallises at low pressure | dataset `solution-phase-equilibrium` and the algorithm of [`SOLUTION_PROPERTY_ALGORITHM.md`](SOLUTION_PROPERTY_ALGORITHM.md) §5 | high |
+| G4 | Nitrates (NaNO₃ partly, Ca(NO₃)₂, Mg(NO₃)₂) and nitrites: almost no data; the NaNO₂ HTC paper is missing from the pool | first-solutions list | acquire U7, U8 of the pick list | medium |
+| G5 | Conductivity and surface tension of NaCl, CaCl₂, MgCl₂ up to saturation and above 100 °C | open risk of §2 | handbook tables, Conde, Melinder (pick list U4, U5, U11); ranges stored with each fit | high |
+| G6 | Boiling-model constants: nucleate-boiling relation and its dependence on pressure, critical flux, film-boiling radiation factor, Tolubinsky bubble parameters | nucleate-boiling HTC cannot be computed without them | take them from the boiling chapters of Kutateladze and Mikheev (B1, B2) and confirm in the original works (U9); no constant without a `ref` | high |
+| G7 | Kobasko parameters exist as printed tables and plots: `Ω(Bi)`, `k_F`, Ms versus carbon, `q_cr1` versus concentration, HTC versus bath temperature | needed for `ϑ_I`, `ϑ_II`, `τ_nb` and the boiling window | dataset `quenchant-model-parameter` (§5); digitise the plots (B6–B8) | high |
+| G8 | Optimal concentration is evidenced for NaCl and LiCl (density 1000–1110 kg/m³) and by cooling-rate curves for 0–20 % NaCl (maximum at 10–15 %); nothing for CaCl₂ and MgCl₂ curves; 20–26 % NaCl and 40 % CaCl₂ lie outside | film-boiling suppression there is an extrapolation | results outside the documented range carry the flag `extrapolated`; look for more experiments | medium |
+| G9 | Cooling data for salt solutions exist as tables and a few curves; no cooling curves at high concentration | HTC reconstruction (§4.1) has little to start from | digitise B10–B13; ISO 9950 / ASTM D6200 conditions (U10) | medium |
+| G10 | LiCl is covered by Conde and by the optimum-concentration plot but is not in the first-solutions list | data already exist | decision (§10) | medium |
+
+### 2.3 Verification examples
+
+Concrete examples are quoted from the sources and used **only to measure confidence** of frozen models —
+never to fit, scale or select them. The list, the independence classes, the result classes and the protocol
+are in [`SOLUTION_VERIFICATION_EXAMPLES.md`](SOLUTION_VERIFICATION_EXAMPLES.md).
+
 ## 3. Confidence model
 
 Every stored value carries a `confidence` and a `basis`; nothing is stored without them.
@@ -42,10 +80,15 @@ Every stored value carries a `confidence` and a `basis`; nothing is stored witho
 | `digitised` | read from a plot with calibrated axes; stores calibration error | cooling curve points |
 | `fitted` | model fitted to measured or digitised values; stores fit residual and range | viscosity vs T correlation |
 | `inferred` | derived from related data or a theory; stores the assumption | conductivity from a mixing rule |
-| `legacy` | taken from old code or unverified notes, not yet checked against a primary source | early seed row pending review |
 
 `basis` is a `RefKey` (and page) for literature, or an extractor run id for derived values. The quench
 engine reports the lowest confidence used by a calculation.
+
+**There is no `legacy` level.** Old code, earlier notes, scratch scripts and library defaults are scratch
+models: they may be used to explore, never as a source of data or coefficients. Every stored value and every
+coefficient is traced to a registered source; a value that cannot be traced is not stored and is listed in the
+gap report. A library is used only to cross-check our own implementation after its coefficients have been
+traced to the original paper.
 
 ## 4. Pipelines
 
@@ -91,8 +134,11 @@ flowchart LR
 
 - Tables are read with the `tables` side of the extractor (as for Yaws); plots with the diagram side.
 - Where a property is missing, the order is: digitise another source → fit a correlation to what exists
-  (marked `fitted`) → infer from a mixing or electrolyte rule (marked `inferred`) → leave empty. The
+  (marked `fitted`; the fit uses source data only, never the verification examples) → infer from a mixing
+  or electrolyte rule whose coefficients come from a source (marked `inferred`) → leave empty. The
   quench engine must handle an empty property by stating that the calculation is not possible, never by using a placeholder.
+- How the properties are predicted (activity model, boiling point at pressure, saturation, transport
+  properties, uncertainty) is in [`SOLUTION_PROPERTY_ALGORITHM.md`](SOLUTION_PROPERTY_ALGORITHM.md).
 - Phase diagrams of the water–salt systems reuse the phase-diagram pipeline already built for
   binary systems.
 
@@ -106,6 +152,9 @@ All formats carry the standard `format` block and are registered in the format r
 | `quench-htc-profile` | `quenchant`, `conditions`, `h(T_surface)` series, `fit_residual`, `source_curve_id`, `confidence` |
 | `quenchant-property` | `quenchant`, `property`, `T`, `concentration`, `value`, `unit`, `confidence`, `basis` |
 | `cct-diagram` | `steel`, `composition`, `austenitising{T, time, grain}`, `phases[{name, start[], finish[]}]`, `ms`, `mf`, `hardness_labels[]`, `ref`, `page` |
+| `solution-phase-equilibrium` | `solute`, `branch` (`boiling`, `ice`, or a hydrate name), `pressure` (for `boiling`), `series[{concentration, temperature}]`, `valid_range`, `model` (table or fitted formula with coefficients), `confidence`, `ref`, `page` |
+| `quenchant-model-parameter` | `quenchant_class`, `parameter` (`omega_bi`, `shape_factor`, `ms_carbon`, `q_cr1_concentration`, `htc_bath_temperature`, …), `argument{name, unit}`, `series[{x, y}]`, `conditions`, `confidence`, `ref`, `page` |
+| `quench-cooling-time-table` | `quenchant`, `bath_temperature`, `agitation`, `probe`, `initial_temperature`, `rows[{position, target_temperature, time}]`, `ref`, `page` |
 
 Database tables for these kinds are listed in [`DATABASE_AND_VERSIONING.md`](DATABASE_AND_VERSIONING.md) §4.3.
 
@@ -118,7 +167,12 @@ Database tables for these kinds are listed in [`DATABASE_AND_VERSIONING.md`](DAT
 | D3 HTC reconstruction | inverse solver on the thermal-distribution module; forward re-simulation check | residual report for each curve |
 | D4 Solution properties | boiling point and phase data for the six salts; density; then viscosity and conductivity where sources exist | table of coverage with confidence per property and salt |
 | D5 CCT adapter | adapter + format + first 10 steels | curves and hardness labels reviewed |
-| D6 Gap report | machine-written report of missing/low-confidence properties per solution | report in `tmp/reports/` and summary in docs |
+| D6 Gap report | machine-written report of missing/low-confidence properties per solution | report in `tmp/reports/` and summary in docs; seeded with the gaps G1–G10 of §2.2 |
+| D7 Boiling-model constants | close G6: take the nucleate-boiling, critical-flux and film-boiling constants from the registered boiling chapters (pick list B1, B2) and confirm them in the original works | every constant of the boiling window has `ref`; nothing is a placeholder; no scratch relation is used |
+| D8 Kobasko parameters | close G7: `quenchant-model-parameter` datasets (`Ω(Bi)`, `k_F`, Ms versus carbon, `q_cr1` versus concentration, HTC versus bath temperature) | values reviewed against the page images; the worked examples of the source are evaluated as verification, not fitted |
+| D9 Pressure and saturation | close G2 and G3: `solution-phase-equilibrium` boiling and solubility curves per salt, pressure as a field | for each salt, boiling point versus pressure with the saturation concentration at that temperature, or a stated gap |
+| D10 Property algorithm | implement steps A1–A6 of [`SOLUTION_PROPERTY_ALGORITHM.md`](SOLUTION_PROPERTY_ALGORITHM.md) | property × salt × range table with stated uncertainty; refusals outside ranges tested |
+| D11 Verification report | evaluate the examples of [`SOLUTION_VERIFICATION_EXAMPLES.md`](SOLUTION_VERIFICATION_EXAMPLES.md) on frozen code | report in `tmp/reports/`; deviation register; no coefficient changed because of a result |
 
 ## 7. Validation
 
@@ -127,6 +181,19 @@ Database tables for these kinds are listed in [`DATABASE_AND_VERSIONING.md`](DAT
 - Properties: cross-check between sources through the `compare_sources` assist tool; disagreements are
   stored as separate rows with their basis, not averaged silently.
 - Theory is compared with experiment; for oils experiment is the primary source.
+- Extracted tables: the number of numeric columns must equal the number of header labels. A text
+  extraction of one cooling-time table showed six columns under five labels; the missing header was
+  found only on the page image. A mismatch blocks promotion until reviewed on the image.
+- Extracted formulas: a formula whose text extraction is garbled is **not stored** until it is read on the
+  page image or in the original source; it is never repaired from memory.
+- A table of property values of unknown provenance is not a source. A table with provenance is compared
+  with other sources of the same property; when they disagree beyond the stated uncertainty both are stored
+  as separate rows with their basis (the saturated-solution table of unknown origin was rejected this way).
+- **Verification examples are not used for fitting.** Examples quoted from sources only measure the
+  confidence of frozen models; a deviation is reported, never removed by adjusting a coefficient. Protocol:
+  [`SOLUTION_VERIFICATION_EXAMPLES.md`](SOLUTION_VERIFICATION_EXAMPLES.md).
+- Values outside the documented range of a source (concentration, temperature, pressure) are returned with
+  the flag `extrapolated`, so the quench engine can show it.
 
 ## 8. Docs and tests (Definition of Done)
 
@@ -143,3 +210,18 @@ Database tables for these kinds are listed in [`DATABASE_AND_VERSIONING.md`](DAT
 | Oil HTC theory unreliable | experimental curves are the primary data |
 | Proprietary quenchant data | store only what the licence permits; mark the basis |
 | Probe and agitation differences between sources | store conditions; never merge curves with different conditions |
+| Boiling-window constants (G6) missing or unsourced | the quench engine refuses the nucleate-boiling HTC for a solution until D7 gives a registered constant |
+| Near-saturation solutions: boiling point and solubility at pressure (G2, G3) | state a lower bound or a gap; never present a model estimate as a measured value |
+| Optimal-concentration effect is documented only for low concentrations (G8) | mark film-boiling-free predictions at 20–26 % NaCl or 40 % CaCl₂ as `extrapolated` |
+| Garbled formulas and column mismatches in text extraction | review on the page image; see §7 |
+| Wrong or composite files in the pool (a paper under another title, two papers in one file) | check content against the title page before registration; list in the pick list §4 |
+| Pressure to make a model "fit" the examples | rule of §7 and of the verification plan: no tuning; deviations are reported |
+
+## 10. Open questions
+
+| Question | Options |
+|---|---|
+| Add LiCl to the first solutions (G10)? | yes: Conde and the optimum-concentration plot cover it; no: keep to the six listed salts |
+
+Decisions taken: mixtures with organic components are not planned; legacy code and notes are scratch models
+only; outputs of library models are not data (their coefficients are registered from the original papers).

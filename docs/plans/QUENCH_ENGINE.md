@@ -48,7 +48,7 @@ flowchart TB
 
 | Class | Approach | Notes |
 |---|---|---|
-| Aqueous salt solutions | boiling window: film boiling → nucleate boiling → convection; nucleate boiling flux from the legacy relation `q = β·ΔT^(10/3)` with `β` from solution properties; transition temperatures from solution boiling point and properties | theory first; replaced by data profiles where digitised curves exist |
+| Aqueous salt solutions | boiling window: film boiling → nucleate boiling → convection; nucleate boiling flux from a relation and constants taken from registered sources (boiling chapters of Kutateladze and Mikheev; see [`HEAT_TREATMENT_DATA.md`](HEAT_TREATMENT_DATA.md) gap G6) — no unsourced relation; transition temperatures from solution boiling point and properties | theory first; replaced by data profiles where digitised curves exist |
 | Polymer solutions (including inverse-solubility polymers) | data-driven `h(T_surface)` profiles by concentration and agitation | cloud-point behaviour stored as a property |
 | Oils | data-driven profiles from experimental curves | theory unreliable; gap reported if no data |
 | Water under pressure | boiling point shift with pressure; profile from theory plus data | pressure as a process parameter |
