@@ -25,6 +25,7 @@ export { YawsLiquidViscosityEquationMethod } from './yaws-liquid-viscosity-equat
 export { YawsLiquidConductivityEquationMethod } from './yaws-liquid-conductivity-equation-method';
 export { YawsLiquidDensityEquationMethod } from './yaws-liquid-density-equation-method';
 export { YawsWaterSolubilityEquationMethod } from './yaws-water-solubility-equation-method';
+export { RobieHemingwayEquationMethod } from './robie-hemingway-equation-method';
 export { integrationOrigin } from './integration-origin.util';
 export { temperatureRangeIndex } from './temperature-range-index.util';
 export { piecewiseIntegral } from './piecewise-integral.util';

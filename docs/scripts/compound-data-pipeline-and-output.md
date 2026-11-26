@@ -29,7 +29,7 @@ Done, except the `PROVENANCE.txt` edition fix and `SHA256SUMS` update below.
 
 ## Output: `shared/processed/compound-data/`
 
-The build clears the folder first (the `inorganic/` and `organic/` folders and the top-level `.json` files; anything else is kept with a warning), so files of renamed or dropped compounds do not linger.
+The build clears the folder first (the `inorganic/` and `organic/` folders and the top-level `.json` files; anything else is kept with a warning), so files of renamed or dropped compounds do not linger. After the chemicals/Yaws catalogue is written, `status: ok` rows from `shared/processed/minerals-thermodynamic/` are overlaid (same `make compound-data-build`; skip with `NO_MINERALS=1`). There is no separate overlay make target.
 
 ```
 shared/processed/compound-data/

@@ -11,14 +11,14 @@
   ],
   "entries": {
     "noCas": {
-      "compoundId": "CaO·Al2O3·2SiO2",
+      "compoundId": "CaO\u00b7Al2O3\u00b72SiO2",
       "formula": "CaAl2Si2O8",
       "cas": "37342-39-5",
       "casRef": [
         2651,
         "idPubchemRestInorganic"
       ],
-      "name": "CaO·Al2O3·2SiO2",
+      "name": "CaO\u00b7Al2O3\u00b72SiO2",
       "pubchemCid": 56843091,
       "properties": {
         "enthalpyFormation298": [
@@ -30,6 +30,23 @@
               "NBS1982",
               9547,
               "nbsTables"
+            ]
+          },
+          {
+            "value": -4234000.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              42,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": -4232600.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
             ]
           }
         ],
@@ -43,6 +60,23 @@
               9547,
               "nbsTables"
             ]
+          },
+          {
+            "value": 199.3,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              42,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": 200.5,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "gibbsEnergy298": [
@@ -54,6 +88,15 @@
               "NBS1982",
               9547,
               "nbsTables"
+            ]
+          },
+          {
+            "value": -4007900.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              42,
+              "usgsBulletin2131"
             ]
           }
         ],
@@ -110,11 +153,131 @@
                 "k": 4.184,
                 "variant": "glass",
                 "error": 1
+              },
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  69,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 1800.0,
+                      "A1": 516.8,
+                      "A2": -0.09249,
+                      "A3": -1408000.0,
+                      "A4": -4589.0,
+                      "A5": 4.188e-05
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 1800.0
               }
             ]
           }
         }
-      }
+      },
+      "raw": [
+        {
+          "property": "gibbsEnergySER",
+          "phase": "solid",
+          "values": {
+            "gFunction": "GCAS2",
+            "Tmin_K": 1.0,
+            "Tmax_K": 3000.0,
+            "G": {
+              "form": "H0 + a2*T^2 + a3*T^3 + sum(prefactor*T*ln(1-exp(-theta/T)))",
+              "H0_Jmol": -4264239.830886458,
+              "a2": -0.006150786253147202,
+              "a3": null,
+              "einstein": [
+                {
+                  "prefactor": 148.8058523578853,
+                  "factorFunction": "CAS20",
+                  "theta_K": 658.274391945986
+                },
+                {
+                  "prefactor": 77.2252274445672,
+                  "factorFunction": "CAS21",
+                  "theta_K": 1550.5709792
+                },
+                {
+                  "prefactor": 98.2320820124797,
+                  "factorFunction": "CAS22",
+                  "theta_K": 218.7117455
+                }
+              ],
+              "units": "J/mol; T in K",
+              "rawExpression": "(-4.2642398308864581E6 + 148.8058523578853*T*LN(CAS20) + 77.225227444567193*T*LN(CAS21) + 98.232082012479691*T*LN(CAS22) - 0.006150786253147202*T**2)",
+              "R": 8.31446261815324
+            },
+            "tdbPhase": "CAS2",
+            "polymorph": null
+          },
+          "ref": [
+            "Abdul2023",
+            "SER"
+          ]
+        },
+        {
+          "property": "hollandPowellV0",
+          "phase": "solid",
+          "values": {
+            "V0_Jbar": 10.079,
+            "GH_Jmol": -4292379.0,
+            "eos": 8
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 370.5,
+            "c2": 0.01001,
+            "c3": -4339100.0,
+            "c4": null,
+            "c5": -1960.6,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "gibbsEnergySER",
+          "phase": "solid",
+          "values": {
+            "property": "Gm_minus_HSER",
+            "expressionRaw": "-4305540-529432/T + 1413.72T - 235.588T ln T -0.0409767T^2 + 27151500/T^2",
+            "numbers": [
+              -4305540.0,
+              -529432.0,
+              1413.72,
+              235.588,
+              -0.0409767,
+              2.0,
+              27151500.0,
+              2.0
+            ],
+            "note": null
+          },
+          "ref": [
+            "Mao2006",
+            "Table I",
+            "SER"
+          ]
+        }
+      ]
     }
   }
 }

@@ -266,6 +266,14 @@
               206,
               "yaws1999Table12_2"
             ]
+          },
+          {
+            "value": 0.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "entropy298": [
@@ -294,6 +302,14 @@
               "Yaws1999",
               206,
               "yaws1999Table12_2"
+            ]
+          },
+          {
+            "value": 205.2,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
             ]
           }
         ],
@@ -1225,6 +1241,76 @@
           }
         }
       },
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 100,
+                "mu": 7.7e-06
+              },
+              {
+                "T": 200,
+                "mu": 1.47e-05
+              },
+              {
+                "T": 300,
+                "mu": 2.07e-05
+              },
+              {
+                "T": 400,
+                "mu": 2.58e-05
+              },
+              {
+                "T": 500,
+                "mu": 3.05e-05
+              },
+              {
+                "T": 600,
+                "mu": 3.47e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": false,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              1
+            ],
+            "bestEquation": {
+              "ref": "White3",
+              "type": "sutherland"
+            },
+            "mape_pct": 0.52,
+            "max_abs_pct": 0.83,
+            "nCompared": 5
+          },
+          "ref": [
+            "Huber2019",
+            548,
+            "huber2019Viscosity"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 48.3,
+            "c2": -0.000691,
+            "c3": 499200.0,
+            "c4": null,
+            "c5": -420.7,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        }
+      ],
       "transport": {
         "thermalConductivity": [
           {
@@ -1281,59 +1367,6 @@
       ],
       "nasa7": [
         "O2"
-      ],
-      "raw": [
-        {
-          "property": "viscosity",
-          "phase": "gas",
-          "values": {
-            "points": [
-              {
-                "T": 100,
-                "mu": 7.7e-06
-              },
-              {
-                "T": 200,
-                "mu": 1.47e-05
-              },
-              {
-                "T": 300,
-                "mu": 2.07e-05
-              },
-              {
-                "T": 400,
-                "mu": 2.58e-05
-              },
-              {
-                "T": 500,
-                "mu": 3.05e-05
-              },
-              {
-                "T": 600,
-                "mu": 3.47e-05
-              }
-            ],
-            "unit": "Pa s",
-            "p0": false,
-            "moreAccurate": false,
-            "pressure_Pa": 100000,
-            "sourceRefs": [
-              1
-            ],
-            "bestEquation": {
-              "ref": "White3",
-              "type": "sutherland"
-            },
-            "mape_pct": 0.52,
-            "max_abs_pct": 0.83,
-            "nCompared": 5
-          },
-          "ref": [
-            "Huber2019",
-            548,
-            "huber2019Viscosity"
-          ]
-        }
       ],
       "coolprop": [
         "Oxygen"

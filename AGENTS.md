@@ -184,7 +184,7 @@ Convention docs by domain (read the ones that apply):
 `docs/NUMERICAL_METHODS_CONVENTION.md`, `docs/REFERENCES.md`, `docs/PYTHON_CODE_STANDARDS.md`,
 `docs/INTERFACES_IMPLEMENTATION_INDEX.md`, `docs/TEST_SPECIFICATION.md`, `docs/SERVICE_TEST_SPEC.md`,
 `docs/REPORTS_MANAGEMENT.md`, `docs/ENV_ONLY_POLICY.md`, `docs/PYTHON_CONTAINER.md`,
-`docs/NGINX_ARCHITECTURE.md`, `docs/DOCKER_REGISTRY.md`.
+`docs/NGINX_ARCHITECTURE.md`, `docs/DOCKER_REGISTRY.md`, `docs/scripts/OCR_POLICY.md`.
 
 ## 10. Pre-completion checklist (verify every item before saying "done")
 
@@ -207,5 +207,6 @@ Convention docs by domain (read the ones that apply):
 - [ ] File length within limits (code ≤ 300, tests ≤ 500, docs ≤ 500; data exempt); no baseline file grew; `conventions` tests pass in Docker
 - [ ] No magic numbers — named constants or references
 - [ ] No secrets in code; reports written to `tmp/reports/`
+- [ ] **OCR:** final dataset text from Surya/`page-ocr`; pdftotext/Tesseract for fast understanding only (Tesseract OK for deep segmentation on complicated layouts / diagrams) — `docs/scripts/OCR_POLICY.md`
 - [ ] Tests written and run **inside Docker**
 - [ ] Docs updated per §9 and `docs/migration/IMPLEMENTATION_STATUS.md` updated in the same change

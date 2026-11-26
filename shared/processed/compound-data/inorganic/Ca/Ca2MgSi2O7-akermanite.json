@@ -1,0 +1,175 @@
+{
+  "class": "inorganic",
+  "group": "Ca",
+  "displayFormula": "Ca2MgSi2O7",
+  "hill": "Ca2MgO7Si2",
+  "elements": [
+    "Ca",
+    "Mg",
+    "O",
+    "Si"
+  ],
+  "entries": {
+    "robie-akermanite": {
+      "compoundId": "akermanite",
+      "name": "Akermanite",
+      "Mr": 272.628,
+      "properties": {
+        "enthalpyFormation298": [
+          {
+            "value": -3864800.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              38,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": -3865580.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 212.5,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              38,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": 212.5,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": -3667500.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              38,
+              "usgsBulletin2131"
+            ]
+          }
+        ]
+      },
+      "equations": {
+        "heatCapacity": {
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  65,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 1731.0,
+                      "A1": 78.146,
+                      "A2": 0.16573,
+                      "A3": -6790500.0,
+                      "A4": 2864.6,
+                      "A5": -3.3437e-05
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 1731.0
+              }
+            ]
+          }
+        }
+      },
+      "raw": [
+        {
+          "property": "gibbsEnergySER",
+          "phase": "solid",
+          "values": {
+            "gFunction": "GAKER",
+            "Tmin_K": 1.0,
+            "Tmax_K": 3000.0,
+            "G": {
+              "form": "H0 + a2*T^2 + a3*T^3 + sum(prefactor*T*ln(1-exp(-theta/T)))",
+              "H0_Jmol": -3909693.6475608195,
+              "a2": null,
+              "a3": null,
+              "einstein": [
+                {
+                  "prefactor": 42.858078538746234,
+                  "factorFunction": null,
+                  "theta_K": 1803.4822162315852
+                },
+                {
+                  "prefactor": 146.4558054071096,
+                  "factorFunction": null,
+                  "theta_K": 676.0432747418508
+                },
+                {
+                  "prefactor": 110.00603546076125,
+                  "factorFunction": null,
+                  "theta_K": 220.33507085331422
+                }
+              ],
+              "units": "J/mol; T in K",
+              "rawExpression": "+(-4009964.8637490207) +(3.0/2)*8.31446261815324* (1.718214012820375)*(1803.4822162315852) +3*8.31446261815324*T* (1.718214012820375)*ln(1-exp(-(1803.4822162315852)/T)) +(3.0/2)*8.31446261815324* (5.8715282086640945)*(676.0432747418508) +3*8.31446261815324*T* (5.8715282086640945)*ln(1-exp(-(676.0432747418508)/T)) +(3.0/2)*8.31446261815324* (4.410228317926463)*(220.33507085331422) +3*8.31446261815324*T* (4.410228317926463)*ln(1-exp(-(220.33507085331422)/T)) +(-0.006461012014427301)*T**(2)",
+              "R": 8.31446261815324
+            },
+            "tdbPhase": "AKER",
+            "polymorph": null
+          },
+          "ref": [
+            "Abdul2023",
+            "SER"
+          ]
+        },
+        {
+          "property": "hollandPowellV0",
+          "phase": "solid",
+          "values": {
+            "V0_Jbar": 9.254,
+            "GH_Jmol": -3928937.0,
+            "eos": 8
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 385.4,
+            "c2": 0.003209,
+            "c3": -247500.0,
+            "c4": null,
+            "c5": -2889.9,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1120,6 +1120,60 @@
           }
         }
       },
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 100,
+                "mu": 4.1e-06
+              },
+              {
+                "T": 200,
+                "mu": 6.8e-06
+              },
+              {
+                "T": 300,
+                "mu": 8.9e-06
+              },
+              {
+                "T": 400,
+                "mu": 1.09e-05
+              },
+              {
+                "T": 500,
+                "mu": 1.28e-05
+              },
+              {
+                "T": 600,
+                "mu": 1.45e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": true,
+            "moreAccurate": true,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              3,
+              7
+            ],
+            "bestEquation": {
+              "ref": "Perry8",
+              "type": "dipprN102"
+            },
+            "mape_pct": 0.76,
+            "max_abs_pct": 1.92,
+            "nCompared": 6
+          },
+          "ref": [
+            "Huber2019",
+            137,
+            "huber2019Viscosity"
+          ]
+        }
+      ],
       "transport": {
         "thermalConductivity": [
           {
@@ -1180,60 +1234,6 @@
       ],
       "nasa9": [
         "H2"
-      ],
-      "raw": [
-        {
-          "property": "viscosity",
-          "phase": "gas",
-          "values": {
-            "points": [
-              {
-                "T": 100,
-                "mu": 4.1e-06
-              },
-              {
-                "T": 200,
-                "mu": 6.8e-06
-              },
-              {
-                "T": 300,
-                "mu": 8.9e-06
-              },
-              {
-                "T": 400,
-                "mu": 1.09e-05
-              },
-              {
-                "T": 500,
-                "mu": 1.28e-05
-              },
-              {
-                "T": 600,
-                "mu": 1.45e-05
-              }
-            ],
-            "unit": "Pa s",
-            "p0": true,
-            "moreAccurate": true,
-            "pressure_Pa": 100000,
-            "sourceRefs": [
-              3,
-              7
-            ],
-            "bestEquation": {
-              "ref": "Perry8",
-              "type": "dipprN102"
-            },
-            "mape_pct": 0.76,
-            "max_abs_pct": 1.92,
-            "nCompared": 6
-          },
-          "ref": [
-            "Huber2019",
-            137,
-            "huber2019Viscosity"
-          ]
-        }
       ],
       "coolprop": [
         "Hydrogen"
@@ -1955,38 +1955,6 @@
           }
         }
       },
-      "transport": {
-        "thermalConductivity": [
-          {
-            "methods": [
-              {
-                "method": "modifiedEucken"
-              }
-            ],
-            "ref": [
-              "Svehla1995",
-              3070,
-              "svehla1995T1"
-            ]
-          }
-        ],
-        "viscosity": [
-          {
-            "methods": [
-              {
-                "method": "scaledFrom",
-                "interaction": "H2–H2",
-                "ratio": "molecularWeight D2/H2"
-              }
-            ],
-            "ref": [
-              "Svehla1995",
-              3050,
-              "svehla1995T1"
-            ]
-          }
-        ]
-      },
       "raw": [
         {
           "property": "viscosity",
@@ -2040,6 +2008,38 @@
           ]
         }
       ],
+      "transport": {
+        "thermalConductivity": [
+          {
+            "methods": [
+              {
+                "method": "modifiedEucken"
+              }
+            ],
+            "ref": [
+              "Svehla1995",
+              3070,
+              "svehla1995T1"
+            ]
+          }
+        ],
+        "viscosity": [
+          {
+            "methods": [
+              {
+                "method": "scaledFrom",
+                "interaction": "H2–H2",
+                "ratio": "molecularWeight D2/H2"
+              }
+            ],
+            "ref": [
+              "Svehla1995",
+              3050,
+              "svehla1995T1"
+            ]
+          }
+        ]
+      },
       "coolprop": [
         "Deuterium"
       ]

@@ -190,6 +190,7 @@ export type EquationValue = {
 | `cubic` | + d·T³ | `{ a, b, c, d }` |
 | `quartic` | + e·T⁴ | `{ a, b, c, d, e }` |
 | `maierKelley` | a + b·T + d/T² | `{ a, b, d }` |
+| `robieHemingway` | A1 + A2·T + A3/T² + A4/T^0.5 + A5·T², piecewise | `{ ranges: [{ Tmin, Tmax, A1, …, A5 }] }` |
 | `dipprN107` | DIPPR 107 (Aly–Lee): c1 + c2·[c3/T / sinh(c3/T)]² + c4·[c5/T / cosh(c5/T)]² | `{ c1, c2, c3, c4, c5 }` |
 | `dipprN102` | c1·T^c2 / (1 + c3/T + c4/T²) | `{ c1, c2, c3, c4 }` |
 | `nasa7` | 7-coefficient polynomial (Cp, H, S, G) | — read from `nasa7.json` by `nasa7Key`, not here |
@@ -211,7 +212,8 @@ export type EquationValue = {
 > The types from `dipprN114` down are specified in [NEW_EQUATION_TYPES_SPEC.md](NEW_EQUATION_TYPES_SPEC.md).
 > `dipprN101`, `ppds9`, `dipprN106` and `wagner25` have no closed-form antiderivative: `integral` uses
 > `gaussLegendre20` from `min` (298.15 K when `min` is unbounded). The piecewise types (`shomate`,
-> `zabranskySpline`) integrate cumulatively from `ranges[0].Tmin`, continuous across range boundaries.
+> `zabranskySpline`, `robieHemingway`) integrate cumulatively from `ranges[0].Tmin`, continuous across
+> range boundaries.
 
 > NASA data is referenced by key on `CompoundValue`, never written into `heatCapacity.values[]`.
 > See [CONVENTIONS.md §6](../CONVENTIONS.md) for the rule.

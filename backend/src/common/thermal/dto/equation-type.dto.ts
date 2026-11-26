@@ -31,4 +31,6 @@ export enum EquationTypeDto {
   yawsLiquidDensity           = 'yawsLiquidDensity',
   /** Yaws 1999: log10(S/ppm wt) = A + B/T + C/T² */
   yawsWaterSolubility         = 'yawsWaterSolubility',
+  /** Robie & Hemingway 1995: A1 + A2·T + A3/T² + A4/T^0.5 + A5·T² */
+  robieHemingway              = 'robieHemingway',
 }

@@ -979,6 +979,22 @@
             "def": 0,
             "values": [
               {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  249,
+                  "yaws1999Table21_2"
+                ],
+                "vars": {
+                  "a": -5.897,
+                  "b": 0.162,
+                  "c": -2.8e-06
+                },
+                "min": 718.0,
+                "max": 1118.0,
+                "k": 1e-07
+              },
+              {
                 "type": "quartic",
                 "ref": [
                   "VDI2010",
@@ -994,22 +1010,6 @@
                 },
                 "min": null,
                 "max": null
-              },
-              {
-                "type": "quadratic",
-                "ref": [
-                  "Yaws1999",
-                  249,
-                  "yaws1999Table21_2"
-                ],
-                "vars": {
-                  "a": -5.897,
-                  "b": 0.162,
-                  "c": -2.8e-06
-                },
-                "min": 718.0,
-                "max": 1118.0,
-                "k": 1e-07
               }
             ]
           },
@@ -1237,6 +1237,14 @@
               515,
               "nbsTables"
             ]
+          },
+          {
+            "value": 0.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "entropy298": [
@@ -1257,6 +1265,14 @@
               "NBS1982",
               515,
               "nbsTables"
+            ]
+          },
+          {
+            "value": 32.05,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
             ]
           }
         ],
@@ -1314,6 +1330,38 @@
         "S(L)",
         "S(cr1)",
         "S(cr2)"
+      ],
+      "raw": [
+        {
+          "property": "hollandPowellV0",
+          "phase": "solid",
+          "values": {
+            "V0_Jbar": 1.551,
+            "GH_Jmol": -9555.707,
+            "eos": 8
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 56.6,
+            "c2": -0.004557,
+            "c3": 638000.0,
+            "c4": null,
+            "c5": -681.8,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        }
       ]
     }
   }

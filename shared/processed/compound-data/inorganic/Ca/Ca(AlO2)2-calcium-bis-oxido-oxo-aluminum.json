@@ -41,6 +41,14 @@
               9528,
               "nbsTables"
             ]
+          },
+          {
+            "value": -2325600.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "entropy298": [
@@ -51,6 +59,14 @@
               "NBS1982",
               9528,
               "nbsTables"
+            ]
+          },
+          {
+            "value": 87.6,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
             ]
           }
         ],
@@ -97,17 +113,90 @@
             ]
           }
         ]
-      }
+      },
+      "raw": [
+        {
+          "property": "gibbsEnergySER",
+          "phase": "solid",
+          "values": {
+            "gFunction": "GCA",
+            "Tmin_K": 1.0,
+            "Tmax_K": 6000.0,
+            "G": {
+              "form": "H0 + a2*T^2 + a3*T^3 + sum(prefactor*T*ln(1-exp(-theta/T)))",
+              "H0_Jmol": -2349750.73573611,
+              "a2": -0.0006602887929999997,
+              "a3": -7.06344541e-07,
+              "einstein": [
+                {
+                  "prefactor": 68.6331374908854,
+                  "factorFunction": "CA0",
+                  "theta_K": 1047.38873
+                },
+                {
+                  "prefactor": 68.17219790106599,
+                  "factorFunction": "CA1",
+                  "theta_K": 458.837521
+                },
+                {
+                  "prefactor": 37.79837958926666,
+                  "factorFunction": "CA2",
+                  "theta_K": 178.6963
+                }
+              ],
+              "units": "J/mol; T in K",
+              "rawExpression": "(-2.349750735736110E6 + 68.6331374908854*T*LN(CA0) + 68.17219790106598*T*LN(CA1) + 37.79837958926666*T*LN(CA2) - 0.0006602887929999997*T**2 - 7.06344541E-07*T**3)",
+              "R": 8.31446261815324
+            },
+            "tdbPhase": "CA",
+            "polymorph": null
+          },
+          "ref": [
+            "Abdul2023",
+            "SER"
+          ]
+        },
+        {
+          "property": "hollandPowellV0",
+          "phase": "solid",
+          "values": {
+            "V0_Jbar": 3.976,
+            "GH_Jmol": -2351718.0,
+            "eos": 8
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 191.9,
+            "c2": 0.009563,
+            "c3": -3211300.0,
+            "c4": null,
+            "c5": -640.2,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        }
+      ]
     },
     "12042-78-3": {
-      "compoundId": "Calcium_aluminate_(β_form)",
+      "compoundId": "Calcium_aluminate_(\u03b2_form)",
       "formula": "Ca(AlO2)2",
-      "name": "Calcium aluminate (β form)",
+      "name": "Calcium aluminate (\u03b2 form)",
       "properties": {
         "density": [
           {
             "value": 3040,
-            "variant": "β form",
+            "variant": "\u03b2 form",
             "ref": [
               "CRC95",
               1354,
@@ -162,7 +251,7 @@
         "meltingPoint": [
           {
             "value": 1808.15,
-            "variant": "β form",
+            "variant": "\u03b2 form",
             "ref": [
               "CRC95",
               1354,
@@ -174,7 +263,7 @@
           {
             "value": 8.88792763157895e-05,
             "phase": "solid",
-            "variant": "β form",
+            "variant": "\u03b2 form",
             "ref": [
               "CRC95",
               1105,

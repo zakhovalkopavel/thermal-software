@@ -132,7 +132,7 @@
           },
           {
             "value": 3250.15,
-            "variant": "α",
+            "variant": "\u03b1",
             "ref": [
               "CRC95",
               301,
@@ -201,7 +201,7 @@
           },
           {
             "value": 3990,
-            "variant": "α",
+            "variant": "\u03b1",
             "ref": [
               "CRC95",
               301,
@@ -213,7 +213,7 @@
           {
             "value": -1675700,
             "phase": "solid",
-            "variant": "α",
+            "variant": "\u03b1",
             "ref": [
               "CRC95",
               1374,
@@ -228,13 +228,30 @@
               10,
               "yaws1999Table12_2"
             ]
+          },
+          {
+            "value": -1675700.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              21,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": -1619680.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "entropy298": [
           {
             "value": 50.9,
             "phase": "solid",
-            "variant": "α",
+            "variant": "\u03b1",
             "ref": [
               "CRC95",
               1374,
@@ -249,13 +266,30 @@
               10,
               "yaws1999Table12_2"
             ]
+          },
+          {
+            "value": 50.9,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              21,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": 51.8,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "gibbsEnergy298": [
           {
             "value": -1582300,
             "phase": "solid",
-            "variant": "α",
+            "variant": "\u03b1",
             "ref": [
               "CRC95",
               1374,
@@ -270,13 +304,22 @@
               10,
               "yaws1999Table13_2"
             ]
+          },
+          {
+            "value": -1582300.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              21,
+              "usgsBulletin2131"
+            ]
           }
         ],
         "heatCapacity298": [
           {
             "value": 79,
             "phase": "solid",
-            "variant": "α",
+            "variant": "\u03b1",
             "ref": [
               "CRC95",
               1374,
@@ -296,7 +339,7 @@
         "heatOfFusion": [
           {
             "value": 111100,
-            "variant": "α",
+            "variant": "\u03b1",
             "ref": [
               "CRC95",
               570,
@@ -358,7 +401,7 @@
           },
           {
             "value": 2327.15,
-            "variant": "α",
+            "variant": "\u03b1",
             "ref": [
               "CRC95",
               301,
@@ -370,7 +413,7 @@
           {
             "value": 2.56828715365239e-05,
             "phase": "solid",
-            "variant": "γ",
+            "variant": "\u03b3",
             "ref": [
               "CRC95",
               247,
@@ -504,6 +547,29 @@
                 "min": 290.0,
                 "max": 540.0,
                 "k": 1.0
+              },
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  53,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 2250.0,
+                      "A1": 161.2,
+                      "A2": -0.001352,
+                      "A3": -1815000.0,
+                      "A4": -1059.0,
+                      "A5": 5.381e-07
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 2250.0
               }
             ]
           }
@@ -622,6 +688,131 @@
         "AL2O3",
         "AL2O3(L)",
         "AL2O3(a)"
+      ],
+      "raw": [
+        {
+          "property": "gibbsEnergySER",
+          "phase": "solid",
+          "values": {
+            "gFunction": "GCOR",
+            "Tmin_K": 1.0,
+            "Tmax_K": 3000.0,
+            "G": {
+              "form": "H0 + a2*T^2 + a3*T^3 + sum(prefactor*T*ln(1-exp(-theta/T)))",
+              "H0_Jmol": -1690780.842821017,
+              "a2": -0.0024049175,
+              "a3": -1.925204165e-07,
+              "einstein": [
+                {
+                  "prefactor": 39.3927282650856,
+                  "factorFunction": "COR0",
+                  "theta_K": 1067.3396
+                },
+                {
+                  "prefactor": 69.7003662813618,
+                  "factorFunction": "COR1",
+                  "theta_K": 636.19021
+                },
+                {
+                  "prefactor": 15.62384472585121,
+                  "factorFunction": "COR2",
+                  "theta_K": 312.67623
+                }
+              ],
+              "units": "J/mol; T in K",
+              "rawExpression": "(-1.690780842821017E6 + 39.3927282650856*T*LN(COR0) + 69.7003662813618*T*LN(COR1) + 15.62384472585121*T*LN(COR2) - 0.0024049175*T**2 - 1.925204165E-07*T**3)",
+              "R": 8.31446261815324
+            },
+            "tdbPhase": "CORUNDUM",
+            "polymorph": null
+          },
+          "ref": [
+            "Abdul2023",
+            "SER"
+          ]
+        },
+        {
+          "property": "hollandPowellV0",
+          "phase": "solid",
+          "values": {
+            "V0_Jbar": 2.54,
+            "GH_Jmol": -1635124.0,
+            "eos": 8
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 139.5,
+            "c2": 0.00589,
+            "c3": -2460600.0,
+            "c4": null,
+            "c5": -589.2,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "experimentalSeries",
+          "phase": "solid",
+          "values": {
+            "series": [
+              {
+                "T_K": 1573.0,
+                "properties": [
+                  {
+                    "value": 7.1e-05,
+                    "uncertainty": 3.6e-05,
+                    "propNumber": 1
+                  }
+                ]
+              },
+              {
+                "T_K": 1623.0,
+                "properties": [
+                  {
+                    "value": 0.00025,
+                    "uncertainty": 9e-05,
+                    "propNumber": 1
+                  }
+                ]
+              },
+              {
+                "T_K": 1673.0,
+                "properties": [
+                  {
+                    "value": 0.00086,
+                    "uncertainty": 0.0002,
+                    "propNumber": 1
+                  }
+                ]
+              }
+            ],
+            "propertyMeta": [
+              {
+                "propName": null,
+                "propNumber": 1,
+                "units": null
+              }
+            ],
+            "nPoints": 3,
+            "doi": null,
+            "note": null
+          },
+          "ref": [
+            "Nagai2009",
+            "experimental_series"
+          ]
+        }
       ]
     },
     "39377-45-2": {
@@ -640,7 +831,7 @@
           {
             "value": -1675700.0,
             "phase": "solid",
-            "variant": "α. corundum",
+            "variant": "\u03b1. corundum",
             "ref": [
               "NBS1982",
               3585,
@@ -652,7 +843,7 @@
           {
             "value": 50.92,
             "phase": "solid",
-            "variant": "α. corundum",
+            "variant": "\u03b1. corundum",
             "ref": [
               "NBS1982",
               3585,
@@ -664,7 +855,7 @@
           {
             "value": -1582300.0,
             "phase": "solid",
-            "variant": "α. corundum",
+            "variant": "\u03b1. corundum",
             "ref": [
               "NBS1982",
               3585,
@@ -676,7 +867,7 @@
           {
             "value": 79.04,
             "phase": "solid",
-            "variant": "α. corundum",
+            "variant": "\u03b1. corundum",
             "ref": [
               "NBS1982",
               3585,

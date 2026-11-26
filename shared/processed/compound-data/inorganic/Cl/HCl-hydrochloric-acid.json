@@ -279,6 +279,15 @@
               122,
               "yaws1999Table12_2"
             ]
+          },
+          {
+            "value": -92300.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              29,
+              "usgsBulletin2131"
+            ]
           }
         ],
         "entropy298": [
@@ -307,6 +316,15 @@
               "Yaws1999",
               122,
               "yaws1999Table12_2"
+            ]
+          },
+          {
+            "value": 186.9,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              29,
+              "usgsBulletin2131"
             ]
           }
         ],
@@ -366,6 +384,15 @@
               "Yaws1999",
               122,
               "yaws1999Table13_2"
+            ]
+          },
+          {
+            "value": -95300.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              29,
+              "usgsBulletin2131"
             ]
           }
         ],
@@ -830,6 +857,29 @@
                 "min": 100.0,
                 "max": 158.0,
                 "k": 1.0
+              },
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  59,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 2500.0,
+                      "A1": 17.38,
+                      "A2": 0.01165,
+                      "A3": -7597.0,
+                      "A4": 147.7,
+                      "A5": -2.052e-06
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 2500.0
               }
             ]
           }
@@ -1168,6 +1218,47 @@
           }
         }
       },
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 300,
+                "mu": 1.46e-05
+              },
+              {
+                "T": 400,
+                "mu": 1.97e-05
+              },
+              {
+                "T": 500,
+                "mu": 2.43e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": false,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              5
+            ],
+            "bestEquation": {
+              "ref": "VDI2010",
+              "type": "quartic"
+            },
+            "mape_pct": 0.81,
+            "max_abs_pct": 0.9,
+            "nCompared": 3
+          },
+          "ref": [
+            "Huber2019",
+            83,
+            "huber2019Viscosity"
+          ]
+        }
+      ],
       "transport": {
         "thermalConductivity": [
           {
@@ -1212,47 +1303,6 @@
       ],
       "nasa9": [
         "HCL"
-      ],
-      "raw": [
-        {
-          "property": "viscosity",
-          "phase": "gas",
-          "values": {
-            "points": [
-              {
-                "T": 300,
-                "mu": 1.46e-05
-              },
-              {
-                "T": 400,
-                "mu": 1.97e-05
-              },
-              {
-                "T": 500,
-                "mu": 2.43e-05
-              }
-            ],
-            "unit": "Pa s",
-            "p0": false,
-            "moreAccurate": false,
-            "pressure_Pa": 100000,
-            "sourceRefs": [
-              5
-            ],
-            "bestEquation": {
-              "ref": "VDI2010",
-              "type": "quartic"
-            },
-            "mape_pct": 0.81,
-            "max_abs_pct": 0.9,
-            "nCompared": 3
-          },
-          "ref": [
-            "Huber2019",
-            83,
-            "huber2019Viscosity"
-          ]
-        }
       ],
       "coolprop": [
         "HydrogenChloride"

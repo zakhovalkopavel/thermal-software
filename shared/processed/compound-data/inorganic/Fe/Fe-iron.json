@@ -175,6 +175,23 @@
               105,
               "yaws1999Table12_2"
             ]
+          },
+          {
+            "value": -826200.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              22,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": 0.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "entropy298": [
@@ -213,6 +230,23 @@
               105,
               "yaws1999Table12_2"
             ]
+          },
+          {
+            "value": 87.4,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              22,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": 27.09,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "gibbsEnergy298": [
@@ -241,6 +275,15 @@
               "Yaws1999",
               105,
               "yaws1999Table13_2"
+            ]
+          },
+          {
+            "value": -744400.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              22,
+              "usgsBulletin2131"
             ]
           }
         ],
@@ -565,7 +608,7 @@
                 "min": 273,
                 "max": 1041,
                 "k": 4.184,
-                "variant": "α",
+                "variant": "\u03b1",
                 "error": 3
               },
               {
@@ -583,7 +626,7 @@
                 "min": 1041,
                 "max": 1179,
                 "k": 4.184,
-                "variant": "β",
+                "variant": "\u03b2",
                 "error": 3
               },
               {
@@ -601,7 +644,7 @@
                 "min": 1179,
                 "max": 1674,
                 "k": 4.184,
-                "variant": "γ",
+                "variant": "\u03b3",
                 "error": 5
               },
               {
@@ -619,7 +662,7 @@
                 "min": 1674,
                 "max": 1803,
                 "k": 4.184,
-                "variant": "δ",
+                "variant": "\u03b4",
                 "error": 5
               },
               {
@@ -637,6 +680,38 @@
                 "min": 295.0,
                 "max": 973.0,
                 "k": 1.0
+              },
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  54,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 950.0,
+                      "A1": 1501.47,
+                      "A2": -1.2146,
+                      "A3": 14123000.0,
+                      "A4": -21493.0,
+                      "A5": 0.000569
+                    },
+                    {
+                      "Tmin": 950.0,
+                      "Tmax": 1800.0,
+                      "A1": -1095.7,
+                      "A2": 0.27267,
+                      "A3": -102390000.0,
+                      "A4": 33960.0,
+                      "A5": 0.0
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 1800.0
               }
             ]
           }
@@ -806,51 +881,33 @@
       ],
       "raw": [
         {
-          "property": "thermalConductivity",
+          "property": "hollandPowellV0",
           "phase": "solid",
           "values": {
-            "tableKey": "abuEishahHighT",
-            "label": "Iron",
-            "formula": "k = a * T^b * exp(c*T) * exp(d/T)",
-            "a": 2227.664,
-            "b": -0.627271,
-            "c": 0.000209554,
-            "d": 22.35452,
-            "min_K": 50.0,
-            "max_K": 1810.0,
-            "R_squared": 0.9681,
-            "AARE_percent": 11.7289,
-            "unit": "W/(m·K)",
-            "sourceFile": "thermal_conductivity_metals2.json"
+            "V0_Jbar": 0.709,
+            "GH_Jmol": -8076.883,
+            "eos": 8
           },
           "ref": [
-            "AbuEishah2001",
-            null,
-            "abuEishahHighT"
+            "HollandPowell2011",
+            "HSC"
           ]
         },
         {
-          "property": "thermalConductivity",
+          "property": "heatCapacity",
           "phase": "solid",
           "values": {
-            "tableKey": "abuEishahNearTm",
-            "label": "Iron",
-            "formula": "k = a * T^b * exp(c*T) * exp(d/T)",
-            "a": 460.7027,
-            "b": -0.360733,
-            "c": -7.061e-05,
-            "d": 57.6784,
-            "min_K": 35.0,
-            "max_K": 1810.0,
-            "R_squared": 0.9813,
-            "AARE_percent": 11.6225,
-            "unit": "W/(m·K)",
-            "sourceFile": "thermal_conductivity_metals3.json"
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 46.2,
+            "c2": 0.005159,
+            "c3": 723100.0,
+            "c4": null,
+            "c5": -556.2,
+            "units": "J/(mol\u00b7K); T in K"
           },
           "ref": [
-            "AbuEishah2001",
-            null,
-            "abuEishahNearTm"
+            "HollandPowell2011",
+            "HSC"
           ]
         }
       ]

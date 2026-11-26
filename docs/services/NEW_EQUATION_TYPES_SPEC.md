@@ -25,6 +25,7 @@ Types:
 - `yawsLiquidConductivity`
 - `yawsLiquidDensity`
 - `yawsWaterSolubility`
+- `robieHemingway`
 
 `sutherland` and `powerLaw` come from White, *Viscous Fluid Flow* (`White3`), not from chemicals; their test values are computed from the printed formulas. The five `yaws*` types come from Yaws, *Chemical Properties Handbook* (1999); integrals use Gauss–Legendre.
 
@@ -272,6 +273,13 @@ Types without a closed-form antiderivative use `gaussLegendre20` from `backend/s
 - **Vars:** `{ a, b, c }`
 - **Formula:** log₁₀(S/ppm wt) = a + b/T + c/T²; dataset `k = 1e-6` → mass fraction.
 - **Integral:** numerical.
+
+### `robieHemingway`
+
+- **Source:** Robie & Hemingway 1995 (USGS Bulletin 2131) mineral Cp tables.
+- **Vars:** `{ ranges: [{ Tmin, Tmax, A1, A2, A3, A4, A5 }] }`
+- **Formula:** Cp = A1 + A2·T + A3/T² + A4/T^0.5 + A5·T² (J·mol⁻¹·K⁻¹).
+- **Integral:** closed form F(T) = A1·T + A2·T²/2 − A3/T + 2·A4·√T + A5·T³/3; piecewise cumulative from `ranges[0].Tmin`.
 
 ---
 

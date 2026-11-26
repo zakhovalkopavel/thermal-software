@@ -1,0 +1,115 @@
+{
+  "source": "Malan2019",
+  "convention": "formation_298",
+  "nPhases": 5,
+  "phases": {
+    "Fe2TiO5": {
+      "formula": "Fe2TiO5",
+      "name": "pseudobrookite",
+      "state": "solid",
+      "Hf298_Jmol": -1744367.0,
+      "S298_JmolK": 170.308,
+      "cp": {
+        "form": "a + b*1e-3*T + c*T^-0.5 + d*1e3*T^-1 + e*1e5*T^-2 + f*1e7*T^-3",
+        "a": 22.008,
+        "b": null,
+        "c": null,
+        "d": null,
+        "e": -31.00344,
+        "f": null,
+        "Tmin_K": 298,
+        "Tmax_K": 1673,
+        "units": "J/(mol\u00b7K)"
+      },
+      "ref": "Malan2019",
+      "table": 4,
+      "phaseId": "pseudobrookite",
+      "status": "ok"
+    },
+    "liquid_quasichemical": {
+      "phaseId": "liquid_quasichemical",
+      "formula": "FeO-Fe2O3-TiO2-Ti2O3-V2O5",
+      "model": "quasichemical",
+      "parameters": [
+        {
+          "parameter": "dg0_Fe3+_Ti4+",
+          "binary": "TiO2-Fe2O3",
+          "model": "quasichemical",
+          "a": 152411.0,
+          "b": -92.6727,
+          "expressionRaw": "152411-92.6727*T",
+          "ref": "Malan2019",
+          "page": "Table 3",
+          "status": "ok"
+        }
+      ],
+      "adoptedFrom": [
+        "Degterov FeO-Fe2O3",
+        "Kang TiO2-Ti2O3",
+        "Eriksson TixOx-FeO",
+        "Malan V2O5 binaries"
+      ],
+      "convention": "SER",
+      "ref": "Malan2019",
+      "page": "Table 3",
+      "status": "ok",
+      "note": "Only Fe3+\u2013Ti4+ \u0394g\u00b0 optimised in this work; other binaries adopted."
+    },
+    "hematite_ss": {
+      "phaseId": "hematite_ss",
+      "formula": "Fe2O3-TiO2-V2O5",
+      "parameters": [
+        {
+          "parameter": "G_TiO2_in_hematite_shift",
+          "a": -12200.36,
+          "b": -37.9927,
+          "expressionRaw": "-12200.36-37.9927T",
+          "ref": "Malan2019",
+          "page": "Table 3",
+          "status": "ok"
+        }
+      ],
+      "convention": "SER",
+      "ref": "Malan2019",
+      "status": "ok"
+    },
+    "rutile_ss": {
+      "phaseId": "rutile_ss",
+      "formula": "TiO2-Fe2O3-V2O5",
+      "parameters": [
+        {
+          "parameter": "G_V2O5_in_rutile_shift",
+          "a": 171607.0,
+          "b": -32.96704,
+          "expressionRaw": "+171607-32.96704T",
+          "ref": "Malan2019",
+          "page": "Table 3",
+          "status": "ok"
+        }
+      ],
+      "convention": "SER",
+      "ref": "Malan2019",
+      "status": "ok"
+    },
+    "ferricpseudobrookite_ss": {
+      "phaseId": "ferricpseudobrookite_ss",
+      "formula": "Fe2TiO5-V2O5",
+      "parameters": [
+        {
+          "parameter": "L10_V2O5_Fe2TiO5",
+          "a": 72366.5,
+          "b": -62.3082,
+          "expressionRaw": "72366.5-62.3082T",
+          "ref": "Malan2019",
+          "page": "Table 3",
+          "status": "ok"
+        }
+      ],
+      "convention": "SER",
+      "ref": "Malan2019",
+      "status": "ok"
+    }
+  },
+  "ref": "Malan2019",
+  "note": "Fe2TiO5 from PDF text + Table 3 solution params from page-ocr"
+}

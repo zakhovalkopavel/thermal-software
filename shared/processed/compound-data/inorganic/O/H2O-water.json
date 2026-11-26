@@ -1235,6 +1235,51 @@
           }
         }
       },
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 300,
+                "mu": 9.8e-06
+              },
+              {
+                "T": 400,
+                "mu": 1.34e-05
+              },
+              {
+                "T": 500,
+                "mu": 1.73e-05
+              },
+              {
+                "T": 600,
+                "mu": 2.14e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": true,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              9
+            ],
+            "bestEquation": {
+              "ref": "White3",
+              "type": "sutherland"
+            },
+            "mape_pct": 0.54,
+            "max_abs_pct": 1.37,
+            "nCompared": 3
+          },
+          "ref": [
+            "Huber2019",
+            212,
+            "huber2019Viscosity"
+          ]
+        }
+      ],
       "transport": {
         "thermalConductivity": [
           {
@@ -1313,51 +1358,6 @@
         "H2O",
         "H2O(L)",
         "H2O(s)"
-      ],
-      "raw": [
-        {
-          "property": "viscosity",
-          "phase": "gas",
-          "values": {
-            "points": [
-              {
-                "T": 300,
-                "mu": 9.8e-06
-              },
-              {
-                "T": 400,
-                "mu": 1.34e-05
-              },
-              {
-                "T": 500,
-                "mu": 1.73e-05
-              },
-              {
-                "T": 600,
-                "mu": 2.14e-05
-              }
-            ],
-            "unit": "Pa s",
-            "p0": true,
-            "moreAccurate": false,
-            "pressure_Pa": 100000,
-            "sourceRefs": [
-              9
-            ],
-            "bestEquation": {
-              "ref": "White3",
-              "type": "sutherland"
-            },
-            "mape_pct": 0.54,
-            "max_abs_pct": 1.37,
-            "nCompared": 3
-          },
-          "ref": [
-            "Huber2019",
-            212,
-            "huber2019Viscosity"
-          ]
-        }
       ],
       "coolprop": [
         "Water"
@@ -2067,44 +2067,6 @@
           }
         }
       },
-      "transport": {
-        "thermalConductivity": [
-          {
-            "methods": [
-              {
-                "method": "scaledFrom",
-                "interaction": "H2O–H2O",
-                "ratio": "conductivity D2O/H2O",
-                "ratioFixedAboveK": 1000,
-                "source": "Matsunaga and Nagashima 1983"
-              }
-            ],
-            "ref": [
-              "Svehla1995",
-              3110,
-              "svehla1995T1"
-            ]
-          }
-        ],
-        "viscosity": [
-          {
-            "methods": [
-              {
-                "method": "scaledFrom",
-                "interaction": "H2O–H2O",
-                "ratio": "viscosity D2O/H2O",
-                "ratioFixedAboveK": 1000,
-                "source": "Matsunaga and Nagashima 1983"
-              }
-            ],
-            "ref": [
-              "Svehla1995",
-              3088,
-              "svehla1995T1"
-            ]
-          }
-        ]
-      },
       "raw": [
         {
           "property": "viscosity",
@@ -2150,6 +2112,44 @@
           ]
         }
       ],
+      "transport": {
+        "thermalConductivity": [
+          {
+            "methods": [
+              {
+                "method": "scaledFrom",
+                "interaction": "H2O\u2013H2O",
+                "ratio": "conductivity D2O/H2O",
+                "ratioFixedAboveK": 1000,
+                "source": "Matsunaga and Nagashima 1983"
+              }
+            ],
+            "ref": [
+              "Svehla1995",
+              3110,
+              "svehla1995T1"
+            ]
+          }
+        ],
+        "viscosity": [
+          {
+            "methods": [
+              {
+                "method": "scaledFrom",
+                "interaction": "H2O\u2013H2O",
+                "ratio": "viscosity D2O/H2O",
+                "ratioFixedAboveK": 1000,
+                "source": "Matsunaga and Nagashima 1983"
+              }
+            ],
+            "ref": [
+              "Svehla1995",
+              3088,
+              "svehla1995T1"
+            ]
+          }
+        ]
+      },
       "coolprop": [
         "HeavyWater"
       ]
@@ -2233,6 +2233,24 @@
               1485,
               "trcGasCp"
             ]
+          },
+          {
+            "value": -241810.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 188.8,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ]
       },
@@ -2299,7 +2317,39 @@
             ]
           }
         }
-      }
+      },
+      "raw": [
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 40.1,
+            "c2": 0.008656,
+            "c3": 487500.0,
+            "c4": null,
+            "c5": -251.2,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "hollandPowellV0",
+          "phase": "liquid",
+          "values": {
+            "V0_Jbar": 1.3355,
+            "GH_Jmol": -301506.8,
+            "eos": 9
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        }
+      ]
     },
     "14940-65-9": {
       "compoundId": "tritiated_water",

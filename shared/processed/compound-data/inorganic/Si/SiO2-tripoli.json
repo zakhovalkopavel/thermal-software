@@ -69,7 +69,7 @@
           {
             "value": -910940.0,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -90,7 +90,7 @@
           {
             "value": 41.84,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -102,7 +102,7 @@
           {
             "value": -856640.0,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -114,7 +114,7 @@
           {
             "value": 44.43,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -233,7 +233,7 @@
                 "min": 273,
                 "max": 523,
                 "k": 4.184,
-                "variant": "cristobalite, α",
+                "variant": "cristobalite, \u03b1",
                 "error": "2a"
               },
               {
@@ -251,7 +251,7 @@
                 "min": 523,
                 "max": 1973,
                 "k": 4.184,
-                "variant": "cristobalite, β",
+                "variant": "cristobalite, \u03b2",
                 "error": 2
               },
               {
@@ -269,7 +269,7 @@
                 "min": 273,
                 "max": 848,
                 "k": 4.184,
-                "variant": "quartz, α",
+                "variant": "quartz, \u03b1",
                 "error": 1
               },
               {
@@ -287,7 +287,7 @@
                 "min": 848,
                 "max": 1873,
                 "k": 4.184,
-                "variant": "quartz, β",
+                "variant": "quartz, \u03b2",
                 "error": "3a"
               },
               {
@@ -506,7 +506,7 @@
           {
             "value": -910940.0,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -521,17 +521,51 @@
               2935,
               "nbsTables"
             ]
+          },
+          {
+            "value": -907800.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              25,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": -904260.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "entropy298": [
           {
             "value": 41.84,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
               "nbsTables"
+            ]
+          },
+          {
+            "value": 38.5,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              25,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": 50.86,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
             ]
           }
         ],
@@ -539,11 +573,20 @@
           {
             "value": -856640.0,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
               "nbsTables"
+            ]
+          },
+          {
+            "value": -852500.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              25,
+              "usgsBulletin2131"
             ]
           }
         ],
@@ -551,7 +594,7 @@
           {
             "value": 44.43,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -653,6 +696,29 @@
                 },
                 "min": 298.0,
                 "max": 1000.0
+              },
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  56,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 1800.0,
+                      "A1": 233.1,
+                      "A2": -0.07777,
+                      "A3": 2604000.0,
+                      "A4": -3375.0,
+                      "A5": 1.924e-05
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 1800.0
               }
             ]
           }
@@ -737,6 +803,94 @@
         "SiO2(a-qz)",
         "SiO2(b-crt)",
         "SiO2(b-qz)"
+      ],
+      "raw": [
+        {
+          "property": "gibbsEnergySER",
+          "phase": "solid",
+          "values": {
+            "gFunction": "GAQUARTZ",
+            "Tmin_K": 1.0,
+            "Tmax_K": 6000.0,
+            "G": {
+              "form": "H0 + a2*T^2 + a3*T^3 + sum(prefactor*T*ln(1-exp(-theta/T)))",
+              "H0_Jmol": -917661.326977757,
+              "a2": null,
+              "a3": null,
+              "einstein": [
+                {
+                  "prefactor": 13.3696558899904,
+                  "factorFunction": "AQUARTZ0",
+                  "theta_K": 159.2
+                },
+                {
+                  "prefactor": 29.0341034625911,
+                  "factorFunction": "AQUARTZ2",
+                  "theta_K": 1421.0
+                },
+                {
+                  "prefactor": 32.4264042107976,
+                  "factorFunction": "AQUARTZ1",
+                  "theta_K": 524.0
+                },
+                {
+                  "prefactor": 32.4264042107976,
+                  "factorFunction": "AQUARTZ1",
+                  "theta_K": 524.0
+                },
+                {
+                  "prefactor": 13.3696558899904,
+                  "factorFunction": "AQUARTZ0",
+                  "theta_K": 159.2
+                },
+                {
+                  "prefactor": 29.0341034625911,
+                  "factorFunction": "AQUARTZ2",
+                  "theta_K": 1421.0
+                }
+              ],
+              "units": "J/mol; T in K",
+              "rawExpression": "-917661.326977757 -1.076E-12 * T**(5) + 13.3696558899904 * T * LN(AQUARTZ0) + 29.0341034625911 * T * LN(AQUARTZ2) + 32.4264042107976 * T * LN(AQUARTZ1); 847.1 Y -914725.826977757 -9.16882E+33 * T**(-11) + 32.4264042107976 * T * LN(AQUARTZ1) + 13.3696558899904 * T * LN(AQUARTZ0) + 29.0341034625911 * T * LN(AQUARTZ2) -2.72959E+16 * T**(-5)-3.87837 * T",
+              "R": 8.31446261815324
+            },
+            "tdbPhase": "AQUARTZ",
+            "polymorph": "alpha"
+          },
+          "ref": [
+            "Abdul2023",
+            "SER"
+          ]
+        },
+        {
+          "property": "hollandPowellV0",
+          "phase": "solid",
+          "values": {
+            "V0_Jbar": 2.745,
+            "GH_Jmol": -919423.9,
+            "eos": 8
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 72.7,
+            "c2": 0.001304,
+            "c3": -4129000.0,
+            "c4": null,
+            "c5": null,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        }
       ]
     },
     "14808-60-7": {
@@ -771,7 +925,7 @@
         "acentricFactor": [
           {
             "value": 0.719,
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "Yaws2014",
               4590,
@@ -830,7 +984,7 @@
           },
           {
             "value": 3223.15,
-            "variant": "α-quartz",
+            "variant": "\u03b1-quartz",
             "ref": [
               "CRC95",
               2081,
@@ -841,7 +995,7 @@
         "criticalPressure": [
           {
             "value": 3160000,
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "Yaws2014",
               4590,
@@ -860,7 +1014,7 @@
         "criticalTemperature": [
           {
             "value": 3780,
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "Yaws2014",
               4590,
@@ -879,7 +1033,7 @@
         "criticalVolume": [
           {
             "value": 0.000163,
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "Yaws2014",
               4590,
@@ -902,7 +1056,7 @@
           },
           {
             "value": 2648,
-            "variant": "α-quartz",
+            "variant": "\u03b1-quartz",
             "ref": [
               "CRC95",
               2081,
@@ -914,7 +1068,7 @@
           {
             "value": -910700,
             "phase": "solid",
-            "variant": "α-quartz",
+            "variant": "\u03b1-quartz",
             "ref": [
               "CRC95",
               2301,
@@ -924,7 +1078,7 @@
           {
             "value": -322000,
             "phase": "gas",
-            "variant": "α-quartz",
+            "variant": "\u03b1-quartz",
             "ref": [
               "CRC95",
               2301,
@@ -934,7 +1088,7 @@
           {
             "value": -305430,
             "phase": "gas",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "Yaws2014",
               2928,
@@ -949,13 +1103,30 @@
               293,
               "yaws1999Table12_2"
             ]
+          },
+          {
+            "value": -910700.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              24,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": -910710.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "entropy298": [
           {
             "value": 41.5,
             "phase": "solid",
-            "variant": "α-quartz",
+            "variant": "\u03b1-quartz",
             "ref": [
               "CRC95",
               2301,
@@ -965,7 +1136,7 @@
           {
             "value": 228.97,
             "phase": "gas",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "Yaws2014",
               2928,
@@ -980,13 +1151,30 @@
               293,
               "yaws1999Table12_2"
             ]
+          },
+          {
+            "value": 41.5,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              24,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": 41.43,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "gibbsEnergy298": [
           {
             "value": -856300,
             "phase": "solid",
-            "variant": "α-quartz",
+            "variant": "\u03b1-quartz",
             "ref": [
               "CRC95",
               2301,
@@ -1001,13 +1189,22 @@
               293,
               "yaws1999Table13_2"
             ]
+          },
+          {
+            "value": -856300.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              24,
+              "usgsBulletin2131"
+            ]
           }
         ],
         "heatCapacity298": [
           {
             "value": 44.4,
             "phase": "solid",
-            "variant": "α-quartz",
+            "variant": "\u03b1-quartz",
             "ref": [
               "CRC95",
               2301,
@@ -1091,7 +1288,7 @@
           {
             "value": 2.26907099697885e-05,
             "phase": "solid",
-            "variant": "α-quartz",
+            "variant": "\u03b1-quartz",
             "ref": [
               "CRC95",
               1643,
@@ -1267,6 +1464,38 @@
                 "min": 100.0,
                 "max": 848.0,
                 "k": 1.0
+              },
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  55,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 844.0,
+                      "A1": 81.145,
+                      "A2": 0.01828,
+                      "A3": -181000.0,
+                      "A4": -698.5,
+                      "A5": 5.406e-06
+                    },
+                    {
+                      "Tmin": 844.0,
+                      "Tmax": 1700.0,
+                      "A1": 57.96,
+                      "A2": 0.00933,
+                      "A3": 1835000.0,
+                      "A4": 0.0,
+                      "A5": 0.0
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 1700.0
               }
             ]
           }
@@ -1435,6 +1664,38 @@
         "SiO2(a-qz)",
         "SiO2(b-crt)",
         "SiO2(b-qz)"
+      ],
+      "raw": [
+        {
+          "property": "hollandPowellV0",
+          "phase": "solid",
+          "values": {
+            "V0_Jbar": 2.269,
+            "GH_Jmol": -923062.4,
+            "eos": 8
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 92.9,
+            "c2": -0.000642,
+            "c3": -714900.0,
+            "c4": null,
+            "c5": -716.1,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        }
       ]
     },
     "15468-32-3": {
@@ -1548,7 +1809,7 @@
           {
             "value": -910940.0,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -1563,17 +1824,33 @@
               2935,
               "nbsTables"
             ]
+          },
+          {
+            "value": -907100.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "entropy298": [
           {
             "value": 41.84,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
               "nbsTables"
+            ]
+          },
+          {
+            "value": 44.1,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
             ]
           }
         ],
@@ -1581,7 +1858,7 @@
           {
             "value": -856640.0,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -1593,7 +1870,7 @@
           {
             "value": 44.43,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -1728,6 +2005,38 @@
         "SiO2(a-qz)",
         "SiO2(b-crt)",
         "SiO2(b-qz)"
+      ],
+      "raw": [
+        {
+          "property": "hollandPowellV0",
+          "phase": "solid",
+          "values": {
+            "V0_Jbar": 2.8,
+            "GH_Jmol": -920248.4,
+            "eos": 8
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 74.9,
+            "c2": 0.0031,
+            "c3": -1174000.0,
+            "c4": null,
+            "c5": -236.7,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        }
       ]
     },
     "60676-86-0": {
@@ -1841,7 +2150,7 @@
           {
             "value": -910940.0,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -1862,7 +2171,7 @@
           {
             "value": 41.84,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -1874,7 +2183,7 @@
           {
             "value": -856640.0,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
@@ -1886,7 +2195,7 @@
           {
             "value": 44.43,
             "phase": "solid",
-            "variant": "α quartz",
+            "variant": "\u03b1 quartz",
             "ref": [
               "NBS1982",
               2931,
