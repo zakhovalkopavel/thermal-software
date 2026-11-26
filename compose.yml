@@ -225,12 +225,11 @@ services:
       - thermal-network
     expose:
       - "8100"
-    # SE app deps live in the image PYTHONPATH; install FastAPI stack once at start.
+    # SE API deps are baked into docker/python/Dockerfile — do not pip at start
+    # (runtime PyPI/DNS blips caused 502 crash-loops).
     command: >
-      bash -c "python -m pip install -q 'fastapi>=0.115' 'uvicorn[standard]>=0.32'
-      'pydantic-settings>=2.0' 'sse-starlette>=2.0' 'python-multipart>=0.0.9' 'httpx>=0.27'
-      && uvicorn source_extract.api.app:app --host 0.0.0.0 --port 8100
-      --root-path /source-extractor"
+      uvicorn source_extract.api.app:app --host 0.0.0.0 --port 8100
+      --root-path /source-extractor
     labels:
       - "app.version=${APP_VERSION}"
       - "app.name=source-extractor"
