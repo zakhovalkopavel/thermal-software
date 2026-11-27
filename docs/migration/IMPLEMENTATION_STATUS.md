@@ -430,8 +430,10 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 - [x] OCR policy locked: [`OCR_POLICY.md`](../scripts/OCR_POLICY.md) — pdftotext/Tesseract = fast understanding (+ Tesseract for deep segmentation); Surya/`page-ocr` = final dataset OCR (linked from CONVENTIONS / AGENTS / staging specs)
 - [x] Malan Table 3 from page-ocr → staging (quasichemical Δg Fe³⁺–Ti⁴⁺ + hematite/rutile/FPB SS); Yazhenskikh 07/08/09 OCR inventories → `partial` staging; RefKeys `Yazhenskikh2007`…`2009`
 - [x] Abdul CCR Modal OCR complete (16 pp) + `abdul_ccr_parse.py` → tmp cross-check only (`phases.cross-check.json` under tmp); processed keeps sole `abdul-2023/` thesis TDB
-- [ ] Drop remaining Mao Papers I–V into `mao-papers/` if needed; wire liquid model into phase-equilibrium
+- [ ] Drop remaining Mao Papers I–V into `mao-papers/` if needed
 - [x] Minerals-thermodynamic → compound-data is part of `make compound-data-build` (no separate overlay target; `NO_MINERALS=1` to skip)
+- [x] Phase-equilibrium **plan** updated: CALPHAD-estimate default on compound-data + eutectics + molten salts + glass; incomplete ionic liquid → documented fallbacks; digitized diagrams deferred; legacy eutectic/diagram kept for `compare` — [`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md), legacy detail [`LEGACY_DIAGRAM_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/LEGACY_DIAGRAM_PHASE_EQUILIBRIUM.md)
+- [ ] Implement Engine C (CALPHAD estimate) + extract `legacyEutectic`; API `algorithmMode` / frontend new-vs-compare; enable `legacyDiagram` after diagram validation
 
 ### Source-extractor migration (November 2026)
 

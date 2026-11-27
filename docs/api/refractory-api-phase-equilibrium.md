@@ -7,12 +7,10 @@
 ### `POST /phase-equilibrium`
 
 Phases of a mix of library raw materials fired at `temperature` for `holdTime_hours`:
-- the phase-diagram equilibrium of the matrix, which is the reacted shells of all fractions;
-- the unreacted original phases of coarse grains, from the shrinking-core grain reaction and the library `mineralogy`.
+- equilibrium of the matrix (reacted shells) via the selected algorithm mode;
+- unreacted original phases of coarse grains (shrinking-core + library `mineralogy`).
 
-The fired mineralogy (crystals and glass after cooling, unreacted original phases) is part of this response. There is no separate mineral-phases endpoint.
-
-Algorithm: [`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md).
+Default engine is the **CALPHAD estimate** (compound-data + eutectic / molten-salt anchors + glass models). Digitized diagrams stay optional legacy until validated. See [`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md); diagram detail: [`LEGACY_DIAGRAM_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/LEGACY_DIAGRAM_PHASE_EQUILIBRIUM.md).
 
 **Request body** (`PhaseEquilibriumInputDto`):
 ```json
@@ -25,7 +23,8 @@ Algorithm: [`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/FULL_PH
   ],
   "temperature": 1450,
   "holdTime_hours": 2,
-  "totalMass": 1000
+  "totalMass": 1000,
+  "algorithmMode": "calphad"
 }
 ```
 
@@ -38,6 +37,8 @@ Algorithm: [`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/FULL_PH
 | `temperature` | number | ✅ | Firing temperature, °C, 500–2000 (`PHASE_EQUILIBRIUM_CONSTANTS`) |
 | `holdTime_hours` | number | ❌ | Hold at `temperature`, h, 0.1–100 (default 2) |
 | `totalMass` | number | ❌ | Fired mass of the body for the reported masses (default 1) |
+| `algorithmMode` | `'calphad' \| 'legacy' \| 'compare'` | ❌ | Default `calphad`. `compare` returns CALPHAD + legacy side by side |
+| `legacyVariant` | `'eutectic' \| 'diagram'` | ❌ | When `legacy` or `compare`; default `eutectic`. `diagram` only after validated diagram data |
 
 **Response** (`PhaseEquilibriumResultDto`, abridged). All `percent` values are % of the fired body; `mass = percent / 100 · totalMass`.
 ```json

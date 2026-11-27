@@ -4,14 +4,14 @@
 **Endpoint:** `POST /api/v1/refractory/refractoriness` ([API spec §11](../../api/REFRACTORY_API_SPEC.md))  
 **Constants:** `constants/refractoriness.constants.ts` (`REFRACTORINESS_CONSTANTS`)  
 **Data:** `data/refractoriness/` (published cone values of reference materials, ASTM C24 cone temperatures, ASTM C27 classes, aluminosilicate formula with its validity range; every entry with a `DataSource`)  
-**Uses:** `MixCompositionService` (fired composition), the equilibrium of one composition of [FULL_PHASE_EQUILIBRIUM.md](FULL_PHASE_EQUILIBRIUM.md) (Step 5, main system + subsystems), `data/phase-diagrams/`  
+**Uses:** `MixCompositionService` (fired composition); equilibrium of one composition from [FULL_PHASE_EQUILIBRIUM.md](FULL_PHASE_EQUILIBRIUM.md) (**CALPHAD estimate** by default — compound-data + eutectic anchors; optional legacy diagram path after validation)  
 **Tests:** `backend/test/unit/refractory/services/composition/refractoriness.service.spec.ts`, `backend/test/unit/refractory/services/composition/refractoriness-calibration.spec.ts`, `backend/test/unit/refractory/dto/refractoriness-input.dto.spec.ts`, `backend/test/unit/refractory/utils/phase-diagram/find-temperature-at-liquid.util.spec.ts`, `backend/test/unit/refractory/utils/refractoriness/`, `backend/test/unit/refractory/data/refractoriness-sources.spec.ts`
 
 ---
 
 ## Purpose
 
-The **refractoriness** of the fired mix: the temperature at which a cone of the ground material bends under its own weight in the cone test (ASTM C24 pyrometric cone equivalent, GOST 4069 refractoriness). The cone bends once enough liquid has formed, so the estimate comes from how the mix melts, on the same sourced phase diagrams as `/phase-equilibrium`:
+The **refractoriness** of the fired mix: the temperature at which a cone of the ground material bends under its own weight in the cone test (ASTM C24 pyrometric cone equivalent, GOST 4069 refractoriness). The cone bends once enough liquid has formed, so the estimate comes from how the mix melts — same engine modes as `/phase-equilibrium` (default CALPHAD estimate; legacy diagram optional for compare):
 - **refractoriness:** the temperature at which the equilibrium liquid reaches the critical fraction L\* fitted to published cone values (Step 4), with its cone equivalent and uncertainty; for aluminosilicates also the empirical formula (Step 5), and the ASTM C27 check (Step 6);
 - **solidus:** the first liquid;
 - **liquidus:** the body is fully molten, except the inert phases;
@@ -19,7 +19,7 @@ The **refractoriness** of the fired mix: the temperature at which a cone of the 
 
 Refractoriness under load (ISO 1893, T0.5 / T1 / T2) is not estimated: it depends on grain size, bond and porosity, not only on the composition.
 
-Every oxide and fluoride with diagram data counts; the rest is reported as `unmodelled`. There is no oxide list in the request: the input is the mix itself.
+Every oxide and fluoride covered by compound-data / eutectic (or validated diagram) data counts; the rest is `unmodelled`. There is no oxide list in the request: the input is the mix itself.
 
 It replaces the earlier model:
 - `T = 1400 °C + Σ wt% · effect`, with one "effect" per component (Al2O3 +800 K, Na2O −900 K, …) and no source;
