@@ -463,6 +463,10 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 
 Plan: [`docs/plans/SOURCE_EXTRACTOR_MIGRATION.md`](../plans/SOURCE_EXTRACTOR_MIGRATION.md).
 
+### Ops / Nginx SSL (November 2026)
+
+- [x] `scripts/install-ssl-certs.sh` — issue / install / renew Let's Encrypt (Docker certbot) into `docker/nginx/ssl/{cert,key}.pem`; make targets `install-ssl-certs` / `renew-ssl-certs`; docs [`nginx-ssl-workflow-and-ops.md`](../nginx-ssl-workflow-and-ops.md)
+
 ---
 
 *Update this file as progress is made.*

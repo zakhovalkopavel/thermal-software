@@ -185,18 +185,45 @@ docker-compose exec backend curl http://localhost:4000/api/docs
 
 ## Production Deployment
 
-### 1. Enable HTTPS
-```bash
-# Get SSL certificate (Let's Encrypt)
-certbot certonly --standalone -d yourdomain.com
+### 1. Install certificates (script)
 
-# Copy certificates
+Preferred path — uses Docker `certbot/certbot`, writes gitignored files under
+`docker/nginx/ssl/`, and keeps Let's Encrypt state in `docker/nginx/ssl/letsencrypt/`:
+
+```bash
+# First issue (DNS A/AAAA must already point here; port 80 must be free)
+make install-ssl-certs DOMAIN=yourdomain.com EMAIL=you@example.com STOP_NGINX=1 RELOAD=1
+
+# Or call the script directly
+./scripts/install-ssl-certs.sh issue \
+  --domain yourdomain.com \
+  --email you@example.com \
+  --stop-nginx \
+  --reload
+
+# Host- or panel-provided files
+./scripts/install-ssl-certs.sh install \
+  --cert /path/to/fullchain.pem \
+  --key /path/to/privkey.pem \
+  --reload
+
+# Renew (~every 60 days; cron-friendly)
+make renew-ssl-certs STOP_NGINX=1 RELOAD=1
+```
+
+`STOP_NGINX=1` temporarily stops the compose `nginx` service so standalone HTTP-01
+can bind port 80. `STAGING=1` hits Let's Encrypt staging (safer while testing).
+
+Manual equivalent (same layout the script produces):
+
+```bash
+certbot certonly --standalone -d yourdomain.com
 cp /etc/letsencrypt/live/yourdomain.com/fullchain.pem docker/nginx/ssl/cert.pem
 cp /etc/letsencrypt/live/yourdomain.com/privkey.pem docker/nginx/ssl/key.pem
 ```
 
 ### 2. Update nginx configuration
-Enable HTTPS server block in `conf.d/default.conf`
+Enable HTTPS server block in `conf.d/default.conf` (see Production (HTTPS) above).
 
 ### 3. Environment Variables
 ```bash
@@ -207,7 +234,7 @@ HTTPS_PORT=443
 
 ### 4. Deploy
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f compose.yml -f compose.production.yml up -d
 ```
 
 ---
