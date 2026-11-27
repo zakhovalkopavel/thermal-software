@@ -275,6 +275,15 @@
               255,
               "yaws1999Table12_2"
             ]
+          },
+          {
+            "value": -296800.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              24,
+              "usgsBulletin2131"
+            ]
           }
         ],
         "entropy298": [
@@ -303,6 +312,23 @@
               "Yaws1999",
               255,
               "yaws1999Table12_2"
+            ]
+          },
+          {
+            "value": 248.2,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              24,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": 248.237,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
             ]
           }
         ],
@@ -363,6 +389,23 @@
               "Yaws1999",
               255,
               "yaws1999Table13_2"
+            ]
+          },
+          {
+            "value": -300100.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              24,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": -300194.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
             ]
           }
         ],
@@ -948,6 +991,29 @@
                 "min": 120.0,
                 "max": 198.0,
                 "k": 1.0
+              },
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  55,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 2500.0,
+                      "A1": 98.9,
+                      "A2": -0.01161,
+                      "A3": 846500.0,
+                      "A4": -1127.0,
+                      "A5": 1.788e-06
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 2500.0
               }
             ]
           }
@@ -1286,6 +1352,68 @@
           }
         }
       },
+      "raw": [
+        {
+          "property": "viscosity",
+          "phase": "gas",
+          "values": {
+            "points": [
+              {
+                "T": 200,
+                "mu": 8.6e-06
+              },
+              {
+                "T": 300,
+                "mu": 1.29e-05
+              },
+              {
+                "T": 400,
+                "mu": 1.75e-05
+              },
+              {
+                "T": 500,
+                "mu": 2.17e-05
+              }
+            ],
+            "unit": "Pa s",
+            "p0": false,
+            "moreAccurate": false,
+            "pressure_Pa": 100000,
+            "sourceRefs": [
+              5
+            ],
+            "bestEquation": {
+              "ref": "Yaws1999",
+              "type": "quadratic"
+            },
+            "mape_pct": 1.29,
+            "max_abs_pct": 1.89,
+            "nCompared": 4
+          },
+          "ref": [
+            "Huber2019",
+            585,
+            "huber2019Viscosity"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 46.1914,
+            "c2": 0.00786592,
+            "c3": -769856.0,
+            "c4": null,
+            "c5": null,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        }
+      ],
       "transport": {
         "thermalConductivity": [
           {
@@ -1340,51 +1468,6 @@
       ],
       "nasa9": [
         "SO2"
-      ],
-      "raw": [
-        {
-          "property": "viscosity",
-          "phase": "gas",
-          "values": {
-            "points": [
-              {
-                "T": 200,
-                "mu": 8.6e-06
-              },
-              {
-                "T": 300,
-                "mu": 1.29e-05
-              },
-              {
-                "T": 400,
-                "mu": 1.75e-05
-              },
-              {
-                "T": 500,
-                "mu": 2.17e-05
-              }
-            ],
-            "unit": "Pa s",
-            "p0": false,
-            "moreAccurate": false,
-            "pressure_Pa": 100000,
-            "sourceRefs": [
-              5
-            ],
-            "bestEquation": {
-              "ref": "Yaws1999",
-              "type": "quadratic"
-            },
-            "mape_pct": 1.29,
-            "max_abs_pct": 1.89,
-            "nCompared": 4
-          },
-          "ref": [
-            "Huber2019",
-            585,
-            "huber2019Viscosity"
-          ]
-        }
       ],
       "coolprop": [
         "SulfurDioxide"

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Source to physics: compact architecture</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --done: #34d399; --wip: #fbbf24; --plan: #60a5fa; --risk: #c084fc;
+    --ink: #eaf1fb; --muted: #9fb2cc; --card: rgba(255,255,255,0.06); --line: rgba(255,255,255,0.14);
+  }
+  body { width: 1080px; height: 1260px; font-family: 'Lato', 'DejaVu Sans', sans-serif; color: var(--ink);
+    background: radial-gradient(1200px 700px at 85% -10%, #1f3a6e 0%, transparent 60%),
+                radial-gradient(900px 600px at -10% 105%, #3b1f5e 0%, transparent 55%), #0b1424; padding: 56px 56px 44px; }
+  h1 { font-size: 46px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.08; }
+  h1 span { background: linear-gradient(90deg, #7fd4ff, #c084fc); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--muted); font-size: 21px; margin: 12px 0 30px; }
+  .layer { position: relative; border: 1px solid var(--line); background: var(--card); border-radius: 26px; padding: 22px 26px 24px; }
+  .layer + .arrow + .layer { }
+  .tag { display: inline-flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 900; letter-spacing: 2.2px; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .tag svg { width: 24px; height: 24px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .chip { display: flex; align-items: center; gap: 10px; padding: 11px 16px 11px 14px; border-radius: 16px; font-size: 20px; font-weight: 700;
+    background: rgba(255,255,255,0.07); border: 1px solid var(--line); border-left: 6px solid var(--c, var(--plan)); }
+  .chip small { display: block; font-size: 14px; font-weight: 400; color: var(--muted); margin-top: 1px; }
+  .chip svg { width: 26px; height: 26px; flex: none; }
+  .done { --c: var(--done); } .wip { --c: var(--wip); } .plan { --c: var(--plan); } .risk { --c: var(--risk); }
+  .arrow { display: flex; justify-content: center; height: 30px; align-items: center; }
+  .arrow svg { width: 34px; height: 24px; opacity: .85; }
+  .core { background: linear-gradient(135deg, rgba(96,165,250,.20), rgba(192,132,252,.16)); border-color: rgba(127,212,255,.45); }
+  .split { display: flex; gap: 14px; }
+  .split > div { flex: 1; }
+  .legend { display: flex; gap: 22px; margin-top: 26px; font-size: 17px; color: var(--muted); align-items: center; }
+  .legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; margin-right: 8px; vertical-align: -1px; }
+  .foot { position: absolute; left: 56px; right: 56px; bottom: 40px; display: flex; justify-content: space-between; color: var(--muted); font-size: 17px; }
+</style>
+</head>
+<body>
+  <h1>From scattered sources<br>to <span>quench simulation</span></h1>
+  <p class="sub">One entry point for sources, versioned data, and a physics core.</p>
+
+  <section class="layer">
+    <div class="tag">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#9fb2cc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h7"/></svg>
+      Sources
+    </div>
+    <div class="row">
+      <div class="chip done">Slag Atlas scans</div>
+      <div class="chip done">NBS tables</div>
+      <div class="chip wip">Yaws, JANAF, NASA</div>
+      <div class="chip risk">Quench curves</div>
+      <div class="chip risk">CCT diagrams</div>
+    </div>
+  </section>
+
+  <div class="arrow"><svg viewBox="0 0 34 24"><path d="M17 3v16m-8-7l8 8 8-8" fill="none" stroke="#7fd4ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+  <section class="layer core">
+    <div class="tag">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7fd4ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+      Source-extractor
+    </div>
+    <div class="row" style="margin-bottom:12px">
+      <div class="chip wip">CLI</div>
+      <div class="chip wip">REST API<small>Swagger</small></div>
+      <div class="chip plan">Web GUI<small>same stack as main app</small></div>
+    </div>
+    <div class="row">
+      <div class="chip plan">OCR models<small>local + cloud, per-zone queries</small></div>
+      <div class="chip plan">LLM assist<small>Gemini, OpenAI, Anthropic, local</small></div>
+      <div class="chip wip">Tunable parameters<small>curves, nodes, zones</small></div>
+    </div>
+  </section>
+
+  <div class="arrow"><svg viewBox="0 0 34 24"><path d="M17 3v16m-8-7l8 8 8-8" fill="none" stroke="#7fd4ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+  <section class="layer">
+    <div class="tag">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#9fb2cc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+      Data
+    </div>
+    <div class="row">
+      <div class="chip wip">Datasets<small>latest + history folders</small></div>
+      <div class="chip plan">Postgres<small>versions, prompts, models, change log</small></div>
+      <div class="chip done">Source adapters<small>python/</small></div>
+    </div>
+  </section>
+
+  <div class="arrow"><svg viewBox="0 0 34 24"><path d="M17 3v16m-8-7l8 8 8-8" fill="none" stroke="#7fd4ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+  <section class="layer">
+    <div class="tag">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#9fb2cc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c2 3 5 5 5 9a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-8z"/></svg>
+      Physics core
+    </div>
+    <div class="split">
+      <div>
+        <div class="row">
+          <div class="chip done">Thermodynamics</div>
+          <div class="chip done">Combustion</div>
+          <div class="chip done">Recuperator</div>
+          <div class="chip done">Refractory</div>
+          <div class="chip done">Heat conduction</div>
+        </div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="chip plan">Quench engine<small>HTC, boiling window</small></div>
+      <div class="chip plan">Plan to 3D<small>Blender + AI agents</small></div>
+      <div class="chip plan">Fields + animation</div>
+      <div class="chip plan">Phases + properties<small>hardness, distortion, cracks</small></div>
+    </div>
+  </section>
+
+  <div class="legend">
+    <span><i style="background:var(--done)"></i>done</span>
+    <span><i style="background:var(--wip)"></i>in progress</span>
+    <span><i style="background:var(--plan)"></i>planned</span>
+    <span><i style="background:var(--risk)"></i>research / data risk</span>
+  </div>
+</body>
+</html>

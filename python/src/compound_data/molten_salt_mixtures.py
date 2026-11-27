@@ -100,7 +100,10 @@ def write_molten_salt_mixtures(
     }
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / "mixtures.json"
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False, allow_nan=False), encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
     logger.info("[output] Written → %s  (%d mixtures)", path, len(mixtures))
     return path
 

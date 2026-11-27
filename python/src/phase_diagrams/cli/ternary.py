@@ -113,6 +113,23 @@ def _system_path(dataset: Path, work: Path, relative: str) -> Path:
     raise FileNotFoundError(f"no {relative} in the dataset and no starting file {_host(start)}; run pd-new first")
 
 
+def _system_path_for_nodes(dataset: Path, work: Path, system_id: str, relative: str) -> Path:
+    """Prefer auto-full / candidates (digitized) over empty starts for node wt% projection."""
+    name = Path(relative).name
+    needle = Path(name).stem.lower()
+    for root in (work / "auto-full", work / "candidates", dataset / "systems", work / "starts"):
+        if not root.is_dir():
+            continue
+        # Exact name first, then case-insensitive stem match (CaO-FeOx-SiO2 vs cao-feox-sio2)
+        exact = root / name
+        if exact.is_file():
+            return exact
+        for path in root.glob("*.json"):
+            if path.stem.lower() == needle:
+                return path
+    return _system_path(dataset, work, relative)
+
+
 def _figure_number(figure: str) -> tuple[int, ...]:
     return tuple(int(v) for v in figure.removeprefix("Fig.").strip().split(".") if v.isdigit())
 
@@ -451,6 +468,13 @@ def _cmd_trace_curves(args, dataset: Path, registry: SourceRegistry, work: Path)
     config = load_config(dataset / "configs" / f"{args.system}.curves.config.json")
     if not isinstance(config, CurvesConfig):
         raise ValueError(f"{args.system}: expected a curves config")
+    if not config.curves:
+        raise ValueError(
+            f"{args.system}: curves config has no curve entries "
+            f"(configs/{args.system}.curves.config.json → \"curves\": []). "
+            "Seed boundary paths in the config (or draw them in diagram-review), "
+            "or run `auto` for a fully automatic pass — then detect-isotherms."
+        )
     system_path = _system_path(dataset, work, config.system_file)
     if not system_path.is_relative_to(dataset):
         _say("trace-curves", f"system not in the dataset yet: starting file {_host(system_path)}")
@@ -519,8 +543,10 @@ _NODE_OVERVIEW_FONT_PX = 30
 def _cmd_nodes(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:
     curves = dataset / "configs" / f"{args.system}.curves.config.json"
     config = load_config(curves) if curves.exists() else None
-    system_path = _system_path(dataset, work, config.system_file if config else f"systems/{args.system}.json")
+    relative = config.system_file if config else f"systems/{args.system}.json"
+    system_path = _system_path_for_nodes(dataset, work, args.system, relative)
     system = json.loads(system_path.read_text(encoding="utf-8"))
+    _say("nodes", f"system file {_host(system_path)}")
     if args.origin:
         origin = (args.origin[0], args.origin[1])
     else:

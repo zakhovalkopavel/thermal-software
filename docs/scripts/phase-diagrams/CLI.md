@@ -4,8 +4,18 @@ Part of the [phase-diagram extraction specification](README.md).
 
 ## CLI interface
 
+Preferred entry point (source-extractor migration):
+
+```bash
+docker compose run --rm --no-deps source-extractor python -m source_extract.cli COMMAND …
+# make pd-* targets use the same CLI
 ```
-usage: extract_phase_diagram.py [-h] [--dataset DIR] [--work-dir DIR] [-v] COMMAND ...
+
+`python/src/scripts/extract_phase_diagram.py` remains as a **shim** that forwards to
+`source_extract.cli` (and falls back to `phase_diagrams.cli` if SE is unavailable).
+
+```
+usage: source-extract / extract_phase_diagram.py [-h] [--dataset DIR] [--work-dir DIR] [-v] COMMAND ...
 
 Extract phase-diagram data from the Slag Atlas and NSRDS-NBS 61.
 
@@ -58,8 +68,9 @@ commands:
 
 `SYSTEM` is the file stem (`mgo-sio2`); configs are read from `<dataset>/configs/`.
 PDF paths come from `sources.json` → `sources.<ref>.file`. `extract` reads the NBS index from
-`dataset/nbs/nsrds-nbs-61-1.entries.json` (preferred) or the working `nbs/` copy
-(run `nbs-index` / promote into processed when invariants list NBS entries).
+`dataset/nbs/nsrds-nbs-61-1.entries.json` (preferred), else
+`shared/processed/eutectic-data/nsrds-nbs-61-1.entries.json` (OCR product), else the working
+`nbs/` copy (run `nbs-index` / promote when invariants list NBS entries).
 `-v` adds per-step detail: pages during `index-figures` and the captions found; every detected
 invariant line (temperature, rows, x extent) during `extract`.
 Exit codes: 0 ok, 1 validation errors / differences / promotion refused, 2 config / input error.

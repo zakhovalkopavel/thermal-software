@@ -71,7 +71,7 @@
           },
           {
             "value": 317.65,
-            "variant": "γ-form",
+            "variant": "\u03b3-form",
             "ref": [
               "CRC95",
               491,
@@ -145,7 +145,7 @@
           },
           {
             "value": 1900,
-            "variant": "γ-form",
+            "variant": "\u03b3-form",
             "ref": [
               "CRC95",
               491,
@@ -167,7 +167,7 @@
           {
             "value": -454500,
             "phase": "solid",
-            "variant": "α-form",
+            "variant": "\u03b1-form",
             "ref": [
               "CRC95",
               1661,
@@ -177,7 +177,7 @@
           {
             "value": -441000,
             "phase": "liquid",
-            "variant": "α-form",
+            "variant": "\u03b1-form",
             "ref": [
               "CRC95",
               1661,
@@ -187,7 +187,7 @@
           {
             "value": -395700,
             "phase": "gas",
-            "variant": "α-form",
+            "variant": "\u03b1-form",
             "ref": [
               "CRC95",
               1661,
@@ -220,13 +220,22 @@
               257,
               "yaws1999Table12_2"
             ]
+          },
+          {
+            "value": -395700.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              24,
+              "usgsBulletin2131"
+            ]
           }
         ],
         "entropy298": [
           {
             "value": 70.7,
             "phase": "solid",
-            "variant": "α-form",
+            "variant": "\u03b1-form",
             "ref": [
               "CRC95",
               1661,
@@ -236,7 +245,7 @@
           {
             "value": 113.8,
             "phase": "liquid",
-            "variant": "α-form",
+            "variant": "\u03b1-form",
             "ref": [
               "CRC95",
               1661,
@@ -246,7 +255,7 @@
           {
             "value": 256.8,
             "phase": "gas",
-            "variant": "α-form",
+            "variant": "\u03b1-form",
             "ref": [
               "CRC95",
               1661,
@@ -270,13 +279,22 @@
               257,
               "yaws1999Table12_2"
             ]
+          },
+          {
+            "value": 256.8,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              24,
+              "usgsBulletin2131"
+            ]
           }
         ],
         "gibbsEnergy298": [
           {
             "value": -374200,
             "phase": "solid",
-            "variant": "α-form",
+            "variant": "\u03b1-form",
             "ref": [
               "CRC95",
               1661,
@@ -286,7 +304,7 @@
           {
             "value": -373800,
             "phase": "liquid",
-            "variant": "α-form",
+            "variant": "\u03b1-form",
             "ref": [
               "CRC95",
               1661,
@@ -296,7 +314,7 @@
           {
             "value": -371100,
             "phase": "gas",
-            "variant": "α-form",
+            "variant": "\u03b1-form",
             "ref": [
               "CRC95",
               1661,
@@ -310,6 +328,15 @@
               "Yaws1999",
               257,
               "yaws1999Table13_2"
+            ]
+          },
+          {
+            "value": -371000.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              24,
+              "usgsBulletin2131"
             ]
           }
         ],
@@ -335,7 +362,7 @@
           {
             "value": 50.7,
             "phase": "gas",
-            "variant": "α-form",
+            "variant": "\u03b1-form",
             "ref": [
               "CRC95",
               1661,
@@ -355,7 +382,7 @@
         "heatOfFusion": [
           {
             "value": 8600,
-            "variant": "γ-form",
+            "variant": "\u03b3-form",
             "ref": [
               "CRC95",
               685,
@@ -421,7 +448,7 @@
           },
           {
             "value": 289.95,
-            "variant": "γ-form",
+            "variant": "\u03b3-form",
             "ref": [
               "CRC95",
               491,
@@ -758,6 +785,29 @@
                 "min": 240.0,
                 "max": 290.0,
                 "k": 1.0
+              },
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  55,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 2500.0,
+                      "A1": 147.8,
+                      "A2": -0.01898,
+                      "A3": 1079000.0,
+                      "A4": -1794.0,
+                      "A5": 2.763e-06
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 2500.0
               }
             ]
           }
@@ -969,6 +1019,22 @@
                 "max": 694.19
               },
               {
+                "type": "quadratic",
+                "ref": [
+                  "Yaws1999",
+                  257,
+                  "yaws1999Table21_2"
+                ],
+                "vars": {
+                  "a": -12.039,
+                  "b": 0.543,
+                  "c": -0.00016
+                },
+                "min": 298.0,
+                "max": 694.0,
+                "k": 1e-07
+              },
+              {
                 "type": "quartic",
                 "ref": [
                   "VDI2010",
@@ -984,22 +1050,6 @@
                 },
                 "min": null,
                 "max": null
-              },
-              {
-                "type": "quadratic",
-                "ref": [
-                  "Yaws1999",
-                  257,
-                  "yaws1999Table21_2"
-                ],
-                "vars": {
-                  "a": -12.039,
-                  "b": 0.543,
-                  "c": -0.00016
-                },
-                "min": 298.0,
-                "max": 694.0,
-                "k": 1e-07
               }
             ]
           },

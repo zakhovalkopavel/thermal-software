@@ -26,6 +26,9 @@
 | **Thermophysical** | 0% | Not started |
 | **Database migrations** | 0% | Not started |
 | **E2E tests** | 0% | Not started |
+| **Project roadmap (docs)** | In progress | [`docs/PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) — human roadmap; technical plans in [`docs/plans/`](../plans/README.md) |
+| **Heat-treatment data (plan, phase 4)** | Plan only | Gaps G1–G10, new dataset kinds, steps D7–D11; no-legacy and no-tuning rules. Split into [`QUENCH_SOURCE_PICKLIST.md`](../plans/QUENCH_SOURCE_PICKLIST.md), [`SOLUTION_PROPERTY_ALGORITHM.md`](../plans/SOLUTION_PROPERTY_ALGORITHM.md), [`SOLUTION_VERIFICATION_EXAMPLES.md`](../plans/SOLUTION_VERIFICATION_EXAMPLES.md); main plan [`HEAT_TREATMENT_DATA.md`](../plans/HEAT_TREATMENT_DATA.md) |
+| **Source-extractor (SE)** | ~85% | Phases 0–5 + full review port into SE (`source_extract/review/` split domain, `/api/v1/review`, React editor with tools/Analyze/Confirm/Undo). Host adapters + compose/nginx/`pd-*` shim. §12 cutover (Analyze GUI, NBS, OCR/LLM, history; delete local diagram-review) still open — [`SOURCE_EXTRACTOR_MIGRATION.md`](../plans/SOURCE_EXTRACTOR_MIGRATION.md) |
 
 ---
 
@@ -394,6 +397,58 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 6. ~~**Furnace module**~~ — superseded (combustion bed + thermodynamics)
 7. **Database migrations** — required before any persistent data features
 8. ~~**Refresh [`ROADMAP.md`](ROADMAP.md)**~~ — module-map statuses updated
+
+### USGS Bulletin 2131 staging OCR (November 2026)
+
+- [x] PDF at `shared/sources/compound-data/USGS Bulletin 2131 Thermodynamic properties of minerals (Robie Hemingway 1995).pdf`
+- [x] RefKey `RobieHemingway1995` in `shared/references/references.json`
+- [x] OCR CLI `python/src/scripts/usgs2131_ocr.py` + package `python/src/usgs_bulletin_2131/` (core 298/Cp tables PDF 10–76 + Priority-1 high-T + index; Modal/local via page-ocr)
+- [x] Make: `usgs2131-ocr`, `usgs2131-ocr-smoke`, `usgs2131-build`, `usgs2131-verify`, `usgs2131-test` ([`scripts/make.d/15-usgs-bulletin-2131.mk`](../../scripts/make.d/15-usgs-bulletin-2131.mk)); spec [`USGS_BULLETIN_2131_SPEC.md`](../scripts/USGS_BULLETIN_2131_SPEC.md)
+- [x] Robie staging = per-phase `robie-hemingway-1995/<phaseId>.json` at staging root (no compact `phases.json`; texts stay in tmp)
+- [x] Generic mineral header + formula-next-line parser (`parse_tables.py` + `mineral_aliases.py`)
+- [x] High-T table parse (`parse_high_t.py`) + complete `<phaseId>.json` at staging root
+- [x] `make usgs2131-list-missing` / `usgs2131-ocr-missing` (skip pages that already have OCR)
+- [x] `robieHemingway` equation type (backend method + compound-data overlay for `status: ok`)
+- [x] Robie dataset build uses OCR `page-NNNN.txt` only; clears staging root/`compounds/` before rewrite; page-053.txt two-line Cp; single-A1 Cp (Gibbsite) accepted
+- [ ] Cross-source gates / remaining Robie join cleanup beyond OCR-only
+
+### Thermochemical staging from free Tier-1/2 sources (November 2026)
+
+- [x] Sources under `shared/sources/minerals-thermodynamic/` (renamed from `thermodynamic/`; Abdul thesis, hp633ver.dat, Mao, Pankratz 672, Koroleva, Jung, Malan, Watanabe, Yazhenskikh workshops, Nagai ThermoML; USGS symlink)
+- [x] Processed root `shared/processed/minerals-thermodynamic/` (renamed from `thermodynamic-staging/`) holds **`index.json` only** at root + per-source subfolders
+- [x] **Universal contract:** every extracted source → `phases.json` only (calculable numbers + `ref` + `convention` + per-phase `status`); texts/OCR/raw in tmp — [`THERMOCHEMICAL_STAGING_SPEC.md`](../scripts/THERMOCHEMICAL_STAGING_SPEC.md)
+- [x] Extractor `make thermodynamic-staging-extract` → HP633, Abdul, Robie, Koroleva, Malan, Watanabe, Jung Table 1, Nagai, Pankratz oxides, Mao scope
+- [x] `hp633_parse.py` ingests **all** `EoS=` endmembers from `hp633ver.dat` (276), not a selected subset; `ENDMEMBER_MAP` only enriches known phase ids
+- [x] Modal Surya OCR helpers: `thermodynamic-staging-ocr-jung` / `-pankratz` / `-mao` ([`16-thermodynamic-staging.mk`](../../scripts/make.d/16-thermodynamic-staging.mk))
+- [x] Melt OCR catalog + runner: `ocr_jobs.py` + `thermodynamic_staging_ocr_run.py`; `make thermodynamic-staging-ocr-melt` / `-ocr-job` / `-ocr-yazhenskikh` / `-ocr-malan` / `-ocr-mao-papers` (skip existing dumps; Mao Papers I–V from `shared/sources/minerals-thermodynamic/mao-papers/`)
+- [x] RefKeys `HollandPowell2011` … `Nagai2009`
+- [x] Mao 2006 CAS paper (`mao-papers/Mao_2606.pdf`) + RefKey `Mao2006` + `mao_2006_cas_parse.py` → processed `mao-2006/phases.json` (Tables I/III **ok**; OCR dumps remain tmp `mao-2006-cas/`)
+- [x] `mao-2005/` removed from processed (kappa thesis has no usable coeffs); only `mao-2006/` staged
+- [x] Melt OCR batch complete (`yazhenskikh-2007/08/09`, `jung-2009`, `malan-2019`, `mao-2006-cas`, `abdul-2023-ccr` under `tmp/reports/python/minerals-thermodynamic/`)
+- [x] Jung 2009 Table 1 MQM cleanup: parse full page-ocr (8 pages); Δg°/q0i match ISIJ Table 1 exactly (`jung_parse.py` + tests)
+- [x] Koroleva 2017 Modal Surya OCR (10 pp) + `koroleva_parse.py` → silicate/borate Tables 1–2 + regression eqs (6)(7)(10)(11) in `koroleva-2017/phases.json`
+- [x] OCR policy locked: [`OCR_POLICY.md`](../scripts/OCR_POLICY.md) — pdftotext/Tesseract = fast understanding (+ Tesseract for deep segmentation); Surya/`page-ocr` = final dataset OCR (linked from CONVENTIONS / AGENTS / staging specs)
+- [x] Malan Table 3 from page-ocr → staging (quasichemical Δg Fe³⁺–Ti⁴⁺ + hematite/rutile/FPB SS); Yazhenskikh 07/08/09 OCR inventories → `partial` staging; RefKeys `Yazhenskikh2007`…`2009`
+- [x] Abdul CCR Modal OCR complete (16 pp) + `abdul_ccr_parse.py` → tmp cross-check only (`phases.cross-check.json` under tmp); processed keeps sole `abdul-2023/` thesis TDB
+- [ ] Drop remaining Mao Papers I–V into `mao-papers/` if needed; wire liquid model into phase-equilibrium
+- [x] Minerals-thermodynamic → compound-data is part of `make compound-data-build` (no separate overlay target; `NO_MINERALS=1` to skip)
+
+### Source-extractor migration (November 2026)
+
+- [x] SE FastAPI `/api/v1` + `/docs` + CLI `python -m source_extract.cli`
+- [x] `SourceAdapter` registry (`SE_ADAPTER_MODULES` + entry points); host `phase_diagrams.adapter` / `yaws1999.adapter`
+- [x] CommandSpec/ParamSpec; job runner; make `pd-*` → SE CLI; `extract_phase_diagram.py` shim
+- [x] LLM client factory (Google/OpenAI/Anthropic/compatible) + call recorder; OCR region + assist tools
+- [x] Dataset current/history + file `RunRecorder` + history commands; promote archives previous
+- [x] Review spine + React GUI screens; nginx `/source-extractor/`; main-frontend nav link
+- [x] Full port of diagram-review domain into `source_extract/review/` (split ≤300-line modules; adapter roots via `review_paths` / `SE_WORK_ROOT`)
+- [x] Review REST: sessions, geometry edits, Analyze→JobRunner, confirm, guidance heuristics
+- [x] React Review editor: systems+sessions rail, canvas engine (`view` pixels), tool modes, Analyze/Confirm/Undo (binary + ternary)
+- [x] Unit tests: barycentric/retrace, draft resolve prefers rich candidate, binary axes, move/undo
+- [ ] §12 cutover gate remaining: Analyze+reload in GUI end-to-end, NBS-backed extract, OCR zone re-query, LLM proposal apply, history diff
+- [ ] Delete host `phase_diagrams/cli` handlers and local diagram-review after cutover
+
+Plan: [`docs/plans/SOURCE_EXTRACTOR_MIGRATION.md`](../plans/SOURCE_EXTRACTOR_MIGRATION.md).
 
 ---
 

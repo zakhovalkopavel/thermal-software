@@ -122,6 +122,7 @@ make up
 - 🐳 **[docs/NGINX_ARCHITECTURE.md](docs/NGINX_ARCHITECTURE.md)** — Nginx reverse proxy setup
 
 ### Implementation & Migration
+- 🧭 **[docs/PROJECT_ROADMAP.md](docs/PROJECT_ROADMAP.md)** — Project roadmap (detailed, diagrams)
 - 🗺️ **[docs/migration/ROADMAP.md](docs/migration/ROADMAP.md)** ⭐ — Current implementation roadmap
 - 📋 **[docs/migration/IMPLEMENTATION_STATUS.md](docs/migration/IMPLEMENTATION_STATUS.md)** — Progress tracker
 - 📦 **[docs/migration/NESTJS_MIGRATION_SPEC.md](docs/migration/NESTJS_MIGRATION_SPEC.md)** — Full migration spec

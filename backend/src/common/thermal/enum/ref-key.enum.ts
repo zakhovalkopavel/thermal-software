@@ -125,4 +125,32 @@ export enum RefKey {
   HillertJarl1978 = 'HillertJarl1978',
   /** [59] Hargreaves et al. — Earth Mover’s Distance for inorganic compositions (ElMD) (2020) */
   Hargreaves2020ElMD = 'Hargreaves2020ElMD',
+  /** [60] Robie & Hemingway — Thermodynamic properties of minerals and related substances (USGS Bulletin 2131) (1995) */
+  RobieHemingway1995 = 'RobieHemingway1995',
+  /** [61] Holland & Powell — An improved and extended internally consistent thermodynamic dataset (TC-DS633) (2011) */
+  HollandPowell2011 = 'HollandPowell2011',
+  /** [62] Abdul — Thermodynamic modelling of cement clinker systems (3rd-generation CALPHAD TDB) (2023) */
+  Abdul2023 = 'Abdul2023',
+  /** [63] Mao — Thermodynamic modelling and assessment of some alumino-silicate systems (KTH) (2005) */
+  Mao2005 = 'Mao2005',
+  /** [64] Pankratz — Thermodynamic properties of elements and oxides (USBM Bulletin 672) (1982) */
+  Pankratz1982 = 'Pankratz1982',
+  /** [65] Jung et al. — Thermodynamic modeling of the Al2O3–Ti2O3–TiO2 system (2009) */
+  Jung2009AlTiO = 'Jung2009AlTiO',
+  /** [66] Malan et al. — Phase equilibria and thermodynamic evaluation of the Fe–Ti–V–O system in air (2019) */
+  Malan2019 = 'Malan2019',
+  /** [67] Maruo / Watanabe et al. — Measurement of heat content of cuspidine (3CaO·2SiO2·CaF2) (2000) */
+  Watanabe2000 = 'Watanabe2000',
+  /** [68] Koroleva et al. — Methods for calculating and matching thermodynamic properties of silicate and borate compounds (2017) */
+  Koroleva2017 = 'Koroleva2017',
+  /** [69] Nagai, Ogasawara & Maeda — Thermodynamic study of Al2O3–B2O3 (Al18B4O33) (2009) */
+  Nagai2009 = 'Nagai2009',
+  /** [70] Mao et al. — Thermodynamic assessment of the CaO–Al2O3–SiO2 system (2006) */
+  Mao2006 = 'Mao2006',
+  /** [71] Yazhenskikh et al. — Thermodynamic assessment of alkali oxide–Al2O3–SiO2 (GTT workshop 2007) (2007) */
+  Yazhenskikh2007 = 'Yazhenskikh2007',
+  /** [72] Yazhenskikh et al. — Alkali-containing oxide systems (GTT workshop 2008) (2008) */
+  Yazhenskikh2008 = 'Yazhenskikh2008',
+  /** [73] Yazhenskikh et al. — K2O/Na2O–Al2O3–SiO2 optimisation (GTT workshop 2009) (2009) */
+  Yazhenskikh2009 = 'Yazhenskikh2009',
 }

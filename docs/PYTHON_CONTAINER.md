@@ -39,11 +39,25 @@ Run Python scripts and OCR extraction inside Docker → No Python installation o
 
 ### Volumes Mounted
 ```
-./python/src         → /app/src              (Source code - OCR package & scripts)
-./python/tests       → /app/tests            (Test files)
-./shared             → /app/shared           (OCR input/output)
-./tmp/reports/python → /app/reports          (Script reports)
-python_packages      → /usr/local/lib/...    (Poetry packages)
+./python/src                 → /app/src
+./python/tests               → /app/tests
+./vendor/page-ocr            → /app/vendor/page-ocr
+./vendor/source-extract      → /app/vendor/source-extract
+./shared                     → /app/shared
+./tmp/reports/python         → /app/reports
+python_packages              → /usr/local/lib/...   (Poetry packages; python service only)
+```
+
+### Source-extractor service
+
+`source-extractor` uses the same Python image, exposes FastAPI on `:8100`, and is
+proxied at `/source-extractor/api/` (GUI at `/source-extractor/` via
+`source-extractor-ui`). Adapters load from `SE_ADAPTER_MODULES` /
+`phase_diagrams.adapter` + `yaws1999.adapter`. Prefer:
+
+```bash
+docker compose run --rm --no-deps source-extractor python -m source_extract.cli --help
+make pd-extract SYSTEM=mgo-sio2
 ```
 
 ### Environment Variables

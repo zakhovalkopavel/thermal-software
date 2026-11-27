@@ -1,0 +1,174 @@
+{
+  "class": "inorganic",
+  "group": "Ca",
+  "displayFormula": "Ca2SiO4",
+  "hill": "Ca2O4Si",
+  "elements": [
+    "Ca",
+    "O",
+    "Si"
+  ],
+  "entries": {
+    "robie-calcio-olivine": {
+      "compoundId": "calcio-olivine",
+      "name": "Calcio-Olivine",
+      "Mr": 172.239,
+      "properties": {
+        "enthalpyFormation298": [
+          {
+            "value": -2316500.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              38,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": -2306940.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
+          }
+        ],
+        "entropy298": [
+          {
+            "value": 120.5,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              38,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": 127.6,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
+          }
+        ],
+        "gibbsEnergy298": [
+          {
+            "value": -2198900.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              38,
+              "usgsBulletin2131"
+            ]
+          }
+        ]
+      },
+      "equations": {
+        "heatCapacity": {
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  65,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 1200.0,
+                      "A1": 132.7,
+                      "A2": 0.05251,
+                      "A3": -1905000.0,
+                      "A4": 0.0,
+                      "A5": 0.0
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 1200.0
+              }
+            ]
+          }
+        }
+      },
+      "raw": [
+        {
+          "property": "gibbsEnergySER",
+          "phase": "solid",
+          "values": {
+            "gFunction": "GAC2S",
+            "Tmin_K": 1.0,
+            "Tmax_K": 3000.0,
+            "G": {
+              "form": "H0 + a2*T^2 + a3*T^3 + sum(prefactor*T*ln(1-exp(-theta/T)))",
+              "H0_Jmol": -2316104.80639131,
+              "a2": null,
+              "a3": null,
+              "einstein": [
+                {
+                  "prefactor": 50.6232292353224,
+                  "factorFunction": "AC2S2",
+                  "theta_K": 1235.840109
+                },
+                {
+                  "prefactor": 82.5742623603897,
+                  "factorFunction": "AC2S0",
+                  "theta_K": null
+                },
+                {
+                  "prefactor": 41.4017086323043,
+                  "factorFunction": "AC2S1",
+                  "theta_K": 174.273816
+                }
+              ],
+              "units": "J/mol; T in K",
+              "rawExpression": "-2316104.80639131 + 50.6232292353224 * T * LN(AC2S2)-0.008061 * T**(2) + 82.5742623603897 * T * LN(AC2S0) + 41.4017086323043 * T * LN(AC2S1)",
+              "R": 8.31446261815324
+            },
+            "tdbPhase": "AC2S",
+            "polymorph": "alpha"
+          },
+          "ref": [
+            "Abdul2023",
+            "SER"
+          ]
+        },
+        {
+          "property": "hollandPowellV0",
+          "phase": "solid",
+          "values": {
+            "V0_Jbar": 5.16,
+            "GH_Jmol": -2344984.0,
+            "eos": 8
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 247.5,
+            "c2": -0.003206,
+            "c3": null,
+            "c4": null,
+            "c5": -2051.9,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -33,6 +33,23 @@
               6031,
               "nbsTables"
             ]
+          },
+          {
+            "value": -1950500.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              27,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": -1949470.0,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "entropy298": [
@@ -44,6 +61,23 @@
               6031,
               "nbsTables"
             ]
+          },
+          {
+            "value": 117.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              27,
+              "usgsBulletin2131"
+            ]
+          },
+          {
+            "value": 113.9,
+            "phase": "solid",
+            "ref": [
+              "HollandPowell2011",
+              "HSC"
+            ]
           }
         ],
         "gibbsEnergy298": [
@@ -54,6 +88,15 @@
               "NBS1982",
               6031,
               "nbsTables"
+            ]
+          },
+          {
+            "value": -1838100.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              27,
+              "usgsBulletin2131"
             ]
           }
         ],
@@ -79,7 +122,71 @@
             ]
           }
         ]
-      }
+      },
+      "equations": {
+        "heatCapacity": {
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  57,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 1200.0,
+                      "A1": 224.7,
+                      "A2": 0.00448,
+                      "A3": -1581000.0,
+                      "A4": -1370.0,
+                      "A5": 0.0
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 1200.0
+              }
+            ]
+          }
+        }
+      },
+      "raw": [
+        {
+          "property": "hollandPowellV0",
+          "phase": "solid",
+          "values": {
+            "V0_Jbar": 4.075,
+            "GH_Jmol": -1983429.0,
+            "eos": 8
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        },
+        {
+          "property": "heatCapacity",
+          "phase": "solid",
+          "values": {
+            "form": "c1 + c2*T + c3/T^2 + c4*T^2 + c5/T^0.5",
+            "c1": 184.9,
+            "c2": 0.01417,
+            "c3": -3674800.0,
+            "c4": null,
+            "c5": -404.0,
+            "units": "J/(mol\u00b7K); T in K"
+          },
+          "ref": [
+            "HollandPowell2011",
+            "HSC"
+          ]
+        }
+      ]
     }
   }
 }

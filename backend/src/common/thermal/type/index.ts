@@ -30,3 +30,5 @@ export * from './yaws-liquid-viscosity-equation';
 export * from './yaws-liquid-conductivity-equation';
 export * from './yaws-liquid-density-equation';
 export * from './yaws-water-solubility-equation';
+export * from './robie-hemingway-range';
+export * from './robie-hemingway-equation';

@@ -104,6 +104,7 @@ services:
       VITE_API_URL: ${VITE_API_URL}
       VITE_APP_VERSION: ${APP_VERSION}
       VITE_PORT: ${VITE_PORT}
+      VITE_SOURCE_EXTRACTOR_URL: ${VITE_SOURCE_EXTRACTOR_URL:-/source-extractor/}
     networks:
       - thermal-network
     volumes:
@@ -173,6 +174,91 @@ services:
     restart: unless-stopped
 
   # ==========================================
+  # Source-extractor — CLI / API / GUI entry point
+  # ==========================================
+
+  source-extractor:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION}
+        TESSERACT_VERSION: ${TESSERACT_VERSION}
+    container_name: thermal-source-extractor
+    working_dir: /app
+    env_file:
+      - .env
+    environment:
+      PYTHONUNBUFFERED: 1
+      PYTHONPATH: /app/src:/app/vendor/page-ocr/src:/app/vendor/source-extract/src
+      SE_ADAPTER_MODULES: phase_diagrams.adapter:get_adapter,yaws1999.adapter:get_adapter
+      SE_WORK_ROOT: /app/reports/phase-diagrams
+      SE_DATASET_ROOT: /app/shared/processed/phase-diagrams
+      SE_HISTORY_ROOT: /app/reports/phase-diagrams/history
+      SE_API_HOST: 0.0.0.0
+      SE_API_PORT: 8100
+      # Prefix when reached via nginx /source-extractor/ (Swagger openapi URL).
+      SE_ROOT_PATH: /source-extractor
+      SE_LLM_PROVIDER: ${SE_LLM_PROVIDER:-google}
+      SE_LLM_MODEL: ${SE_LLM_MODEL:-}
+      SE_LLM_API_KEY: ${SE_LLM_API_KEY:-}
+      DISPLAY: ${DISPLAY}
+      QT_X11_NO_MITSHM: ${QT_X11_NO_MITSHM}
+      XAUTHORITY: /root/.Xauthority
+      LLAMA_CPP_BINARY: /opt/llama-cpp/llama-server
+      LD_LIBRARY_PATH: /opt/llama-cpp
+    volumes:
+      - ./python/src:/app/src
+      - ./python/tests:/app/tests
+      - ./vendor/page-ocr:/app/vendor/page-ocr:ro
+      - ./vendor/source-extract:/app/vendor/source-extract
+      - ./tmp/reports/python:/app/reports
+      - ./shared:/app/shared
+      # Do not mount python_packages here — that host volume can shadow/break image pip.
+      - surya_model_cache:/root/.cache/datalab
+      - huggingface_cache:/root/.cache/huggingface
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ${XAUTHORITY}:/root/.Xauthority:ro
+    devices:
+      - /dev/dri:/dev/dri
+    networks:
+      - thermal-network
+    expose:
+      - "8100"
+    # SE API deps are baked into docker/python/Dockerfile — do not pip at start
+    # (runtime PyPI/DNS blips caused 502 crash-loops).
+    command: >
+      uvicorn source_extract.api.app:app --host 0.0.0.0 --port 8100
+      --root-path /source-extractor
+    labels:
+      - "app.version=${APP_VERSION}"
+      - "app.name=source-extractor"
+    restart: unless-stopped
+
+  source-extractor-ui:
+    image: node:${NODE_VERSION}
+    container_name: thermal-source-extractor-ui
+    working_dir: /app
+    environment:
+      VITE_SE_API_URL: ${VITE_SE_API_URL:-/source-extractor/api/v1}
+      VITE_PORT: 5174
+    volumes:
+      - ./vendor/source-extract/frontend:/app
+      - se_frontend_node_modules:/app/node_modules
+    networks:
+      - thermal-network
+    expose:
+      - "5174"
+    # Official node image entrypoint is `node`; override so we run a shell script.
+    entrypoint: ["sh", "-c"]
+    command:
+      - "npm install && npm run dev -- --host 0.0.0.0 --port 5174 --base /source-extractor/"
+    labels:
+      - "app.version=${APP_VERSION}"
+      - "app.name=source-extractor-ui"
+    restart: unless-stopped
+
+  # ==========================================
   # Nginx Reverse Proxy
   # ==========================================
 
@@ -189,6 +275,8 @@ services:
     depends_on:
       - backend
       - frontend
+      - source-extractor
+      - source-extractor-ui
     networks:
       - thermal-network
     volumes:
@@ -212,3 +300,4 @@ volumes:
   python_packages:
   surya_model_cache:  # VLM GGUF models (~1.2GB); keeps nbs-index from re-downloading
   huggingface_cache:
+  se_frontend_node_modules:

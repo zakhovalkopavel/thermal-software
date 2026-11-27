@@ -190,7 +190,9 @@ def _cmd_auto_overlay(args, dataset: Path, registry: SourceRegistry, work: Path)
     return 0
 
 
+_DRAFT_MARGIN_PX = 40
 _WORDS_MARGIN_PX = (300, 150, 300, 100)
+_LARGE_TRIANGLE = 0.4  # same threshold as cli/ternary.py (pd-new)
 
 
 def _cmd_auto(args, dataset: Path, registry: SourceRegistry, work: Path) -> int:

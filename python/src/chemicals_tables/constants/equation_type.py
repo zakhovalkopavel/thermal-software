@@ -44,3 +44,5 @@ class EquationType(StrEnum):
     yawsLiquidConductivity      = "yawsLiquidConductivity"
     yawsLiquidDensity           = "yawsLiquidDensity"
     yawsWaterSolubility         = "yawsWaterSolubility"
+    # Robie & Hemingway 1995 five-term mineral Cp
+    robieHemingway              = "robieHemingway"

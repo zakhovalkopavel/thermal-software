@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Application and database: compact scheme</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --have: #34d399; --wip: #fbbf24; --risk: #c084fc; --plan: #60a5fa;
+    --ink: #eaf1fb; --muted: #9fb2cc; --card: rgba(255,255,255,0.06); --line: rgba(255,255,255,0.14);
+  }
+  body { width: 1080px; height: 1150px; font-family: 'Lato', 'DejaVu Sans', sans-serif; color: var(--ink);
+    background: radial-gradient(1100px 700px at 100% -10%, #1d4a6b 0%, transparent 60%),
+                radial-gradient(900px 600px at -10% 105%, #3b1f5e 0%, transparent 55%), #0b1424; padding: 52px 52px 40px; }
+  h1 { font-size: 44px; font-weight: 900; letter-spacing: -0.5px; line-height: 1.08; }
+  h1 span { background: linear-gradient(90deg, #7fd4ff, #34d399); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .sub { color: var(--muted); font-size: 20px; margin: 10px 0 24px; }
+  .band { display: flex; gap: 14px; }
+  .box { flex: 1; border: 1px solid var(--line); background: var(--card); border-radius: 22px; padding: 16px 20px; }
+  .box h3 { font-size: 15px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 900; margin-bottom: 6px; }
+  .box p { font-size: 18px; font-weight: 700; line-height: 1.25; }
+  .box p small { display: block; font-size: 14px; color: var(--muted); font-weight: 400; margin-top: 3px; }
+  .arrows { display: flex; justify-content: space-around; height: 34px; align-items: center; color: #7fd4ff; font-size: 14px; letter-spacing: 1px; }
+  .arrows span { display: inline-flex; align-items: center; gap: 8px; }
+  .arrows svg { width: 22px; height: 22px; }
+  .db { border: 2px solid rgba(127,212,255,.55); border-radius: 30px; padding: 22px 24px 20px;
+        background: linear-gradient(160deg, rgba(96,165,250,.20), rgba(52,211,153,.10) 55%, rgba(192,132,252,.14)); }
+  .db-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .db-head svg { width: 40px; height: 40px; }
+  .db-head b { font-size: 26px; font-weight: 900; }
+  .db-head small { display: block; color: var(--muted); font-size: 15px; font-weight: 400; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .tbl { background: rgba(8,16,30,.55); border: 1px solid var(--line); border-top: 5px solid var(--c); border-radius: 16px; padding: 12px 14px 13px; min-height: 108px; }
+  .tbl h4 { font-size: 18px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
+  .tbl h4 svg { width: 22px; height: 22px; flex: none; }
+  .tbl ul { list-style: none; margin-top: 6px; }
+  .tbl li { font-size: 14.5px; color: var(--muted); line-height: 1.4; }
+  .have { --c: var(--have); } .wip { --c: var(--wip); } .risk { --c: var(--risk); }
+  .hist { margin-top: 12px; border: 1px dashed rgba(251,191,36,.6); background: rgba(251,191,36,.08); border-radius: 16px; padding: 12px 16px; }
+  .hist h4 { font-size: 15px; letter-spacing: 1.8px; text-transform: uppercase; color: #fbbf24; font-weight: 900; margin-bottom: 6px; }
+  .hist .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .hist .tags span { font-size: 15px; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid var(--line); }
+  .legend { display: flex; gap: 22px; margin-top: 20px; font-size: 16px; color: var(--muted); align-items: center; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 14px; height: 14px; border-radius: 4px; margin-right: 8px; vertical-align: -1px; }
+</style>
+</head>
+<body>
+  <h1>One application, <span>one database</span></h1>
+  <p class="sub">Sources are extracted once, versioned, and served to every calculator.</p>
+
+  <div class="band">
+    <div class="box"><h3>Source-extractor</h3><p>CLI, API, GUI<small>OCR + LLM, review, tunable parameters</small></p></div>
+    <div class="box"><h3>Source adapters</h3><p>python/<small>Atlas, NBS, Yaws, JANAF, new sources</small></p></div>
+    <div class="box"><h3>Datasets</h3><p>latest + history<small>seeds for a fresh install</small></p></div>
+  </div>
+
+  <div class="arrows">
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="#7fd4ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v15m-6-6l6 6 6-6"/></svg>translators + migrations</span>
+  </div>
+
+  <section class="db">
+    <div class="db-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#7fd4ff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/><path d="M4 11.5v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+      <div><b>PostgreSQL</b><small>current data, versioned through migrations</small></div>
+    </div>
+
+    <div class="grid">
+      <div class="tbl have"><h4>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/></svg>
+        Compound data</h4>
+        <ul><li>~19k compounds, formulas</li><li>NASA, JANAF, Yaws coefficients</li><li>references per coefficient set</li></ul></div>
+      <div class="tbl have"><h4>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M5 20V8l5 5 4-9 5 16"/></svg>
+        Phase diagrams</h4>
+        <ul><li>binary and ternary systems</li><li>liquidus, invariants, isotherms</li><li>NBS eutectics cross-check</li></ul></div>
+      <div class="tbl wip"><h4>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 6 6 10a6 6 0 0 1-12 0c0-4 3-6 6-10z"/></svg>
+        Molten salts</h4>
+        <ul><li>salt thermophysical library</li><li>eutectics, melting points</li><li>density, viscosity, conductivity</li></ul></div>
+
+      <div class="tbl have"><h4>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M7 7v10M12 7v10M17 7v10"/></svg>
+        Metals and refractories</h4>
+        <ul><li>λ, Cp, ρ, CTE as f(T)</li><li>refractory materials, mixes</li><li>emissivity, glass viscosity</li></ul></div>
+      <div class="tbl risk"><h4>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4v16h18"/><path d="M6 8c5 0 4 8 9 8s3-5 6-5"/></svg>
+        CCT / TTT of alloys</h4>
+        <ul><li>steels first, other alloys later</li><li>transformation curves, Ms, Mf</li><li>phase fractions vs cooling</li></ul></div>
+      <div class="tbl risk"><h4>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/><path d="M9 15a3 3 0 0 0 3 3"/></svg>
+        Water-salt solutions</h4>
+        <ul><li>NaCl, CaCl₂, MgCl₂, nitrates...</li><li>boiling point, phases</li><li>viscosity, λ vs T and concentration</li></ul></div>
+
+      <div class="tbl risk"><h4>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 12H6z"/><path d="M8 8c0-3 8-3 8 0"/></svg>
+        Quenchants and mediums</h4>
+        <ul><li>oils, polymers, water, pressurised water</li><li>inverse-solubility polymers</li><li>agitation, bath temperature</li></ul></div>
+      <div class="tbl risk" style="grid-column: span 2"><h4>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4v16h18"/><path d="M5 6c1 8 5 11 15 12"/></svg>
+        Cooling curves and HTC</h4>
+        <ul><li>digitised real quench curves, measured in probes</li><li>HTC as a function of medium T, surface T, agitation and heat flux</li><li>theory vs experiment comparison, confidence level on every profile</li></ul></div>
+    </div>
+
+    <div class="hist">
+      <h4>History and change log (append-only)</h4>
+      <div class="tags">
+        <span>dataset versions + latest flag</span>
+        <span>format version + change notes</span>
+        <span>prompts + models used</span>
+        <span>extraction parameters</span>
+        <span>diff log: formulas, coefficients, new values</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="arrows">
+    <span><svg viewBox="0 0 24 24" fill="none" stroke="#7fd4ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v15m-6-6l6 6 6-6"/></svg>reads the database only</span>
+  </div>
+
+  <div class="band">
+    <div class="box"><h3>Backend</h3><p>NestJS + Swagger<small>calculators, quench engine</small></p></div>
+    <div class="box"><h3>Frontend</h3><p>React<small>calculators, fields, animation</small></p></div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--have)"></i>dataset exists</span>
+    <span><i style="background:var(--wip)"></i>in progress</span>
+    <span><i style="background:var(--risk)"></i>new, hard to source</span>
+  </div>
+</body>
+</html>

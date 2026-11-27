@@ -80,7 +80,50 @@
             ]
           }
         ]
-      }
+      },
+      "raw": [
+        {
+          "property": "gibbsEnergySER",
+          "phase": "solid",
+          "values": {
+            "gFunction": "GMC3S",
+            "Tmin_K": 1.0,
+            "Tmax_K": 6000.0,
+            "G": {
+              "form": "H0 + a2*T^2 + a3*T^3 + sum(prefactor*T*ln(1-exp(-theta/T)))",
+              "H0_Jmol": -2961033.87273599,
+              "a2": null,
+              "a3": null,
+              "einstein": [
+                {
+                  "prefactor": 48.7852008711029,
+                  "factorFunction": "MC3S2",
+                  "theta_K": 1253.079747
+                },
+                {
+                  "prefactor": 67.8853008000012,
+                  "factorFunction": "MC3S0",
+                  "theta_K": 216.554568
+                },
+                {
+                  "prefactor": 107.81956498144,
+                  "factorFunction": "MC3S1",
+                  "theta_K": 502.02771
+                }
+              ],
+              "units": "J/mol; T in K",
+              "rawExpression": "-2961033.87273599 -0.013441 * T**(2) + 48.7852008711029 * T * LN(MC3S2) + 67.8853008000012 * T * LN(MC3S0) + 107.81956498144 * T * LN(MC3S1)",
+              "R": 8.31446261815324
+            },
+            "tdbPhase": "MC3S",
+            "polymorph": "M"
+          },
+          "ref": [
+            "Abdul2023",
+            "SER"
+          ]
+        }
+      ]
     }
   }
 }

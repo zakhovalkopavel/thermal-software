@@ -89,7 +89,7 @@ describe('Lakatos — "Component viscosity effects" vs "Direct temperature-visco
         });
       }
 
-      console.table(rows);
+      //console.table(rows);
       expect(rows.length).toBe(LAKATOS_VALIDATION_GLASSES.length);
     });
   });

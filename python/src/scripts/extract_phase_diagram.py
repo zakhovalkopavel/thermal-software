@@ -1,42 +1,36 @@
 #!/usr/bin/env python3
 """
-extract_phase_diagram.py — CLI entry point: phase-diagram data from the Slag Atlas and NSRDS-NBS 61.
+extract_phase_diagram.py — thin shim to the source-extract CLI.
 
-Commands live in ``phase_diagrams.cli`` (one module group per workflow area). This file is the
-thin ``make pd-*`` / ``docker compose run`` entry point.
-
-Output
-------
-  reports/phase-diagrams/candidates/<system>.json   (extract / trace-curves; compared with the dataset file)
-  reports/phase-diagrams/starts/<system>.json       (new: starting file of a ternary, read until it is promoted)
-  shared/processed/phase-diagrams/configs/<system>.curves.config.json   (new: written only when absent)
-  reports/phase-diagrams/{renders,tiles,nodes,overlays,review,isotherms,auto,auto-full,figure-index,nbs,replaced}/
-  shared/processed/phase-diagrams/systems/<system>.json   (only via promote, after validation)
-  shared/processed/phase-diagrams/overlays/<system>.png   (copied by promote with its system file)
-
-Implementation
---------------
-  phase_diagrams — calibration, detectors, tracing, NBS index, builders, validator
-  phase_diagrams.cli — argparse + command handlers
+Prefer ``source-extract`` / ``python -m source_extract.cli`` (make ``pd-*`` targets).
+This script keeps older ``docker compose run python … extract_phase_diagram.py``
+invocations working by forwarding argv to the SE command layer, which delegates
+into ``phase_diagrams.adapter``.
 
 Spec
 ----
   docs/scripts/phase-diagrams/README.md
-
-Usage
------
-  docker compose run --rm python python src/scripts/extract_phase_diagram.py extract mgo-sio2
-  make pd-extract SYSTEM=mgo-sio2   (all commands run in the python container)
+  docs/plans/SOURCE_EXTRACTOR_MIGRATION.md
 """
 
 from __future__ import annotations
 
 import sys
 
-from phase_diagrams.cli.main import main
+
+def main(argv: list[str] | None = None) -> int:
+    args = list(sys.argv[1:] if argv is None else argv)
+    try:
+        from source_extract.cli.main import main as se_main
+    except ImportError:
+        from phase_diagrams.cli.main import main as pd_main
+
+        return pd_main(args)
+    return se_main(args)
+
 
 # Re-exports for unit tests that import dump helpers from this script path.
-from phase_diagrams.cli.nbs import (  # noqa: F401
+from phase_diagrams.cli.nbs import (  # noqa: E402, F401
     _append_nbs_page,
     _nbs_page_already_done,
 )

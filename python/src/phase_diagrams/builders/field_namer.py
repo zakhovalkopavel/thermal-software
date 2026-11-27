@@ -216,11 +216,27 @@ def name_fields(
 
 
 def _compound_wt(compound: dict, components: list[str]) -> list[float] | None:
+    """Weight-% vector on ``components``, or None when the compound cannot be placed.
+
+    Triangle corners without a fixed molar mass (e.g. ``FeOx``) contribute 0 when
+    the compound does not use them; only oxides that appear in ``oxideMoles`` need a mass.
+    """
     moles = compound.get("oxideMoles") or {}
-    if not moles or not set(moles) <= set(components) or any(formula_molar_mass(c) is None for c in moles):
+    if not moles or not set(moles) <= set(components):
         return None
-    mass = [moles.get(c, 0) * formula_molar_mass(c) for c in components]
+    mass: list[float] = []
+    for c in components:
+        n = float(moles.get(c, 0) or 0)
+        if n == 0:
+            mass.append(0.0)
+            continue
+        mw = formula_molar_mass(c)
+        if mw is None:
+            return None
+        mass.append(n * mw)
     total = sum(mass)
+    if total <= 0:
+        return None
     return [m / total * 100.0 for m in mass]
 
 

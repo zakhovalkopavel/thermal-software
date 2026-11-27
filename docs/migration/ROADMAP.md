@@ -4,7 +4,9 @@
 **Date:** March 2026
 
 This document is the single entry point for all legacy-to-backend migration work.  
-See [MODULE_ARCHITECTURE.md](MODULE_ARCHITECTURE.md) for the full boundary and ownership analysis.
+See [MODULE_ARCHITECTURE.md](MODULE_ARCHITECTURE.md) for the full boundary and ownership analysis.  
+For the forward-looking project roadmap (data platform, heat treatment, geometry) see
+[`../PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) and the technical plans in [`../plans/`](../plans/README.md).
 
 ---
 

@@ -23,6 +23,15 @@
               3741,
               "nbsTables"
             ]
+          },
+          {
+            "value": -6819200.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              37,
+              "usgsBulletin2131"
+            ]
           }
         ],
         "entropy298": [
@@ -34,6 +43,15 @@
               3741,
               "nbsTables"
             ]
+          },
+          {
+            "value": 275.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              37,
+              "usgsBulletin2131"
+            ]
           }
         ],
         "gibbsEnergy298": [
@@ -44,6 +62,15 @@
               "NBS1982",
               3741,
               "nbsTables"
+            ]
+          },
+          {
+            "value": -6441800.0,
+            "phase": "solid",
+            "ref": [
+              "RobieHemingway1995",
+              37,
+              "usgsBulletin2131"
             ]
           }
         ],
@@ -67,6 +94,81 @@
       ],
       "nasa9": [
         "AL6Si2O13(s)"
+      ],
+      "equations": {
+        "heatCapacity": {
+          "solid": {
+            "def": 0,
+            "values": [
+              {
+                "type": "robieHemingway",
+                "ref": [
+                  "RobieHemingway1995",
+                  64,
+                  "usgsBulletin2131"
+                ],
+                "vars": {
+                  "ranges": [
+                    {
+                      "Tmin": 298.0,
+                      "Tmax": 1800.0,
+                      "A1": 754.6,
+                      "A2": -0.02943,
+                      "A3": -3454000.0,
+                      "A4": -6576.0,
+                      "A5": 0.0
+                    }
+                  ]
+                },
+                "min": 298.0,
+                "max": 1800.0
+              }
+            ]
+          }
+        }
+      },
+      "raw": [
+        {
+          "property": "gibbsEnergySER",
+          "phase": "solid",
+          "values": {
+            "gFunction": "GSIL",
+            "Tmin_K": 1.0,
+            "Tmax_K": 3000.0,
+            "G": {
+              "form": "H0 + a2*T^2 + a3*T^3 + sum(prefactor*T*ln(1-exp(-theta/T)))",
+              "H0_Jmol": -2611830.501665532,
+              "a2": -0.00026505572690566217,
+              "a3": null,
+              "einstein": [
+                {
+                  "prefactor": 10.2038161601145,
+                  "factorFunction": "SIL0",
+                  "theta_K": 153.06149123803786
+                },
+                {
+                  "prefactor": 83.2867203476766,
+                  "factorFunction": "SIL1",
+                  "theta_K": 411.0126080405844
+                },
+                {
+                  "prefactor": 106.018727208511,
+                  "factorFunction": "SIL2",
+                  "theta_K": 1030.5334157523516
+                }
+              ],
+              "units": "J/mol; T in K",
+              "rawExpression": "(-2.6118305016655323E6 + 10.2038161601145*T*LN(SIL0) + 83.2867203476766*T*LN(SIL1) + 106.018727208511*T*LN(SIL2) - 0.00026505572690566217*T**2)",
+              "R": 8.31446261815324
+            },
+            "tdbPhase": "MULLITE",
+            "polymorph": null
+          },
+          "ref": [
+            "Abdul2023",
+            "SER"
+          ]
+        }
       ]
     }
   }

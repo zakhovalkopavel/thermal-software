@@ -123,6 +123,18 @@ RUN pip install --no-cache-dir \
     # surya-ocr pins pillow>=10.2,<11; leave that version (do not force Pillow 12).
     # modal>=1.6: Python 3.14 client (0.x raises on 3.14); tokens via env only.
 
+# source-extract API stack (FastAPI) — baked here so source-extractor does not
+# pip-install on every container start (avoids PyPI/DNS 502 crash-loops).
+RUN pip install --no-cache-dir \
+      --timeout 600 \
+      --retries 5 \
+      "fastapi>=0.115" \
+      "uvicorn[standard]>=0.32" \
+      "pydantic-settings>=2.0" \
+      "sse-starlette>=2.0" \
+      "python-multipart>=0.0.9" \
+      "httpx>=0.27"
+
 # App adapters + vendor libraries (baked into the image for production; still overridable by compose mounts in dev)
 COPY python/src/ /app/src/
 COPY python/tests/ /app/tests/

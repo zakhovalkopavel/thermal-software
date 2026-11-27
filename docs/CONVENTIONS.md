@@ -27,6 +27,7 @@ or configuration in this project. All linked documents must be consulted for the
 | **Docker / Nginx** | [`docs/NGINX_ARCHITECTURE.md`](./NGINX_ARCHITECTURE.md) | Reverse-proxy layout, SSL termination, upstream routing |
 | **Python Container** | [`docs/PYTHON_CONTAINER.md`](./PYTHON_CONTAINER.md) | Python service conventions, package management |
 | **Docker Registry** | [`docs/DOCKER_REGISTRY.md`](./DOCKER_REGISTRY.md) | Image naming, tagging, push/pull workflow |
+| **OCR** | [`docs/scripts/OCR_POLICY.md`](./scripts/OCR_POLICY.md) | pdftotext/Tesseract = fast understanding (Tesseract also for deep page segmentation); **Surya (`page-ocr`) = final OCR** for datasets |
 
 ---
 
@@ -397,6 +398,7 @@ Before committing any file, verify:
 - [ ] No hardcoded magic numbers without a named constant or reference
 - [ ] Imports are relative — the `@/` alias is **not configured** (examples in this doc that show `@/…` are illustrative only)
 - [ ] Tests are run **inside Docker**, not on the host machine (see § Tests section below)
+- [ ] **OCR:** dataset text from Surya/`page-ocr`; pdftotext/Tesseract only for fast understanding (Tesseract OK for deep segmentation on complicated layouts / diagrams) — see [`OCR_POLICY.md`](./scripts/OCR_POLICY.md)
 - [ ] **Definition of Done:** implementation + tests + docs all updated in the same PR
 - [ ] **`docs/migration/IMPLEMENTATION_STATUS.md`** updated in this commit if any service, test, or doc changed
 

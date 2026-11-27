@@ -49,6 +49,8 @@ Output (shared/processed/compound-data/)
                              the JANAF URL templates and the NASA datasets of the nasa7 / nasa9 keys
   interactions.json        — Svehla 1995 transport data of species pairs (diffusion, ions, electron),
                              with the record ids of both species
+  After the base write, minerals-thermodynamic staging (Robie, HP633, Koroleva, …) is overlaid
+  unless ``--no-minerals-staging`` (see thermodynamic_staging.compound_data_overlay).
 
 Report (tmp/reports/python/compound-data/report.json, /app/reports in the container)
 ------------------------------------------------------------------------------------
@@ -164,6 +166,18 @@ def _build_parser() -> argparse.ArgumentParser:
         "--report-dir", metavar="DIR", type=Path, default=Path("reports/compound-data"),
         help="Report directory (default: %(default)s, i.e. tmp/reports/python/compound-data on the host)",
     )
+    p.add_argument(
+        "--minerals-staging-dir",
+        metavar="DIR",
+        type=Path,
+        default=Path("shared/processed/minerals-thermodynamic"),
+        help="Staging datasets overlaid after the base build (default: %(default)s)",
+    )
+    p.add_argument(
+        "--no-minerals-staging",
+        action="store_true",
+        help="Skip minerals-thermodynamic overlay (base chemicals catalogue only)",
+    )
     p.add_argument("-v", "--verbose", action="store_true", help="Show DEBUG-level messages")
     return p
 
@@ -227,6 +241,39 @@ def main(argv: list[str] | None = None) -> int:
         write_yaws1999_jsonl(args.report_dir / Path(YAWS1999_REPLACE_LOG).name, result.yaws1999_replace_log)
         write_yaws1999_jsonl(args.report_dir / Path(YAWS1999_ISSUES_LOG).name, result.yaws1999_issues_log)
         write_yaws1999_jsonl(args.report_dir / Path(YAWS1999_CREATED_LOG).name, result.yaws1999_created_log)
+
+        if not args.no_minerals_staging and args.minerals_staging_dir.is_dir():
+            from thermodynamic_staging.compound_data_overlay import (
+                overlay_minerals_thermodynamic,
+            )
+            from thermodynamic_staging.paths import report_dir as minerals_report_dir
+            from thermodynamic_staging.paths import repo_root
+
+            minerals_summary = overlay_minerals_thermodynamic(
+                args.minerals_staging_dir,
+                args.out_dir,
+                dry_run=False,
+                include_robie=True,
+            )
+            m_report = minerals_report_dir(repo_root()) / "build"
+            m_report.mkdir(parents=True, exist_ok=True)
+            m_path = m_report / "compound-data-overlay.json"
+            m_path.write_text(
+                json.dumps(minerals_summary, indent=2, ensure_ascii=False) + "\n",
+                encoding="utf-8",
+            )
+            logger.info(
+                "minerals-thermodynamic overlay: %d ok phases, %d created, %d updated → %s",
+                minerals_summary.get("okPhases", 0),
+                len(minerals_summary.get("createdFiles") or []),
+                len(minerals_summary.get("updatedFiles") or []),
+                m_path,
+            )
+        elif not args.no_minerals_staging:
+            logger.warning(
+                "minerals staging missing at %s — compound-data built without overlay",
+                args.minerals_staging_dir,
+            )
     except Exception as exc:
         logger.exception("Fatal error building compound data: %s", exc)
         return 1

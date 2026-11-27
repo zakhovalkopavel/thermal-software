@@ -26,6 +26,7 @@ import { YawsLiquidViscosityEquationMethod } from './equation-methods/yaws-liqui
 import { YawsLiquidConductivityEquationMethod } from './equation-methods/yaws-liquid-conductivity-equation-method';
 import { YawsLiquidDensityEquationMethod } from './equation-methods/yaws-liquid-density-equation-method';
 import { YawsWaterSolubilityEquationMethod } from './equation-methods/yaws-water-solubility-equation-method';
+import { RobieHemingwayEquationMethod } from './equation-methods/robie-hemingway-equation-method';
 
 export class Common {
   static logarithmicAverage(x1: number, x2: number): number {
@@ -95,6 +96,7 @@ export class Common {
       case EquationTypeDto.yawsLiquidConductivity:      return new YawsLiquidConductivityEquationMethod();
       case EquationTypeDto.yawsLiquidDensity:           return new YawsLiquidDensityEquationMethod();
       case EquationTypeDto.yawsWaterSolubility:         return new YawsWaterSolubilityEquationMethod();
+      case EquationTypeDto.robieHemingway:              return new RobieHemingwayEquationMethod();
       default: throw new Error(`Unknown equation type: ${type}`);
     }
   }

@@ -20,6 +20,7 @@ import { gaussLegendre20 } from '../../../../src/common/utils/quadrature';
 import { DipprEquation114Method } from '../../../../src/common/thermal/utils/equation-methods/dippr-equation-114-method';
 import { TrcCpEquationMethod } from '../../../../src/common/thermal/utils/equation-methods/trc-cp-equation-method';
 import { ShomateEquationMethod } from '../../../../src/common/thermal/utils/equation-methods/shomate-equation-method';
+import { RobieHemingwayEquationMethod } from '../../../../src/common/thermal/utils/equation-methods/robie-hemingway-equation-method';
 import {
   ZabranskySplineEquationMethod,
 } from '../../../../src/common/thermal/utils/equation-methods/zabransky-spline-equation-method';
@@ -204,6 +205,7 @@ describe('Common.equation dispatch (heat capacity)', () => {
     [EquationTypeDto.shomate, ShomateEquationMethod],
     [EquationTypeDto.zabranskySpline, ZabranskySplineEquationMethod],
     [EquationTypeDto.zabranskyQuasiPolynomial, ZabranskyQuasiPolynomialEquationMethod],
+    [EquationTypeDto.robieHemingway, RobieHemingwayEquationMethod],
   ])('%s → %p', (type, cls) => {
     expect(Common.equation(type)).toBeInstanceOf(cls);
   });
