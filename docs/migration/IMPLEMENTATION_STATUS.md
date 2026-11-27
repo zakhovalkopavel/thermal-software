@@ -475,6 +475,7 @@ Plan: [`docs/plans/SOURCE_EXTRACTOR_MIGRATION.md`](../plans/SOURCE_EXTRACTOR_MIG
 - [x] Nginx HTTPS enabled (`listen 443` + HTTP→HTTPS redirect); shared `app-locations.inc`; `make ssl-self-signed` for local certs
 - [x] `.env.production.example` for thermosolver.net (HTTPS); `make setup-production` copies it to `.env`
 - [x] Nginx entrypoint selects HTTP-only vs HTTPS from cert presence (no crash when `ssl/cert.pem` missing)
+- [x] `compose.production.yml` aligned with `compose.yml`: source-extractor + UI, SE env/volumes, nginx depends_on, OCR caches
 
 ---
 

@@ -23,3 +23,12 @@ node_modules
 *.md
 !python/README.md
 !vendor/**/README.md
+
+# TLS material is bind-mounted at runtime; root-owned Let's Encrypt dirs break
+# `docker compose build` context walks (permission denied on accounts/).
+docker/nginx/ssl
+**/ssl/letsencrypt
+*.pem
+*.key
+*.crt
+

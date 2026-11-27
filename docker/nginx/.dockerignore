@@ -1,0 +1,6 @@
+# Certs are bind-mounted at runtime; do not send them in the build context
+# (Let's Encrypt dirs are often root-owned → permission denied while hashing context).
+ssl
+**/*.pem
+**/*.key
+**/*.crt
