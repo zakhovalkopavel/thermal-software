@@ -474,6 +474,7 @@ Plan: [`docs/plans/SOURCE_EXTRACTOR_MIGRATION.md`](../plans/SOURCE_EXTRACTOR_MIG
 - [x] Home page: Materials/Processes section cards (icons + descriptions) link to hub sections; labels aligned with Processes hub (e.g. Multilayer wall, Thermal distribution)
 - [x] Nginx HTTPS enabled (`listen 443` + HTTP→HTTPS redirect); shared `app-locations.inc`; `make ssl-self-signed` for local certs
 - [x] `.env.production.example` for thermosolver.net (HTTPS); `make setup-production` copies it to `.env`
+- [x] Nginx entrypoint selects HTTP-only vs HTTPS from cert presence (no crash when `ssl/cert.pem` missing)
 
 ---
 

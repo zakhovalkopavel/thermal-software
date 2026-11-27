@@ -283,7 +283,8 @@ services:
     networks:
       - thermal-network
     volumes:
-      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      # Do not mount all of conf.d — entrypoint writes default.conf from templates.
+      - ./docker/nginx/conf.d/app-locations.inc:/etc/nginx/conf.d/app-locations.inc:ro
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
       - frontend_dist:/usr/share/nginx/html:ro  # Serve frontend static files
     labels:

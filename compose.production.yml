@@ -159,6 +159,7 @@ services:
     networks:
       - thermal-network
     volumes:
+      - ./docker/nginx/conf.d/app-locations.inc:/etc/nginx/conf.d/app-locations.inc:ro
       - ./docker/nginx/ssl:/etc/nginx/ssl:ro
     labels:
       - "app.version=${APP_VERSION}"

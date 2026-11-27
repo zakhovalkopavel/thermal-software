@@ -4,20 +4,22 @@
 
 ---
 
-### Current layout (`docker/nginx/conf.d/`)
+### Current layout
 
-- Port **80**: `/health` + ACME path; all other traffic **301 → HTTPS**
-- Port **443**: TLS using `/etc/nginx/ssl/cert.pem` + `key.pem`; app routes in `app-locations.inc`
-
-Nginx **will not start** on 443 without those cert files. Create them before (or right after) `make up`:
+- Entrypoint `40-select-ssl-mode.sh`: if `ssl/cert.pem` + `key.pem` exist → HTTPS mode; else → **HTTP-only** (so nginx still starts)
+- App routes: `conf.d/app-locations.inc` (bind-mounted)
+- Templates: `docker/nginx/templates/default.{http,https}.conf`
 
 ```bash
 # Production env (thermosolver.net HTTPS) → .env
 make setup-production
 make setup-secrets
 
-# Let's Encrypt
+# Let's Encrypt (required for real HTTPS)
 make install-ssl-certs DOMAIN=thermosolver.net EMAIL=you@example.com STOP_NGINX=1 RELOAD=1
+
+# Rebuild/restart nginx so entrypoint picks up certs
+docker compose up -d --build nginx
 
 # Local / emergency self-signed
 make ssl-self-signed DOMAIN=localhost RELOAD=1
