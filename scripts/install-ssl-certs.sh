@@ -131,19 +131,20 @@ install_files() {
   local cert_path="$1"
   local key_path="$2"
 
-  if [[ ! -f "$cert_path" ]]; then
+  if [[ ! -e "$cert_path" && ! -L "$cert_path" ]]; then
     print_error "Certificate not found: $cert_path"
     exit 1
   fi
-  if [[ ! -f "$key_path" ]]; then
+  if [[ ! -e "$key_path" && ! -L "$key_path" ]]; then
     print_error "Private key not found: $key_path"
     exit 1
   fi
 
   ensure_dirs
   umask 077
-  cp "$cert_path" "$SSL_DIR/cert.pem"
-  cp "$key_path" "$SSL_DIR/key.pem"
+  # -L: Let's Encrypt live/* are symlinks into archive/
+  cp -L "$cert_path" "$SSL_DIR/cert.pem"
+  cp -L "$key_path" "$SSL_DIR/key.pem"
   chmod 644 "$SSL_DIR/cert.pem"
   chmod 600 "$SSL_DIR/key.pem"
   print_success "Installed:"
@@ -155,6 +156,40 @@ live_paths_for_domain() {
   local domain="$1"
   echo "$LE_DIR/live/$domain/fullchain.pem"
   echo "$LE_DIR/live/$domain/privkey.pem"
+}
+
+# Copy live lineage into docker/nginx/ssl via a container (avoids host permission/symlink issues).
+install_from_letsencrypt_domain() {
+  local domain="$1"
+  ensure_dirs
+  print_info "Copying Let's Encrypt live/$domain → docker/nginx/ssl/ (via Docker)…"
+
+  if ! docker run --rm \
+    -v "$LE_DIR:/etc/letsencrypt:ro" \
+    -v "$SSL_DIR:/out" \
+    --entrypoint sh \
+    "$CERTBOT_IMAGE" \
+    -c "set -e
+      live=\"/etc/letsencrypt/live/${domain}\"
+      if [ ! -e \"\$live/fullchain.pem\" ]; then
+        echo \"Missing \$live/fullchain.pem\" >&2
+        echo \"Contents of /etc/letsencrypt:\" >&2
+        ls -la /etc/letsencrypt >&2 || true
+        echo \"Contents of /etc/letsencrypt/live:\" >&2
+        ls -la /etc/letsencrypt/live >&2 || true
+        exit 1
+      fi
+      cp -L \"\$live/fullchain.pem\" /out/cert.pem
+      cp -L \"\$live/privkey.pem\" /out/key.pem
+      chmod 644 /out/cert.pem
+      chmod 600 /out/key.pem
+      ls -la /out/cert.pem /out/key.pem
+    "; then
+    print_error "Could not copy certs for domain ${domain} from ${LE_DIR}"
+    print_info "List lineages: docker run --rm -v \"${LE_DIR}:/etc/letsencrypt\" ${CERTBOT_IMAGE} certificates"
+    return 1
+  fi
+  print_success "Installed $SSL_DIR/cert.pem and key.pem"
 }
 
 reload_nginx_if_requested() {
@@ -250,20 +285,32 @@ cmd_issue() {
   local status=$?
   set -e
 
-  start_nginx_after_issue
-
+  # Certbot may exit 0 with "Certificate not yet due for renewal" — still copy live → ssl/.
   if [[ "$status" -ne 0 ]]; then
+    start_nginx_after_issue
     print_error "certbot failed (exit $status)"
     exit "$status"
   fi
 
-  local paths
-  mapfile -t paths < <(live_paths_for_domain "$DOMAIN")
-  install_files "${paths[0]}" "${paths[1]}"
+  if ! install_from_letsencrypt_domain "$DOMAIN"; then
+    print_warning "Live certs missing after certonly — forcing one renewal to recreate files…"
+    local force_args=("${certbot_args[@]}" --force-renewal)
+    set +e
+    run_certbot "${force_args[@]}"
+    status=$?
+    set -e
+    if [[ "$status" -ne 0 ]] || ! install_from_letsencrypt_domain "$DOMAIN"; then
+      start_nginx_after_issue
+      print_error "Still no usable certs under ${LE_DIR}/live/${DOMAIN}"
+      exit 1
+    fi
+  fi
+
+  start_nginx_after_issue
   reload_nginx_if_requested
 
-  print_success "Done. Point nginx at /etc/nginx/ssl/cert.pem and key.pem (already volume-mounted)."
-  print_info "Enable the HTTPS server block in docker/nginx/conf.d/default.conf if not already."
+  print_success "Done. Nginx uses /etc/nginx/ssl/cert.pem and key.pem (bind-mounted)."
+  print_info "Restart nginx if it was already running without certs: docker compose up -d --force-recreate nginx"
 }
 
 cmd_install() {
@@ -280,9 +327,8 @@ cmd_install() {
       print_error "Provide --domain (reads docker/nginx/ssl/letsencrypt/live/<domain>/) or --cert/--key"
       usage 1
     fi
-    local paths
-    mapfile -t paths < <(live_paths_for_domain "$DOMAIN")
-    install_files "${paths[0]}" "${paths[1]}"
+    require_docker
+    install_from_letsencrypt_domain "$DOMAIN"
   fi
 
   reload_nginx_if_requested
@@ -340,18 +386,24 @@ cmd_renew() {
     exit "$status"
   fi
 
-  # Refresh nginx copies for every live domain that has both files.
-  local domain_dir domain
-  shopt -s nullglob
-  for domain_dir in "$LE_DIR/live"/*; do
-    [[ -d "$domain_dir" ]] || continue
-    domain="$(basename "$domain_dir")"
-    [[ -L "$domain_dir/fullchain.pem" || -f "$domain_dir/fullchain.pem" ]] || continue
-    [[ -L "$domain_dir/privkey.pem" || -f "$domain_dir/privkey.pem" ]] || continue
-    print_info "Refreshing nginx files from $domain"
-    install_files "$domain_dir/fullchain.pem" "$domain_dir/privkey.pem"
-  done
-  shopt -u nullglob
+  # Refresh nginx copy for each live lineage (via Docker so symlinks resolve).
+  local domains
+  domains="$(
+    docker run --rm \
+      -v "$LE_DIR:/etc/letsencrypt:ro" \
+      --entrypoint sh \
+      "$CERTBOT_IMAGE" \
+      -c 'ls -1 /etc/letsencrypt/live 2>/dev/null | grep -v README || true'
+  )"
+  if [[ -z "$domains" ]]; then
+    print_warning "No lineages under ${LE_DIR}/live after renew"
+  else
+    while IFS= read -r domain; do
+      [[ -n "$domain" ]] || continue
+      print_info "Refreshing nginx files from $domain"
+      install_from_letsencrypt_domain "$domain" || true
+    done <<<"$domains"
+  fi
 
   reload_nginx_if_requested
   print_success "Renewal finished"
