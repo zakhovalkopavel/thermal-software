@@ -469,6 +469,11 @@ Plan: [`docs/plans/SOURCE_EXTRACTOR_MIGRATION.md`](../plans/SOURCE_EXTRACTOR_MIG
 - [x] `scripts/sync-vendor-env.sh` — pure bash (no host Python) so `make setup` matches Docker-first policy
 - [x] Make targets use Compose V2 plugin (`docker compose`) — no standalone `docker-compose` binary
 - [x] Unblocked tracking of `phase-equilibrium-{calphad,legacy-eutectic,legacy-diagram}.service.ts` (local `.git/info/exclude` had a bad `services/` rule that hid them from commits)
+- [x] Vite `allowedHosts` from `VITE_ALLOWED_HOSTS` (main frontend + source-extractor-ui; compose + env examples)
+- [x] Source Extractor UI back link to main app (`VITE_MAIN_APP_URL`)
+- [x] Home page: Materials/Processes section cards (icons + descriptions) link to hub sections; labels aligned with Processes hub (e.g. Multilayer wall, Thermal distribution)
+- [x] Nginx HTTPS enabled (`listen 443` + HTTP→HTTPS redirect); shared `app-locations.inc`; `make ssl-self-signed` for local certs
+- [x] `.env.production.example` for thermosolver.net (HTTPS); `make setup-production` copies it to `.env`
 
 ---
 

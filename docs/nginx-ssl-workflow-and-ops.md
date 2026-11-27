@@ -4,33 +4,23 @@
 
 ---
 
-### Development (HTTP only)
-```nginx
-server {
-    listen 80;
-    # ...routes
-}
-```
+### Current layout (`docker/nginx/conf.d/`)
 
-### Production (HTTPS)
-```nginx
-# Redirect HTTP to HTTPS
-server {
-    listen 80;
-    return 301 https://$host$request_uri;
-}
+- Port **80**: `/health` + ACME path; all other traffic **301 → HTTPS**
+- Port **443**: TLS using `/etc/nginx/ssl/cert.pem` + `key.pem`; app routes in `app-locations.inc`
 
-# HTTPS server
-server {
-    listen 443 ssl http2;
-    
-    ssl_certificate /etc/nginx/ssl/cert.pem;
-    ssl_certificate_key /etc/nginx/ssl/key.pem;
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-    
-    # ...routes
-}
+Nginx **will not start** on 443 without those cert files. Create them before (or right after) `make up`:
+
+```bash
+# Production env (thermosolver.net HTTPS) → .env
+make setup-production
+make setup-secrets
+
+# Let's Encrypt
+make install-ssl-certs DOMAIN=thermosolver.net EMAIL=you@example.com STOP_NGINX=1 RELOAD=1
+
+# Local / emergency self-signed
+make ssl-self-signed DOMAIN=localhost RELOAD=1
 ```
 
 **SSL certificates location:**

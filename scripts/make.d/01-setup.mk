@@ -1,7 +1,7 @@
 # Setup and secrets
-.PHONY: setup setup-secrets generate-jwt check-env init-submodules update-submodules sync-vendor-env install-ssl-certs renew-ssl-certs
+.PHONY: setup setup-production setup-secrets generate-jwt check-env init-submodules update-submodules sync-vendor-env install-ssl-certs renew-ssl-certs ssl-self-signed
 
-setup: ## Init submodules, create .env, sync vendor envs
+setup: ## Init submodules, create .env from .env.example, sync vendor envs
 	@echo "🔧 Setting up Thermal Software project..."
 	@$(MAKE) init-submodules
 	@if [ -f .env ]; then \
@@ -17,6 +17,28 @@ setup: ## Init submodules, create .env, sync vendor envs
 	@echo "  2. Edit .env if needed:      vim .env"
 	@echo "  3. Sync vendor envs again:   make sync-vendor-env"
 	@echo "  4. Start services:           make up"
+	@echo ""
+
+setup-production: ## Init submodules, create .env from .env.production.example (thermosolver.net HTTPS)
+	@echo "🚀 Production setup (thermosolver.net / HTTPS)..."
+	@test -f .env.production.example || (echo "❌ Missing .env.production.example"; exit 1)
+	@$(MAKE) init-submodules
+	@if [ -f .env ]; then \
+		echo "⚠️  .env file already exists!"; \
+		read -p "Overwrite from .env.production.example? (y/N): " confirm && [ "$$confirm" = "y" ] || exit 1; \
+	fi
+	@cp .env.production.example .env
+	@chmod 600 .env
+	@echo "✅ Created .env from .env.production.example (domain=thermosolver.net, HTTPS)"
+	@$(MAKE) sync-vendor-env
+	@echo ""
+	@echo "⚙️  Next steps:"
+	@echo "  1. make setup-secrets"
+	@echo "  2. Edit registry/Docker Hub values in .env if using compose.production.yml"
+	@echo "  3. make install-ssl-certs DOMAIN=thermosolver.net EMAIL=you@example.com STOP_NGINX=1 RELOAD=1"
+	@echo "  4. make sync-vendor-env"
+	@echo "  5. docker compose up -d"
+	@echo "     (or: docker compose -f compose.production.yml up -d)"
 	@echo ""
 
 check-env: ## Verify .env exists (used by up/rebuild)
@@ -114,3 +136,9 @@ renew-ssl-certs: ## [RELOAD=1] [STOP_NGINX=1] Renew Let's Encrypt certs and refr
 	@./scripts/install-ssl-certs.sh renew \
 		$(if $(filter 1 true TRUE yes YES,$(RELOAD)),--reload,) \
 		$(if $(filter 1 true TRUE yes YES,$(STOP_NGINX)),--stop-nginx,)
+
+ssl-self-signed: ## [DOMAIN=localhost] [RELOAD=1] Write self-signed certs so nginx can bind :443
+	@chmod +x scripts/install-ssl-certs.sh
+	@./scripts/install-ssl-certs.sh self-signed \
+		$(if $(DOMAIN),--domain "$(DOMAIN)",) \
+		$(if $(filter 1 true TRUE yes YES,$(RELOAD)),--reload,)

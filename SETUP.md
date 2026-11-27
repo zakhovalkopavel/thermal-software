@@ -80,7 +80,7 @@ That's it. No Node.js on the host required.
 | File | Purpose | Git Tracked |
 |------|---------|-------------|
 | `.env.example` | Development template with defaults | ✅ Yes |
-| `.env.production` | Production template | ✅ Yes |
+| `.env.production.example` | Production HTTPS template (`thermosolver.net`) | ✅ Yes |
 | `.env` | Your active config | ❌ No (gitignored) |
 
 > Image versions (PostgreSQL, Redis, Node.js, Nginx, Python) are defined in `.env.example`.  
@@ -129,8 +129,10 @@ make update-submodules   # Fetch latest remote tips for vendor/*
 make sync-vendor-env     # Re-copy PAGE_OCR_* / MODAL_* into vendor envs
 make setup-secrets       # Generate and inject secure secrets
 
-# Production TLS (hosting) — see docs/nginx-ssl-workflow-and-ops.md
-make install-ssl-certs DOMAIN=example.com EMAIL=you@example.com STOP_NGINX=1 RELOAD=1
+# Production (thermosolver.net / HTTPS) — see docs/nginx-ssl-workflow-and-ops.md
+make setup-production    # .env from .env.production.example
+make setup-secrets
+make install-ssl-certs DOMAIN=thermosolver.net EMAIL=you@example.com STOP_NGINX=1 RELOAD=1
 make renew-ssl-certs STOP_NGINX=1 RELOAD=1
 
 # Start / stop

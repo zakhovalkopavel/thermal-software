@@ -6,6 +6,7 @@
 #   ./scripts/install-ssl-certs.sh issue --domain example.com --email you@example.com
 #   ./scripts/install-ssl-certs.sh install --domain example.com
 #   ./scripts/install-ssl-certs.sh install --cert /path/fullchain.pem --key /path/privkey.pem
+#   ./scripts/install-ssl-certs.sh self-signed [--domain localhost]
 #   ./scripts/install-ssl-certs.sh renew [--reload]
 #
 # Options:
@@ -43,6 +44,7 @@ Usage:
   ./scripts/install-ssl-certs.sh install --domain example.com
   ./scripts/install-ssl-certs.sh install --cert /path/fullchain.pem --key /path/privkey.pem
   ./scripts/install-ssl-certs.sh renew [--reload]
+  ./scripts/install-ssl-certs.sh self-signed [--domain localhost]
 
 Options:
   --staging     Use Let's Encrypt staging (rate-limit safe)
@@ -63,7 +65,7 @@ STOP_NGINX=0
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    issue|install|renew|help|-h|--help)
+    issue|install|renew|self-signed|help|-h|--help)
       if [[ -z "$COMMAND" && "$1" != help && "$1" != -h && "$1" != --help ]]; then
         COMMAND="$1"
       else
@@ -286,6 +288,29 @@ cmd_install() {
   reload_nginx_if_requested
 }
 
+cmd_self_signed() {
+  require_docker
+  local domain="${DOMAIN:-localhost}"
+  print_header "Create self-signed certificate"
+  print_info "Domain CN/SAN: $domain (browsers will warn — fine for local/dev)"
+
+  ensure_dirs
+  local tmp
+  tmp="$(mktemp -d)"
+  docker run --rm \
+    -v "$tmp:/out" \
+    alpine/openssl req -x509 -nodes -newkey rsa:2048 -days 825 \
+      -keyout /out/key.pem \
+      -out /out/cert.pem \
+      -subj "/CN=${domain}" \
+      -addext "subjectAltName=DNS:${domain},DNS:localhost,IP:127.0.0.1"
+
+  install_files "$tmp/cert.pem" "$tmp/key.pem"
+  rm -rf "$tmp"
+  reload_nginx_if_requested
+  print_success "Self-signed cert installed — nginx can listen on 443"
+}
+
 cmd_renew() {
   require_docker
   print_header "Renew Let's Encrypt certificates"
@@ -335,6 +360,7 @@ cmd_renew() {
 case "$COMMAND" in
   issue) cmd_issue ;;
   install) cmd_install ;;
+  self-signed) cmd_self_signed ;;
   renew) cmd_renew ;;
   *) usage 1 ;;
 esac
