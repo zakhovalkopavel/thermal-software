@@ -1,21 +1,26 @@
 import { describe, expect, it } from 'vitest';
+import { PHASE_EQUILIBRIUM_RESULT } from '../../../../../../tests/fixtures/inputs/phase-equilibrium-result';
+import { PHASE_EQUILIBRIUM_UI } from '../constants/phase-equilibrium-ui.constants';
 import { toPhaseCompositionBars } from './phase-composition-bars.mapper';
 
 describe('mineral-compositions › phase-composition-bars', () => {
-  it('compares liquid and solid per oxide; null where a phase lacks the oxide', () => {
-    expect(
-      toPhaseCompositionBars({
-        liquid: { percent: 22, mass: 22, composition: { SiO2: 61.2, Al2O3: 18.4, CaO: 20.4 } },
-        solid: { percent: 78, mass: 78, composition: { Al2O3: 72.1, SiO2: 27.9, MgO: 0 }, mineralPhases: ['mullite'] },
-        metadata: { temperature: 1400, totalMass: 100, eutecticTemperature: 1345, estimatedLiquidus: 1810 },
-        warnings: [],
-      }),
-    ).toEqual({
-      categories: ['SiO2', 'Al2O3', 'CaO', 'MgO'],
-      series: [
-        { name: 'Liquid', data: [61.2, 18.4, 20.4, null] },
-        { name: 'Solid', data: [27.9, 72.1, null, 0] },
-      ],
+  it('lists liquid and every crystal phase at temperature; no glass bar when there is no glass', () => {
+    expect(toPhaseCompositionBars(PHASE_EQUILIBRIUM_RESULT)).toEqual({
+      categories: ['Liquid (matrix)', 'Corundum', 'Mullite'],
+      series: [{ name: 'Amount', data: [22, 50, 28] }],
     });
+  });
+
+  it('adds an unreacted-glass-cores bar when amorphous cores remain', () => {
+    const result = {
+      ...PHASE_EQUILIBRIUM_RESULT,
+      atTemperature: { ...PHASE_EQUILIBRIUM_RESULT.atTemperature, glass: { percent: 3, mass: 3, composition: {} } },
+    };
+    expect(toPhaseCompositionBars(result).categories).toEqual([
+      'Liquid (matrix)',
+      PHASE_EQUILIBRIUM_UI.unreactedGlassBarLabel,
+      'Corundum',
+      'Mullite',
+    ]);
   });
 });

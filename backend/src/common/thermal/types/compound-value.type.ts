@@ -1,7 +1,9 @@
 import { EquationValue } from './equation-value.type';
 
 /**
- * Complete thermophysical data for a pure-component gas.
+ * Thermophysical data for a pure component — gas or condensed (solid) phase.
+ * Gas compounds carry viscosity / thermal conductivity; solids built with
+ * `CompoundValueBuilder.forSolid` omit them (and may add `entropy298`).
  *
  * Property resolution order (hidden from callers — use CompoundPropertyResolver):
  *   Each multi-value property has a `def` index that selects the default
@@ -34,6 +36,11 @@ export type CompoundValue = {
   readonly enthalpyFormation298?: number;
   /** Standard Gibbs energy at 298 K [J/mol]; optional like `enthalpyFormation298` */
   readonly gibbsEnergy298?: number;
+  /**
+   * Standard entropy at 298.15 K [J/(mol·K)].
+   * With `enthalpyFormation298` and Cp it enables H, S, G without NASA data (Cp-integral path).
+   */
+  readonly entropy298?: number;
   /** Lennard-Jones / Stockmayer collision diameter σ [Å] — ref Poling5; absent when no published value exists */
   readonly collisionDiameter?: number;
   /** ε/kB [K] — LJ energy depth / Boltzmann constant — ref Poling5; absent like `collisionDiameter` */
@@ -86,14 +93,14 @@ export type CompoundValue = {
     values: EquationValue[];
   };
 
-  /** Dynamic viscosity μ [Pa·s] */
-  readonly viscosity: {
+  /** Dynamic viscosity μ [Pa·s]; absent for solids */
+  readonly viscosity?: {
     def: number;
     values: EquationValue[];
   };
 
-  /** Thermal conductivity λ [W/(m·K)] */
-  readonly thermalConductivity: {
+  /** Thermal conductivity λ [W/(m·K)]; absent for solids */
+  readonly thermalConductivity?: {
     def: number;
     values: EquationValue[];
   };

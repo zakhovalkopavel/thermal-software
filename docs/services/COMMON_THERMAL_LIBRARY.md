@@ -267,6 +267,32 @@ const g = resolver.gibbsEnergy(1000);  // J/mol
 Default for `heatCapacity`, `enthalpy`, `entropy`, `gibbsEnergy`: **NASA-9 > NASA-7** (> `def` index
 polynomial for Cp). NASA-7 stays selectable with `preferred = RefKey.NASA7`.
 
+### Solid phase (no NASA): Cp-integral path
+
+`CompoundValueBuilder.forSolid(id)` builds a solid `CompoundValue` without gas transport
+(`viscosity` / `thermalConductivity` absent; `entropy298` = S°298 [J/(mol·K)]). It reads solid-phase
+ΔHf°298, S°298, ΔGf°298, `equations.heatCapacity.solid`, and condensed NASA keys (liquid `(L)` and
+gas-phase species skipped; `(a)` / `(s)` / `(cr)` preferred) via `CompoundSolidData`.
+
+`CompoundLiquidValue.fromId(id, preferredNasa9Key?)` builds a liquid end-member `CompoundValue`
+(NASA `(L)` keys via `CompoundLiquidData`; optional preferred key such as `CaO(L)`). Used by
+Engine C ideal-liquid Gibbs minimisation. Gas transport is not required.
+
+When no NASA key is set but `enthalpyFormation298`, `entropy298` and Cp exist,
+`enthalpy` / `entropy` / `gibbsEnergy` use `SolidThermoFromCp` at
+\(T_{ref}=298.15\) K (`STANDARD_CONDITIONS.THERMOCHEMICAL_REFERENCE_TEMPERATURE_K`):
+
+\[
+H = \Delta H_f^{298} + \int_{T_{ref}}^{T} C_p\,dT,\quad
+S = S^{298} + \int_{T_{ref}}^{T} \frac{C_p}{T}\,dT,\quad
+G = H - TS
+\]
+
+\(\int C_p\,dT\) uses the equation's closed-form antiderivative; \(\int C_p/T\,dT\) uses composite
+Gauss–Legendre (panels from `SOLID_THERMO`). Outside the Cp range, boundary Cp is held constant.
+Without data the result is NaN with a message; `viscosityResult` / `thermalConductivityResult`
+return NaN (`'No viscosity/conductivity data'`) when the bucket is absent.
+
 ### NASA thermodynamics (`utils/nasa-thermo.ts`)
 
 `compoundNasaThermo(compound)` → `{ ref, Tmin, Tmax, cp, enthalpy, entropy, gibbsEnergy }` from NASA-9

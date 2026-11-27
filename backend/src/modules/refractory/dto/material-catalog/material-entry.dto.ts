@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MaterialGroup } from '../../enums/material-group.enum';
 import { MaterialType } from '../../enums/material-type.enum';
+import { MaterialMineralogyDto } from './material-mineralogy.dto';
 import { MaterialParticleSizeDto } from './material-particle-size.dto';
 import { MaterialThermalPropertiesDto } from './material-thermal-properties.dto';
 import { MaterialMechanicalPropertiesDto } from './material-mechanical-properties.dto';
@@ -55,6 +56,12 @@ export class MaterialEntryDto {
 
   @ApiProperty({ description: 'Melting point [°C]' })
   meltingPoint_C: number;
+
+  @ApiPropertyOptional({
+    type: MaterialMineralogyDto,
+    description: 'Typical XRD / grade mineralogy; amorphous remainder is computed from composition',
+  })
+  mineralogy?: MaterialMineralogyDto;
 
   @ApiPropertyOptional()
   sourceUrl?: string;

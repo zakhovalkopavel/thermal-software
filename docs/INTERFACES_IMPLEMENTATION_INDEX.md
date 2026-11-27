@@ -111,6 +111,16 @@ backend/src/modules/refractory/constants/
 ├── mix-component-groups.constants.ts   ✅ MIX_COMPONENT_GROUPS
 ├── mix-excluded-material-ids.constants.ts ✅ MIX_EXCLUDED_MATERIAL_IDS
 ├── material-catalog.constants.ts       ✅ MATERIAL_CATALOG_CONSTANTS
+├── grain-reaction.constants.ts         ✅ GRAIN_REACTION_CONSTANTS (δ_ref, T_ref, t_ref)
+├── calphad-estimate.constants.ts       ✅ CALPHAD_ESTIMATE_CONSTANTS (liquidus span, Tm offsets, thresholds)
+├── calphad-gibbs.constants.ts          ✅ CALPHAD_GIBBS_CONSTANTS (nelderMead / mass-balance penalty)
+├── eutectic-index.constants.ts         ✅ EUTECTIC_INDEX_CONSTANTS (dataset path, oxide/fluoride filter)
+├── oxide-melting-points.constants.ts   ✅ OXIDE_MELTING_POINTS_C (11 oxides)
+├── inert-phase-ids.constants.ts        ✅ INERT_PHASE_IDS (SiC, TiC, …)
+├── unreacted-phase.constants.ts        ✅ UNREACTED_PHASE_CONSTANTS
+├── legacy-engine-adapter.constants.ts  ✅ LEGACY_ENGINE_ADAPTER_CONSTANTS
+├── phase-equilibrium-response.constants.ts ✅ PHASE_EQUILIBRIUM_RESPONSE_CONSTANTS
+├── phase-equilibrium.constants.ts      ✅ PHASE_EQUILIBRIUM_CONSTANTS (limits, defaults, legacy EUTECTIC_*)
 └── mix-composition.constants.ts        ✅ MIX_COMPOSITION_CONSTANTS (key classification)
 ```
 
@@ -165,7 +175,12 @@ backend/src/modules/refractory/enums/
 ├── material-group-route.enum.ts             MaterialGroupRoute (17)
 ├── material-type.enum.ts                    MaterialType
 ├── composition-basis.enum.ts                CompositionBasis
-└── non-oxide-component-group.enum.ts        NonOxideComponentGroup
+├── non-oxide-component-group.enum.ts        NonOxideComponentGroup
+├── algorithm-mode.enum.ts                   AlgorithmMode (calphad | legacy | compare)
+├── legacy-variant.enum.ts                   LegacyVariant (eutectic | diagram)
+├── phase-equilibrium-method.enum.ts         PhaseEquilibriumMethod (6)
+├── unreacted-phase-state.enum.ts            UnreactedPhaseState
+└── phase-part-source.enum.ts                PhasePartSource (matrix | unreacted)
 
 backend/src/modules/refractory/dto/
 ├── refractory-product-summary.dto.ts        RefractoryProductSummaryDto
@@ -185,7 +200,35 @@ backend/src/modules/refractory/dto/
 ├── mix-component-input.dto.ts               MixComponentInputDto
 ├── mix-composition-input.dto.ts             MixCompositionInputDto
 ├── non-oxide-components.dto.ts              NonOxideComponentsDto
-└── mix-composition-result.dto.ts            MixCompositionResultDto
+├── mix-composition-result.dto.ts            MixCompositionResultDto
+└── phase-equilibrium/
+    ├── phase-equilibrium-fraction-input.dto.ts  PhaseEquilibriumFractionInputDto
+    ├── phase-equilibrium-input.dto.ts           PhaseEquilibriumInputDto
+    ├── phase-equilibrium-result.dto.ts          PhaseEquilibriumResultDto (+ block/part/crystal/unreacted/matrix/metadata/glass-points/viscosity)
+    └── (legacy) phase-calculation-response.dto.ts  old flat liquid/solid shape — unused by Engine C
+```
+
+Phase-equilibrium engines (`backend/src/modules/refractory/`):
+
+```
+services/composition/
+├── phase-equilibrium.service.ts                 PhaseEquilibriumService — orchestrator, calculate(dto)
+├── phase-equilibrium-calphad.service.ts         PhaseEquilibriumCalphadService — equilibrateMatrix() (Gibbs + lever)
+├── phase-equilibrium-legacy-eutectic.service.ts PhaseEquilibriumLegacyEutecticService — calculate()
+└── phase-equilibrium-legacy-diagram.service.ts  PhaseEquilibriumLegacyDiagramService — stub (400)
+types/  eutectic-entry, crystal-identification-rule, phase-equilibrium-{engine-input,engine-result,engine-run,
+        crystal,melting-range,legacy-result,matrix,fraction-state,unreacted-entry,unreacted-phase,viscosity,
+        comparison,run-metadata,fraction-result,response-part,response-block,response-crystal,matrix-result,
+        response-input,response}.type.ts
+data/   crystal-identification-rules, calphad-candidate-solids, calphad-liquid-endmembers.data.ts
+utils/  eutectic-index, crystal-identification, matrix-composition, unreacted-phases, amorphous-remainder,
+        phase-catalog, legacy-engine-adapter, engine-comparison, melt-viscosity-adapter,
+        melt-property-bundle, glass-points-adapter, phase-equilibrium-response-builder,
+        calphad-phase-gibbs, calphad-gibbs-minimizer, calphad-staging-liquid-probe, abdul-liquid,
+        abdul-liquid-excess, abdul-associate-speciation, cas-liquid-excess, mao-liquid,
+        mao-ionic-speciation, mao-ionic-excess, mao-endmember-expression (static classes)
+data/   phase-catalog.data.ts, material-mineralogy.data.ts
+dto/material-catalog/  material-mineralogy.dto.ts, mineralogy-phase.dto.ts (`MaterialEntryDto.mineralogy?`)
 ```
 
 ### Documentation Files (in tmp/reports/)

@@ -8,6 +8,12 @@ export const PACKING_DEFAULTS = {
   /** Compaction coefficient K (de Larrard 1999) */
   CPM_K: 9.0,
 
+  /**
+   * Scales the 0–1 pressure index before β = β₀ / (1 − K·c).
+   * Keeps c ≲ 0.1 so angular β rises gradually instead of jumping to 1.
+   */
+  CPM_COMPACTION_SCALE: 0.1,
+
   /** Furnas void filling efficiency */
   FURNAS_EFFICIENCY: 0.75,
 

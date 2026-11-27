@@ -36,6 +36,10 @@ export const OXIDE_MATERIALS: MaterialEntry[] = [
     chemicalShrinkage_volFrac: 0.001,
     activationEnergy_Jmol: 580000,
     meltingPoint_C: 2050,
+    mineralogy: {
+      phases: [{ phaseId: 'corundum', wt: 99.5 }],
+      source: 'Typical tabular alumina grade (Almatis); impurities as amorphous remainder',
+    },
     sourceUrl: 'https://www.almatis.com/products/tabular-alumina',
     supplier: 'Almatis',
     isActive: true,

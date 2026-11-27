@@ -1,265 +1,149 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import { CALCULATION_CONSTANTS } from '../../constants/calculation.constants';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PHASE_EQUILIBRIUM_CONSTANTS } from '../../constants/phase-equilibrium.constants';
-import {
-  PhaseEquilibriumInput,
-  PhaseEquilibriumResult,
-  PhaseData,
-  SolidPhaseData,
-  MineralPhase,
-} from '../../types';
-import { ComponentProperties } from '../../utils/component-properties';
-
-const { EUTECTIC_COMPOSITION, EUTECTIC_TEMPERATURE_C } = PHASE_EQUILIBRIUM_CONSTANTS;
+import { PhaseEquilibriumInputDto } from '../../dto/phase-equilibrium/phase-equilibrium-input.dto';
+import { AlgorithmMode } from '../../enums/algorithm-mode.enum';
+import { LegacyVariant } from '../../enums/legacy-variant.enum';
+import type { PhaseEquilibriumEngineInput } from '../../types/phase-equilibrium-engine-input.type';
+import type { PhaseEquilibriumEngineResult } from '../../types/phase-equilibrium-engine-result.type';
+import type { PhaseEquilibriumEngineRun } from '../../types/phase-equilibrium-engine-run.type';
+import type { PhaseEquilibriumFractionState } from '../../types/phase-equilibrium-fraction-state.type';
+import type { PhaseEquilibriumResponse } from '../../types/phase-equilibrium-response.type';
+import type { MeltPropertyBundle } from '../../types/melt-property-bundle.type';
+import { EngineComparison } from '../../utils/engine-comparison';
+import { GrainReaction } from '../../utils/grain-reaction';
+import { toFiredPhases } from '../../utils/fired-phases.util';
+import { LegacyEngineAdapter } from '../../utils/legacy-engine-adapter';
+import { MatrixComposition } from '../../utils/matrix-composition';
+import { MeltPropertyBundleAdapter } from '../../utils/melt-property-bundle';
+import { PhaseEquilibriumResponseBuilder } from '../../utils/phase-equilibrium-response-builder';
+import { UnreactedGlassViscosity } from '../../utils/unreacted-glass-viscosity';
+import { UnreactedPhases } from '../../utils/unreacted-phases';
+import { MixComponentCatalogService } from '../catalog/mix-component-catalog.service';
+import { GlassViscosityService } from './glass-viscosity.service';
+import { PhaseEquilibriumCalphadService } from './phase-equilibrium-calphad.service';
+import { PhaseEquilibriumLegacyDiagramService } from './phase-equilibrium-legacy-diagram.service';
+import { PhaseEquilibriumLegacyEutecticService } from './phase-equilibrium-legacy-eutectic.service';
 
 /**
- * Phase Equilibrium Calculator Service
- * Ported from: legacy/refractory/src/calculators/PhaseEquilibriumCalculator.ts (276 lines)
+ * Phase equilibrium of a mix of library raw materials fired at T for a hold time.
  *
- * Calculates liquid-solid phase distribution at temperature based on oxide composition.
- * Supports 33 components (21 oxides + 6 fluorides + 6 chlorides) with individual melting points.
- * Uses CAS ternary system (CaO-Al2O3-SiO2) approximation with anorthite-gehlenite eutectic.
- *
- * References:
- * - Kingery et al. (1976): Introduction to Ceramics, 2nd ed., Wiley
- * - Levin et al. (1964): Phase Diagrams for Ceramists, ACerS
- * - Nurse et al. (1965): J. Am. Ceram. Soc. 48(8), 439-442 (CaO-Al₂O₃-SiO₂ system)
- * - Osborn & Muan (1960): Revised Phase Equilibrium Diagrams
- * - NIST Phase Diagram Database
- *
- * Key Features:
- * - Selective melting model (flux enrichment) - 33 components
- * - Non-linear liquid formation kinetics (power law)
- * - Mineral phase identification (Mullite, Corundum, Anorthite, Gehlenite, Spinel, Forsterite)
- * - Component-specific melting points and liquidus effects
- * - CAS eutectic temperature: 1265°C
- *
- * ============================================================
- * COMPONENT MELTING POINTS & LIQUIDUS EFFECTS
- * ============================================================
- * High-melting oxides (increase liquidus):
- * - Al2O3: 2072°C (+1000 K contribution)
- * - SiO2: 1710°C (+800 K)
- * - Cr2O3: 2330°C (+1200 K)
- * - ZrO2: 2715°C (+1400 K)
- * - TiO2: 1843°C (+400 K)
- * - MgO: 2852°C (+800 K)
- * - B2O3: 450°C (-2000 K - strong flux!)
- *
- * Flux oxides (decrease liquidus):
- * - CaO: 2613°C but lowers liquidus due to CaO-SiO2 eutectic
- * - Na2O: 1275°C (-1500 K - strong flux)
- * - K2O: 740°C (-1400 K - strong flux)
- * - Li2O: 1438°C (-1300 K - strong flux)
- * - PbO: 888°C (-1800 K - very strong flux)
- * - FeO: 1377°C (-400 K - moderate flux)
- * - Fe2O3: 1565°C (-300 K - mild flux)
+ * Shared steps: fired composition per material (loss on ignition removed) → grain-reaction
+ * model (δ, X) → matrix = reacted shells → engine(s) on the matrix → response with the
+ * unreacted grain cores. Engines: CALPHAD estimate, legacy eutectic / diagram, or both (compare).
+ * Algorithm: docs/algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md
  */
 @Injectable()
 export class PhaseEquilibriumService {
-  private readonly logger = new Logger(PhaseEquilibriumService.name);
-  private readonly MIN_TEMPERATURE = CALCULATION_CONSTANTS.MIN_TEMPERATURE_C;
-  private readonly MAX_TEMPERATURE = CALCULATION_CONSTANTS.MAX_TEMPERATURE_C;
-  // Using shared liquidus effects from ComponentProperties — no private constants needed
+  constructor(
+    private readonly mixComponentCatalog: MixComponentCatalogService,
+    private readonly calphad: PhaseEquilibriumCalphadService,
+    private readonly legacyEutectic: PhaseEquilibriumLegacyEutecticService,
+    private readonly legacyDiagram: PhaseEquilibriumLegacyDiagramService,
+    private readonly glassViscosity: GlassViscosityService,
+  ) {}
 
-  calculatePhaseEquilibrium(data: { composition: Record<string, number>; temperature: number; totalMass?: number; }) {
-    const { composition, temperature, totalMass = 100 } = data;
-    this.validateComposition(composition);
-    this.validateTemperature(temperature);
-    const warnings: string[] = [];
-    const liquidPercent = this.calculateLiquidFraction(composition, temperature, warnings);
-    const solidPercent = 100 - liquidPercent;
-    const liquidComposition = this.calculateLiquidComposition(composition, liquidPercent);
-    const solidComposition = this.calculateSolidComposition(composition, liquidComposition, liquidPercent, solidPercent);
-    const mineralPhases = this.identifyMineralPhases(solidComposition);
-    const estimatedLiquidus = this.estimateLiquidus(composition);
-    this.logger.log(`Phase equilibrium: ${liquidPercent.toFixed(1)}% liquid at ${temperature}°C`);
-    return {
-      liquid: {
-        percent: Number(liquidPercent.toFixed(2)),
-        mass: Number(((liquidPercent / 100) * totalMass).toFixed(2)),
-        composition: this.roundComposition(liquidComposition),
-        components: this.extractActiveComponents(liquidComposition),
-      },
-      solid: {
-        percent: Number(solidPercent.toFixed(2)),
-        mass: Number(((solidPercent / 100) * totalMass).toFixed(2)),
-        composition: this.roundComposition(solidComposition),
-        mineralPhases,
-        components: this.extractActiveComponents(solidComposition),
-      },
-      metadata: {
-        temperature,
-        totalMass,
-        eutecticTemperature: EUTECTIC_TEMPERATURE_C,
-        estimatedLiquidus: Number(estimatedLiquidus.toFixed(0)),
-        calculatedAt: new Date()
-      },
-      warnings
+  calculate(dto: PhaseEquilibriumInputDto): PhaseEquilibriumResponse {
+    const totalMass = dto.totalMass ?? PHASE_EQUILIBRIUM_CONSTANTS.defaultTotalMass;
+    const holdTime_hours = dto.holdTime_hours ?? PHASE_EQUILIBRIUM_CONSTANTS.defaultHoldTime_hours;
+    const mode = dto.algorithmMode ?? AlgorithmMode.CALPHAD;
+    const states = this.resolveFractions(dto, holdTime_hours);
+    const matrix = MatrixComposition.build(states);
+    if (matrix.percent <= 0) {
+      throw new BadRequestException('The mix has no reactive oxide matrix (only inert or non-oxide phases)');
+    }
+    const engineInput: PhaseEquilibriumEngineInput = {
+      composition: matrix.composition,
+      temperature_C: dto.temperature,
+      totalMass: (matrix.percent / 100) * totalMass,
     };
+    const run = this.runEngines(mode, dto.legacyVariant ?? LegacyVariant.EUTECTIC, engineInput);
+    const liquidProps = this.liquidProperties(run, dto.temperature);
+    const unreactedGlass = UnreactedGlassViscosity.attach(
+      UnreactedPhases.build(states, totalMass),
+      composition => this.evaluateMeltProperties(composition, dto.temperature),
+    );
+    return PhaseEquilibriumResponseBuilder.build({
+      mode,
+      engine: run.primary,
+      matrix,
+      unreacted: unreactedGlass.phases,
+      states,
+      temperature: dto.temperature,
+      holdTime_hours,
+      totalMass,
+      viscosity: liquidProps.bundle.viscosity,
+      liquidGlassPoints: liquidProps.bundle.glassPoints,
+      comparison: run.comparison,
+      warnings: [...run.warnings, ...liquidProps.warnings, ...unreactedGlass.warnings],
+    });
   }
 
-  private validateComposition(comp: Record<string, number>): void {
-    const total = Object.values(comp).reduce((sum, val) => sum + val, 0);
-    if (total < 95 || total > 105) throw new BadRequestException(`Composition must sum to ~100% (got ${total.toFixed(2)}%)`);
+  /** Material lookup, fired mass fractions (loss on ignition removed), δ and X per size fraction. */
+  private resolveFractions(dto: PhaseEquilibriumInputDto, holdTime_hours: number): PhaseEquilibriumFractionState[] {
+    const totalFraction = dto.fractions.reduce((sum, f) => sum + f.massFraction, 0);
+    if (totalFraction <= 0) throw new BadRequestException('Sum of massFraction must be greater than 0');
+    const rows = dto.fractions.map(f => {
+      const material = this.mixComponentCatalog.getMixComponent(f.materialId);
+      const massFraction = f.massFraction / totalFraction;
+      const fired = toFiredPhases(material.composition);
+      return { f, material, massFraction, fired, firedMass: massFraction * (100 - fired.lossOnIgnition_wt) };
+    });
+    const firedTotal = rows.reduce((sum, r) => sum + r.firedMass, 0);
+    if (firedTotal <= 0) throw new BadRequestException('The mix has no fired mass');
+    return rows.map(r => {
+      const penetrationDepth_mm = GrainReaction.penetrationDepth_mm(r.material.activationEnergy_Jmol, dto.temperature, holdTime_hours);
+      return {
+        material: r.material,
+        d50_mm: r.f.d50_mm,
+        massFraction: r.massFraction,
+        firedFraction: r.firedMass / firedTotal,
+        penetrationDepth_mm,
+        reactedFraction: GrainReaction.reactedFraction(r.f.d50_mm, penetrationDepth_mm),
+        firedPhases_wt: r.fired.phases_wt,
+      };
+    });
   }
 
-  private validateTemperature(temp: number): void {
-    if (temp < this.MIN_TEMPERATURE || temp > this.MAX_TEMPERATURE) throw new BadRequestException(`Temperature must be ${this.MIN_TEMPERATURE}-${this.MAX_TEMPERATURE}°C`);
-  }
-
-  /**
-   * Calculate liquid fraction at given temperature
-   *
-   * Uses non-linear model to account for:
-   * - Kinetic limitations (diffusion-controlled)
-   * - Coarse particle size (limited reactive surface)
-   * - High refractory content (Al2O3 stays solid)
-   *
-   * Formula: liquidPercent = ((T - T_eutectic) / (T_liquidus - T_eutectic))^3.0 * 0.4 * 100
-   *
-   * Power of 3.0: Makes liquid formation slower at lower temperatures (realistic kinetics)
-   * Scale factor 0.4: Accounts for kinetic/surface area limitations
-   *
-   * @param comp Oxide composition (all 33 components)
-   * @param temp Temperature in °C
-   * @param warnings Array to collect warnings
-   * @returns Liquid fraction as percentage (0-100)
-   */
-  private calculateLiquidFraction(comp: Record<string, number>, temp: number, warnings: string[]): number {
-    if (temp <= EUTECTIC_TEMPERATURE_C) return 0;
-    const liquidus = this.estimateLiquidus(comp);
-    if (temp >= liquidus) return 100;
-    const tempFraction = (temp - EUTECTIC_TEMPERATURE_C) / (liquidus - EUTECTIC_TEMPERATURE_C);
-    const liquidPercent = Math.min(100, Math.max(0, Math.pow(tempFraction, 3.0) * 0.4 * 100));
-    if (liquidPercent > 25 && temp < liquidus - 100) warnings.push(`Significant liquid formation (${liquidPercent.toFixed(1)}%) at ${temp}°C`);
-    return liquidPercent;
-  }
-
-  /**
-   * Estimate liquidus temperature using all 33 components
-   *
-   * Base: 1400°C
-   * Add effects for each oxide/fluoride/chloride component
-   * Network formers increase, fluxes decrease
-   */
-  private estimateLiquidus(comp: Record<string, number>): number {
-    let liquidus = CALCULATION_CONSTANTS.BASE_REFRACTORINESS_C;
-
-    // Use helper function to calculate liquidus effect from all 33 components at once
-    // This automatically loops through composition and applies effects
-    const effectFromComponents = ComponentProperties.liquidusEffect(comp);
-    liquidus += effectFromComponents;
-
-    return Math.max(1300, Math.min(1900, liquidus));
-  }
-
-  /**
-   * Calculate liquid composition using selective melting model
-   *
-   * CaO-rich phases melt preferentially (NOT a simple average!)
-   *
-   * Liquid composition is enriched in flux oxides (CaO, Fe2O3)
-   * and approaches eutectic composition, depleted in refractory oxides (Al2O3, SiO2).
-   *
-   * Uses liquidEnrichmentFactor from each component in COMPONENT_PROPERTIES
-   * which automatically applies component-specific enrichment coefficients.
-   *
-   * @param original Original bulk composition
-   * @param liquidPercent Liquid fraction (0-100)
-   * @returns Normalized liquid composition
-   */
-  private calculateLiquidComposition(original: Record<string, number>, liquidPercent: number): Record<string, number> {
-    if (liquidPercent < 0.01) return {};
-    if (liquidPercent === 100) return { ...original };
-
-    // Apply enrichment factors via ComponentProperties
-    const liquid = ComponentProperties.liquidCompositionWithEnrichment(original);
-
-    // Blend factor: approaches eutectic composition as liquid increases
-    const blendFactor = Math.min(liquidPercent / 100, 0.6);
-
-    // Blend with eutectic composition for higher liquid fractions
-    const eutectic = EUTECTIC_COMPOSITION;
-    if (blendFactor > 0) {
-      if (liquid.CaO) liquid.CaO = liquid.CaO * (1 - blendFactor) + eutectic.CaO * blendFactor * 1.2;
-      if (liquid.Al2O3) liquid.Al2O3 = liquid.Al2O3 * (1 - blendFactor) + eutectic.Al2O3 * blendFactor * 0.9;
-      if (liquid.SiO2) liquid.SiO2 = liquid.SiO2 * (1 - blendFactor) + eutectic.SiO2 * blendFactor;
+  private runEngines(mode: AlgorithmMode, variant: LegacyVariant, input: PhaseEquilibriumEngineInput): PhaseEquilibriumEngineRun {
+    if (mode === AlgorithmMode.CALPHAD) return { primary: this.calphad.equilibrateMatrix(input), warnings: [] };
+    if (mode === AlgorithmMode.LEGACY) return { primary: this.runLegacy(variant, input), warnings: [] };
+    const primary = this.calphad.equilibrateMatrix(input);
+    try {
+      const legacy = this.runLegacy(variant, input);
+      return { primary, comparison: EngineComparison.build(primary, legacy, variant), warnings: [] };
+    } catch (error) {
+      if (!(error instanceof BadRequestException)) throw error;
+      return {
+        primary,
+        comparison: EngineComparison.build(primary, null, variant, error.message),
+        warnings: [`Legacy ${variant} skipped in compare mode: ${error.message}`],
+      };
     }
-
-
-    return this.normalizeComposition(liquid);
   }
 
-  /**
-   * Calculate solid composition - enriched in refractory oxides
-   *
-   * Mass balance: solid contains what didn't melt
-   * - Enriched in Al2O3, SiO2 (refractory oxides prefer solid phase)
-   * - Depleted in CaO, Fe2O3 (fluxes prefer liquid phase)
-   * - Fluorides and chlorides almost completely leave solid
-   *
-   * Uses solidEnrichmentFactor from each component in COMPONENT_PROPERTIES
-   * which automatically handles component-specific solid retention.
-   *
-   * @param original Original bulk composition
-   * @param liquid Calculated liquid composition
-   * @param liquidPercent Liquid fraction
-   * @param solidPercent Solid fraction
-   * @returns Normalized solid composition
-   */
-  private calculateSolidComposition(original: Record<string, number>, liquid: Record<string, number>, liquidPercent: number, solidPercent: number): Record<string, number> {
-    if (solidPercent < 0.01) return {};
-    if (liquidPercent < 0.01) return { ...original };
+  private runLegacy(variant: LegacyVariant, input: PhaseEquilibriumEngineInput): PhaseEquilibriumEngineResult {
+    const engine = variant === LegacyVariant.DIAGRAM ? this.legacyDiagram : this.legacyEutectic;
+    return LegacyEngineAdapter.toEngineResult(engine.calculate(input.composition, input.temperature_C, input.totalMass));
+  }
 
-    // Apply solid enrichment factors via ComponentProperties
-    const solid = ComponentProperties.solidCompositionWithEnrichment(original);
-
-    // Normalize to get percentage composition
-    const normalized: Record<string, number> = {};
-    const sum = Object.values(solid).reduce((acc, val) => acc + val, 0);
-    if (sum > 0) {
-      for (const [key, value] of Object.entries(solid)) {
-        normalized[key] = (value / sum) * 100;
-      }
+  /** Melt properties of the matrix liquid; unavailable models only add a warning. */
+  private liquidProperties(
+    run: PhaseEquilibriumEngineRun,
+    temperature: number,
+  ): { bundle: MeltPropertyBundle; warnings: string[] } {
+    const empty: MeltPropertyBundle = { viscosity: null, glassPoints: null };
+    if (run.primary.liquidPercent <= 0) return { bundle: empty, warnings: [] };
+    try {
+      return { bundle: this.evaluateMeltProperties(run.primary.liquidComposition, temperature), warnings: [] };
+    } catch (error) {
+      return {
+        bundle: empty,
+        warnings: [`Matrix liquid viscosity not available: ${(error as Error).message}`],
+      };
     }
-
-    return normalized;
   }
 
-  private identifyMineralPhases(comp: Record<string, number>): string[] {
-    const phases: string[] = [];
-    const Al2O3 = comp.Al2O3 || 0, SiO2 = comp.SiO2 || 0, CaO = comp.CaO || 0, MgO = comp.MgO || 0;
-    if (Al2O3 > 50) phases.push('Corundum (α-Al₂O₃)');
-    if (Al2O3 > 30 && SiO2 > 20 && Al2O3 / SiO2 > 1.5) phases.push('Mullite (3Al₂O₃·2SiO₂)');
-    if (CaO > 5 && Al2O3 > 15 && SiO2 > 20) phases.push('Anorthite (CaAl₂Si₂O₈)');
-    if (CaO > 15 && Al2O3 > 10 && SiO2 > 5) phases.push('Gehlenite (Ca₂Al₂SiO₇)');
-    if (MgO > 10 && Al2O3 > 30) phases.push('Spinel (MgAl₂O₄)');
-    if (MgO > 20 && SiO2 > 15) phases.push('Forsterite (Mg₂SiO₄)');
-    return phases.length > 0 ? phases : ['Mixed solid solution'];
-  }
-
-  private normalizeComposition(comp: Record<string, number>): Record<string, number> {
-    const sum = Object.values(comp).reduce((acc, val) => acc + val, 0);
-    if (sum === 0) return comp;
-    const normalized: Record<string, number> = {};
-    for (const [key, value] of Object.entries(comp)) normalized[key] = (value / sum) * 100;
-    return normalized;
-  }
-
-  private roundComposition(comp: Record<string, number>): Record<string, number> {
-    const rounded: Record<string, number> = {};
-    for (const [key, value] of Object.entries(comp)) rounded[key] = Number(value.toFixed(2));
-    return rounded;
-  }
-
-  /**
-   * Extract active components (non-zero values)
-   */
-  private extractActiveComponents(comp: Record<string, number>): Record<string, number> {
-    return Object.entries(comp)
-      .filter(([_, value]) => value && value > 0.01)
-      .reduce((acc, [key, value]) => ({ ...acc, [key]: Number(value.toFixed(2)) }), {});
+  private evaluateMeltProperties(composition: Record<string, number>, temperature: number): MeltPropertyBundle {
+    return MeltPropertyBundleAdapter.adapt(this.glassViscosity.calculateViscosity(composition, temperature));
   }
 }
-

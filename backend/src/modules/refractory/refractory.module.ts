@@ -4,6 +4,9 @@ import { RefractoryPackingController } from './controllers/refractory-packing.co
 import { RefractoryThermalController } from './controllers/refractory-thermal.controller';
 import { MaterialCatalogController } from './controllers/material-catalog.controller';
 import { PhaseEquilibriumService } from './services/composition/phase-equilibrium.service';
+import { PhaseEquilibriumCalphadService } from './services/composition/phase-equilibrium-calphad.service';
+import { PhaseEquilibriumLegacyEutecticService } from './services/composition/phase-equilibrium-legacy-eutectic.service';
+import { PhaseEquilibriumLegacyDiagramService } from './services/composition/phase-equilibrium-legacy-diagram.service';
 import { BlendOptimizerService } from './services/particle-packing/blend-optimizer.service';
 import { BlendOptimizerEvaluateService } from './services/particle-packing/blend-optimizer-evaluate.service';
 import { BlendOptimizerExpandService } from './services/particle-packing/blend-optimizer-expand.service';
@@ -33,6 +36,9 @@ import { MixThermalService } from './services/thermal/mix-thermal.service';
   ],
   providers: [
     PhaseEquilibriumService,
+    PhaseEquilibriumCalphadService,
+    PhaseEquilibriumLegacyEutecticService,
+    PhaseEquilibriumLegacyDiagramService,
     BlendOptimizerService,
     BlendOptimizerEvaluateService,
     BlendOptimizerExpandService,

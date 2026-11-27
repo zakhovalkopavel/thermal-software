@@ -58,6 +58,13 @@ export const SILICATE_MATERIALS: MaterialEntry[] = [
     chemicalShrinkage_volFrac: 0.002,
     activationEnergy_Jmol: 450000,
     meltingPoint_C: 1650,
+    mineralogy: {
+      phases: [
+        { phaseId: 'mullite', wt: 40 },
+        { phaseId: 'quartz', wt: 12 },
+      ],
+      source: 'Typical fireclay chamotte XRD share (mullite + residual quartz; rest amorphous)',
+    },
     sourceUrl: 'https://www.sciencedirect.com/topics/materials-science/chamotte',
     isActive: true,
   },
@@ -144,6 +151,10 @@ export const SILICATE_MATERIALS: MaterialEntry[] = [
     chemicalShrinkage_volFrac: 0.001,
     activationEnergy_Jmol: 500000,
     meltingPoint_C: 1713,
+    mineralogy: {
+      phases: [{ phaseId: 'quartz', wt: 99.0 }],
+      source: 'Crystalline quartz sand; minor oxides as amorphous remainder',
+    },
     sourceUrl: 'https://www.sciencedirect.com/topics/engineering/quartz-sand',
     isActive: true,
   },
@@ -169,6 +180,10 @@ export const SILICATE_MATERIALS: MaterialEntry[] = [
     chemicalShrinkage_volFrac: 0.0005,
     activationEnergy_Jmol: 520000,
     meltingPoint_C: 1710,
+    mineralogy: {
+      phases: [],
+      source: 'Fused silica is amorphous (glass former); no crystalline XRD phases',
+    },
     sourceUrl: 'https://www.sciencedirect.com/topics/materials-science/fused-silica',
     isActive: true,
   },
@@ -318,6 +333,10 @@ export const SILICATE_MATERIALS: MaterialEntry[] = [
     chemicalShrinkage_volFrac: 0.01,
     activationEnergy_Jmol: 480000,
     meltingPoint_C: 1700,
+    mineralogy: {
+      phases: [],
+      source: 'Microsilica / silica fume is amorphous; no crystalline XRD phases',
+    },
     sourceUrl: 'https://www.sciencedirect.com/topics/engineering/silica-fume',
     isActive: true,
   },

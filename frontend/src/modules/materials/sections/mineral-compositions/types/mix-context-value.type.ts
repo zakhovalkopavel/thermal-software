@@ -11,7 +11,7 @@ export type MixContextValue = {
   components: Map<string, MaterialEntry>;
   /** Rows with material, size, mass % > 0 and density. */
   completeFractions: CompleteMixFraction[];
-  /** Every row complete and Σ mass % = 100 within tolerance. */
+  /** Every row complete with mass % > 0 (Σ = 100 is optional; the backend rescales). */
   ready: boolean;
   massPercentSum: number;
 };

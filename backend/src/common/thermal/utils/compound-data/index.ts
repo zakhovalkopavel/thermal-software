@@ -14,6 +14,9 @@ export type { CompoundDataCompoundFile } from './types/record/compound-data-comp
 export { CompoundData } from './compound-data';
 export { CompoundValueBuilder } from './compound-value-builder';
 export type { GasCompoundQuery } from './types/gas-compound-query.type';
+export { CompoundSolidData } from './compound-solid-data';
+export { CompoundLiquidData } from './compound-liquid-data';
+export { CompoundLiquidValue } from './compound-liquid-value';
 export { CompoundText } from './compound-text';
 export { CompoundSearch } from './compound-search';
 export type { CompoundSearchHit } from './types/search/compound-search-hit.type';

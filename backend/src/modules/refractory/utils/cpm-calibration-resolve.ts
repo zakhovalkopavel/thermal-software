@@ -34,8 +34,14 @@ export class CpmCalibrationResolve {
     return MAX_PHI_VALUES[model];
   }
 
+  /**
+   * Maps compaction pressure to a small index c used in β = β₀ / (1 − K·c).
+   * Raw p/(p+pRef) is scaled so typical pressures raise β modestly (not to 1).
+   */
   static compactionIndex(pressure_MPa: number): number {
+    if (pressure_MPa <= 0) return 0;
     const pRef = PACKING_DEFAULTS.PRESSURE_REF_MPA;
-    return Math.min(0.99, pressure_MPa / (pressure_MPa + pRef));
+    const raw = pressure_MPa / (pressure_MPa + pRef);
+    return Math.min(0.99, raw * PACKING_DEFAULTS.CPM_COMPACTION_SCALE);
   }
 }

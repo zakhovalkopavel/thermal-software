@@ -106,7 +106,7 @@ export class CompoundFluidPropsService {
     P_Pa: number,
   ): EvaluationResult & { mixtureValidity?: MixtureValidity } {
     // Stored dilute λ⁰, plus CoolProp λʳ(+λcrit) when linked.
-    if (compound.thermalConductivity.values.length > 0) {
+    if (compound.thermalConductivity?.values.length > 0) {
       const dilute = new CompoundPropertyResolver(compound).thermalConductivityResult(T_K);
       return this.withCoolpropResidual(compound, mole, T_K, P_Pa, dilute);
     }

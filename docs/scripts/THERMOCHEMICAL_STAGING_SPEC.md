@@ -58,7 +58,7 @@ flowchart LR
 | Folder | RefKey | Calculable content |
 |--------|--------|--------------------|
 | `holland-powell-ds633/` | `HollandPowell2011` | All `hp633ver.dat` EoS endmembers: H/GH/G0, S0, V0, Cp c1–c5 (HSC) |
-| `abdul-2023/` | `Abdul2023` | Thesis TDB: Einstein G(T) solids + liquid L (SER) — **only** Abdul folder in processed |
+| `abdul-2023/` | `Abdul2023` | Thesis TDB: Einstein G(T) solids + liquid L (SER); `functions` map of every TDB `FUNCTION` body (required to evaluate `liquid.endmemberG` / `excessL`) — **only** Abdul folder in processed |
 | `robie-hemingway-1995/` | `RobieHemingway1995` | Per-phase `<phaseId>.json` (298 K + Cp + high-T); no compact `phases.json` |
 | `koroleva-2017/` | `Koroleva2017` | Alkali silicate + borate S298/Hf298 (Tables 1–2) + regression eqs (6)(7)(10)(11) from Modal Surya OCR |
 | `malan-2019/` | `Malan2019` | Fe2TiO5 Hf/S/Cp |

@@ -312,3 +312,14 @@ Grain reaction, mineralogy, glass-phase utils stay as shared.
 - No crystallization on cooling; glass does not dissolve crystals below solidus.
 - Fluoride / borate volatilization not modelled.
 - Digitized diagram fields are out of scope until validated — they do not block shipping Engine C.
+
+## Implemented in v1
+
+`PhaseEquilibriumCalphadService.equilibrateMatrix`:
+
+1. **Gibbs minimisation** (`CalphadGibbsMinimizer`, rungs 1–2 when data allow): stoichiometric solids from `CALPHAD_CANDIDATE_SOLIDS` with G(T) via `CompoundPropertyResolver` (`forSolid` / Cp-integral or NASA); oxide liquid from NASA `(L)` end-members (`CompoundLiquidValue`) plus CAS liquid excess via `CasLiquidExcess`: **Abdul associate speciation** (greedy ASL/CSL/C2SL/C3AL/CAS2L fill) → else **Mao ionic P–Q** site fractions from oxide moles → else oxide-end-member Redlich–Kister (`AbdulLiquidExcess`). Phase amounts softplus-parametrised and solved with `nelderMead` + mass-balance penalty (liquid speciation itself is closed-form so the outer solve stays tractable). Method `calphad_partial_excess`. Missing Mao reciprocal corners use oxideG + uplift (documented warning). Flags: `usedAssociateSpeciation` / `usedMaoIonic` / `usedAbdulExcess`.
+2. Matrix composition normalised to 100 wt%; oxides/fluorides above 0.5 wt% are looked up in the NSRDS-NBS 61 eutectic table (`EutecticIndex.bestMatch`: exact component set first, else the subsystem covering the most matrix weight, then lowest temperature). Solidus/liquidus metadata still come from this ladder even when Gibbs supplies amounts.
+3. **Eutectic anchored** (`eutectic_anchored`) fallback when Gibbs is skipped: solidus = eutectic T; liquidus = max(solidus + 200 K, mass-weighted mean oxide melting point, `OXIDE_MELTING_POINTS_C`); liquid fraction linear between them (lever rule). Liquid composition goes from the eutectic composition (mol% → wt%) at the solidus to the bulk at the liquidus; solid by mass balance. Confidence HIGH for an exact, non-approximate eutectic, else MEDIUM (subsystem match adds a warning).
+4. **Tm estimate** (`tm_estimate`, LOW): solidus = lowest component Tm − 50 K, liquidus = highest Tm, linear liquid fraction, flux-enriched liquid composition.
+5. Crystals: from Gibbs solid phase amounts when the solve succeeds; else threshold rules (`CRYSTAL_IDENTIFICATION_RULES`) on the solid composition.
+6. Orchestrator: matrix = Σ (fired fraction × reacted fraction X × fired oxide composition); inert phases and non-oxides stay unreacted; unreacted cores use library `mineralogy` (`MATERIAL_MINERALOGY` + inline overrides, `AmorphousRemainder` + `PHASE_CATALOG`) for every mix component, else synthetic fallback. Glass points from `GlassViscosityService` are attached to matrix quench / amorphous cores. `legacyDiagram` remains a stub until diagram datasets are validated.

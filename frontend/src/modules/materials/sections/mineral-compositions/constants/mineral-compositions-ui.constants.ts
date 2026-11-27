@@ -1,19 +1,32 @@
 export const MINERAL_COMPOSITIONS_UI = {
   customSizeKey: 'custom',
+  /** Binders use the library `particleSize` rather than a catalogue class. */
+  materialSizeKey: 'material',
+  binderGroup: 'binder',
   massPercentTotal: 100,
   massPercentTolerance: 0.5,
   /** `FractionInputDto.density_kgm3` limits (blend optimiser). */
   densityMin_kgm3: 1000,
   densityMax_kgm3: 4000,
   massDecimals: 2,
+  messages: {
+    sizeFractionRequired: 'Selecting a size fraction is required for every component.',
+    binderAsDelivered: 'As delivered',
+    binderMissingParticleSize: 'This binder has no library particle size',
+  },
   psd: { defaultQ: 0.37, qMin: 0.2, qMax: 0.5, qStep: 0.01, debounce_ms: 300, andreasenDmin_mm: 0 },
   chemistry: {
     defaultTemperature_C: 1400,
     temperatureMin_C: 500,
     temperatureMax_C: 2000,
     defaultTotalMass: 100,
-    defaultTestTemperature_C: 1500,
+    defaultHoldTime_hours: 2,
+    holdTimeMin_hours: 0,
+    defaultAlgorithmMode: 'calphad',
+    defaultLegacyVariant: 'eutectic',
     defaultPorosity: 0.2,
+    /** Upper bound of `POST /mix/thermal` Maxwell–Eucken porosity. */
+    porosityMax: 0.95,
     densePorosity: 0,
     sweep: { from: 1000, to: 1600, step: 50 },
     sweepMaxPoints: 25,

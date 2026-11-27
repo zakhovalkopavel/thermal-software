@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { OxideCompositionDto } from '../../../../src/modules/refractory/dto/common';
-import { PhaseEquilibriumService } from '../../../../src/modules/refractory/services/composition/phase-equilibrium.service';
+import { PhaseEquilibriumLegacyEutecticService } from '../../../../src/modules/refractory/services/composition/phase-equilibrium-legacy-eutectic.service';
 import { toOxideCompositionRecord } from '../../../../src/modules/refractory/utils/oxide-composition-record.util';
 
 const dto = (body: Record<string, number>) => plainToInstance(OxideCompositionDto, body);
@@ -17,11 +17,11 @@ describe('toOxideCompositionRecord', () => {
   });
 
   describe('phase equilibrium with a transformed request', () => {
-    const service = new PhaseEquilibriumService();
+    const service = new PhaseEquilibriumLegacyEutecticService();
     const composition = toOxideCompositionRecord(dto({ Al2O3: 45, SiO2: 48, CaO: 1.5, Fe2O3: 3.5, MgO: 0.8, TiO2: 1.2 }));
 
     it.each([1000, 1600])('at %d °C (all solid / all liquid) - returns rounded compositions', (temperature) => {
-      const result = service.calculatePhaseEquilibrium({ composition, temperature });
+      const result = service.calculate(composition, temperature);
       const values = [...Object.values(result.liquid.composition), ...Object.values(result.solid.composition)];
       expect(values.length).toBeGreaterThan(0);
       values.forEach((value) => expect(Number.isFinite(value)).toBe(true));
@@ -29,7 +29,7 @@ describe('toOxideCompositionRecord', () => {
 
     it('rejects a composition that does not sum to ~100 %', () => {
       expect(() =>
-        service.calculatePhaseEquilibrium({ composition: toOxideCompositionRecord(dto({ Al2O3: 40 })), temperature: 1200 }),
+        service.calculate(toOxideCompositionRecord(dto({ Al2O3: 40 })), 1200),
       ).toThrow('Composition must sum to ~100%');
     });
   });
