@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class PackingCpmDto {
   @ApiProperty({
     example: [0.31, 0.28, 0.25, 0.16],
-    description: 'Mass fractions of each size fraction (must sum to 1)',
+    description: 'Mass fractions of each size fraction (rescaled internally; need not sum to 1)',
   })
   @IsArray()
   @IsNumber({}, { each: true })

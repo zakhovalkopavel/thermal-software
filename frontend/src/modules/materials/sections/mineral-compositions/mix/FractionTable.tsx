@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
@@ -21,11 +22,19 @@ import { useParticleSizes } from '../../../hooks/useParticleSizes';
 import type { MaterialPickerKind } from '../../../types/material-picker-kind.type';
 import { MINERAL_COMPOSITIONS_UI } from '../constants/mineral-compositions-ui.constants';
 import { useMix } from '../hooks/useMix';
+import { toBinderSizePatch } from '../mappers/binder-size-patch.mapper';
 import { toSizeOptions } from '../mappers/size-options.mapper';
 import type { MixFraction } from '../types/mix-fraction.type';
 import { SizeFractionSelect } from './SizeFractionSelect';
 
 const MIX_KINDS: MaterialPickerKind[] = ['mix-component'];
+
+const CLEARED_SIZE: Pick<MixFraction, 'sizeKey' | 'dMin_mm' | 'dMax_mm' | 'd50_mm'> = {
+  sizeKey: null,
+  dMin_mm: null,
+  dMax_mm: null,
+  d50_mm: null,
+};
 
 export function FractionTable() {
   const { state, dispatch, components, massPercentSum } = useMix();
@@ -39,6 +48,7 @@ export function FractionTable() {
 
   return (
     <Stack spacing={1}>
+      <Alert severity="info">{MINERAL_COMPOSITIONS_UI.messages.sizeFractionRequired}</Alert>
       <TableContainer sx={{ border: 1, borderColor: 'divider', borderRadius: 1 }}>
         <Table size="small">
           <TableHead>
@@ -56,6 +66,9 @@ export function FractionTable() {
             {state.fractions.map((fraction) => {
               const entry = fraction.materialId ? components.get(fraction.materialId) : undefined;
               const custom = fraction.sizeKey === MINERAL_COMPOSITIONS_UI.customSizeKey;
+              const binderLocked = fraction.sizeKey === MINERAL_COMPOSITIONS_UI.materialSizeKey;
+              const sizeMissing = Boolean(fraction.materialId) && !fraction.sizeKey;
+              const binderMissingSize = binderLocked && (fraction.d50_mm === null || fraction.dMin_mm === null || fraction.dMax_mm === null);
               return (
                 <TableRow key={fraction.id}>
                   <TableCell>
@@ -66,9 +79,12 @@ export function FractionTable() {
                       value={fraction.materialId ? { kind: 'mix-component', materialId: fraction.materialId } : null}
                       onChange={(selection) => {
                         const next = selection ? components.get(selection.materialId) : undefined;
+                        const binderSize = toBinderSizePatch(next);
+                        const wasBinder = fraction.sizeKey === MINERAL_COMPOSITIONS_UI.materialSizeKey;
                         update(fraction.id, {
                           materialId: selection?.materialId ?? null,
                           density_kgm3: next?.rho_true_after_firing_kgm3 ?? null,
+                          ...(binderSize ?? (wasBinder || !selection ? CLEARED_SIZE : {})),
                         });
                       }}
                     />
@@ -78,6 +94,15 @@ export function FractionTable() {
                       options={toSizeOptions(sizes.data, entry?.availableParticleSizes)}
                       value={fraction.sizeKey}
                       disabled={!fraction.materialId}
+                      required={Boolean(fraction.materialId)}
+                      error={sizeMissing || binderMissingSize}
+                      helperText={
+                        binderMissingSize
+                          ? MINERAL_COMPOSITIONS_UI.messages.binderMissingParticleSize
+                          : sizeMissing
+                            ? MINERAL_COMPOSITIONS_UI.messages.sizeFractionRequired
+                            : undefined
+                      }
                       onChange={(sizeKey, range) =>
                         update(
                           fraction.id,
@@ -144,8 +169,8 @@ export function FractionTable() {
         <Button size="small" startIcon={<AddIcon />} onClick={() => dispatch({ type: 'add' })}>
           Add fraction
         </Button>
-        <Typography variant="body2" color={sumOff ? 'warning.main' : 'text.secondary'}>
-          Σ = {formatValue(massPercentSum)} %{sumOff && ' — must be 100'}
+        <Typography variant="body2" color={sumOff ? 'info.main' : 'text.secondary'}>
+          Σ = {formatValue(massPercentSum)} %{sumOff && ' — will be rescaled by the backend (Normalize is optional)'}
         </Typography>
         <Button size="small" onClick={() => dispatch({ type: 'normalize' })} disabled={massPercentSum <= 0}>
           Normalize

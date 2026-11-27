@@ -6,4 +6,6 @@ export type BlendRequestState = {
   fractionIds: string[];
   /** Fraction labels at request time. */
   labels: string[];
+  /** Mix signature at request time; used to detect stale results after edits. */
+  fingerprint: string;
 };

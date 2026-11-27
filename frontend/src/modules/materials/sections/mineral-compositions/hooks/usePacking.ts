@@ -1,12 +1,12 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { MATERIALS_QUERY_KEYS } from '../../../constants/materials-query-keys.constants';
 import { packingApi } from '../api/packing.api';
-import { toPackingArrays } from '../mappers/packing-request.mapper';
+import { toPackingArrays, toPackingQueryKey } from '../mappers/packing-request.mapper';
 import type { CompleteMixFraction } from '../types/complete-mix-fraction.type';
 import type { PackingCpmInput } from '../types/packing-cpm-input.type';
 import type { PackingFurnasInput } from '../types/packing-furnas-input.type';
 
-const CALC = { staleTime: Infinity, retry: false, placeholderData: keepPreviousData } as const;
+const CALC = { staleTime: 0, retry: false } as const;
 
 export function usePacking(
   fractions: CompleteMixFraction[],
@@ -15,6 +15,7 @@ export function usePacking(
   efficiencyFactor: number | null,
 ) {
   const arrays = toPackingArrays(fractions);
+  const keyBase = toPackingQueryKey(fractions);
   const cpmInput: PackingCpmInput = {
     ...arrays,
     ...(compactionPressure_MPa !== null ? { compactionPressure_MPa } : {}),
@@ -25,15 +26,21 @@ export function usePacking(
   };
 
   const cpm = useQuery({
-    queryKey: MATERIALS_QUERY_KEYS.mineral('packing/cpm', cpmInput),
+    queryKey: MATERIALS_QUERY_KEYS.mineral('packing/cpm', {
+      ...keyBase,
+      ...(compactionPressure_MPa !== null ? { compactionPressure_MPa } : {}),
+    }),
     queryFn: () => packingApi.cpm(cpmInput),
-    enabled,
+    enabled: enabled && fractions.length > 0,
     ...CALC,
   });
   const furnas = useQuery({
-    queryKey: MATERIALS_QUERY_KEYS.mineral('packing/furnas', furnasInput),
+    queryKey: MATERIALS_QUERY_KEYS.mineral('packing/furnas', {
+      ...keyBase,
+      ...(efficiencyFactor !== null ? { efficiencyFactor } : {}),
+    }),
     queryFn: () => packingApi.furnas(furnasInput),
-    enabled,
+    enabled: enabled && fractions.length > 0,
     ...CALC,
   });
   return { cpm, furnas };

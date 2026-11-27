@@ -10,6 +10,7 @@ import { useBlendOptimization } from '../hooks/useBlendOptimization';
 import { useMix } from '../hooks/useMix';
 import { toAppliedMassPercents } from '../mappers/applied-mass-percents.mapper';
 import { toBlendBestBy } from '../mappers/blend-best-by.mapper';
+import { toBlendMixFingerprint } from '../mappers/blend-mix-fingerprint.mapper';
 import { toBlendOptimizationInput } from '../mappers/blend-request.mapper';
 import { toBlendResultId } from '../mappers/blend-result-id.mapper';
 import { toFractionLabel } from '../mappers/fraction-label.mapper';
@@ -50,13 +51,15 @@ export function BlendOptimizerTab() {
   const current = request
     ? request.fractionIds.map((id) => state.fractions.find((fraction) => fraction.id === id)?.massPercent ?? 0)
     : [];
-  const mixChanged = request !== null && request.fractionIds.some((id) => !state.fractions.some((fraction) => fraction.id === id));
+  const mixFingerprint = toBlendMixFingerprint(completeFractions);
+  const mixChanged = request !== null && request.fingerprint !== mixFingerprint;
 
   const run = () => {
     setRequest({
       input: toBlendOptimizationInput(completeFractions, options),
       fractionIds: completeFractions.map((fraction) => fraction.id),
       labels: completeFractions.map((fraction) => toFractionLabel(fraction, components)),
+      fingerprint: mixFingerprint,
     });
     setSelectedId(null);
     setAppliedId(null);
@@ -79,7 +82,7 @@ export function BlendOptimizerTab() {
     },
     { key: 'rank', label: '#', align: 'left' },
     { key: 'method', label: 'Method', align: 'left', render: (result) => MIX_OPTION_LABELS.psdMethod[result.method as PsdMethod] ?? result.method },
-    { key: 'q', label: 'q' },
+    { key: 'q', label: BLEND.qColumnLabel },
     { key: 'packingModel', label: 'Packing', align: 'left' },
     { key: 'scenario', label: 'Scenario', align: 'left' },
     { key: 'massFractionsRoundedPercent', label: 'Mass', unit: '%', align: 'left', render: (result) => result.massFractionsRoundedPercent.join(' / ') },
@@ -123,7 +126,12 @@ export function BlendOptimizerTab() {
 
       {request && results.length > 0 && (
         <Stack spacing={2}>
-          {mixChanged && <Alert severity="warning">Fractions were added or removed after this run; re-run before applying.</Alert>}
+          {mixChanged && (
+            <Alert severity="warning">
+              The mix changed after this run (materials, sizes, masses or Fixed flags). Re-run before applying. Free
+              fractions are re-proportioned to the target PSD; only Fixed rows keep your mass %.
+            </Alert>
+          )}
           <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', alignItems: 'center' }}>
             <Typography variant="body2">Best by:</Typography>
             {bestBy.map((item) => (

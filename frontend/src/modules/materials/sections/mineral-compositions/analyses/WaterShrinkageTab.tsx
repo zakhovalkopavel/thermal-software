@@ -67,7 +67,13 @@ export function WaterShrinkageTab({ active }: MixTabProps) {
               min={WATER.phiMin}
               max={WATER.phiMax}
               error={phi !== null && !phiValid}
-              helperText={phiInput === null && state.phi !== null ? 'From the Packing tab' : 'Run packing first or type φ (0–1)'}
+              helperText={
+                phiInput === null && state.phi !== null
+                  ? `From ${state.packingModel ?? 'CPM'} packing (adjustable)`
+                  : phiInput !== null
+                    ? 'Manual override — clear to use packing'
+                    : 'Waiting for CPM packing, or type φ (0–1)'
+              }
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6, md: 3 }}>
@@ -75,7 +81,10 @@ export function WaterShrinkageTab({ active }: MixTabProps) {
           </Grid>
         </Grid>
         {!phiValid ? (
-          <Alert severity="info">Water demand needs a packing fraction φ: choose a result on the Packing tab or type it above.</Alert>
+          <Alert severity="info">
+            Water demand needs a packing fraction φ. CPM is applied automatically when the mix is complete; you can still
+            type an override above.
+          </Alert>
         ) : (
           <AnalysisCard
             title="Water demand"

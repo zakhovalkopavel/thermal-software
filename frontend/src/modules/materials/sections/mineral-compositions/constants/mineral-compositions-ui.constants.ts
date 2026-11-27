@@ -14,7 +14,17 @@ export const MINERAL_COMPOSITIONS_UI = {
     binderAsDelivered: 'As delivered',
     binderMissingParticleSize: 'This binder has no library particle size',
   },
-  psd: { defaultQ: 0.37, qMin: 0.2, qMax: 0.5, qStep: 0.01, debounce_ms: 300, andreasenDmin_mm: 0 },
+  psd: {
+    defaultQ: 0.37,
+    qMin: 0.2,
+    qMax: 0.5,
+    qStep: 0.01,
+    debounce_ms: 300,
+    andreasenDmin_mm: 0,
+    /** Shown next to the q slider / chip group */
+    qHelp:
+      'Distribution modulus q sets how fine vs coarse the ideal PSD is (Andreasen / Funk–Dinger). Lower q → more fines (self-flowing); higher q → coarser (needs vibration). Typical: 0.21–0.25 self-compacting, 0.27–0.30 flowable/vibratable, 0.33–0.37 hand-pressed / Fuller.',
+  },
   chemistry: {
     defaultTemperature_C: 1400,
     temperatureMin_C: 500,
@@ -50,6 +60,7 @@ export const MINERAL_COMPOSITIONS_UI = {
     defaultScenarios: ['Vibratable'],
     tableMaxHeight: 480,
     defaultWaterCementRatio: 0.35,
+    qColumnLabel: 'q (modulus)',
   },
   structureChartHeight: 320,
 } as const;

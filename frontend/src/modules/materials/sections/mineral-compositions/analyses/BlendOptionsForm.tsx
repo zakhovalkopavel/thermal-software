@@ -24,6 +24,7 @@ export function BlendOptionsForm({ value, onChange }: BlendOptionsFormProps) {
       <Grid size={{ xs: 12, md: 6 }}>
         <ChipToggleGroup
           label="Distribution modulus q"
+          helperText={MINERAL_COMPOSITIONS_UI.psd.qHelp}
           options={Q_OPTIONS}
           selected={value.qValues}
           onChange={(qValues) => onChange({ ...value, qValues: [...qValues].sort((a, b) => a - b) })}

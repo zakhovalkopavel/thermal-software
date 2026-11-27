@@ -1,6 +1,6 @@
-import type { ThermalConductivityResult } from '../../../types/thermal-conductivity-result.type';
+import type { MixThermalResult } from '../../../types/mix-thermal-result.type';
 
 export type ConductivitySweepChartProps = {
-  points: { temperature: number; porosity: number; result?: ThermalConductivityResult }[];
+  results: MixThermalResult[];
   porosity: number;
 };

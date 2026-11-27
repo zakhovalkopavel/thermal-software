@@ -26,47 +26,35 @@ Where:
 - `K` = Compaction constant (typically 9)
 - `φ_compaction` = Compaction index (0 = none, 1 = maximum)
 
-**Actual Packing (φ):**
-Accounting for size distribution and interactions:
+**Actual Packing (φ) — Stovall linear packing density:**
+
+Each size class is treated as potentially dominant; the mix packing is the
+minimum of the class packing densities:
 
 ```
-φ = Σ(y_i × β_i) / (1 + Σ(a_ij × y_j))
+γ_i = β_i / (y_i + Σ_{j≠i} ξ_ij y_j)
+φ   = min_i γ_i
 ```
 
 Where:
 - `y_i` = Volume fraction of class i
 - `β_i` = Virtual packing of class i
-- `a_ij` = Dominance factor (i over j)
+- `ξ_ij` ∈ [β_i, 1] = size interaction of class j on class i
 
-### Dominance Factors
-
-**Size Ratio Effect:**
+**Size interaction ξ_ij:**
 
 ```
-a_ij = f(d_i / d_j)
+ξ_ij = β_i + (1 − β_i) × (d_min / d_max)^n
 ```
 
-When `d_i > d_j`:
-- Small particles fit in voids of large particles
-- Dominance of large over small
+- Equal sizes → ξ = 1 (no packing gain over mono-size β)
+- Large size ratio → ξ → β_i (ideal filling)
+- Fines on coarse use a higher exponent (stronger filling)
+- Coarse on fine use a lower exponent (wall effect, less gain)
 
-**Calculation:**
-
-```typescript
-// Simplified dominance calculation
-const sizeRatio = diameters[i] / diameters[j];
-
-if (sizeRatio > 2.0) {
-  // Large dominates small - good filling
-  a_ij = 1.0 - Math.pow(sizeRatio, -1.5);
-} else if (sizeRatio < 0.5) {
-  // Small disrupts large - loosening effect  
-  a_ij = -0.5;
-} else {
-  // Similar sizes - partial interaction
-  a_ij = 0.0;
-}
-```
+Classical loosening / wall residuals `a_ij`, `b_ij` (de Larrard) are kept for
+reference; the solver uses ξ above so φ **changes with mass fractions**, not
+only with the set of diameters.
 
 ### Implementation Steps
 
@@ -96,64 +84,38 @@ for (let i = 0; i < n; i++) {
 }
 ```
 
-**Step 3: Build Dominance Matrix**
+**Step 3–4: Stovall solve (implemented in `utils/cpm-packing.ts`)**
 
 ```typescript
-const dominance: number[][] = [];
+let phi = Infinity;
 for (let i = 0; i < n; i++) {
-  dominance[i] = [];
+  let denominator = volumeFractions[i];
   for (let j = 0; j < n; j++) {
-    if (i === j) {
-      dominance[i][j] = 0;
-    } else {
-      dominance[i][j] = calculateDominance(
-        diameters[i],
-        diameters[j]
-      );
-    }
+    if (i === j) continue;
+    denominator += sizeInteraction(diameters[i], diameters[j], virtualPacking[i])
+      * volumeFractions[j];
   }
+  phi = Math.min(phi, virtualPacking[i] / denominator);
 }
-```
-
-**Step 4: Solve for Packing Fraction**
-
-```typescript
-// Iterative solution (simplified)
-let phi = 0;
-for (let i = 0; i < n; i++) {
-  const numerator = volumeFractions[i] * virtualPacking[i];
-  
-  let denominator = 1.0;
-  for (let j = 0; j < n; j++) {
-    if (i !== j) {
-      denominator += dominance[i][j] * volumeFractions[j];
-    }
-  }
-  
-  phi += numerator / denominator;
-}
+// Practical ceiling from calibration (default DENSE_CASTABLE = 0.76)
+phi = Math.min(phi, maxPhi);
 ```
 
 ### Compaction Index
 
-Maps physical compaction to CPM parameter:
+Maps physical compaction to the small index `c` used in β = β₀ / (1 − K·c).
+The raw pressure ratio is scaled (`CPM_COMPACTION_SCALE ≈ 0.1`) so typical
+pressures raise β gradually instead of driving it to 1:
 
 ```typescript
-const calculateCompactionIndex = (pressure_MPa: number): number => {
-  // Empirical correlation
-  if (pressure_MPa < 0.01) return 0.0;      // No compaction
-  if (pressure_MPa < 0.1)  return 0.02;     // Slight
-  if (pressure_MPa < 0.5)  return 0.05;     // Moderate
-  if (pressure_MPa < 2.0)  return 0.10;     // High
-  return 0.15;  // Very high
-};
+const raw = pressure_MPa / (pressure_MPa + PRESSURE_REF_MPA); // 0…1
+const c = raw * CPM_COMPACTION_SCALE; // ≲ 0.1
 ```
 
-**Scenario Mapping:**
-- Self-compacting: 0.01 MPa → φ_c = 0.01
-- Flowable: 0.05 MPa → φ_c = 0.02
-- Vibratable: 0.2 MPa → φ_c = 0.05
-- Hand-pressed: 1.0 MPa → φ_c = 0.10
+**Scenario Mapping (illustrative):**
+- Self-compacting / none: 0 MPa → c = 0 → β = β₀
+- Vibratable (~0.2–5 MPa): modest β increase
+- High pressure: c approaches the scale cap; β → 1 only at extreme compaction
 
 ### Expected Results
 

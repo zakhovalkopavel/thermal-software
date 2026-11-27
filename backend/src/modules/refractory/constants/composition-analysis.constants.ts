@@ -90,4 +90,18 @@ export const COMPOSITION_ANALYSIS_CONSTANTS = {
   /** Default φ_max when no clear pattern detected */
   DEFAULT_MAX_PHI: 0.76,
   DEFAULT_CONFIDENCE: 0.75,
+
+  /**
+   * Virtual-packing β₀ bonus when micro-fillers fill aggregate voids
+   * (Studart 2006; Wong & Kwan 2008). Added on top of the resolved β₀ model
+   * unless the caller set an explicit `beta0` override.
+   */
+  MICRO_FILLER_BETA_BONUS: {
+    HIGH: 0.12,
+    SIGNIFICANT: 0.08,
+    SOME: 0.04,
+  } as const,
+
+  /** Cap on β₀ after micro-filler bonus (below dense random sphere packing) */
+  MICRO_FILLER_BETA_CAP: 0.70,
 } as const;

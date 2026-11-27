@@ -7,4 +7,7 @@ export type SizeFractionSelectProps = {
   /** `range` is `null` for the custom option. */
   onChange: (key: string, range: ParticleSizeRange | null) => void;
   disabled?: boolean;
+  required?: boolean;
+  error?: boolean;
+  helperText?: string;
 };

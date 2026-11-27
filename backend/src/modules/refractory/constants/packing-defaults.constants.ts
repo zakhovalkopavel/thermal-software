@@ -14,6 +14,18 @@ export const PACKING_DEFAULTS = {
    */
   CPM_COMPACTION_SCALE: 0.1,
 
+  /** Stovall ξ filling exponent (fines → void fill as size ratio grows) */
+  CPM_FILLING_EXPONENT: 2.0,
+
+  /** Stovall ξ wall exponent (coarse inclusions keep ξ nearer 1) */
+  CPM_WALL_EXPONENT: 0.4,
+
+  /** de Larrard loosening power for classical a_ij */
+  CPM_LOOSENING_POWER: 1.02,
+
+  /** de Larrard wall power for classical b_ij */
+  CPM_WALL_POWER: 1.5,
+
   /** Furnas void filling efficiency */
   FURNAS_EFFICIENCY: 0.75,
 

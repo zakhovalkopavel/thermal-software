@@ -94,8 +94,13 @@ describe('BlendOptimizerService - Live Demo', () => {
 
     expect(results1).toHaveLength(3);
     expect(results1[0].rank).toBe(1);
-    expect(results1[0].massFractionsRoundedPercent[0]).toBe(15); // Fondu fixed at 15%
-    expect(results1[0].massFractionsRoundedPercent[1]).toBe(15); // Alumina fixed at 15%
+    // Fixed fractions stay at 0.15 (rounded % may drift ±1 when percents are forced to sum 100)
+    expect(results1[0].massFractions[0]).toBeCloseTo(0.15, 5);
+    expect(results1[0].massFractions[1]).toBeCloseTo(0.15, 5);
+    expect(results1[0].massFractionsRoundedPercent[0]).toBeGreaterThanOrEqual(14);
+    expect(results1[0].massFractionsRoundedPercent[0]).toBeLessThanOrEqual(16);
+    expect(results1[0].massFractionsRoundedPercent[1]).toBeGreaterThanOrEqual(14);
+    expect(results1[0].massFractionsRoundedPercent[1]).toBeLessThanOrEqual(16);
   });
 
   it('should demonstrate minimum water optimization with constraints', () => {

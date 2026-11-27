@@ -56,6 +56,10 @@ Quality determined by **size ratio spread** and **mass distribution uniformity**
 
 ### Three Priority Levels for φ_max Selection
 
+**Micro-filler β₀ bonus** (always applied unless `beta0` is set explicitly):
+particles &lt; 0.1 mm raise virtual packing so dense / high-performance mixes can
+reach φ ≈ 0.76–0.82 instead of stalling near 0.72–0.74 with angular β₀ alone.
+
 1. **Custom Override** (explicit `maxPhi` value) — Highest priority
    - Use your validated/lab-proven limit
    
@@ -72,7 +76,7 @@ Quality determined by **size ratio spread** and **mass distribution uniformity**
    - LEGACY_CONSERVATIVE (0.85) — backward compatibility
    
 4. **Default** (no options specified)
-   - Uses DENSE_CASTABLE (0.76)
+   - Uses composition-recommended φ_max (same as auto-detect)
 
 ### Usage Examples
 
