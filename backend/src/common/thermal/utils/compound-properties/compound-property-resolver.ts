@@ -3,8 +3,13 @@ import { EquationValue } from '../../types/equation-value.type';
 import { EvaluationResult } from '../../types/evaluation-result.type';
 import { EquationValidity } from '../equation-validity';
 import { compoundNasaThermo, evaluateNasaThermo } from '../nasa';
+import type { NasaThermoProperty } from '../nasa';
 import { heatCapacityEntries } from './heat-capacity-entries.util';
+import { SolidThermoFromCp } from './solid-thermo-from-cp';
 import { PreferredApprox } from './types/preferred-approx.type';
+
+const NO_THERMO_MESSAGE =
+  'No NASA data, and no ΔHf°298 + S°298 + Cp for the Cp-integral path.';
 
 /** True when the equation publishes a finite range that covers T. */
 function coversTemperature(entry: EquationValue, T: number): boolean {
@@ -102,90 +107,42 @@ export class CompoundPropertyResolver {
 
   /**
    * Formation-referenced molar enthalpy H [J/mol] at temperature T [K].
-   * NASA-9, else NASA-7; returns NaN without NASA data.
+   * NASA-9, else NASA-7, else ΔHf°298 + ∫Cp dT (needs `entropy298` and Cp); NaN otherwise.
    */
   enthalpy(T: number): number {
     return this.enthalpyResult(T).value;
   }
 
   enthalpyResult(T: number): EvaluationResult {
-    const nasa = compoundNasaThermo(this.compound);
-    if (!nasa) {
-      return {
-        value: NaN,
-        validity: {
-          requestedT: T,
-          effectiveT: T,
-          min: null,
-          max: null,
-          inRange: false,
-          rangeUnknown: true,
-          action: 'none',
-          message: 'No NASA thermodynamic data for this compound.',
-        },
-      };
-    }
-    return evaluateNasaThermo(nasa, 'enthalpy', T);
+    return this.thermochemistry(T, 'enthalpy');
   }
 
   // ─── Entropy ────────────────────────────────────────────────────────────────
 
   /**
    * Molar entropy S [J/(mol·K)] at temperature T [K].
-   * NASA-9, else NASA-7; returns NaN without NASA data.
+   * NASA-9, else NASA-7, else S°298 + ∫Cp/T dT (needs ΔHf°298 and Cp); NaN otherwise.
    */
   entropy(T: number): number {
     return this.entropyResult(T).value;
   }
 
   entropyResult(T: number): EvaluationResult {
-    const nasa = compoundNasaThermo(this.compound);
-    if (!nasa) {
-      return {
-        value: NaN,
-        validity: {
-          requestedT: T,
-          effectiveT: T,
-          min: null,
-          max: null,
-          inRange: false,
-          rangeUnknown: true,
-          action: 'none',
-          message: 'No NASA thermodynamic data for this compound.',
-        },
-      };
-    }
-    return evaluateNasaThermo(nasa, 'entropy', T);
+    return this.thermochemistry(T, 'entropy');
   }
 
   // ─── Gibbs energy ───────────────────────────────────────────────────────────
 
   /**
    * Molar Gibbs free energy G = H − T·S [J/mol] at temperature T [K].
-   * NASA-9, else NASA-7; returns NaN without NASA data.
+   * NASA-9, else NASA-7, else the Cp-integral path; NaN without data.
    */
   gibbsEnergy(T: number): number {
     return this.gibbsEnergyResult(T).value;
   }
 
   gibbsEnergyResult(T: number): EvaluationResult {
-    const nasa = compoundNasaThermo(this.compound);
-    if (!nasa) {
-      return {
-        value: NaN,
-        validity: {
-          requestedT: T,
-          effectiveT: T,
-          min: null,
-          max: null,
-          inRange: false,
-          rangeUnknown: true,
-          action: 'none',
-          message: 'No NASA thermodynamic data for this compound.',
-        },
-      };
-    }
-    return evaluateNasaThermo(nasa, 'gibbsEnergy', T);
+    return this.thermochemistry(T, 'gibbsEnergy');
   }
 
   // ─── Viscosity ──────────────────────────────────────────────────────────────
@@ -199,8 +156,9 @@ export class CompoundPropertyResolver {
   }
 
   viscosityResult(T: number, preferred?: PreferredApprox): EvaluationResult {
-    const entry = resolveEntry(this.compound.viscosity, preferred, T);
-    return EquationValidity.evaluateEquation(entry, T);
+    const bucket = this.compound.viscosity;
+    if (!bucket?.values.length) return CompoundPropertyResolver.unavailable(T, 'No viscosity/conductivity data');
+    return EquationValidity.evaluateEquation(resolveEntry(bucket, preferred, T), T);
   }
 
   // ─── Thermal conductivity ───────────────────────────────────────────────────
@@ -214,7 +172,47 @@ export class CompoundPropertyResolver {
   }
 
   thermalConductivityResult(T: number, preferred?: PreferredApprox): EvaluationResult {
-    const entry = resolveEntry(this.compound.thermalConductivity, preferred, T);
-    return EquationValidity.evaluateEquation(entry, T);
+    const bucket = this.compound.thermalConductivity;
+    if (!bucket?.values.length) return CompoundPropertyResolver.unavailable(T, 'No viscosity/conductivity data');
+    return EquationValidity.evaluateEquation(resolveEntry(bucket, preferred, T), T);
+  }
+
+  // ─── Internals ──────────────────────────────────────────────────────────────
+
+  /** NASA first, then the Cp-integral path (ΔHf°298 + S°298 + Cp), else NaN. */
+  private thermochemistry(T: number, property: Exclude<NasaThermoProperty, 'cp'>): EvaluationResult {
+    const nasa = compoundNasaThermo(this.compound);
+    if (nasa) return evaluateNasaThermo(nasa, property, T);
+    const cp = this.solidHeatCapacityEntry(T);
+    if (!cp) return CompoundPropertyResolver.unavailable(T, NO_THERMO_MESSAGE);
+    if (property === 'enthalpy') return SolidThermoFromCp.enthalpy(this.compound, cp, T);
+    if (property === 'entropy') return SolidThermoFromCp.entropy(this.compound, cp, T);
+    return SolidThermoFromCp.gibbs(this.compound, cp, T);
+  }
+
+  /** Cp equation for the Cp-integral path; undefined when ΔHf°298, S°298 or Cp is missing. */
+  private solidHeatCapacityEntry(T: number): EquationValue | undefined {
+    if (!SolidThermoFromCp.available(this.compound)) return undefined;
+    try {
+      return resolveEntry(heatCapacityEntries(this.compound), undefined, T);
+    } catch {
+      return undefined;
+    }
+  }
+
+  private static unavailable(T: number, message: string): EvaluationResult {
+    return {
+      value: NaN,
+      validity: {
+        requestedT: T,
+        effectiveT: T,
+        min: null,
+        max: null,
+        inRange: false,
+        rangeUnknown: true,
+        action: 'none',
+        message,
+      },
+    };
   }
 }

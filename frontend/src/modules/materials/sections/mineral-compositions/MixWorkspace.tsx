@@ -11,6 +11,7 @@ import { MIX_TABS } from './constants/mix-tabs.constants';
 import { useMix } from './hooks/useMix';
 import { BulkCompositionCard } from './mix/BulkCompositionCard';
 import { FractionTable } from './mix/FractionTable';
+import { PackingSync } from './mix/PackingSync';
 import type { MixTabKey } from './types/mix-tab-key.type';
 
 const TAB_PARAM = 'tab';
@@ -33,6 +34,7 @@ export function MixWorkspace() {
 
   return (
     <Stack spacing={2}>
+      <PackingSync />
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Stack spacing={2}>
           <Typography variant="subtitle1">Mix</Typography>
@@ -57,7 +59,8 @@ export function MixWorkspace() {
         <Box sx={{ p: 2 }}>
           {!ready && (
             <Alert severity="info">
-              Complete the mix first: every row needs a material, a size fraction, mass % &gt; 0 and a density, and the mass % must add up to 100.
+              Complete the mix first: every row needs a material, a size fraction, mass % &gt; 0 and a density. Mass % need not sum to
+              100 — the backend rescales.
             </Alert>
           )}
           {MIX_TABS.map((item) => (

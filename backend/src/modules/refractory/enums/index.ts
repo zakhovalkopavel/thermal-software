@@ -15,3 +15,8 @@ export { MaterialType } from './material-type.enum';
 export { NonOxideComponentGroup } from './non-oxide-component-group.enum';
 export { RefractoryThermalMaterial } from './refractory-thermal-material.enum';
 export { ThermalReferenceSource } from './thermal-reference-source.enum';
+export { AlgorithmMode } from './algorithm-mode.enum';
+export { LegacyVariant } from './legacy-variant.enum';
+export { PhaseEquilibriumMethod } from './phase-equilibrium-method.enum';
+export { UnreactedPhaseState } from './unreacted-phase-state.enum';
+export { PhasePartSource } from './phase-part-source.enum';

@@ -129,6 +129,10 @@ make update-submodules   # Fetch latest remote tips for vendor/*
 make sync-vendor-env     # Re-copy PAGE_OCR_* / MODAL_* into vendor envs
 make setup-secrets       # Generate and inject secure secrets
 
+# Production TLS (hosting) — see docs/nginx-ssl-workflow-and-ops.md
+make install-ssl-certs DOMAIN=example.com EMAIL=you@example.com STOP_NGINX=1 RELOAD=1
+make renew-ssl-certs STOP_NGINX=1 RELOAD=1
+
 # Start / stop
 make up                 # Start all services
 make down               # Stop all services

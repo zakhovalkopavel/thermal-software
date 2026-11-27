@@ -4,6 +4,8 @@
  * Common interfaces and types for all material data files
  */
 
+import type { MaterialMineralogy } from '../../types/material-mineralogy.type';
+
 export interface ThermalProperties {
   thermalConductivity_WmK?: number;
   specificHeat_JkgK?: number;
@@ -43,6 +45,8 @@ export interface MaterialEntry {
   chemicalShrinkage_volFrac: number;
   activationEnergy_Jmol: number;
   meltingPoint_C: number;
+  /** Typical XRD / grade crystalline phases; amorphous remainder is computed */
+  mineralogy?: MaterialMineralogy;
   sourceUrl?: string;
   supplier?: string;
   grade?: string;

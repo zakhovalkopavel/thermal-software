@@ -46,6 +46,9 @@ export function GranulometryTab({ active }: MixTabProps) {
       <Grid container spacing={2} sx={{ alignItems: 'center' }}>
         <Grid size={{ xs: 12, md: 6 }}>
           <Typography variant="body2">Distribution modulus q = {formatValue(q)}</Typography>
+          <Typography variant="caption" color="text.secondary" component="div" sx={{ mb: 0.5 }}>
+            {PSD.qHelp}
+          </Typography>
           <Slider value={q} onChange={(_, value) => setQ(value as number)} min={PSD.qMin} max={PSD.qMax} step={PSD.qStep} valueLabelDisplay="auto" />
         </Grid>
         <Grid size={{ xs: 12, md: 3 }}>

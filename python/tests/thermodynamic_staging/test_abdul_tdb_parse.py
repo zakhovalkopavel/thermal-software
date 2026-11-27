@@ -61,3 +61,45 @@ def test_parse_ca_and_evaluate_at_298() -> None:
     assert math.isfinite(value)
     assert value < -1e6
     assert data["nLiquidExcess"] > 0
+    assert isinstance(data["functions"], dict)
+    assert len(data["functions"]) == data["nFunctions"]
+    assert data["functionsIndex"] == sorted(data["functions"].keys())
+    # Liquid helper constants must be numeric expression strings, not name-only stubs.
+    assert "ALL_SIO2L_L0" in data["functions"]
+    assert abs(float(data["functions"]["ALL_SIO2L_L0"]["expression"]) - 6952.81065916526) < 1e-6
+    assert "ASL_H" in data["functions"]
+    assert float(data["functions"]["ASL_H"]["expression"]) > 0
+    assert "GSIO2L" in data["functions"]
+    assert "LN" in data["functions"]["GSIO2L"]["expression"].upper()
+    liquid = data["liquid"]
+    assert liquid["endmemberG"]
+    assert any(row["expression"] == "GSIO2L" for row in liquid["endmemberG"])
+    assert any("ALL_SIO2L_L0" in row["expression"] for row in liquid["excessL"])
+
+
+def test_sio2l0_not_swallowed_by_functions_comment() -> None:
+    snippet = """
+$ LIQUID PHASE FUNCTIONS $
+$ two-state function for liquid
+FUNCTION SIO2L0 1 (1 - EXP(-1308.6/T)); 10000 N !
+FUNCTION SIO2L1 1 (1 - EXP(-441.14/T)); 10000 N !
+"""
+    data = build_abdul_dataset(snippet)
+    assert "SIO2L0" in data["functions"]
+    assert data["functions"]["SIO2L0"]["kind"] == "einstein_factor"
+    assert abs(data["functions"]["SIO2L0"]["theta_K"] - 1308.6) < 1e-6
+
+
+def test_build_exports_liquid_function_bodies() -> None:
+    snippet = """
+FUNCTION ALL_SIO2L_L0 1 6952.81065916526; 10000 N !
+FUNCTION ALL_SIO2L_L0T 1 7.45929355884341; 10000 N !
+FUNCTION GSIO2L 1 -913715.638421418; 6000 N !
+PARAMETER G(LIQUID,SIO2L;0) 1 GSIO2L; 10000 N !
+PARAMETER L(LIQUID,ALL,SIO2L;0) 1 T * ALL_SIO2L_L0T + ALL_SIO2L_L0; 10000 N !
+"""
+    data = build_abdul_dataset(snippet)
+    assert data["functions"]["ALL_SIO2L_L0"]["expression"] == "6952.81065916526"
+    assert abs(float(data["functions"]["ALL_SIO2L_L0T"]["expression"]) - 7.45929355884341) < 1e-9
+    assert data["liquid"]["endmemberG"][0]["expression"] == "GSIO2L"
+    assert "ALL_SIO2L_L0" in data["liquid"]["excessL"][0]["expression"]

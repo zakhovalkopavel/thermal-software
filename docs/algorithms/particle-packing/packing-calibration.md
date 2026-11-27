@@ -97,7 +97,7 @@ const result4 = service.calculateCPM(inputs, {
 
 // Result includes calibration metadata
 console.log(result1.calibration);
-// → { beta0: 0.56, K: 9.0, maxPhi: 0.76, denomFloor: 0.05, compactionIndex: 0.1667 }
+// → { beta0: 0.56, K: 9.0, maxPhi: 0.76, denomFloor: 0.05, compactionIndex: ~0.017 (scaled) }
 ```
 
 ### Migration from Legacy Values

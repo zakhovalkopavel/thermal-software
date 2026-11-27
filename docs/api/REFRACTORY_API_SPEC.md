@@ -13,7 +13,7 @@ All endpoints accept and return JSON. All `POST` endpoints return `200 OK` on su
 
 | Method | Path | Service method | Description |
 |--------|------|----------------|-------------|
-| POST | `/phase-equilibrium` | `PhaseEquilibriumService.calculatePhaseEquilibrium` | Phases of a fired mix at T and after cooling, with unreacted original phases (phase diagrams + grain size) |
+| POST | `/phase-equilibrium` | `PhaseEquilibriumService.calculatePhaseEquilibrium` | Phases of a fired mix at T and after cooling (CALPHAD estimate default; optional legacy / compare; grain size) |
 | POST | `/blend-optimization` | `BlendOptimizerService.optimize` | Optimize particle blend for target PSD |
 | POST | `/psd/andreasen` | `PSDCalculatorService.andreasenDiscrete` | Andreasen discrete PSD calculation |
 | POST | `/psd/funk-dinger` | `PSDCalculatorService.funkDingerDiscrete` | Funk-Dinger discrete PSD calculation |

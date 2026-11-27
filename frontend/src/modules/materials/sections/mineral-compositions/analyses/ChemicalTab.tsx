@@ -4,17 +4,18 @@ import { CalculateButton, NumberField, ResultCard, formatValue } from '@/shared/
 import { toCelsiusGrid } from '../../../mappers/celsius-grid.mapper';
 import { ConductivitySweepChart } from '../charts/ConductivitySweepChart';
 import { LiquidFractionChart } from '../charts/LiquidFractionChart';
-import { LiquidSolidPieChart } from '../charts/LiquidSolidPieChart';
 import { MineralPhasesChart } from '../charts/MineralPhasesChart';
-import { PhaseCompositionChart } from '../charts/PhaseCompositionChart';
 import { MINERAL_COMPOSITIONS_UI } from '../constants/mineral-compositions-ui.constants';
-import { REFRACTORINESS_STANDARDS } from '../constants/refractoriness-standards.constants';
+import { ALGORITHM_MODES, LEGACY_VARIANTS } from '../constants/phase-algorithm-options.constants';
 import { useChemicalAnalyses } from '../hooks/useChemicalAnalyses';
 import { useMix } from '../hooks/useMix';
 import { useMixComposition } from '../hooks/useMixComposition';
+import { toPhaseFractions } from '../mappers/phase-fractions-request.mapper';
+import type { AlgorithmMode } from '../types/algorithm-mode.type';
 import type { ChemicalRequest } from '../types/chemical-request.type';
-import type { RefractorinessStandard } from '../types/refractoriness-standard.type';
+import type { LegacyVariant } from '../types/legacy-variant.type';
 import { AnalysisCard } from './AnalysisCard';
+import { PhaseEquilibriumSummary } from './PhaseEquilibriumSummary';
 
 const UI = MINERAL_COMPOSITIONS_UI.chemistry;
 
@@ -23,8 +24,9 @@ export function ChemicalTab() {
   const composition = useMixComposition(completeFractions);
   const [temperature, setTemperature] = useState<number | null>(UI.defaultTemperature_C);
   const [totalMass, setTotalMass] = useState<number | null>(UI.defaultTotalMass);
-  const [standard, setStandard] = useState<RefractorinessStandard>('ISO1893');
-  const [testTemperature, setTestTemperature] = useState<number | null>(UI.defaultTestTemperature_C);
+  const [holdTime, setHoldTime] = useState<number | null>(UI.defaultHoldTime_hours);
+  const [algorithmMode, setAlgorithmMode] = useState<AlgorithmMode>(UI.defaultAlgorithmMode);
+  const [legacyVariant, setLegacyVariant] = useState<LegacyVariant>(UI.defaultLegacyVariant);
   const [porosityInput, setPorosityInput] = useState<number | null>(null);
   const [sweep, setSweep] = useState<{ from: number | null; to: number | null; step: number | null }>(UI.sweep);
   const [request, setRequest] = useState<ChemicalRequest | null>(null);
@@ -32,27 +34,46 @@ export function ChemicalTab() {
   const analyses = useChemicalAnalyses(request);
 
   const porosity = porosityInput ?? state.porosity ?? UI.defaultPorosity;
-  const normalized = composition.data?.acceptedOxides_normalized;
-  const hasOxides = Boolean(normalized && Object.keys(normalized).length > 0);
+  const normalized = composition.data?.acceptedOxides_normalized ?? {};
 
   const run = () => {
-    if (!normalized || !hasOxides) return setFormError('The mix has no accepted oxide; chemical analyses are not possible.');
     if (temperature === null || temperature < UI.temperatureMin_C || temperature > UI.temperatureMax_C) {
       return setFormError(`Temperature must be ${UI.temperatureMin_C}–${UI.temperatureMax_C} °C.`);
     }
     if (totalMass === null || totalMass <= 0) return setFormError('Enter a positive total mass.');
-    if (testTemperature === null) return setFormError('Enter the refractoriness test temperature.');
+    if (completeFractions.length === 0) return setFormError('Complete at least one size fraction of the mix for the phase equilibrium.');
+    if (holdTime === null || holdTime <= UI.holdTimeMin_hours) return setFormError('Enter a positive hold time.');
+    if (porosity < 0 || porosity > UI.porosityMax) {
+      return setFormError(`Porosity must be 0–${UI.porosityMax}.`);
+    }
     try {
       const grid = toCelsiusGrid(sweep.from, sweep.to, sweep.step, UI.sweepMaxPoints);
-      setRequest({ composition: normalized, temperature, totalMass, standard, testTemperature, porosity, grid });
+      setRequest({
+        fractions: toPhaseFractions(completeFractions),
+        holdTime_hours: holdTime,
+        algorithmMode,
+        legacyVariant,
+        composition: normalized,
+        temperature,
+        totalMass,
+        porosity,
+        grid,
+      });
       setFormError(null);
     } catch (error) {
       setFormError((error as Error).message);
     }
   };
 
-  const lambdaAtT = analyses.lambda.find((item) => item.temperature === request?.temperature && item.porosity === request?.porosity);
-  const refractoriness = analyses.refractoriness.data;
+  const porousThermal = analyses.lambda.find((item) => item.porosity === request?.porosity)?.result;
+  const lambdaAtT = porousThermal?.points.find((point) => point.temperature_C === request?.temperature);
+  const lambdaResults = analyses.lambda.flatMap((item) => (item.result ? [item.result] : []));
+  const firedPhases = porousThermal
+    ? Object.entries(porousThermal.firedPhases_wt)
+        .sort(([, a], [, b]) => b - a)
+        .map(([phase, share]) => `${phase} ${formatValue(share)} %`)
+        .join(', ')
+    : null;
 
   return (
     <Stack spacing={2}>
@@ -72,25 +93,42 @@ export function ChemicalTab() {
             <NumberField label="Total mass" unit="kg" value={totalMass} onChange={setTotalMass} min={0} />
           </Grid>
           <Grid size={{ xs: 6, md: 2 }}>
-            <TextField select size="small" fullWidth label="Refractoriness standard" value={standard} onChange={(event) => setStandard(event.target.value as RefractorinessStandard)}>
-              {REFRACTORINESS_STANDARDS.map((item) => (
+            <NumberField label="Hold time" unit="h" value={holdTime} onChange={setHoldTime} min={UI.holdTimeMin_hours} />
+          </Grid>
+          <Grid size={{ xs: 6, md: 3 }}>
+            <TextField select size="small" fullWidth label="Phase algorithm" value={algorithmMode} onChange={(event) => setAlgorithmMode(event.target.value as AlgorithmMode)}>
+              {ALGORITHM_MODES.map((item) => (
                 <MenuItem key={item.value} value={item.value}>
                   {item.label}
                 </MenuItem>
               ))}
             </TextField>
           </Grid>
-          <Grid size={{ xs: 6, md: 2 }}>
-            <NumberField label="Test temperature" unit="°C" value={testTemperature} onChange={setTestTemperature} />
-          </Grid>
+          {algorithmMode !== 'calphad' && (
+            <Grid size={{ xs: 6, md: 3 }}>
+              <TextField select size="small" fullWidth label="Legacy variant" value={legacyVariant} onChange={(event) => setLegacyVariant(event.target.value as LegacyVariant)}>
+                {LEGACY_VARIANTS.map((item) => (
+                  <MenuItem key={item.value} value={item.value}>
+                    {item.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+          )}
           <Grid size={{ xs: 6, md: 2 }}>
             <NumberField
               label="Porosity P"
               value={porosity}
               onChange={setPorosityInput}
               min={0}
-              max={1}
-              helperText={porosityInput === null && state.porosity !== null ? 'From the Packing tab' : 'Volume fraction 0–1'}
+              max={UI.porosityMax}
+              helperText={
+                porosityInput === null && state.porosity !== null
+                  ? `From ${state.packingModel ?? 'CPM'} packing (adjustable)`
+                  : porosityInput !== null
+                    ? 'Manual override — clear to use packing'
+                    : `Volume fraction 0–${UI.porosityMax}`
+              }
             />
           </Grid>
         </Grid>
@@ -116,23 +154,7 @@ export function ChemicalTab() {
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, lg: 6 }}>
             <AnalysisCard title="Phase equilibrium" loading={analyses.phase.isLoading} error={analyses.phase.error} hasResult={Boolean(analyses.phase.data)}>
-              {analyses.phase.data && (
-                <Stack spacing={1}>
-                  {analyses.phase.data.warnings.map((warning) => (
-                    <Alert key={warning} severity="warning">
-                      {warning}
-                    </Alert>
-                  ))}
-                  <Typography variant="body2">
-                    Liquid {formatValue(analyses.phase.data.liquid.percent)} % ({formatValue(analyses.phase.data.liquid.mass)} kg) · solid{' '}
-                    {formatValue(analyses.phase.data.solid.percent)} % · eutectic {analyses.phase.data.metadata.eutecticTemperature} °C · liquidus ≈{' '}
-                    {analyses.phase.data.metadata.estimatedLiquidus} °C
-                  </Typography>
-                  <Typography variant="body2">Solid phases: {analyses.phase.data.solid.mineralPhases.join(', ') || '—'}</Typography>
-                  <LiquidSolidPieChart result={analyses.phase.data} />
-                  <PhaseCompositionChart result={analyses.phase.data} />
-                </Stack>
-              )}
+              {analyses.phase.data && <PhaseEquilibriumSummary result={analyses.phase.data} />}
             </AnalysisCard>
           </Grid>
           <Grid size={{ xs: 12, lg: 6 }}>
@@ -150,49 +172,36 @@ export function ChemicalTab() {
               {analyses.minerals.data && <MineralPhasesChart phases={analyses.minerals.data} />}
             </AnalysisCard>
           </Grid>
-          <Grid size={{ xs: 12, lg: 6 }}>
-            <AnalysisCard title="Refractoriness" loading={analyses.refractoriness.isLoading} error={analyses.refractoriness.error} hasResult={Boolean(refractoriness)}>
-              {refractoriness && (
-                <Grid container spacing={1}>
-                  <Grid size={6}>
-                    <ResultCard label="Estimated refractoriness" value={refractoriness.estimatedRefractoriness_C} unit="°C" hint={refractoriness.classification} />
-                  </Grid>
-                  {refractoriness.PCE && (
-                    <Grid size={6}>
-                      <ResultCard label={`PCE cone ${refractoriness.PCE.coneNumber}`} value={refractoriness.PCE.equivalentTemperature_C} unit="°C" hint={refractoriness.PCE.description} />
-                    </Grid>
-                  )}
-                  {refractoriness.RUL && (
-                    <>
-                      <Grid size={4}>
-                        <ResultCard label="RUL T0.5" value={refractoriness.RUL.T05} unit="°C" />
-                      </Grid>
-                      <Grid size={4}>
-                        <ResultCard label="RUL T1" value={refractoriness.RUL.T1} unit="°C" />
-                      </Grid>
-                      <Grid size={4}>
-                        <ResultCard label="RUL T2" value={refractoriness.RUL.T2} unit="°C" hint={`${refractoriness.RUL.testLoad_MPa} MPa load`} />
-                      </Grid>
-                    </>
-                  )}
-                </Grid>
-              )}
-            </AnalysisCard>
-          </Grid>
           <Grid size={12}>
             <AnalysisCard
               title="Effective thermal conductivity"
               loading={analyses.lambdaLoading}
-              error={lambdaAtT?.error}
-              hasResult={analyses.lambda.some((point) => point.result)}
+              error={analyses.lambda.find((item) => item.error)?.error}
+              hasResult={lambdaResults.length > 0}
             >
               <Stack spacing={1}>
-                {lambdaAtT?.result && (
+                {lambdaAtT && (
                   <Box sx={{ maxWidth: 280 }}>
-                    <ResultCard label={`λ_eff at ${request.temperature} °C, P = ${request.porosity}`} value={lambdaAtT.result.thermalConductivity_WmK} unit="W/(m·K)" />
+                    <ResultCard
+                      label={`λ_eff at ${request.temperature} °C, P = ${request.porosity}`}
+                      value={lambdaAtT.lambdaEffective_WmK}
+                      unit="W/(m·K)"
+                    />
                   </Box>
                 )}
-                <ConductivitySweepChart points={analyses.lambda} porosity={request.porosity} />
+                {porousThermal && (
+                  <Typography variant="body2" color="text.secondary">
+                    Fired phases (LOI {formatValue(porousThermal.lossOnIgnition_wt)} wt% removed): {firedPhases}. True density{' '}
+                    {formatValue(porousThermal.trueDensity_kgm3)} kg/m³, bulk density {formatValue(porousThermal.bulkDensity_kgm3)} kg/m³
+                    at P = {request.porosity}.
+                  </Typography>
+                )}
+                {porousThermal?.warnings.map((warning) => (
+                  <Alert key={warning} severity="info">
+                    {warning}
+                  </Alert>
+                ))}
+                <ConductivitySweepChart results={lambdaResults} porosity={request.porosity} />
               </Stack>
             </AnalysisCard>
           </Grid>

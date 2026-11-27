@@ -61,8 +61,10 @@
 |---------|-------|-------|-------|
 | `blend-optimizer.service.ts` | 115 | ✅ Full (`blend-optimizer.service.spec.ts` + demo) | + evaluate/expand; ranking unit spec |
 | `glass-viscosity.service.ts` | 283 | ✅ Full (206 + 88 + utils specs) | Model selection / result meta → static utils |
-| `phase-equilibrium.service.ts` | 275 | ✅ Expanded | eutectic/liquidus regimes, mineral phases, validation |
-| `packing.service.ts` | 112 | ✅ Good (83 lines) | CPMCalibration → `types/`; Furnas/fractions/resolve utils |
+| `phase-equilibrium.service.ts` | 135 | ✅ Rewritten (orchestrator) | old CAS cubic model moved to `phase-equilibrium-legacy-eutectic.service.ts` (its spec renamed `…legacy-eutectic.service.spec.ts`) |
+| Full phase equilibrium — scaffolding (input side) | — | ✅ `test/unit/refractory/utils/grain-reaction.spec.ts` | enums (`AlgorithmMode`, `LegacyVariant`, `PhaseEquilibriumMethod`, `UnreactedPhaseState`, `PhasePartSource`), `GRAIN_REACTION_CONSTANTS`, extended `PHASE_EQUILIBRIUM_CONSTANTS`, `utils/grain-reaction.ts` (`GrainReaction`), `dto/phase-equilibrium/phase-equilibrium-{fraction-,}input.dto.ts`; service and response DTOs not yet changed — [plan](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md) |
+| Full phase equilibrium — engines v1 | — | ✅ `phase-equilibrium{,-calphad,-legacy-eutectic}.service.spec.ts`, `utils/{eutectic-index,legacy-engine-adapter,calphad-gibbs-minimizer,amorphous-remainder,cas-liquid-excess}.spec.ts`, `data/mineralogy-consistency.spec.ts` | Orchestrator + Gibbs with CAS liquid excess ladder (Abdul associates → Mao P–Q → oxide RK), eutectic/Tm fallback, XRD mineralogy for all mix components, glass points + Swagger DTOs; `legacyDiagram` + refractoriness L(T)+η still open — [plan](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md) |
+| `packing.service.ts` | ~110 | ✅ Good | CPM = Stovall linear packing; micro-filler β₀ bonus + composition φ_max by default; blend optimiser no longer mis-wires scenario K; Furnas/fractions/resolve utils |
 | `refractoriness.service.ts` | 291 | ✅ Expanded | ISO/ASTM/GOST standards, duty class, component buckets |
 | `shrinkage.service.ts` | 153 | ✅ Expanded | complete + fromProfile; MSC defaults; validation |
 | `psd-calculator.service.ts` | 116 | ✅ Good (47 lines) | |
@@ -378,6 +380,7 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 - [x] **Gas-viscosity equation precision order** — Huber2019 MAPE ranks sources Perry8 → Yaws1999 → VDI2010 → White3 (`VISCOSITY_GAS_SOURCE_PRIORITY`); per-CAS `def` from `shared/sources/viscosity-gas-defaults.json` (35 compounds). Huber `raw` stores `bestEquation`, `mape_pct`, `max_abs_pct` (2 decimal %), `nCompared`. Report: `tmp/reports/python/compound-data/viscosity-equation-precision.json`. Tests: `test_viscosity_gas_priority.py`, `test_viscosity_gases.py`.
 - [x] **Transport μ uses viscosity `def`** — removed Sutherland hard-preference in `TransportService` / `CompoundFluidPropsService`; both call `CompoundPropertyResolver` so Huber-ranked defaults apply.
 - [x] **Mixture λ HE / Chung1988** — `TransportService.thermalConductivityMixResult` switches on Chung \(y=V_{c,m}/(6V)\): Hirschfelder–Eucken Form A (Mason–Saxena) for \(y<0.01\), Chung 1988 for \(y\ge 0.01\). Critical/dipole scalars on `CompoundValue`; molar volume \(V\) from `GasDensity` (not ideal gas); algorithm doc `docs/algorithms/thermodynamics/MIXTURE_THERMAL_CONDUCTIVITY.md`; RefKey `Chung1988`.
+- [x] **Solid-phase thermo (Engine C)** — `CompoundValueBuilder.forSolid` (+ `CompoundSolidData`), optional `viscosity` / `thermalConductivity`, `entropy298` on `CompoundValue`; `CompoundPropertyResolver` H/S/G fall back from NASA to the Cp-integral path (`SolidThermoFromCp`, `SOLID_THERMO` constants). Test: `backend/test/unit/common/thermal/compound-properties/solid-compound-gibbs.spec.ts` (written; run in Docker). Doc: `docs/services/COMMON_THERMAL_LIBRARY.md`.
 - [x] **Helmholtz density (CoolProp)** — vendored `shared/sources/coolprop/` fluids + binary pairs + departure functions; compound-data `coolprop` keys (CAS attach via `coolprop_links`); `coolpropKey` on `CompoundValue` from `coolprop[0]`; density stack under `modules/thermodynamics/utils/density/` (`HelmholtzDensity`, `GasDensity`, …); wired into fluid/compound/mixture density paths. Algorithm: `docs/algorithms/thermodynamics/HELMHOLTZ_DENSITY.md`.
 - [x] **NIST IR 8209 residual + critical λ** — under `utils/conductivity/` (`CoolpropTransportData` / `CoolpropConductivity` / `CoolpropOlchowySengers`); dilute + residual + `simplified_Olchowy_Sengers` critical; pure \(\lambda=\lambda^0+\lambda^r+\lambda^{\mathrm{crit}}\) in `TransportService` / `CompoundFluidPropsService` with \(\rho\) from `GasDensity`. CoolProp `expression` residual / hardcoded critical deferred. Mixture λ remains HE/Chung (`utils/conductivity/`). Viscosity mixer: `utils/viscosity/WilkeViscosity`. RefKey `NISTIR8209`. Algorithm: `docs/algorithms/thermodynamics/NISTIR_8209_THERMAL_CONDUCTIVITY.md`.
 - [x] **Transport utils layout** — algorithm realisations split by property: `utils/density/`, `utils/conductivity/`, `utils/viscosity/`, plus shared `utils/chapman-enskog/` (Neufeld Ω, LJ combining).
@@ -430,8 +433,18 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 - [x] OCR policy locked: [`OCR_POLICY.md`](../scripts/OCR_POLICY.md) — pdftotext/Tesseract = fast understanding (+ Tesseract for deep segmentation); Surya/`page-ocr` = final dataset OCR (linked from CONVENTIONS / AGENTS / staging specs)
 - [x] Malan Table 3 from page-ocr → staging (quasichemical Δg Fe³⁺–Ti⁴⁺ + hematite/rutile/FPB SS); Yazhenskikh 07/08/09 OCR inventories → `partial` staging; RefKeys `Yazhenskikh2007`…`2009`
 - [x] Abdul CCR Modal OCR complete (16 pp) + `abdul_ccr_parse.py` → tmp cross-check only (`phases.cross-check.json` under tmp); processed keeps sole `abdul-2023/` thesis TDB
-- [ ] Drop remaining Mao Papers I–V into `mao-papers/` if needed; wire liquid model into phase-equilibrium
+- [ ] Drop remaining Mao Papers I–V into `mao-papers/` if needed
 - [x] Minerals-thermodynamic → compound-data is part of `make compound-data-build` (no separate overlay target; `NO_MINERALS=1` to skip)
+- [x] Phase-equilibrium **plan** updated: CALPHAD-estimate default on compound-data + eutectics + molten salts + glass; incomplete ionic liquid → documented fallbacks; digitized diagrams deferred; legacy eutectic/diagram kept for `compare` — [`FULL_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/FULL_PHASE_EQUILIBRIUM.md), legacy detail [`LEGACY_DIAGRAM_PHASE_EQUILIBRIUM.md`](../algorithms/phase-equilibrium/LEGACY_DIAGRAM_PHASE_EQUILIBRIUM.md)
+- [x] Engine C v1 (CALPHAD estimate rungs 3–5) + `legacyEutectic` extracted; `POST /refractory/phase-equilibrium` takes `PhaseEquilibriumInputDto` (`algorithmMode` calphad/legacy/compare)
+- [x] Abdul liquid `functions` map exported into `shared/processed/minerals-thermodynamic/abdul-2023/phases.json` (parser fix for `$ … FUNCTIONS` comments / `SIO2L0`); backend `AbdulExpression` + `AbdulLiquid` + CAS probe on Engine C (`calphad_partial_excess` when evaluable); frontend Chemical tab fractions + mode/compare
+- [x] Engine C Gibbs minimisation: `CalphadGibbsMinimizer` (`nelderMead` + mass-balance penalty), `CALPHAD_CANDIDATE_SOLIDS` / liquid NASA end-members, `CompoundLiquidValue`, Mao `oxideG` probe (`MaoLiquid`); amounts from Gibbs when G data allow, else eutectic/Tm lever
+- [x] CAS liquid excess ladder in Gibbs: Abdul associate speciation → Mao ionic P–Q → oxide Redlich–Kister (`CasLiquidExcess` / `AbdulAssociateSpeciation` / `MaoIonicSpeciation`)
+- [x] Library XRD `mineralogy` for all mix components (`MATERIAL_MINERALOGY` + inline overrides, `PHASE_CATALOG`, `AmorphousRemainder`; consistency test)
+- [x] Glass points wired through `MeltPropertyBundle` / response parts; Chemical tab shows unreacted-core and quenched-matrix glass points
+- [x] Swagger response DTOs: `PhaseEquilibriumResultDto` (+ nested block/part/crystal/unreacted/matrix/metadata)
+- [x] Chemical tab: refractoriness card / `/refractoriness` call removed (old oxide-effect + RUL scaling unreliable vs liquid % at T); use phase-equilibrium liquid sweep + η until L\*/viscosity cone estimate is wired
+- [ ] Enable `legacyDiagram` after diagram validation; refractoriness from CALPHAD L(T)+η (see `REFRACTORINESS_ALGORITHM.md`)
 
 ### Source-extractor migration (November 2026)
 
@@ -449,6 +462,10 @@ Plan: [`CONVENTIONS_REFACTORING_PLAN.md`](CONVENTIONS_REFACTORING_PLAN.md).
 - [ ] Delete host `phase_diagrams/cli` handlers and local diagram-review after cutover
 
 Plan: [`docs/plans/SOURCE_EXTRACTOR_MIGRATION.md`](../plans/SOURCE_EXTRACTOR_MIGRATION.md).
+
+### Ops / Nginx SSL (November 2026)
+
+- [x] `scripts/install-ssl-certs.sh` — issue / install / renew Let's Encrypt (Docker certbot) into `docker/nginx/ssl/{cert,key}.pem`; make targets `install-ssl-certs` / `renew-ssl-certs`; docs [`nginx-ssl-workflow-and-ops.md`](../nginx-ssl-workflow-and-ops.md)
 
 ---
 

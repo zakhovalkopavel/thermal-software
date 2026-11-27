@@ -1,16 +1,21 @@
 import { useQueries, useQuery } from '@tanstack/react-query';
-import { thermalConductivityApi } from '../../../api/thermal-conductivity.api';
+import { mixThermalApi } from '../../../api/mix-thermal.api';
 import { MATERIALS_QUERY_KEYS } from '../../../constants/materials-query-keys.constants';
 import { chemistryApi } from '../api/chemistry.api';
 import { MINERAL_COMPOSITIONS_UI } from '../constants/mineral-compositions-ui.constants';
+import { toMixFractions } from '../mappers/mix-fractions-request.mapper';
+import { toPhaseEquilibriumInput } from '../mappers/phase-equilibrium-request.mapper';
 import type { ChemicalRequest } from '../types/chemical-request.type';
 
 const CALC = { staleTime: Infinity, retry: false } as const;
 
+const uniqueSorted = (values: number[]) => [...new Set(values)].sort((a, b) => a - b);
+
 export function useChemicalAnalyses(request: ChemicalRequest | null) {
   const enabled = Boolean(request);
   const composition = request?.composition ?? {};
-  const phaseInput = { composition, temperature: request?.temperature ?? 0, totalMass: request?.totalMass ?? 0 };
+  const hasOxides = Object.keys(composition).length > 0;
+  const phaseInput = toPhaseEquilibriumInput(request, request?.temperature ?? 0);
   const phase = useQuery({
     queryKey: MATERIALS_QUERY_KEYS.mineral('phase-equilibrium', phaseInput),
     queryFn: () => chemistryApi.phaseEquilibrium(phaseInput),
@@ -22,26 +27,14 @@ export function useChemicalAnalyses(request: ChemicalRequest | null) {
   const minerals = useQuery({
     queryKey: MATERIALS_QUERY_KEYS.mineral('mineral-phases', mineralInput),
     queryFn: () => chemistryApi.mineralPhases(mineralInput),
-    enabled,
-    ...CALC,
-  });
-
-  const refractorinessInput = {
-    composition,
-    standard: request?.standard ?? 'ISO1893',
-    testTemperature: request?.testTemperature ?? 0,
-  } as const;
-  const refractoriness = useQuery({
-    queryKey: MATERIALS_QUERY_KEYS.mineral('refractoriness', refractorinessInput),
-    queryFn: () => chemistryApi.refractoriness(refractorinessInput),
-    enabled,
+    enabled: enabled && hasOxides,
     ...CALC,
   });
 
   const grid = request?.grid ?? [];
   const phaseSweep = useQueries({
     queries: grid.map((temperature) => {
-      const input = { composition, temperature, totalMass: request?.totalMass ?? 0 };
+      const input = toPhaseEquilibriumInput(request, temperature);
       return {
         queryKey: MATERIALS_QUERY_KEYS.mineral('phase-equilibrium', input),
         queryFn: () => chemistryApi.phaseEquilibrium(input),
@@ -51,26 +44,33 @@ export function useChemicalAnalyses(request: ChemicalRequest | null) {
     }),
   });
 
-  const porosities = request ? [request.porosity, MINERAL_COMPOSITIONS_UI.chemistry.densePorosity] : [];
-  const lambdaCalls = porosities.flatMap((porosity) =>
-    [request?.temperature ?? 0, ...grid].map((temperature) => ({ composition, temperature, porosity })),
-  );
+  const mixFractions = request ? toMixFractions(request.fractions) : [];
+  const temperatures_C = request ? uniqueSorted([request.temperature, ...request.grid]) : [];
+  const porosities = request
+    ? uniqueSorted([request.porosity, MINERAL_COMPOSITIONS_UI.chemistry.densePorosity])
+    : [];
   const lambda = useQueries({
-    queries: lambdaCalls.map((input) => ({
-      queryKey: MATERIALS_QUERY_KEYS.thermalConductivity(input),
-      queryFn: () => thermalConductivityApi.calculate(input),
-      enabled,
-      ...CALC,
-    })),
+    queries: porosities.map((porosity) => {
+      const input = { fractions: mixFractions, temperatures_C, porosity };
+      return {
+        queryKey: MATERIALS_QUERY_KEYS.mixThermal(input),
+        queryFn: () => mixThermalApi.calculate(input),
+        enabled,
+        ...CALC,
+      };
+    }),
   });
 
   return {
     phase,
     minerals,
-    refractoriness,
     phaseSweep: grid.map((temperature, index) => ({ temperature, result: phaseSweep[index]?.data, error: phaseSweep[index]?.error })),
     phaseSweepLoading: phaseSweep.some((query) => query.isLoading),
-    lambda: lambdaCalls.map((input, index) => ({ ...input, result: lambda[index]?.data, error: lambda[index]?.error })),
+    lambda: porosities.map((porosity, index) => ({
+      porosity,
+      result: lambda[index]?.data,
+      error: lambda[index]?.error,
+    })),
     lambdaLoading: lambda.some((query) => query.isLoading),
   };
 }

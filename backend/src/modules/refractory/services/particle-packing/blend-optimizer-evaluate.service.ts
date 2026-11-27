@@ -48,12 +48,17 @@ export class BlendOptimizerEvaluateService {
     const diameters = fractions.map(f => (f.dMin_mm + f.dMax_mm) / 2);
 
     const packingResult = packingModel === 'CPM'
-      ? this.packingService.calculateCPM({
-          massFractions: psdResult.massFractions,
-          densities_kgm3: densities,
-          diameters_mm: diameters,
-          compactionPressure_MPa: BlendOptimizerScenarios.compactionPressure(scenario),
-        }, { K: BlendOptimizerScenarios.compactionIndex(scenario) })
+      ? this.packingService.calculateCPM(
+          {
+            massFractions: psdResult.massFractions,
+            densities_kgm3: densities,
+            diameters_mm: diameters,
+            compactionPressure_MPa: BlendOptimizerScenarios.compactionPressure(scenario),
+          },
+          // Composition-aware φ_max / β (micro-fillers). Scenario K is the CPM
+          // process index (4.1–6), not the β₀ formula coefficient — do not pass it as K.
+          { autoDetectMaxPhi: true },
+        )
       : this.packingService.calculateFurnas({
           massFractions: psdResult.massFractions,
           densities_kgm3: densities,

@@ -17,7 +17,11 @@ export class CpmCalibrationResolve {
     return BETA0_VALUES[model];
   }
 
-  /** Priority: custom override > auto-detection > model selection > default. */
+  /**
+   * Priority: custom override > explicit model > auto-detect / composition default.
+   * With no calibration, uses composition-recommended φ_max so micro-filler mixes
+   * are not capped at dense-castable 0.76 when the analyzer allows 0.80–0.82.
+   */
   static resolveMaxPhi(
     calibration: CPMCalibration | undefined,
     diameters_mm: number[],
@@ -26,16 +30,25 @@ export class CpmCalibrationResolve {
     if (calibration?.maxPhi !== undefined) {
       return calibration.maxPhi;
     }
-    if (calibration?.autoDetectMaxPhi === true) {
-      const analysis = CompositionAnalyzer.analyzeComposition(diameters_mm, volumeFractions);
-      return analysis.recommendedMaxPhi;
+    if (calibration?.maxPhiModel !== undefined && calibration?.autoDetectMaxPhi !== true) {
+      return MAX_PHI_VALUES[calibration.maxPhiModel];
     }
-    const model = calibration?.maxPhiModel ?? PACKING_DEFAULTS.DEFAULT_MAX_PHI_MODEL;
-    return MAX_PHI_VALUES[model];
+    if (calibration?.autoDetectMaxPhi === false) {
+      const model = calibration?.maxPhiModel ?? PACKING_DEFAULTS.DEFAULT_MAX_PHI_MODEL;
+      return MAX_PHI_VALUES[model];
+    }
+    const analysis = CompositionAnalyzer.analyzeComposition(diameters_mm, volumeFractions);
+    return analysis.recommendedMaxPhi;
   }
 
+  /**
+   * Maps compaction pressure to a small index c used in β = β₀ / (1 − K·c).
+   * Raw p/(p+pRef) is scaled so typical pressures raise β modestly (not to 1).
+   */
   static compactionIndex(pressure_MPa: number): number {
+    if (pressure_MPa <= 0) return 0;
     const pRef = PACKING_DEFAULTS.PRESSURE_REF_MPA;
-    return Math.min(0.99, pressure_MPa / (pressure_MPa + pRef));
+    const raw = pressure_MPa / (pressure_MPa + pRef);
+    return Math.min(0.99, raw * PACKING_DEFAULTS.CPM_COMPACTION_SCALE);
   }
 }

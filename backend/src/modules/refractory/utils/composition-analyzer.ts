@@ -64,6 +64,19 @@ export class CompositionAnalyzer {
   }
 
   /**
+   * Extra virtual packing from micro-fillers (void filling / lubrication).
+   * Applied by {@link PackingService} unless `beta0` is overridden explicitly.
+   */
+  static microFillerBetaBonus(microFillerPercent: number): number {
+    const thresholds = COMPOSITION_ANALYSIS_CONSTANTS.MICRO_FILLER_THRESHOLDS;
+    const bonus = COMPOSITION_ANALYSIS_CONSTANTS.MICRO_FILLER_BETA_BONUS;
+    if (microFillerPercent > thresholds.HIGH.percent) return bonus.HIGH;
+    if (microFillerPercent > thresholds.SIGNIFICANT.percent) return bonus.SIGNIFICANT;
+    if (microFillerPercent > thresholds.SOME.percent) return bonus.SOME;
+    return 0;
+  }
+
+  /**
    * Detect micro-filler content (particles < threshold mm)
    */
   private static detectMicroFillers(diameters_mm: number[], massFractions: number[]) {

@@ -220,7 +220,7 @@ export class TransportService {
     Cp_J_molK: number,
   ): EvaluationResult {
     const compound = GAS_REGISTRY[species];
-    if (compound.thermalConductivity.values.length > 0) {
+    if (compound.thermalConductivity?.values.length > 0) {
       return new CompoundPropertyResolver(compound).thermalConductivityResult(T_K);
     }
     const key = compound.coolpropKey;

@@ -9,15 +9,15 @@ const Y_AXES: ChartAxis[] = [{ title: 'Liquid', unit: '%', min: 0, max: 100 }];
 export function LiquidFractionChart({ points }: LiquidFractionChartProps) {
   const { series, plotLines } = useMemo(() => {
     const valid = points.filter((point) => point.result);
-    const metadata = valid[0]?.result?.metadata;
-    const lines: PlotLine[] = metadata
+    const matrix = valid[0]?.result?.matrix;
+    const lines: PlotLine[] = matrix
       ? [
-          { value: metadata.eutecticTemperature, label: `Eutectic ${metadata.eutecticTemperature} °C` },
-          { value: metadata.estimatedLiquidus, label: `Liquidus ≈ ${metadata.estimatedLiquidus} °C` },
+          { value: matrix.solidus_C, label: `Solidus ${matrix.solidus_C} °C` },
+          { value: matrix.liquidus_C, label: `Liquidus ${matrix.liquidus_C} °C` },
         ]
       : [];
     const data: XYSeries[] = [
-      { name: 'Liquid fraction', data: valid.map((point) => [point.temperature, point.result?.liquid.percent ?? 0] as [number, number]) },
+      { name: 'Liquid fraction', data: valid.map((point) => [point.temperature, point.result?.atTemperature.liquid.percent ?? 0] as [number, number]) },
     ];
     return { series: data, plotLines: lines };
   }, [points]);

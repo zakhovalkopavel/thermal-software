@@ -25,6 +25,35 @@ describe('PackingService', () => {
     expect(res.calibration.maxPhi).toBe(0.76); // DENSE_CASTABLE default
   });
 
+  it('calculateCPM - packing fraction changes when mass fractions change', () => {
+    const densities_kgm3 = [3550, 3200];
+    const diameters_mm = [4.5, 0.5];
+    const coarseHeavy = service.calculateCPM({ massFractions: [0.7, 0.3], densities_kgm3, diameters_mm });
+    const fineHeavy = service.calculateCPM({ massFractions: [0.3, 0.7], densities_kgm3, diameters_mm });
+    expect(coarseHeavy.packingFraction_phi).not.toBe(fineHeavy.packingFraction_phi);
+    expect(coarseHeavy.packingFraction_phi).toBeGreaterThan(0.56);
+  });
+
+  it('calculateCPM - micro-fillers raise packing above the no-filler plateau', () => {
+    const densities_kgm3 = [2200, 3200, 2700, 2700, 2700];
+    const withMicro = service.calculateCPM({
+      massFractions: [0.12, 0.15, 0.2, 0.25, 0.28],
+      densities_kgm3,
+      diameters_mm: [0.02, 0.08, 0.2, 0.8, 3.0],
+    });
+    const withoutMicro = service.calculateCPM({
+      massFractions: [0.2, 0.25, 0.25, 0.3],
+      densities_kgm3: densities_kgm3.slice(1),
+      diameters_mm: [0.15, 0.4, 0.8, 3.0],
+    });
+    expect(withMicro.composition.hasMicroFillers).toBe(true);
+    expect(withMicro.composition.recommendedMaxPhi).toBeGreaterThanOrEqual(0.78);
+    expect(withMicro.calibration.maxPhi).toBeGreaterThanOrEqual(0.78);
+    expect(withMicro.calibration.beta0).toBeGreaterThan(0.56);
+    expect(withMicro.packingFraction_phi).toBeGreaterThan(withoutMicro.packingFraction_phi);
+    expect(withMicro.packingFraction_phi).toBeGreaterThanOrEqual(0.76);
+  });
+
   it('calculateCPM - spherical model returns higher beta0', () => {
     const inputs = {
       massFractions: [0.5, 0.5],

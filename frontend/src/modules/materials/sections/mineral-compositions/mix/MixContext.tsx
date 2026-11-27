@@ -1,7 +1,6 @@
 import { useMemo, useReducer } from 'react';
 import type { ReactNode } from 'react';
 import { useMixComponents } from '../../../hooks/useMixComponents';
-import { MINERAL_COMPOSITIONS_UI } from '../constants/mineral-compositions-ui.constants';
 import { isFractionComplete } from '../mappers/is-fraction-complete.mapper';
 import { toNewMixFraction } from '../mappers/new-mix-fraction.mapper';
 import type { MixContextValue } from '../types/mix-context-value.type';
@@ -9,7 +8,12 @@ import type { MixState } from '../types/mix-state.type';
 import { MixContext } from './mix-context';
 import { mixReducer } from './mix.reducer';
 
-const createInitialState = (): MixState => ({ fractions: [toNewMixFraction()], phi: null, porosity: null });
+const createInitialState = (): MixState => ({
+  fractions: [toNewMixFraction()],
+  phi: null,
+  porosity: null,
+  packingModel: null,
+});
 
 export function MixProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(mixReducer, undefined, createInitialState);
@@ -21,10 +25,8 @@ export function MixProvider({ children }: { children: ReactNode }) {
     );
     const completeFractions = state.fractions.filter(isFractionComplete);
     const massPercentSum = state.fractions.reduce((total, fraction) => total + (fraction.massPercent ?? 0), 0);
-    const ready =
-      state.fractions.length > 0 &&
-      completeFractions.length === state.fractions.length &&
-      Math.abs(massPercentSum - MINERAL_COMPOSITIONS_UI.massPercentTotal) <= MINERAL_COMPOSITIONS_UI.massPercentTolerance;
+    /** Every row complete with mass % > 0; Σ = 100 is optional — the backend rescales. */
+    const ready = state.fractions.length > 0 && completeFractions.length === state.fractions.length && massPercentSum > 0;
     return { state, dispatch, components, completeFractions, ready, massPercentSum };
   }, [state, mixComponents.data]);
 

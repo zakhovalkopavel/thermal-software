@@ -1,9 +1,17 @@
-import type { OxideComposition } from '../../../types/oxide-composition.type';
+import type { AlgorithmMode } from './algorithm-mode.type';
+import type { LegacyVariant } from './legacy-variant.type';
+import type { PhaseEquilibriumFractionInput } from './phase-equilibrium-fraction-input.type';
 
 export type PhaseEquilibriumInput = {
-  composition: OxideComposition;
+  fractions: PhaseEquilibriumFractionInput[];
   /** °C, 500–2000 */
   temperature: number;
-  /** Required by the backend validation despite being documented as optional. */
-  totalMass: number;
+  /** h; the backend default is 2 */
+  holdTime_hours?: number;
+  /** kg */
+  totalMass?: number;
+  /** Backend default: `calphad` */
+  algorithmMode?: AlgorithmMode;
+  /** Only meaningful for `legacy` / `compare` */
+  legacyVariant?: LegacyVariant;
 };

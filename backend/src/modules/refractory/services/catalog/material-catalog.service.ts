@@ -9,6 +9,7 @@ import { MaterialListQueryDto } from '../../dto/material-catalog/material-list-q
 import { MaterialEntryDto } from '../../dto/material-catalog/material-entry.dto';
 import { MaterialGroupSummaryDto } from '../../dto/material-catalog/material-group-summary.dto';
 import { MaterialCategoryDto } from '../../dto/material-catalog/material-category.dto';
+import { AmorphousRemainder } from '../../utils/amorphous-remainder';
 
 /**
  * MaterialCatalogService
@@ -78,10 +79,15 @@ export class MaterialCatalogService {
 
   private toDto(entry: MaterialEntry): MaterialEntryDto {
     const { isActive: _isActive, ...fields } = entry;
-    return {
+    const dto: MaterialEntryDto = {
       ...fields,
       type: fields.type as MaterialType,
       materialGroup: fields.materialGroup as MaterialGroup[],
     };
+    if (fields.mineralogy) {
+      const { amorphous_wt } = AmorphousRemainder.of(fields.composition, fields.mineralogy);
+      dto.mineralogy = { ...fields.mineralogy, amorphous_wt };
+    }
+    return dto;
   }
 }

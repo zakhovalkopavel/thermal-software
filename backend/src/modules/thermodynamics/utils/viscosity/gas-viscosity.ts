@@ -34,7 +34,7 @@ export class GasViscosity {
    * Used for Wilke mixing and as Chung-λ η⁰ input.
    */
   static diluteResult(compound: CompoundValue, T_K: number): EvaluationResult {
-    if (compound.viscosity.values.length > 0) {
+    if (compound.viscosity?.values.length > 0) {
       const fromData = new CompoundPropertyResolver(compound).viscosityResult(T_K);
       // Unbounded / mis-ranked correlations can go non-physical at extreme T;
       // Chapman–Enskog is the dilute fallback when μ ≤ 0 or non-finite.

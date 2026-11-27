@@ -1,5 +1,5 @@
 # Setup and secrets
-.PHONY: setup setup-secrets generate-jwt check-env init-submodules update-submodules sync-vendor-env
+.PHONY: setup setup-secrets generate-jwt check-env init-submodules update-submodules sync-vendor-env install-ssl-certs renew-ssl-certs
 
 setup: ## Init submodules, create .env, sync vendor envs
 	@echo "🔧 Setting up Thermal Software project..."
@@ -97,3 +97,20 @@ generate-jwt: ## Print freshly-generated secrets to stdout (for copy/paste)
 	@echo "  2. Edit .env: vim .env"
 	@echo "  3. Paste the new values"
 	@echo "  4. Restart services: make restart"
+
+# TLS for production Nginx (writes docker/nginx/ssl/{cert,key}.pem — gitignored).
+# Docs: docs/nginx-ssl-workflow-and-ops.md
+install-ssl-certs: ## DOMAIN=example.com EMAIL=you@ex.com [STAGING=1] [RELOAD=1] [STOP_NGINX=1] Issue/install Let's Encrypt certs
+	@test -n "$(DOMAIN)" || (echo "Usage: make install-ssl-certs DOMAIN=example.com EMAIL=you@example.com [STOP_NGINX=1] [RELOAD=1] [STAGING=1]"; exit 1)
+	@test -n "$(EMAIL)" || (echo "EMAIL is required for first issuance (Let's Encrypt registration)"; exit 1)
+	@chmod +x scripts/install-ssl-certs.sh
+	@./scripts/install-ssl-certs.sh issue --domain "$(DOMAIN)" --email "$(EMAIL)" \
+		$(if $(filter 1 true TRUE yes YES,$(STAGING)),--staging,) \
+		$(if $(filter 1 true TRUE yes YES,$(RELOAD)),--reload,) \
+		$(if $(filter 1 true TRUE yes YES,$(STOP_NGINX)),--stop-nginx,)
+
+renew-ssl-certs: ## [RELOAD=1] [STOP_NGINX=1] Renew Let's Encrypt certs and refresh docker/nginx/ssl
+	@chmod +x scripts/install-ssl-certs.sh
+	@./scripts/install-ssl-certs.sh renew \
+		$(if $(filter 1 true TRUE yes YES,$(RELOAD)),--reload,) \
+		$(if $(filter 1 true TRUE yes YES,$(STOP_NGINX)),--stop-nginx,)

@@ -58,8 +58,8 @@ def _strip_noise(text: str) -> str:
     for line in text.splitlines():
         if _PAGE_NOISE.match(line):
             continue
-        # Drop comment-only fragments that are just `$----`
-        if re.match(r"^\s*\$", line) and "FUNCTION" not in line.upper():
+        # Thermo-Calc comments start with `$` (including "$ LIQUID PHASE FUNCTIONS").
+        if re.match(r"^\s*\$", line):
             continue
         lines.append(line)
     return "\n".join(lines)
@@ -342,12 +342,19 @@ def build_abdul_dataset(tdb_text: str) -> dict[str, Any]:
                 }
             )
 
+    # Calculable FUNCTION bodies (liquid helpers + Einstein factors). Drop redundant
+    # "name" field already present as the dict key.
+    functions_out = {
+        name: {k: v for k, v in entry.items() if k != "name"}
+        for name, entry in functions.items()
+    }
+
     return {
         "source": "Abdul2023",
         "convention": "SER",
         "ref": "Abdul2023",
         "formalism": "3rd-generation CALPHAD (Einstein oscillators) + associate liquid",
-        "nFunctions": len(functions),
+        "nFunctions": len(functions_out),
         "nPhases": len(phases),
         "nLiquidExcess": len(parse_liquid_excess(tdb_text)),
         "phases": phases,
@@ -355,10 +362,12 @@ def build_abdul_dataset(tdb_text: str) -> dict[str, Any]:
             "endmemberG": liquid_g,
             "excessL": parse_liquid_excess(tdb_text),
         },
-        "functionsIndex": sorted(functions.keys()),
+        "functions": functions_out,
+        "functionsIndex": sorted(functions_out.keys()),
         "note": (
             "G coefficients are for SER Gibbs energy vs T; do not mix with HSC (Holland–Powell) "
-            "without reference-state alignment. Full TDB text remains under tmp/reports."
+            "without reference-state alignment. `functions` holds every TDB FUNCTION body needed "
+            "to evaluate liquid.endmemberG / excessL expressions. Raw TDB text stays under tmp/reports."
         ),
     }
 

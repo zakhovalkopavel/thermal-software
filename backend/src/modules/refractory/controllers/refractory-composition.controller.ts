@@ -4,8 +4,8 @@ import { PhaseEquilibriumService } from '../services/composition/phase-equilibri
 import { RefractorinessService } from '../services/composition/refractoriness.service';
 import { GlassViscosityService } from '../services/composition/glass-viscosity.service';
 import { MineralPhaseService } from '../services/composition/mineral-phase.service';
-import { PhaseCalculationDto } from '../dto/phase-equilibrium/phase-calculation.dto';
-import { PhaseCalculationResponseDto } from '../dto/phase-equilibrium/phase-calculation-response.dto';
+import { PhaseEquilibriumInputDto } from '../dto/phase-equilibrium/phase-equilibrium-input.dto';
+import { PhaseEquilibriumResultDto } from '../dto/phase-equilibrium/phase-equilibrium-result.dto';
 import { MineralPhaseDto } from '../dto/mineral-phases/mineral-phase.dto';
 import { RefractorinessDto } from '../dto/refractoriness/refractoriness.dto';
 import { GlassViscosityDto } from '../dto/glass-viscosity/glass-viscosity.dto';
@@ -36,17 +36,23 @@ export class RefractoryCompositionController {
   @Post('phase-equilibrium')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Calculate phase equilibrium',
-    description: 'Calculates liquid-solid phase distribution at temperature based on oxide composition (lever rule + eutectic data).',
+    summary: 'Calculate phase equilibrium of a mix',
+    description:
+      'Phases of a mix of library raw materials fired at `temperature` for `holdTime_hours`: ' +
+      'equilibrium of the matrix (reacted grain shells) plus the unreacted grain cores.\n\n' +
+      '`algorithmMode`: `calphad` (default; eutectic-anchored / melting-point estimate), `legacy` ' +
+      '(`legacyVariant` `eutectic`; `diagram` is rejected until diagram data are validated) or ' +
+      '`compare` (CALPHAD + legacy side by side in `metadata.comparison`).',
   })
-  @ApiResponse({ status: 200, description: 'Phase equilibrium result', type: PhaseCalculationResponseDto })
-  @ApiResponse({ status: 400, description: 'Invalid input' })
-  calculatePhaseEquilibrium(@Body() dto: PhaseCalculationDto) {
-    return this.phaseEquilibriumService.calculatePhaseEquilibrium({
-      composition: toOxideCompositionRecord(dto.composition),
-      temperature: dto.temperature,
-      totalMass: dto.totalMass,
-    });
+  @ApiResponse({
+    status: 200,
+    description: 'Phases at temperature and after cooling, unreacted phases, matrix, metadata, warnings',
+    type: PhaseEquilibriumResultDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input, material not a mix component, or legacy diagram unavailable' })
+  @ApiResponse({ status: 404, description: 'Unknown material id' })
+  calculatePhaseEquilibrium(@Body() dto: PhaseEquilibriumInputDto) {
+    return this.phaseEquilibriumService.calculate(dto);
   }
 
   @Post('mineral-phases')

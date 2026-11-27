@@ -1,5 +1,6 @@
 import { CompoundValue } from '../../types/compound-value.type';
 import { EquationValue } from '../../types/equation-value.type';
+import { CompoundSolidData } from './compound-solid-data';
 import { CompoundText } from './compound-text';
 import { GasCompoundQuery } from './types/gas-compound-query.type';
 import { CompoundDataIndexEntry } from './types/dataset/compound-data-index-entry.type';
@@ -127,6 +128,47 @@ export class CompoundValueBuilder {
       ...(heatCapacity ? { heatCapacity } : {}),
       viscosity,
       thermalConductivity,
+    };
+  }
+
+  /**
+   * Build a solid-phase `CompoundValue` from a public `compoundId` (or CAS).
+   * Uses solid-phase ΔHf°298, S°298, ΔGf°298, solid Cp and condensed NASA keys (liquid / gas keys
+   * are skipped). Gas transport is not required — `viscosity` / `thermalConductivity` stay absent.
+   */
+  static forSolid(id: string): CompoundValue {
+    const resolved = CompoundValueBuilder.resolveMeta(id);
+    if (!resolved) throw new Error(`Unknown compound id: ${id}`);
+    const { meta } = resolved;
+    const doc = CompoundData.loadFile(meta.file);
+    const record = doc.entries[meta.entry];
+    if (!record) throw new Error(`Compound data file ${meta.file} has no entry "${meta.entry}"`);
+    if (record.Mr === undefined) throw new Error(`Compound data record ${resolved.id} has no molar mass`);
+
+    const properties = record.properties ?? {};
+    const enthalpy = CompoundSolidData.solidPhase(properties.enthalpyFormation298);
+    const entropy = CompoundSolidData.solidPhase(properties.entropy298);
+    const gibbs = CompoundSolidData.solidPhase(properties.gibbsEnergy298);
+    const heatCapacity = CompoundValueBuilder.equationBucket(
+      record.equations?.heatCapacity?.solid,
+      `${resolved.id} solid heat capacity`,
+    );
+    const { nasa7Key, nasa9Key } = CompoundSolidData.nasaKeys(meta);
+    if (!heatCapacity && !nasa7Key && !nasa9Key && (enthalpy === undefined || entropy === undefined)) {
+      throw new Error(`Compound data has no solid heat capacity, NASA keys or ΔHf298 + S298 for ${resolved.id}`);
+    }
+
+    const rawName = record.name ?? meta.name ?? doc.displayFormula;
+    return {
+      name: rawName.charAt(0).toUpperCase() + rawName.slice(1),
+      chemicalFormula: doc.displayFormula,
+      Mr: record.Mr,
+      ...(enthalpy !== undefined ? { enthalpyFormation298: enthalpy } : {}),
+      ...(entropy !== undefined ? { entropy298: entropy } : {}),
+      ...(gibbs !== undefined ? { gibbsEnergy298: gibbs } : {}),
+      ...(nasa7Key ? { nasa7Key } : {}),
+      ...(nasa9Key ? { nasa9Key } : {}),
+      ...(heatCapacity ? { heatCapacity } : {}),
     };
   }
 
