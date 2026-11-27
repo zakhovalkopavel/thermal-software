@@ -4,20 +4,20 @@
 test-backend: ## Run backend tests inside the backend container
 	@echo "🧪 Running backend tests inside Docker Compose (service: backend)"
 	@# If backend container is running use exec, otherwise run a one-off container
-	@if [ -n "$(shell docker-compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
-		docker-compose -f compose.yml exec -T backend sh -lc 'cd /app && npm test --silent'; \
+	@if [ -n "$(shell docker compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
+		docker compose -f compose.yml exec -T backend sh -lc 'cd /app && npm test --silent'; \
 	else \
-		docker-compose -f compose.yml run --rm backend sh -lc 'cd /app && npm test --silent'; \
+		docker compose -f compose.yml run --rm backend sh -lc 'cd /app && npm test --silent'; \
 	fi
 
 FRONTEND_VERIFY_SCRIPT = $(if $(OFFLINE),verify:offline,verify)
 
 test-frontend: ## Run the full frontend quality gate: typecheck, lint, tests, build, duplication, contract (OFFLINE=1 skips contract)
 	@echo "🧪 Running frontend quality gate inside Docker Compose (service: frontend, script: $(FRONTEND_VERIFY_SCRIPT))"
-	@if [ -n "$(shell docker-compose -f compose.yml ps -q frontend 2>/dev/null)" ]; then \
-		docker-compose -f compose.yml exec -T frontend sh -lc 'cd /app && npm run -s $(FRONTEND_VERIFY_SCRIPT)'; \
+	@if [ -n "$(shell docker compose -f compose.yml ps -q frontend 2>/dev/null)" ]; then \
+		docker compose -f compose.yml exec -T frontend sh -lc 'cd /app && npm run -s $(FRONTEND_VERIFY_SCRIPT)'; \
 	else \
-		docker-compose -f compose.yml run --rm frontend sh -lc 'cd /app && npm run -s $(FRONTEND_VERIFY_SCRIPT)'; \
+		docker compose -f compose.yml run --rm frontend sh -lc 'cd /app && npm run -s $(FRONTEND_VERIFY_SCRIPT)'; \
 	fi
 
 # Generic service test runner: make test-service SERVICE=<service>
@@ -27,19 +27,19 @@ test-service: ## Run tests in a specific service (SERVICE=<name>)
 		exit 1; \
 	fi
 	@echo "🧪 Running tests in service: $(SERVICE)"
-	@if [ -n "$(shell docker-compose -f compose.yml ps -q $(SERVICE) 2>/dev/null)" ]; then \
-		docker-compose -f compose.yml exec -T $(SERVICE) sh -lc 'cd /app && npm test --silent'; \
+	@if [ -n "$(shell docker compose -f compose.yml ps -q $(SERVICE) 2>/dev/null)" ]; then \
+		docker compose -f compose.yml exec -T $(SERVICE) sh -lc 'cd /app && npm test --silent'; \
 	else \
-		docker-compose -f compose.yml run --rm $(SERVICE) sh -lc 'cd /app && npm test --silent'; \
+		docker compose -f compose.yml run --rm $(SERVICE) sh -lc 'cd /app && npm test --silent'; \
 	fi
 
 # Blend Optimizer Demo Tests (with clean output)
 test-blend-demo: ## Run blend optimizer demo tests (filtered output)
 	@echo "🎯 Running blend optimizer demo tests..."
-	@if [ -n "$$(docker-compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
-		docker-compose -f compose.yml exec -T backend sh -c "npm test -- blend-optimizer-demo.spec.ts --verbose=false 2>&1 | grep -v -E '(console\\.log$$|at Object\\.<anonymous>|at Array\\.forEach|at TestScheduler|^\\s+at test/)' | sed '/^$$/N;/^\\n$$/D'"; \
+	@if [ -n "$$(docker compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
+		docker compose -f compose.yml exec -T backend sh -c "npm test -- blend-optimizer-demo.spec.ts --verbose=false 2>&1 | grep -v -E '(console\\.log$$|at Object\\.<anonymous>|at Array\\.forEach|at TestScheduler|^\\s+at test/)' | sed '/^$$/N;/^\\n$$/D'"; \
 	else \
-		docker-compose -f compose.yml run --rm backend sh -c "npm test -- blend-optimizer-demo.spec.ts --verbose=false 2>&1 | grep -v -E '(console\\.log$$|at Object\\.<anonymous>|at Array\\.forEach|at TestScheduler|^\\s+at test/)' | sed '/^$$/N;/^\\n$$/D'"; \
+		docker compose -f compose.yml run --rm backend sh -c "npm test -- blend-optimizer-demo.spec.ts --verbose=false 2>&1 | grep -v -E '(console\\.log$$|at Object\\.<anonymous>|at Array\\.forEach|at TestScheduler|^\\s+at test/)' | sed '/^$$/N;/^\\n$$/D'"; \
 	fi
 
 

@@ -35,7 +35,7 @@ COMPOUND_DATA_TESTS := /app/tests/chemical_formula/ /app/tests/chemicals_tables/
 
 compound-data-build: ## Step 1: build compound JSON from chemicals + Yaws1999, then overlay minerals-thermodynamic [NO_MINERALS=1]
 	@echo "🧪 Building compound data (Yaws1999 + minerals-thermodynamic overlay)..."
-	@docker-compose run --rm python python src/scripts/build_compound_data.py \
+	@docker compose run --rm python python src/scripts/build_compound_data.py \
 		--out-dir $(COMPOUND_DATA_OUT) \
 		--yaws1999-dir $(YAWS1999_PROCESSED) \
 		$(if $(NO_MINERALS),--no-minerals-staging)
@@ -44,13 +44,13 @@ compound-data-build: ## Step 1: build compound JSON from chemicals + Yaws1999, t
 compound-data-pubchem: ## Step 2: look up in PubChem the CAS numbers step 1 could not identify and search the records without a CAS by formula (slow, resumable); PUBCHEM_ARGS="--class inorganic unclassified" / "--all-cas --class organic"
 	@[ -f $(COMPOUND_DATA_MISSING_CAS) ] || $(MAKE) compound-data-build
 	@echo "🧪 Fetching PubChem data $(PUBCHEM_ARGS) (stored queries are skipped; a PubChem block stops the run)..."
-	@docker-compose run --rm python python src/scripts/fetch_pubchem_identifiers.py $(PUBCHEM_ARGS)
+	@docker compose run --rm python python src/scripts/fetch_pubchem_identifiers.py $(PUBCHEM_ARGS)
 	@echo "✅ Done → shared/sources/compound-data/pubchem/pubchem-{inorganic,organic,unclassified}.jsonl"
 
 pubchem-search: ## Search PubChem on demand (formula, name or CAS) and keep the answers: Q="CaAl2O4" / Q="'Ca3SiO5' '12042-68-1'" / QUERY_FILE=shared/sources/pubchem-queries.txt; PUBCHEM_ARGS="--refresh"
 	@[ -n "$(Q)$(QUERY_FILE)" ] || { echo "Usage: make pubchem-search Q=\"CaAl2O4\" | QUERY_FILE=shared/sources/pubchem-queries.txt [PUBCHEM_ARGS=\"--by name --refresh\"]"; exit 1; }
-	@docker-compose run --rm python python src/scripts/pubchem_search.py $(Q) $(if $(QUERY_FILE),--query-file $(QUERY_FILE)) $(PUBCHEM_ARGS)
+	@docker compose run --rm python python src/scripts/pubchem_search.py $(Q) $(if $(QUERY_FILE),--query-file $(QUERY_FILE)) $(PUBCHEM_ARGS)
 
 compound-data-test: ## Run chemical_formula, chemicals_tables, pubchem, dataset_layout and compound_data unit tests (in python container)
 	@echo "🧪 Running compound data tests..."
-	@docker-compose run --rm python python -m pytest $(COMPOUND_DATA_TESTS) -v
+	@docker compose run --rm python python -m pytest $(COMPOUND_DATA_TESTS) -v

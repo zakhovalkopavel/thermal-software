@@ -65,7 +65,7 @@ Details: [../SHARED_LIBRARIES_SUBMODULES.md](../SHARED_LIBRARIES_SUBMODULES.md).
 ## What `make up` does
 
 1. Checks `.env` exists
-2. Runs `docker-compose up -d` (postgres, redis, backend, frontend, nginx, python)
+2. Runs `docker compose up -d` (postgres, redis, backend, frontend, nginx, python)
 3. Syncs `node_modules` from containers to host (so your IDE has type definitions)
 4. Tails logs
 

@@ -78,6 +78,6 @@ pd-validate: ## Validate the phase-diagram dataset (exit 1 on errors) [SYSTEM=k2
 
 pd-test: ## Run phase-diagram extraction tests (in python container)
 	@echo "🧪 Running phase-diagram extraction tests..."
-	@docker-compose run --rm python python -m pytest /app/tests/phase_diagrams/ -v
+	@docker compose run --rm python python -m pytest /app/tests/phase_diagrams/ -v
 	@echo ""
 	@echo "✅ Phase-diagram tests completed."

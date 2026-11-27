@@ -5,7 +5,7 @@
 #            the table in docs/REFERENCES.md
 # Generator: scripts/generate_references.py (standard library only)
 
-REFERENCES_RUN := docker-compose run --rm --no-deps --user "$$(id -u):$$(id -g)" -v "$(CURDIR):/repo" -w /repo python \
+REFERENCES_RUN := docker compose run --rm --no-deps --user "$$(id -u):$$(id -g)" -v "$(CURDIR):/repo" -w /repo python \
 	python scripts/generate_references.py --root /repo
 
 .PHONY: references-generate references-check

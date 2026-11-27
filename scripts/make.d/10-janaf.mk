@@ -12,9 +12,9 @@ JANAF_OUT := shared/processed/JANAF
 
 janaf-parse: ## Parse NIST-JANAF tables → shared/processed/JANAF/ (one file per compound; run compound-data-build first)
 	@echo "🔬 Parsing NIST-JANAF tables..."
-	@docker-compose run --rm python python src/scripts/parse_janaf.py --out-dir $(JANAF_OUT)
+	@docker compose run --rm python python src/scripts/parse_janaf.py --out-dir $(JANAF_OUT)
 	@echo "✅ Done → $(JANAF_OUT)/"
 
 janaf-test: ## Run JANAF parser and dataset layout unit tests (in python container)
 	@echo "🧪 Running JANAF parser tests..."
-	@docker-compose run --rm python python -m pytest /app/tests/janaf/ /app/tests/dataset_layout/ -v
+	@docker compose run --rm python python -m pytest /app/tests/janaf/ /app/tests/dataset_layout/ -v

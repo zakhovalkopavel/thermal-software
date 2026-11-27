@@ -3,10 +3,10 @@
 
 check-types: ## Check TypeScript types (backend)
 	@echo "🔍 Checking TypeScript compilation (backend)..."
-	@if [ -n "$(shell docker-compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
-		docker-compose -f compose.yml exec -T backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error" | head -50'; \
+	@if [ -n "$(shell docker compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
+		docker compose -f compose.yml exec -T backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error" | head -50'; \
 	else \
-		docker-compose -f compose.yml run --rm backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error" | head -50'; \
+		docker compose -f compose.yml run --rm backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error" | head -50'; \
 	fi
 
 check-types-pattern: ## Check TypeScript types matching PATTERN
@@ -23,16 +23,16 @@ check-types-pattern: ## Check TypeScript types matching PATTERN
 		exit 1; \
 	fi
 	@echo "🔍 Checking TypeScript compilation - Pattern: $(PATTERN)..."
-	@if [ -n "$(shell docker-compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
-		docker-compose -f compose.yml exec -T backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error\|$(PATTERN)" | head -50'; \
+	@if [ -n "$(shell docker compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
+		docker compose -f compose.yml exec -T backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error\|$(PATTERN)" | head -50'; \
 	else \
-		docker-compose -f compose.yml run --rm backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error\|$(PATTERN)" | head -50'; \
+		docker compose -f compose.yml run --rm backend sh -lc 'cd /app && npx tsc --noEmit 2>&1 | grep -i "error\|$(PATTERN)" | head -50'; \
 	fi
 
 check-types-verbose: ## Check TypeScript types (verbose - all errors)
 	@echo "🔍 Checking TypeScript compilation (verbose - all errors)..."
-	@if [ -n "$(shell docker-compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
-		docker-compose -f compose.yml exec -T backend sh -lc 'cd /app && npx tsc --noEmit'; \
+	@if [ -n "$(shell docker compose -f compose.yml ps -q backend 2>/dev/null)" ]; then \
+		docker compose -f compose.yml exec -T backend sh -lc 'cd /app && npx tsc --noEmit'; \
 	else \
-		docker-compose -f compose.yml run --rm backend sh -lc 'cd /app && npx tsc --noEmit'; \
+		docker compose -f compose.yml run --rm backend sh -lc 'cd /app && npx tsc --noEmit'; \
 	fi
