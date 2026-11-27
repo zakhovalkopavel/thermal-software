@@ -19,7 +19,7 @@
 ❌ NOT required on host:
 - Node.js / npm
 - NestJS CLI
-- Python
+- Python (`make sync-vendor-env` is pure bash; app Python runs only in Docker)
 
 ```bash
 # Verify:

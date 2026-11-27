@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Fill each vendor submodule .env from the main project .env.
 # Keys come from each vendor's .env.example; values from the host .env when set.
+#
+# Pure bash — no host Python. Docker-first setup must work before images exist
+# (see docs/migration/DOCKER_FIRST_SETUP.md).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -11,6 +14,60 @@ if [[ ! -f "$HOST_ENV" ]]; then
   exit 1
 fi
 
+# Look up KEY in an env file; prints value (may be empty) and returns 0 if key exists.
+env_get() {
+  local file="$1" key="$2" line
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    case "$line" in
+      ''|\#*) continue ;;
+    esac
+    if [[ "$line" == "$key="* ]]; then
+      printf '%s' "${line#*=}"
+      return 0
+    fi
+  done < "$file"
+  return 1
+}
+
+sync_one() {
+  local example="$1" dest="$2" host="$3"
+  local tmp wrote=0 line stripped key host_val
+
+  tmp="$(mktemp)"
+  {
+    echo "# Generated from host ${host} (keys from $(basename "$example")). Do not commit."
+    echo ""
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      stripped="${line#"${line%%[![:space:]]*}"}"
+      if [[ -z "$stripped" || "$stripped" == \#* || "$stripped" != *=* ]]; then
+        printf '%s\n' "$line"
+        continue
+      fi
+      key="${stripped%%=*}"
+      key="${key%"${key##*[![:space:]]}"}"
+      if host_val="$(env_get "$host" "$key")"; then
+        printf '%s=%s\n' "$key" "$host_val"
+        wrote=$((wrote + 1))
+      else
+        printf '%s\n' "$line"
+      fi
+    done < "$example"
+  } > "$tmp"
+
+  # page-ocr: accept Modal tokens from host even if absent from .env.example
+  for key in MODAL_TOKEN_ID MODAL_TOKEN_SECRET; do
+    if host_val="$(env_get "$host" "$key")"; then
+      if ! grep -q "^${key}=" "$tmp"; then
+        printf '%s=%s\n' "$key" "$host_val" >> "$tmp"
+        wrote=$((wrote + 1))
+      fi
+    fi
+  done
+
+  mv "$tmp" "$dest"
+  echo "synced ${wrote} env value(s) from ${host} → ${dest}"
+}
+
 synced=0
 shopt -s nullglob
 for example in "$ROOT"/vendor/*/.env.example; do
@@ -18,53 +75,7 @@ for example in "$ROOT"/vendor/*/.env.example; do
   name="$(basename "$vendor_dir")"
   dest="$vendor_dir/.env"
 
-  if [[ -f "$vendor_dir/src/page_ocr/install.py" ]]; then
-    PAGE_OCR_HOST_ENV="$HOST_ENV" PYTHONPATH="$vendor_dir/src${PYTHONPATH:+:$PYTHONPATH}" \
-      python3 - "$HOST_ENV" "$example" "$dest" <<'PY'
-from pathlib import Path
-import sys
-from page_ocr.install import sync_dotenv_from_host
-
-host, example, dest = map(Path, sys.argv[1:4])
-sync_dotenv_from_host(host_env=host, dest=dest, template=example)
-PY
-  else
-    python3 - "$HOST_ENV" "$example" "$dest" <<'PY'
-import sys
-from pathlib import Path
-
-host, example, dest = map(Path, sys.argv[1:4])
-
-def parse(path: Path) -> dict[str, str]:
-    out: dict[str, str] = {}
-    for raw in path.read_text(encoding="utf-8").splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        key, _, value = line.partition("=")
-        key = key.strip()
-        if key:
-            out[key] = value.strip().strip("'").strip('"')
-    return out
-
-host_values = parse(host)
-lines = [f"# Generated from host {host} (keys from {example.name}). Do not commit.", ""]
-wrote = 0
-for raw in example.read_text(encoding="utf-8").splitlines():
-    stripped = raw.strip()
-    if not stripped or stripped.startswith("#") or "=" not in stripped:
-        lines.append(raw)
-        continue
-    key = stripped.split("=", 1)[0].strip()
-    if key in host_values:
-        lines.append(f"{key}={host_values[key]}")
-        wrote += 1
-    else:
-        lines.append(raw)
-dest.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
-print(f"synced {wrote} env value(s) from {host} → {dest}")
-PY
-  fi
+  sync_one "$example" "$dest" "$HOST_ENV"
   echo "  vendor/$name/.env ready"
   synced=$((synced + 1))
 done
