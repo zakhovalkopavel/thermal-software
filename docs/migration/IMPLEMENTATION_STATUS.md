@@ -468,6 +468,7 @@ Plan: [`docs/plans/SOURCE_EXTRACTOR_MIGRATION.md`](../plans/SOURCE_EXTRACTOR_MIG
 - [x] `scripts/install-ssl-certs.sh` — issue / install / renew Let's Encrypt (Docker certbot) into `docker/nginx/ssl/{cert,key}.pem`; make targets `install-ssl-certs` / `renew-ssl-certs`; docs [`nginx-ssl-workflow-and-ops.md`](../nginx-ssl-workflow-and-ops.md)
 - [x] `scripts/sync-vendor-env.sh` — pure bash (no host Python) so `make setup` matches Docker-first policy
 - [x] Make targets use Compose V2 plugin (`docker compose`) — no standalone `docker-compose` binary
+- [x] Unblocked tracking of `phase-equilibrium-{calphad,legacy-eutectic,legacy-diagram}.service.ts` (local `.git/info/exclude` had a bad `services/` rule that hid them from commits)
 
 ---
 
