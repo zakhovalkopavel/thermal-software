@@ -91,7 +91,7 @@ Track implementation against [README.md](README.md). Tick an item only when it w
 - [x] Backend: `POST /refractory/mix/composition` + tests + docs (Step 9 §2.3–2.5)
 - [x] Mix table: material × size fraction × mass % × density; picker = mix components from E9 only
 - [x] Mix composition: fired basis, loss on ignition, accepted oxides (wt% / mol%), other oxides, non-oxide groups, true density
-- [x] Chemical: phase equilibrium, mineral phases, refractoriness, λ_eff (phase equilibrium returns 500 at several temperatures — backend bug awaiting approval)
+- [x] Chemical: CALPHAD phase equilibrium, liquid fraction vs T, λ_eff (mineral-phases / legacy algorithm UI hidden; backend leftovers deferred)
 - [x] Granulometry: Andreasen, Funk–Dinger, participation (Andreasen sent with `Dmin_mm = 0`; with Dmin > 0 the backend returns the Funk–Dinger result)
 - [x] Packing: CPM, Furnas → φ, porosity
 - [x] Water demand, range, shrinkage

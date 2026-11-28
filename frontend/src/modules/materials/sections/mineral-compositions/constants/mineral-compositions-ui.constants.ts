@@ -32,8 +32,6 @@ export const MINERAL_COMPOSITIONS_UI = {
     defaultTotalMass: 100,
     defaultHoldTime_hours: 2,
     holdTimeMin_hours: 0,
-    defaultAlgorithmMode: 'calphad',
-    defaultLegacyVariant: 'eutectic',
     defaultPorosity: 0.2,
     /** Upper bound of `POST /mix/thermal` Maxwell–Eucken porosity. */
     porosityMax: 0.95,

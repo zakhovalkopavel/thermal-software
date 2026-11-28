@@ -11,23 +11,14 @@ const CALC = { staleTime: Infinity, retry: false } as const;
 
 const uniqueSorted = (values: number[]) => [...new Set(values)].sort((a, b) => a - b);
 
+/** Phase equilibrium (CALPHAD), liquid-fraction sweep, and λ_eff from one chemical request. */
 export function useChemicalAnalyses(request: ChemicalRequest | null) {
   const enabled = Boolean(request);
-  const composition = request?.composition ?? {};
-  const hasOxides = Object.keys(composition).length > 0;
   const phaseInput = toPhaseEquilibriumInput(request, request?.temperature ?? 0);
   const phase = useQuery({
     queryKey: MATERIALS_QUERY_KEYS.mineral('phase-equilibrium', phaseInput),
     queryFn: () => chemistryApi.phaseEquilibrium(phaseInput),
     enabled,
-    ...CALC,
-  });
-
-  const mineralInput = { composition, temperature: request?.temperature };
-  const minerals = useQuery({
-    queryKey: MATERIALS_QUERY_KEYS.mineral('mineral-phases', mineralInput),
-    queryFn: () => chemistryApi.mineralPhases(mineralInput),
-    enabled: enabled && hasOxides,
     ...CALC,
   });
 
@@ -63,7 +54,6 @@ export function useChemicalAnalyses(request: ChemicalRequest | null) {
 
   return {
     phase,
-    minerals,
     phaseSweep: grid.map((temperature, index) => ({ temperature, result: phaseSweep[index]?.data, error: phaseSweep[index]?.error })),
     phaseSweepLoading: phaseSweep.some((query) => query.isLoading),
     lambda: porosities.map((porosity, index) => ({

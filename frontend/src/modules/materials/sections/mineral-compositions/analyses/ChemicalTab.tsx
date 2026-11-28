@@ -1,32 +1,25 @@
 import { useState } from 'react';
-import { Alert, Box, Grid, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Box, Grid, Stack, Typography } from '@mui/material';
 import { CalculateButton, NumberField, ResultCard, formatValue } from '@/shared/ui/calc';
 import { toCelsiusGrid } from '../../../mappers/celsius-grid.mapper';
 import { ConductivitySweepChart } from '../charts/ConductivitySweepChart';
 import { LiquidFractionChart } from '../charts/LiquidFractionChart';
-import { MineralPhasesChart } from '../charts/MineralPhasesChart';
 import { MINERAL_COMPOSITIONS_UI } from '../constants/mineral-compositions-ui.constants';
-import { ALGORITHM_MODES, LEGACY_VARIANTS } from '../constants/phase-algorithm-options.constants';
 import { useChemicalAnalyses } from '../hooks/useChemicalAnalyses';
 import { useMix } from '../hooks/useMix';
-import { useMixComposition } from '../hooks/useMixComposition';
 import { toPhaseFractions } from '../mappers/phase-fractions-request.mapper';
-import type { AlgorithmMode } from '../types/algorithm-mode.type';
 import type { ChemicalRequest } from '../types/chemical-request.type';
-import type { LegacyVariant } from '../types/legacy-variant.type';
 import { AnalysisCard } from './AnalysisCard';
 import { PhaseEquilibriumSummary } from './PhaseEquilibriumSummary';
 
 const UI = MINERAL_COMPOSITIONS_UI.chemistry;
 
+/** Chemical analyses: CALPHAD phase equilibrium, liquid fraction vs T, λ_eff. */
 export function ChemicalTab() {
   const { completeFractions, state } = useMix();
-  const composition = useMixComposition(completeFractions);
   const [temperature, setTemperature] = useState<number | null>(UI.defaultTemperature_C);
   const [totalMass, setTotalMass] = useState<number | null>(UI.defaultTotalMass);
   const [holdTime, setHoldTime] = useState<number | null>(UI.defaultHoldTime_hours);
-  const [algorithmMode, setAlgorithmMode] = useState<AlgorithmMode>(UI.defaultAlgorithmMode);
-  const [legacyVariant, setLegacyVariant] = useState<LegacyVariant>(UI.defaultLegacyVariant);
   const [porosityInput, setPorosityInput] = useState<number | null>(null);
   const [sweep, setSweep] = useState<{ from: number | null; to: number | null; step: number | null }>(UI.sweep);
   const [request, setRequest] = useState<ChemicalRequest | null>(null);
@@ -34,7 +27,6 @@ export function ChemicalTab() {
   const analyses = useChemicalAnalyses(request);
 
   const porosity = porosityInput ?? state.porosity ?? UI.defaultPorosity;
-  const normalized = composition.data?.acceptedOxides_normalized ?? {};
 
   const run = () => {
     if (temperature === null || temperature < UI.temperatureMin_C || temperature > UI.temperatureMax_C) {
@@ -51,9 +43,6 @@ export function ChemicalTab() {
       setRequest({
         fractions: toPhaseFractions(completeFractions),
         holdTime_hours: holdTime,
-        algorithmMode,
-        legacyVariant,
-        composition: normalized,
         temperature,
         totalMass,
         porosity,
@@ -95,26 +84,6 @@ export function ChemicalTab() {
           <Grid size={{ xs: 6, md: 2 }}>
             <NumberField label="Hold time" unit="h" value={holdTime} onChange={setHoldTime} min={UI.holdTimeMin_hours} />
           </Grid>
-          <Grid size={{ xs: 6, md: 3 }}>
-            <TextField select size="small" fullWidth label="Phase algorithm" value={algorithmMode} onChange={(event) => setAlgorithmMode(event.target.value as AlgorithmMode)}>
-              {ALGORITHM_MODES.map((item) => (
-                <MenuItem key={item.value} value={item.value}>
-                  {item.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          {algorithmMode !== 'calphad' && (
-            <Grid size={{ xs: 6, md: 3 }}>
-              <TextField select size="small" fullWidth label="Legacy variant" value={legacyVariant} onChange={(event) => setLegacyVariant(event.target.value as LegacyVariant)}>
-                {LEGACY_VARIANTS.map((item) => (
-                  <MenuItem key={item.value} value={item.value}>
-                    {item.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-          )}
           <Grid size={{ xs: 6, md: 2 }}>
             <NumberField
               label="Porosity P"
@@ -146,14 +115,19 @@ export function ChemicalTab() {
         </Stack>
         {formError && <Alert severity="warning">{formError}</Alert>}
         <Box>
-          <CalculateButton loading={composition.isLoading}>Run chemical analyses</CalculateButton>
+          <CalculateButton>Run chemical analyses</CalculateButton>
         </Box>
       </Stack>
 
       {request && (
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, lg: 6 }}>
-            <AnalysisCard title="Phase equilibrium" loading={analyses.phase.isLoading} error={analyses.phase.error} hasResult={Boolean(analyses.phase.data)}>
+            <AnalysisCard
+              title="Phase equilibrium (CALPHAD)"
+              loading={analyses.phase.isLoading}
+              error={analyses.phase.error}
+              hasResult={Boolean(analyses.phase.data)}
+            >
               {analyses.phase.data && <PhaseEquilibriumSummary result={analyses.phase.data} />}
             </AnalysisCard>
           </Grid>
@@ -165,11 +139,6 @@ export function ChemicalTab() {
               hasResult={analyses.phaseSweep.some((point) => point.result)}
             >
               <LiquidFractionChart points={analyses.phaseSweep} />
-            </AnalysisCard>
-          </Grid>
-          <Grid size={{ xs: 12, lg: 6 }}>
-            <AnalysisCard title="Mineral phases" loading={analyses.minerals.isLoading} error={analyses.minerals.error} hasResult={Boolean(analyses.minerals.data)}>
-              {analyses.minerals.data && <MineralPhasesChart phases={analyses.minerals.data} />}
             </AnalysisCard>
           </Grid>
           <Grid size={12}>
