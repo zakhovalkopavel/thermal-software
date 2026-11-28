@@ -24,6 +24,7 @@ import type { WallCalculation } from './types/wall-calculation.type';
 import type { WallDraft } from './types/wall-draft.type';
 import type { WallFieldKey } from './types/wall-field-key.type';
 import type { WallVariant } from './types/wall-variant.type';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 
 const SMOKE_SPECIES = [...PROCESSES_UI.smokeSpecies];
 const DEFAULT_PRESET = WALL_PRESETS.find((preset) => preset.id === WALL_UI.defaultPresetId) ?? WALL_PRESETS[0];
@@ -81,6 +82,7 @@ export function MultilayerWallSection() {
   return (
     <CalculatorPage
       title="Multilayer wall"
+      infoPath={SECTION_INFO_PATHS.multilayerWall}
       description="Heat loss and temperatures through a furnace wall of metal and refractory layers heated by flue gas."
       inputsWidth="wide"
       inputs={

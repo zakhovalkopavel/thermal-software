@@ -14,6 +14,7 @@ import { MaterialHeader } from './MaterialHeader';
 import { RawMaterialCompare } from './RawMaterialCompare';
 import { ReferencePropertiesCard } from './ReferencePropertiesCard';
 import { RAW_MATERIALS_UI } from './constants/raw-materials-ui.constants';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 
 export function RawMaterialsSection() {
   const [params, patchParams] = useSearchParamsPatch();
@@ -120,6 +121,7 @@ export function RawMaterialsSection() {
   return (
     <CalculatorPage
       title="Raw materials"
+      infoPath={SECTION_INFO_PATHS.rawMaterials}
       description="Material library by category: composition, library reference values and calculated λ, Cp, ρ, a versus temperature."
       inputs={
         <Stack spacing={2}>

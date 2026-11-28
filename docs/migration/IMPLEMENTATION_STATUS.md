@@ -16,7 +16,7 @@
 | **Refractory** | ~85% | All 11 services + RefractoryThermalService + material catalogue (read-only) + mix composition; tests partially complete |
 | **Thermodynamics** | ~55% | All 8 services + 3 controllers implemented; tests partial |
 | **Common thermal library** | ~70% | 16 gas compounds, composition, numeric utils |
-| **Frontend** | ~55% | Materials hub (gases, metals, other materials / compound catalogue, refractories, glasses, mineral compositions / blend+phase); processes module; shared calc/charts UI |
+| **Frontend** | ~60% | Materials + processes calc UI; in-page SectionIntro (more/less) + overflow info pages; admin TipTap editor; SSR meta bootstrap |
 | **Furnace** | — | Superseded — see Combustion (bed mode) + Thermodynamics; do not create `modules/furnace/` |
 | **Recuperator** | 100% | Implemented — 4 modules: combustion, metals, thermal-exchange, recuperator |
 | **Combustion** | 100% | `backend/src/modules/combustion/` — 4 modes (solid direct, two-step, fluid, kinetic bed) on one enthalpy/equilibrium core; hydrocarbon gases + MAP-gas preset |
@@ -24,7 +24,7 @@
 | **Thermal Exchange** | 100% | `backend/src/modules/thermal-exchange/` — MultilayerWallService + RecuperatorHtcService |
 | **Thermal Distribution** | 100% | Fully implemented, 31 test suites, 602 tests passing |
 | **Thermophysical** | 0% | Not started |
-| **Database migrations** | 0% | Not started |
+| **Database migrations** | ~40% | CMS schema + seed (`make db-install`); scientific datasets still file-based |
 | **E2E tests** | 0% | Not started |
 | **Project roadmap (docs)** | In progress | [`docs/PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md) — human roadmap; technical plans in [`docs/plans/`](../plans/README.md) |
 | **Heat-treatment data (plan, phase 4)** | Plan only | Gaps G1–G10, new dataset kinds, steps D7–D11; no-legacy and no-tuning rules. Split into [`QUENCH_SOURCE_PICKLIST.md`](../plans/QUENCH_SOURCE_PICKLIST.md), [`SOLUTION_PROPERTY_ALGORITHM.md`](../plans/SOLUTION_PROPERTY_ALGORITHM.md), [`SOLUTION_VERIFICATION_EXAMPLES.md`](../plans/SOLUTION_VERIFICATION_EXAMPLES.md); main plan [`HEAT_TREATMENT_DATA.md`](../plans/HEAT_TREATMENT_DATA.md) |
@@ -196,9 +196,11 @@ Architecture: [`docs/frontend/architecture_refactor/ARCHITECTURE.md`](../fronten
 - [x] Materials sections: gases (pure + mixture), metals, refractories, glasses, raw materials, mineral compositions
 - [x] Phase equilibrium + blend optimizer UI (`mineral-compositions/` — chemistry + blend APIs)
 - [x] Shared calc forms, result tables/cards, Highcharts wrappers, units/settings
+- [x] In-page section info (`SectionIntro` + property-token tooltips; hub About-icon / resume banner removed); CMS seed: 14 calculator-info shells + ~26 overflow `/details/` shells; back link on overflow pages
 - [ ] Remaining process calculators (combustion/bed UI exists; other processes TBD)
 - [ ] Full contract coverage vs Swagger
 - [x] Gas charts: plot any present property; T axis follows form °C/K (live unit sync)
+- [ ] Phase 2: fill SectionIntro / overflow CMS bodies from `docs/` + algorithms (skeletons only today)
 
 ---
 
@@ -315,13 +317,18 @@ Spec: [`STEP_03_THERMOPHYSICAL_MODULE.md`](STEP_03_THERMOPHYSICAL_MODULE.md), [`
 
 ---
 
-## Database — 0%
+## Database — ~40% (CMS)
 
-- [ ] Schema migrations
-- [ ] Data migration from legacy
-- [ ] Seed data
+- [x] TypeORM wired (`DatabaseModule`)
+- [x] CMS migrations (`admin_user`, `page`, `site_setting`)
+- [x] CMS seed JSON (`shared/seed/cms/`) + `make db-install` (in-page + overflow info shells; retires `/info/materials/gases`)
+- [x] Single-admin JWT auth + password change
+- [x] Public/admin page + site-settings APIs
+- [x] Nest SSR HTML shell + nginx document routing
+- [ ] Scientific dataset migrations (still planned; see [`DATABASE_AND_VERSIONING.md`](../plans/DATABASE_AND_VERSIONING.md))
 
-Spec: [`STEP_05_DATABASE_MIGRATION.md`](STEP_05_DATABASE_MIGRATION.md)
+CMS API: [`docs/api/CMS_API_SPEC.md`](../api/CMS_API_SPEC.md)  
+Spec (legacy tables): [`STEP_05_DATABASE_MIGRATION.md`](STEP_05_DATABASE_MIGRATION.md)
 
 ---
 

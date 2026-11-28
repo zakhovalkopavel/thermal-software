@@ -449,6 +449,19 @@ Each needs import path updates from `../dto/` to `../interfaces/`
 
 ---
 
+## CMS / Admin DTOs (2026)
+
+Editorial CMS (not scientific datasets). Spec: [`docs/api/CMS_API_SPEC.md`](./api/CMS_API_SPEC.md).
+
+| DTO | Path |
+|-----|------|
+| `PageResponseDto` | `backend/src/modules/cms/dto/page-response.dto.ts` |
+| `CreatePageDto` / `UpdatePageDto` | `backend/src/modules/cms/dto/` |
+| `PublicSiteSettingsDto` / `UpdateSiteSettingsDto` | `backend/src/modules/cms/dto/` |
+| `LoginDto` / `ChangePasswordDto` / `LoginResponseDto` | `backend/src/modules/auth/dto/` |
+
+---
+
 ## 📅 VERSION HISTORY
 
 | Version | Date | Status | Notes |

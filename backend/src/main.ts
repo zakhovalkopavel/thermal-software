@@ -1,28 +1,31 @@
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { RequestMethod, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
   app.enableCors({
     origin: process.env.CORS_ORIGIN || '*',
     credentials: true,
   });
 
-  // Global validation pipe
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
-  // Global prefix
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api/v1', {
+    exclude: [
+      { path: 'ssr', method: RequestMethod.GET },
+      { path: 'ssr/(.*)', method: RequestMethod.GET },
+    ],
+  });
 
-  // Swagger setup
   const config = new DocumentBuilder()
     .setTitle('Thermal Software API')
     .setDescription('NestJS API for thermal engineering calculations')
@@ -41,4 +44,3 @@ async function bootstrap() {
   console.log(`📚 Swagger docs: http://localhost:${HTTP_PORT}/api/docs`);
 }
 bootstrap();
-

@@ -2,6 +2,8 @@ export const APP_NAV = [
   { path: '/', label: 'Home', end: true },
   { path: '/materials', label: 'Materials', end: false },
   { path: '/processes', label: 'Processes', end: false },
+  { path: '/overview', label: 'Overview', end: true },
+  { path: '/about', label: 'About', end: true },
 ] as const;
 
 /** Same-origin SE GUI (nginx `/source-extractor/`). */

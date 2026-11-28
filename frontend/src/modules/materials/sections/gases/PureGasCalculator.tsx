@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Alert, Stack } from '@mui/material';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 import { CalculatorPage, ResultPanel } from '@/shared/ui/calc';
 import { useGasList } from '../../hooks/useGasList';
 import { useCompoundGasBounds } from '../../hooks/useCompoundGasBounds';
@@ -111,6 +112,7 @@ export function PureGasCalculator() {
   return (
     <CalculatorPage
       title="Pure gas"
+      infoPath={SECTION_INFO_PATHS.gasesPure}
       description="Cp, Cv, γ, M, μ, ν, ρ, λ and Pr of pure gases versus temperature (plot any available property)."
       inputs={
         <Stack spacing={2}>

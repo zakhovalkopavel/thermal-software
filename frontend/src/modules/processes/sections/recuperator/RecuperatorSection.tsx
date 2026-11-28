@@ -24,6 +24,7 @@ import { toRecuperatorInput } from './mappers/recuperator-request.mapper';
 import type { RecuperatorDraft } from './types/recuperator-draft.type';
 import type { RecuperatorFieldKey } from './types/recuperator-field-key.type';
 import type { RecuperatorInput } from './types/recuperator-input.type';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 
 const MODE_OPTIONS = COMBUSTION_MODES.map((item) => ({ value: item.mode, label: item.label }));
 
@@ -62,6 +63,7 @@ export function RecuperatorSection() {
   return (
     <CalculatorPage
       title="Recuperator"
+      infoPath={SECTION_INFO_PATHS.recuperator}
       description="Flue-gas / air recuperator: channel geometry and wall materials → length, outlet temperatures and energy returned."
       inputsWidth="wide"
       inputs={

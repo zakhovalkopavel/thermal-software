@@ -17,6 +17,10 @@ The UI is split into two feature modules:
 |--------|--------------|----------|
 | **Materials** | `/materials` | Everything about *what a material is and what its properties are* |
 | **Processes** | `/processes` | Furnace / heat-transfer tasks that *use* materials (combustion, walls, HTC, recuperator, transient conduction) |
+| **CMS (public)** | `/about`, `/overview`, `/info/...` | Human-friendly chapter docs; resumes on calc hubs; SEO via Nest SSR shell |
+| **Admin** | `/admin` | TipTap page editor, SEO fields, GA Measurement ID, password change |
+
+CMS API: [`docs/api/CMS_API_SPEC.md`](../api/CMS_API_SPEC.md). Seed: `shared/seed/cms/`. Install: `make db-install`.
 
 ---
 

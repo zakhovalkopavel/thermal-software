@@ -136,6 +136,9 @@ JWT_SECRET=CHANGE_THIS
 JWT_EXPIRES_IN=15m
 JWT_REFRESH_SECRET=CHANGE_THIS
 JWT_REFRESH_EXPIRES_IN=7d
+# Optional first-boot admin password (CMS). Blank → random; also via make setup-secrets
+ADMIN_PASSWORD=
+SSR_ASSET_MODE=
 ```
 
 ### Ports

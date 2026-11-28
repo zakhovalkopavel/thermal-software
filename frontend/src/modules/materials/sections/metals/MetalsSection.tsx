@@ -10,6 +10,7 @@ import { useMetalProperties } from './hooks/useMetalProperties';
 import { MetalConditionsForm } from './MetalConditionsForm';
 import { MetalResults } from './MetalResults';
 import type { MetalPropertiesRequest } from './types/metal-properties-request.type';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 
 export function MetalsSection() {
   const [materialParam, setMaterialParam] = useSearchParamState('material');
@@ -52,6 +53,7 @@ export function MetalsSection() {
   return (
     <CalculatorPage
       title="Metals"
+      infoPath={SECTION_INFO_PATHS.metals}
       description="Temperature-dependent properties of known metal grades (λ, Cp, α, ρ, ρₑ, and ε when available)."
       inputs={
         <>

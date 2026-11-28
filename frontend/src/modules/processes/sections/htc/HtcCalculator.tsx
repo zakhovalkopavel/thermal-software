@@ -19,6 +19,7 @@ import type { DimensionlessInput } from './types/dimensionless-input.type';
 import type { FluidMode } from './types/fluid-mode.type';
 import type { HtcDraft } from './types/htc-draft.type';
 import type { HtcFieldKey } from './types/htc-field-key.type';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 
 export function HtcCalculator() {
   const geometries = useFlowGeometries();
@@ -62,6 +63,7 @@ export function HtcCalculator() {
   return (
     <CalculatorPage
       title="Heat-transfer coefficient"
+      infoPath={SECTION_INFO_PATHS.htc}
       description="Re, Pr, Gr, Ra, Nu and the convective heat-transfer coefficient for a flow geometry and gas or liquid."
       inputs={
         <Stack

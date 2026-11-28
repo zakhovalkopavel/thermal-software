@@ -17,6 +17,7 @@ import { toGlassGrid } from './mappers/glass-grid.mapper';
 import type { GlassCalculationRequest } from './types/glass-calculation-request.type';
 import type { GlassModel } from './types/glass-model.type';
 import type { GlassTaskState } from './types/glass-task-state.type';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 
 const sameComposition = (a: Record<string, number>, b: Record<string, number>) => {
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
@@ -95,6 +96,7 @@ export function GlassesSection() {
   return (
     <CalculatorPage
       title="Glasses"
+      infoPath={SECTION_INFO_PATHS.glasses}
       description="Viscosity from the oxide composition: η at T, η(T) profile, fixed points and T at a target viscosity, compared with library glasses."
       inputs={
         <Stack

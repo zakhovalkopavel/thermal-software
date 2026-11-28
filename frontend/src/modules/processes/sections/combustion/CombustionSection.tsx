@@ -13,6 +13,7 @@ import { CombustionModeForm } from './forms/CombustionModeForm';
 import { useCombustion } from './hooks/useCombustion';
 import { toCombustionRequest } from './mappers/combustion-request.mapper';
 import type { CombustionDrafts } from './types/combustion-drafts.type';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 
 const isMode = (value: string | null): value is CombustionMode => COMBUSTION_MODES.some((item) => item.mode === value);
 
@@ -52,6 +53,7 @@ export function CombustionSection() {
   return (
     <CalculatorPage
       title="Combustion"
+      infoPath={SECTION_INFO_PATHS.combustion}
       description="Flame temperature, air and flue-gas flows and product composition for solid, gaseous, liquid and packed-bed combustion."
       inputsWidth={mode === 'bed' ? 'wide' : 'narrow'}
       inputs={

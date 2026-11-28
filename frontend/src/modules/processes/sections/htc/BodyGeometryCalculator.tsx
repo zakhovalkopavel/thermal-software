@@ -11,6 +11,7 @@ import type { BodyDimensionKey } from './types/body-dimension-key.type';
 import type { BodyGeometryDraft } from './types/body-geometry-draft.type';
 import type { BodyGeometryInput } from './types/body-geometry-input.type';
 import type { BodyShapeKey } from './types/body-shape-key.type';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 
 export function BodyGeometryCalculator() {
   const [draft, setDraft] = useState<BodyGeometryDraft>(HTC_DEFAULTS.body);
@@ -35,6 +36,7 @@ export function BodyGeometryCalculator() {
   return (
     <CalculatorPage
       title="Body geometry"
+      infoPath={SECTION_INFO_PATHS.htcBody}
       description="Surface area, volume and mean beam length of a body, e.g. for radiation from a gas volume."
       inputs={
         <Stack

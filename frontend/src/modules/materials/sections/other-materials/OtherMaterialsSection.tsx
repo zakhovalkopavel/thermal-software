@@ -17,6 +17,7 @@ import { OtherMaterialForm } from './OtherMaterialForm';
 import { OtherMaterialIdentity } from './OtherMaterialIdentity';
 import { OtherMaterialResults } from './OtherMaterialResults';
 import type { OtherMaterialRequest } from './types/other-material-request.type';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 
 export function OtherMaterialsSection() {
   const [compoundParam, setCompoundParam] = useSearchParamState(OTHER_MATERIALS_UI.param);
@@ -170,6 +171,7 @@ export function OtherMaterialsSection() {
   return (
     <CalculatorPage
       title="Other materials"
+      infoPath={SECTION_INFO_PATHS.otherMaterials}
       description="Search the full compound catalogue — organic and inorganic, any phase. Gas or liquid properties when the record has thermo and transport for that phase."
       inputs={
         <OtherMaterialForm

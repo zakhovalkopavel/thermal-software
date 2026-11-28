@@ -12,6 +12,7 @@ import { useRefractoryProperties } from './hooks/useRefractoryProperties';
 import { RefractoryCatalogList } from './RefractoryCatalogList';
 import { RefractoryResults } from './RefractoryResults';
 import type { RefractoryPropertiesRequest } from './types/refractory-properties-request.type';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 
 export function RefractoriesSection() {
   const [materialParam, setMaterialParam] = useSearchParamState('material');
@@ -45,6 +46,7 @@ export function RefractoriesSection() {
   return (
     <CalculatorPage
       title="Refractories"
+      infoPath={SECTION_INFO_PATHS.refractories}
       description="Known refractory and insulation products: temperature-dependent λ and ε."
       inputs={
         <Stack

@@ -82,7 +82,8 @@ location /source-extractor/ {
     proxy_buffering off;
 }
 
-location / {
+# Vite / SPA assets stay on the frontend container (dev HMR + production assets).
+location ~ ^/(src|@vite|@react-refresh|@fs|@id|node_modules|assets|vite\.svg)(/|$) {
     proxy_pass http://frontend_dev;
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
@@ -92,6 +93,20 @@ location / {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_buffering off;
+    proxy_read_timeout 60s;
+}
+
+# Document requests: Nest SSR shell injects SEO meta (+ content HTML) then boots the SPA.
+# Rewrite strips nothing — path /about is forwarded as /ssr/about on the backend.
+location / {
+    rewrite ^/(.*)$ /ssr/$1 break;
+    proxy_pass http://backend_api;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Connection "";
     proxy_connect_timeout 60s;
     proxy_send_timeout 60s;
     proxy_read_timeout 60s;

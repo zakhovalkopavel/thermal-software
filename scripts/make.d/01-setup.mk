@@ -90,6 +90,15 @@ setup-secrets: ## Generate secure JWT secrets and DB password into .env
 	@DB_PASSWORD=$$(docker run --rm alpine/openssl rand -base64 24 | tr -d '\n'); \
 	sed -i.bak "s|DB_PASSWORD=.*|DB_PASSWORD=$$DB_PASSWORD|" .env
 	@echo "✅ DB_PASSWORD generated"
+	@echo ""
+	@echo "Generating ADMIN_PASSWORD (first-install default; change in /admin)..."
+	@ADMIN_PASSWORD=$$(docker run --rm alpine/openssl rand -base64 18 | tr -d '\n'); \
+	if grep -q '^ADMIN_PASSWORD=' .env; then \
+	  sed -i.bak "s|^ADMIN_PASSWORD=.*|ADMIN_PASSWORD=$$ADMIN_PASSWORD|" .env; \
+	else \
+	  printf '\nADMIN_PASSWORD=%s\n' "$$ADMIN_PASSWORD" >> .env; \
+	fi
+	@echo "✅ ADMIN_PASSWORD generated"
 	@rm -f .env.bak
 	@echo ""
 	@echo "✅ All secrets generated and saved to .env"

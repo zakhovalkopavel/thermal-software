@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 import { CalculatorPage, ResultPanel } from '@/shared/ui/calc';
 import { useGasList } from '../../hooks/useGasList';
 import { toTemperatureGrid } from '../../mappers/temperature-grid.mapper';
@@ -42,6 +43,7 @@ export function GasMixtureCalculator() {
   return (
     <CalculatorPage
       title="Gas mixture"
+      infoPath={SECTION_INFO_PATHS.gasesMixture}
       description="Cp, H, ρ, μ, ν, λ, Pr and diffusion coefficients of a gas mixture versus temperature (plot any available property)."
       inputs={
         <GasMixtureForm

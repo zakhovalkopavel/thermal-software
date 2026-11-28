@@ -15,6 +15,7 @@ import { ProfilePanel } from './panels/ProfilePanel';
 import type { ThermalDraft } from './types/thermal-draft.type';
 import type { ThermalRequest } from './types/thermal-request.type';
 import type { ThermalTabKey } from './types/thermal-tab-key.type';
+import { SECTION_INFO_PATHS } from '@/modules/cms/constants/section-info-paths.constants';
 
 const isTab = (value: string | null): value is ThermalTabKey => THERMAL_OPTIONS.tabs.some((tab) => tab.value === value);
 
@@ -48,6 +49,7 @@ export function ThermalDistributionSection() {
   return (
     <CalculatorPage
       title="Thermal distribution"
+      infoPath={SECTION_INFO_PATHS.thermalDistribution}
       description="Transient conduction in a body heated or quenched by a medium: Biot / Fourier criteria, T(ξ, τ) and the volume-average temperature."
       inputs={<ThermalInputsForm draft={draft} onChange={setDraft} onSubmit={calculate} loading={criteria.isFetching} error={formError} />}
       results={

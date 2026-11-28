@@ -67,6 +67,8 @@ services:
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      SSR_ASSET_MODE: ${SSR_ASSET_MODE:-static}
       API_VERSION: ${API_VERSION}
       CORS_ORIGIN: ${CORS_ORIGIN}
     expose:
@@ -80,6 +82,7 @@ services:
       - thermal-network
     volumes:
       - shared_data:/app/shared
+      - frontend_dist:/app/frontend-dist:ro
     labels:
       - "app.version=${APP_VERSION}"
       - "app.name=backend"
