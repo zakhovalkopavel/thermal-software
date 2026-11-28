@@ -10,11 +10,17 @@ const REQUIRED = [...RECUPERATOR_FIELDS.air, ...RECUPERATOR_FIELDS.geometry, ...
 /** Throws a user-facing message when a required field is missing; h₀ and passes are sent for circle-in-ring only. */
 export function toRecuperatorInput(draft: RecuperatorDraft, combustion: CombustionModeInput): RecuperatorInput {
   assertRequiredNumbers(REQUIRED, draft.values);
-  const { h0_m, nPasses, ...values } = draft.values;
+  if (!draft.wallMaterial) {
+    assertRequiredNumbers(RECUPERATOR_FIELDS.wallOverrides, draft.values);
+  }
+  const { h0_m, nPasses, refractoryLambda_WmK, refractoryEmissivity, ...values } = draft.values;
   const ring = draft.holeForm === 'circle_in_ring' ? withoutNulls({ h0_m, nPasses }) : {};
+  const wallScalars = withoutNulls({ refractoryLambda_WmK, refractoryEmissivity });
   return {
-    ...(withoutNulls(values) as Omit<RecuperatorInput, 'combustion' | 'holeForm'>),
+    ...(withoutNulls(values) as Omit<RecuperatorInput, 'combustion' | 'holeForm' | 'wallMaterial'>),
     ...ring,
+    ...wallScalars,
+    ...(draft.wallMaterial ? { wallMaterial: draft.wallMaterial.materialId } : {}),
     combustion,
     holeForm: draft.holeForm,
     smokeTurbulence: draft.smokeTurbulence,

@@ -3,4 +3,8 @@ export const COMPOUND_AUTOCOMPLETE = {
   searchLimit: 20,
   registryGroup: 'Registry',
   catalogueGroup: 'Catalogue',
+  classGroupLabels: {
+    organic: 'Organic',
+    inorganic: 'Inorganic',
+  } as const,
 } as const;

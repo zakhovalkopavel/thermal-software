@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { WallPropertyPointDto } from './wall-property-point.dto';
 
 export class RecuperatorResultDto {
   @ApiProperty({ description: 'Required recuperator length [m]' })
@@ -43,4 +44,11 @@ export class RecuperatorResultDto {
   wAirEnd_ms:             number;
   @ApiProperty({ description: 'Fuel consumption [kg/h]' })
   mFuel_kgh:              number;
+  @ApiPropertyOptional({ description: 'Wall material id used for λ(T) / ε(T)' })
+  wallMaterial?:          string;
+  @ApiPropertyOptional({
+    type: [WallPropertyPointDto],
+    description: 'Wall λ(T) and ε(T) sampled over the wall temperature range of the run',
+  })
+  wallPropertyProfile?:   WallPropertyPointDto[];
 }

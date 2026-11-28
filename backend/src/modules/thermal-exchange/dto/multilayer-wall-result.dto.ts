@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { AlphaResult } from '../interfaces/alpha-result.interface';
 import { AlphaResultDto } from './alpha-result.dto';
 import { BetweenLayerDto } from './between-layer.dto';
+import { WallTemperaturePointDto } from './wall-temperature-point.dto';
 
 export class MultilayerWallResultDto {
   @ApiProperty({ description: 'Inner surface temperature [K]' })
@@ -14,6 +15,11 @@ export class MultilayerWallResultDto {
   tGasAverage_K: number;
   @ApiProperty({ type: [BetweenLayerDto], description: 'Temperatures at each layer interface' })
   betweenLayers: BetweenLayerDto[];
+  @ApiProperty({
+    type: [WallTemperaturePointDto],
+    description: 'Finite-difference temperature profile through the wall (λ evaluated at local T)',
+  })
+  temperatureProfile: WallTemperaturePointDto[];
   @ApiProperty({ description: 'Total heat flux entering from flame side [W]' })
   fluxInner_W: number;
   @ApiProperty({ description: 'Total heat flux leaving outer surface [W]' })

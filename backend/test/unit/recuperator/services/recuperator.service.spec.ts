@@ -27,6 +27,13 @@ describe('RecuperatorService — smoke from the selected combustion mode', () =>
     refractoryEmissivity: 0.85, surfaceEmissivity: 0.9, surfaceArea_m2: 5,
   };
 
+  const withWallMaterial: Omit<RecuperatorInputDto, 'combustion' | 'tAirStart_K'> = {
+    ...geometry,
+    wallMaterial: 'chamotte_solid',
+    refractoryLambda_WmK: undefined,
+    refractoryEmissivity: undefined,
+  };
+
   const naturalGas: CombustionModeInputDto = {
     mode: CombustionMode.Fluid,
     fluid: { phase: FuelPhase.Gas, fuelGas: { CH4: 0.95, CO2: 0.01, N2: 0.04 }, fPower_W: 5_000, kExcessAir: 1.2, tAir_K: 573 },
@@ -48,6 +55,21 @@ describe('RecuperatorService — smoke from the selected combustion mode', () =>
   it('air preheat offset raises the maximum flame temperature', () => {
     const r = service.calculate({ ...geometry, combustion: naturalGas, tAirStart_K: 573, airPreheat_K: 300 });
     expect(r.maxFlameTemp_K).toBeGreaterThan(r.tFlame_K);
+  });
+
+  it('takes wall λ / ε from the material and returns the property profile', () => {
+    const fromMaterial = service.calculate({ ...withWallMaterial, combustion: naturalGas, tAirStart_K: 573 });
+    expect(fromMaterial.wallMaterial).toBe('chamotte_solid');
+    expect(fromMaterial.wallPropertyProfile?.length).toBe(RECUPERATOR.WALL_PROPERTY_PROFILE_POINTS);
+    expect(fromMaterial.wallPropertyProfile?.[0]).toEqual({
+      T_K: expect.any(Number),
+      lambda_WmK: expect.any(Number),
+      emissivity: expect.any(Number),
+    });
+    expect(fromMaterial.wallPropertyProfile![0].lambda_WmK).not.toBe(
+      fromMaterial.wallPropertyProfile!.at(-1)!.lambda_WmK,
+    );
+    expect(Number.isFinite(fromMaterial.recuperatorLength_m)).toBe(true);
   });
 
   it.each([

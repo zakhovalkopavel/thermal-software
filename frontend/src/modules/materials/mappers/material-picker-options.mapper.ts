@@ -20,7 +20,10 @@ export function toMaterialPickerOptions(source: MaterialPickerSource, categories
           kind: 'refractory' as const,
           id: product.materialId,
           label: product.name,
-          groupLabel: `${MATERIAL_PICKER_GROUP_LABELS.refractory} · ${group.label}`,
+          groupLabel:
+            group.key === 'insulation'
+              ? MATERIAL_PICKER_GROUP_LABELS.insulation
+              : `${MATERIAL_PICKER_GROUP_LABELS.refractory} · ${group.label}`,
           description: product.description,
         })),
       );

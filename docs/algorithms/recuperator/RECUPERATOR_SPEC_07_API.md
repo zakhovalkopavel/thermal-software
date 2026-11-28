@@ -100,6 +100,7 @@ class MultilayerWallResultDto {
   tGasEnd_K: number;                // Gas exit temperature [K]
   tGasAverage_K: number;            // Log-mean gas temperature [K]
   betweenLayers: Array<{ name: string; tCelsius: number }>;
+  temperatureProfile: Array<{ x_mm: number; tCelsius: number }>; // FD nodes; λ at local T
   fluxInner_W: number;              // Heat entering from flame [W]
   fluxOuter_W: number;              // Heat leaving outer surface [W]
   fluxInnerDensity_Wm2: number;     // Inner surface flux density [W/m²]
@@ -131,8 +132,9 @@ class RecuperatorInputDto {
   smokeTurbulence?: boolean;
   wantedRecuperatorLength_m: number;     // Target HX length [m]
   thermalInsulationThickness_m: number;  // Outer insulation [m]
-  refractoryLambda_WmK: number;          // Wall λ [W/(m·K)]
-  refractoryEmissivity: number;
+  wallMaterial?: string;                 // Metal or refractory id → λ(T)/ε(T) at local wall T
+  refractoryLambda_WmK?: number;         // Scalar wall λ — required when wallMaterial omitted
+  refractoryEmissivity?: number;         // Scalar wall ε — required when wallMaterial omitted
   surfaceEmissivity: number;
   surfaceArea_m2: number;
   airPreheat_K?: number;                 // Offset added to the combustion air temperatures → maxFlameTemp_K [0]
@@ -148,7 +150,7 @@ Example (`circleChannels` in Swagger):
                   "fPower_W": 5000, "kExcessAir": 1.2, "tAir_K": 573 } },
   "tAirStart_K": 573, "holeForm": "circle", "d0_m": 0.04, "refractoryThickness_m": 0.003,
   "nAir": 100, "nSmoke": 81, "wantedRecuperatorLength_m": 1.5, "thermalInsulationThickness_m": 0.05,
-  "refractoryLambda_WmK": 1.2, "refractoryEmissivity": 0.85, "surfaceEmissivity": 0.9, "surfaceArea_m2": 5
+  "wallMaterial": "chamotte_solid", "surfaceEmissivity": 0.9, "surfaceArea_m2": 5
 }
 ```
 
@@ -177,6 +179,8 @@ class RecuperatorResultDto {
   wAirStart_ms: number;
   wAirEnd_ms: number;
   mFuel_kgh: number;
+  wallMaterial?: string;
+  wallPropertyProfile?: Array<{ T_K: number; lambda_WmK: number; emissivity: number }>;
 }
 ```
 

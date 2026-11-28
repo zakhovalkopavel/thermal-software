@@ -12,6 +12,12 @@ export const MATERIALS_SECTIONS = [
     step: 5,
   },
   {
+    route: 'other-materials',
+    label: 'Other materials',
+    description: 'Any compound from the catalogue (organic, inorganic, solid, liquid, gas) → identity and gas properties when available',
+    step: 12,
+  },
+  {
     route: 'refractories',
     label: 'Refractories',
     description: 'Known refractory and insulation products → λ(T), ε(T)',

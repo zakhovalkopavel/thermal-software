@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsNumber, IsOptional, Min, ValidateNested } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { HoleForm } from '../enums/hole-form.enum';
@@ -46,11 +46,32 @@ export class RecuperatorInputDto {
   @ApiProperty({ description: 'Outer thermal insulation thickness [m]', example: 0.05, minimum: 0 })
   @IsNumber() @Min(0) thermalInsulationThickness_m: number;
 
-  @ApiProperty({ description: 'Refractory wall thermal conductivity [W/(m·K)]', example: 1.2, minimum: 0.01 })
-  @IsNumber() @Min(0.01) refractoryLambda_WmK: number;
+  @ApiPropertyOptional({
+    description:
+      'Wall material id (metal or refractory catalogue). When set, λ and ε are taken from the material ' +
+      'curve at the local wall temperature; refractoryLambda_WmK / refractoryEmissivity are then optional fallbacks.',
+    example: 'chamotte_solid',
+  })
+  @IsOptional() @IsString()
+  wallMaterial?: string;
 
-  @ApiProperty({ description: 'Refractory wall emissivity [0–1]', example: 0.85, minimum: 0 })
-  @IsNumber() @Min(0) refractoryEmissivity: number;
+  @ApiPropertyOptional({
+    description: 'Refractory wall thermal conductivity [W/(m·K)] — required when wallMaterial is omitted',
+    example: 1.2,
+    minimum: 0.01,
+  })
+  @ValidateIf((dto: RecuperatorInputDto) => !dto.wallMaterial)
+  @IsNumber() @Min(0.01)
+  refractoryLambda_WmK?: number;
+
+  @ApiPropertyOptional({
+    description: 'Refractory wall emissivity [0–1] — required when wallMaterial is omitted',
+    example: 0.85,
+    minimum: 0,
+  })
+  @ValidateIf((dto: RecuperatorInputDto) => !dto.wallMaterial)
+  @IsNumber() @Min(0)
+  refractoryEmissivity?: number;
 
   @ApiProperty({ description: 'Outer shell surface emissivity [0–1]', example: 0.9, minimum: 0 })
   @IsNumber() @Min(0) surfaceEmissivity: number;

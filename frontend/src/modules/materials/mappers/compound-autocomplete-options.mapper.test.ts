@@ -21,18 +21,27 @@ describe('compound autocomplete options', () => {
     });
   });
 
-  it('maps catalogue hits with CAS · formula secondary text', () => {
+  it('maps catalogue hits with CAS · formula secondary text and class group', () => {
     const options = toCatalogueCompoundOptions([
       {
         id: '124-38-9',
+        compoundId: 'carbon_dioxide',
         cas: '124-38-9',
         name: 'carbon dioxide',
         formula: 'CO2',
         displayFormula: 'CO2',
+        class: 'inorganic',
+        group: 'C',
         score: 900,
       },
     ]);
-    expect(options[0].secondary).toBe('124-38-9 · CO2');
-    expect(selectionFromOption(options[0]).source).toBe('compound');
+    expect(options[0].secondary).toBe('124-38-9 · CO2 · inorganic · C');
+    expect(options[0].groupLabel).toBe('Inorganic');
+    expect(selectionFromOption(options[0])).toMatchObject({
+      source: 'compound',
+      id: 'carbon_dioxide',
+      className: 'inorganic',
+      group: 'C',
+    });
   });
 });

@@ -17,6 +17,7 @@ const COMBUSTION: CombustionDrafts = {
 const DRAFT: RecuperatorDraft = {
   holeForm: 'circle',
   smokeTurbulence: false,
+  wallMaterial: { kind: 'refractory', materialId: 'chamotte_solid' },
   values: {
     tAirStart_K: 573,
     d0_m: 0.04,
@@ -27,8 +28,8 @@ const DRAFT: RecuperatorDraft = {
     nPasses: null,
     wantedRecuperatorLength_m: 1.5,
     thermalInsulationThickness_m: 0.05,
-    refractoryLambda_WmK: 1.2,
-    refractoryEmissivity: 0.85,
+    refractoryLambda_WmK: null,
+    refractoryEmissivity: null,
     surfaceEmissivity: 0.9,
     surfaceArea_m2: 5,
     airPreheat_K: null,

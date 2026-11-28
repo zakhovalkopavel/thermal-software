@@ -11,6 +11,10 @@ describe('materials › refractory-groups', () => {
     expect(groups.map((group) => [group.key, group.products.length])).toMatchInlineSnapshot(`
       [
         [
+          "insulation",
+          1,
+        ],
+        [
           "chamotte",
           6,
         ],
@@ -28,10 +32,6 @@ describe('materials › refractory-groups', () => {
         ],
         [
           "carbide",
-          1,
-        ],
-        [
-          "insulation",
           1,
         ],
       ]

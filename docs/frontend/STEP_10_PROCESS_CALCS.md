@@ -94,17 +94,17 @@ Rows: **material** (`MaterialPicker kinds={['metal', 'refractory']}`, grouped "M
 
 Presets from the Swagger examples: *200 mm chamotte + 100 mm lightweight* (flat), *mild steel shell + basalt fibre* (cylinder).
 
-Results (`MultilayerWallResultDto`): `tInner_K`, `tOuter_K`, `betweenLayers[] { name, tCelsius }`, `tGasAverage_K`, `tGasEnd_K`, `fluxInner_W`, `fluxOuter_W`, `fluxInnerDensity_Wm2`, `alphaInner`, `alphaOuter_Wm2K`, `totalThickness_mm`.
+Results (`MultilayerWallResultDto`): `tInner_K`, `tOuter_K`, `betweenLayers[] { name, tCelsius }`, `temperatureProfile[] { x_mm, tCelsius }` (finite-difference nodes with λ at local T), `tGasAverage_K`, `tGasEnd_K`, `fluxInner_W`, `fluxOuter_W`, `fluxInnerDensity_Wm2`, `alphaInner`, `alphaOuter_Wm2K`, `totalThickness_mm`.
 
 ### Charts
 
 | Chart | Component | Axes / series |
 |-------|-----------|---------------|
-| Temperature through the wall | `XYLineChart` | x = distance from inner surface [mm] (0 … `totalThickness_mm`); y = T [°C]; points = inner surface (`tInner_K`), each interface (`betweenLayers[i].tCelsius` at the cumulative thickness of the request layers), outer surface (`tOuter_K`); **x plot bands** = one band per layer labelled with the material name; horizontal plot lines = `tGasAverage_K` (hot side) and `tAmbient_K` (cold side) |
+| Temperature through the wall | `XYLineChart` | x = distance from inner surface [mm] (0 … `totalThickness_mm`); y = T [°C]; points = `temperatureProfile` (FD traverse; λ(T) per step); **x plot bands** = one band per layer labelled with the material name; horizontal plot lines = `tGasAverage_K` (hot side) and `tAmbient_K` (cold side) |
 | Heat flux balance | `CategoryBarChart` | `fluxInner_W` vs `fluxOuter_W` (convergence check) |
 | Inner HTC breakdown | `PieChart` | convective vs radiative parts from `alphaInner` |
 
-The temperature profile connects interface points with straight segments; the caption states this (the backend returns interface temperatures only, not the internal finite-difference profile).
+The chart plots the returned finite-difference profile, so curvature from temperature-dependent conductivity is visible inside each layer.
 
 **Compare variants:** "Pin result" keeps the current profile as a dashed series so the next calculation (e.g. thicker insulation) is plotted against it (up to 3 pinned variants).
 

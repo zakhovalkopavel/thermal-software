@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { Alert, Box, Button, CircularProgress, Paper, Stack, Typography } from '@mui/material';
 import { NumberField, formatValue } from '@/shared/ui/calc';
-import { MaterialPicker, useMaterialThermalProperties } from '../../materials';
-import type { MaterialPickerKind, MaterialPickerSelection } from '../../materials';
+import { MaterialPicker, useMaterialThermalProperties, WALL_MATERIAL_PICKER_KINDS } from '../../materials';
+import type { MaterialPickerSelection } from '../../materials';
 import { PROCESSES_UI } from '../constants/processes-ui.constants';
 import { celsiusToKelvin } from '@/shared/utils/celsius-to-kelvin';
 import type { MaterialPropertyLookupProps } from '../types/material-property-lookup-props.type';
-
-const LOOKUP_KINDS: MaterialPickerKind[] = ['metal', 'refractory'];
 
 export function MaterialPropertyLookup({ title = 'Take λ from material', onApplyLambda, onApplyEmissivity }: MaterialPropertyLookupProps) {
   const [material, setMaterial] = useState<MaterialPickerSelection | null>(null);
@@ -21,7 +19,7 @@ export function MaterialPropertyLookup({ title = 'Take λ from material', onAppl
         <Typography variant="subtitle2">{title}</Typography>
         <Stack direction="row" spacing={1}>
           <Box sx={{ flex: 1 }}>
-            <MaterialPicker kinds={LOOKUP_KINDS} value={material} onChange={setMaterial} size="small" />
+            <MaterialPicker kinds={WALL_MATERIAL_PICKER_KINDS} value={material} onChange={setMaterial} size="small" />
           </Box>
           <Box sx={{ width: 130 }}>
             <NumberField label="Temperature" unit="°C" value={temperatureC} onChange={setTemperatureC} />

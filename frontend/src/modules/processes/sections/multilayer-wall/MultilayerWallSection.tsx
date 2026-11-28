@@ -71,7 +71,7 @@ export function MultilayerWallSection() {
     if (!calculation || !wall.data) return;
     const number = pinCounter + 1;
     const layersText = calculation.input.layers.map((layer, index) => `${calculation.layerNames[index]} ${layer.thicknessMm} mm`).join(' + ');
-    const variant: WallVariant = { id: `pin-${number}`, label: `#${number}: ${layersText}`, points: toWallProfile(calculation.input, wall.data) };
+    const variant: WallVariant = { id: `pin-${number}`, label: `#${number}: ${layersText}`, points: toWallProfile(wall.data) };
     setPinCounter(number);
     setPinned((previous) => [...previous, variant].slice(-WALL_UI.maxPinned));
   };

@@ -5,14 +5,12 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { NumberField } from '@/shared/ui/calc';
-import { MaterialPicker } from '../../materials';
-import type { MaterialPickerKind, MaterialPickerSelection } from '../../materials';
+import { MaterialPicker, WALL_MATERIAL_PICKER_KINDS } from '../../materials';
+import type { MaterialPickerSelection } from '../../materials';
 import { PROCESSES_UI } from '../constants/processes-ui.constants';
 import { toNewWallLayerDraft } from '../mappers/new-wall-layer-draft.mapper';
 import type { WallLayerDraft } from '../types/wall-layer-draft.type';
 import type { WallLayersEditorProps } from '../types/wall-layers-editor-props.type';
-
-const WALL_KINDS: MaterialPickerKind[] = ['metal', 'refractory'];
 
 const propertiesHref = (selection: MaterialPickerSelection) => {
   const route = selection.kind === 'metal' ? PROCESSES_UI.materialRoutes.metal : PROCESSES_UI.materialRoutes.refractory;
@@ -38,7 +36,7 @@ export function WallLayersEditor({ value, onChange, title = 'Layers (inside → 
             {index + 1}
           </Typography>
           <Box sx={{ flex: 1, minWidth: 180 }}>
-            <MaterialPicker kinds={WALL_KINDS} value={layer.material} onChange={(material) => update(layer.id, { material })} />
+            <MaterialPicker kinds={WALL_MATERIAL_PICKER_KINDS} value={layer.material} onChange={(material) => update(layer.id, { material })} />
           </Box>
           <Box sx={{ width: 120 }}>
             <NumberField

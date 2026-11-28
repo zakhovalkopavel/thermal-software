@@ -67,6 +67,7 @@ describe('MultilayerWallService', () => {
     expect(result).toHaveProperty('tOuter_K');
     expect(result).toHaveProperty('tInner_K');
     expect(result).toHaveProperty('betweenLayers');
+    expect(result).toHaveProperty('temperatureProfile');
     expect(result).toHaveProperty('alphaInner');
     expect(result).toHaveProperty('fluxInner_W');
     expect(result).toHaveProperty('fluxOuter_W');
@@ -75,6 +76,9 @@ describe('MultilayerWallService', () => {
     expect(result.fluxInner_W).toBeGreaterThan(0);
     expect(relativeFluxGap).toBeLessThan(1e-3);
     expect(result.betweenLayers).toHaveLength(dto.layers.length - 1);
+    expect(result.temperatureProfile).toHaveLength(51); // default numberOfSteps + inner surface
+    expect(result.temperatureProfile[0]).toEqual({ x_mm: 0, tCelsius: expect.any(Number) });
+    expect(result.temperatureProfile.at(-1)?.x_mm).toBeCloseTo(dto.layers[0].thicknessMm, 6);
     // previous bisection (stop at 0.1 % flux error) gave 1448.28 K
     expect(Math.abs(result.tInner_K - 1448.28)).toBeLessThan(1);
   });
@@ -106,5 +110,40 @@ describe('MultilayerWallService', () => {
     expect(result.tOuter_K).toBeLessThan(tBetween_K);
     expect(result.tOuter_K).toBeGreaterThan(dto.tAmbient_K);
     expect(relativeFluxGap).toBeLessThan(1e-3);
+    expect(result.temperatureProfile.length).toBeGreaterThan(2);
+    for (let i = 1; i < result.temperatureProfile.length; i++) {
+      expect(result.temperatureProfile[i].tCelsius).toBeLessThan(result.temperatureProfile[i - 1].tCelsius);
+      expect(result.temperatureProfile[i].x_mm).toBeGreaterThan(result.temperatureProfile[i - 1].x_mm);
+    }
+  });
+
+  it('calculate - λ(T) makes the through-wall profile non-linear on a flat wall', () => {
+    mockRefractoryThermal.lambda.mockImplementation((_mat: string, T_K: number) => 0.5 + T_K / 1000);
+
+    const dto = {
+      geometry: WallGeometry.FLAT,
+      a_m: 2,
+      b_m: 5,
+      tFlame_K: 1600,
+      tAmbient_K: 293,
+      w_ms: 5,
+      composition: { N2: 0.72, O2: 0.02, CO2: 0.13, CO: 0, H2O: 0.13, H2: 0 },
+      mPerSecond_kgs: 1,
+      layers: [{ material: RefractoryThermalMaterial.CHAMOTTE_SOLID, thicknessMm: 100 }],
+      innerEmissivity: 0.85,
+      numberOfSteps: 20,
+    };
+
+    const result = service.calculate(dto);
+    const mid = result.temperatureProfile[Math.floor(result.temperatureProfile.length / 2)];
+    const first = result.temperatureProfile[0];
+    const last = result.temperatureProfile.at(-1)!;
+    const linearMidT =
+      first.tCelsius + (last.tCelsius - first.tCelsius) * ((mid.x_mm - first.x_mm) / (last.x_mm - first.x_mm));
+
+    expect(result.temperatureProfile).toHaveLength(21);
+    expect(mockRefractoryThermal.lambda.mock.calls.length).toBeGreaterThan(dto.numberOfSteps);
+    // Higher λ at higher T → shallower gradient near the hot face → mid T above the chord
+    expect(mid.tCelsius).toBeGreaterThan(linearMidT + 1);
   });
 });

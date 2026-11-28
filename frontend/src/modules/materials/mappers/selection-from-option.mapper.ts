@@ -17,5 +17,7 @@ export function selectionFromOption(option: CompoundAutocompleteOption): Compoun
     formula: option.formula ?? option.displayFormula ?? '',
     displayFormula: option.displayFormula ?? option.formula ?? '',
     cas: option.cas ?? null,
+    className: option.className,
+    group: option.group,
   };
 }

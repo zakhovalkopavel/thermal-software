@@ -23,7 +23,7 @@ export class RecuperatorController {
     type: RecuperatorInputDto,
     examples: {
       circleChannels: {
-        summary: '5 kW natural-gas furnace (mode fluid) — circular channels, 100 air / 81 smoke, λ = 1.2',
+        summary: '5 kW natural-gas furnace (mode fluid) — circular channels, 100 air / 81 smoke, wall from chamotte',
         value: {
           combustion: {
             mode: 'fluid',
@@ -40,8 +40,7 @@ export class RecuperatorController {
           nSmoke: 81,
           wantedRecuperatorLength_m: 1.5,
           thermalInsulationThickness_m: 0.05,
-          refractoryLambda_WmK: 1.2,
-          refractoryEmissivity: 0.85,
+          wallMaterial: 'chamotte_solid',
           surfaceEmissivity: 0.9,
           surfaceArea_m2: 5.0,
         },

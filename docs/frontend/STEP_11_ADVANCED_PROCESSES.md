@@ -56,16 +56,17 @@ Form in sections so it stays readable:
 |---------|-------------------|
 | Combustion | mode selector (`solid-direct`, `solid-two-step`, `fluid`, `bed`) + the form of that mode from Step 10 (sent as `combustion: { mode, <modeInput> }`); air inlet T of the recuperator (`tAirStart_K`) |
 | Geometry | `holeForm`, `d0_m`, wall / channel counts, `surfaceArea_m2` |
-| Materials | wall and insulation materials (`MaterialPicker kinds={['metal', 'refractory']}`), λ / ε overrides |
+| Materials | wall material (`MaterialPicker` insulation → refractory → metals); λ / ε from material at local wall T, or scalar overrides when no material |
 | Solver | grid-search limits |
 
-Results (`RecuperatorResultDto`): `recuperatorLength_m`, `tAirEnd_K`, `tSmokeStart_K`, `tSmokeEnd_K`, `tFlame_K`, `maxFlameTemp_K`, `energyReturnedPercent`, `airEnergyIncrease_W`, `smokeEnergyDecrease_W`, `smokeTotalEnergy_W`, `alphaAverage_Wm2K`, `averageDeltaT_K`, velocities `w*_ms`, `mFuel_kgh`.
+Results (`RecuperatorResultDto`): `recuperatorLength_m`, `tAirEnd_K`, `tSmokeStart_K`, `tSmokeEnd_K`, `tFlame_K`, `maxFlameTemp_K`, `energyReturnedPercent`, `airEnergyIncrease_W`, `smokeEnergyDecrease_W`, `smokeTotalEnergy_W`, `alphaAverage_Wm2K`, `averageDeltaT_K`, velocities `w*_ms`, `mFuel_kgh`, optional `wallMaterial` + `wallPropertyProfile[]`.
 
-Charts:
+charts:
 
 | Chart | Component | Axes / series |
 |-------|-----------|---------------|
 | Counter-flow temperatures | `XYLineChart` | x = position along the recuperator, 0 … `recuperatorLength_m`; smoke line from `tSmokeStart_K` (x = 0) to `tSmokeEnd_K` (x = L); air line from air inlet T (x = L) to `tAirEnd_K` (x = 0); straight segments, caption notes only end temperatures are returned |
+| Wall λ / ε from material | `XYLineChart` | shown when `wallPropertyProfile` is returned; x = wall T [°C]; y1 = λ [W/(m·K)]; y2 = ε |
 | Energy balance | `CategoryBarChart` | `smokeTotalEnergy_W`, `smokeEnergyDecrease_W`, `airEnergyIncrease_W`; label shows `energyReturnedPercent` |
 | Flame temperature gain | `CategoryBarChart` | `tFlame_K` vs `maxFlameTemp_K` |
 | Velocities | `CategoryBarChart` (grouped) | smoke / air × start / end |

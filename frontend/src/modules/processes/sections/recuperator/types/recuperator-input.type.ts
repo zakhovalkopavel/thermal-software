@@ -14,8 +14,9 @@ export type RecuperatorInput = {
   smokeTurbulence?: boolean;
   wantedRecuperatorLength_m: number;
   thermalInsulationThickness_m: number;
-  refractoryLambda_WmK: number;
-  refractoryEmissivity: number;
+  wallMaterial?: string;
+  refractoryLambda_WmK?: number;
+  refractoryEmissivity?: number;
   surfaceEmissivity: number;
   surfaceArea_m2: number;
   airPreheat_K?: number;

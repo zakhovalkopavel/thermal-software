@@ -1,4 +1,4 @@
-/** Selected gas in the unified registry + catalogue picker. */
+/** Selected species in the unified registry + catalogue picker. */
 export type CompoundSelection =
   | {
       source: 'registry';
@@ -13,4 +13,6 @@ export type CompoundSelection =
       formula: string;
       displayFormula: string;
       cas: string | null;
+      className?: string;
+      group?: string;
     };

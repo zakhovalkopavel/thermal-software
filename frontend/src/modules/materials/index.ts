@@ -13,6 +13,7 @@ export { toTemperatureGrid } from './mappers/temperature-grid.mapper';
 export { metalsCatalogApi } from './api/metals-catalog.api';
 export { refractoryProductsApi } from './api/refractory-products.api';
 export { TEMPERATURE_SWEEP } from './constants/temperature-sweep.constants';
+export { WALL_MATERIAL_PICKER_KINDS } from './constants/wall-material-picker-kinds.constants';
 export type { MaterialPickerSelection } from './types/material-picker-selection.type';
 export type { MaterialPickerKind } from './types/material-picker-kind.type';
 export type { MetalSummary } from './types/metal-summary.type';

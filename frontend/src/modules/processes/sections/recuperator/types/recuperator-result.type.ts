@@ -1,3 +1,5 @@
+import type { WallPropertyPoint } from './wall-property-point.type';
+
 export type RecuperatorResult = {
   recuperatorLength_m: number;
   tAirEnd_K: number;
@@ -20,4 +22,6 @@ export type RecuperatorResult = {
   wAirStart_ms: number;
   wAirEnd_ms: number;
   mFuel_kgh: number;
+  wallMaterial?: string;
+  wallPropertyProfile?: WallPropertyPoint[];
 };

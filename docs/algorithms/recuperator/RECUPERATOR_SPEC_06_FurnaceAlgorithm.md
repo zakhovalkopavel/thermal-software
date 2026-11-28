@@ -111,6 +111,8 @@ FOR each sub-step (x_prev → x_curr):
 ```
 
 Record temperature at each layer boundary `T_between[i]`.
+Record the full finite-difference profile `temperatureProfile[] = { x_mm, tCelsius }`
+(inner surface plus each step) so the UI can show curvature from λ(T).
 
 After traversal: `T_outer = T_current`.
 

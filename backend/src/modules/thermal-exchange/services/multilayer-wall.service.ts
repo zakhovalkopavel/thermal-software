@@ -68,6 +68,9 @@ export class MultilayerWallService {
 
       // ── Step B: finite-difference traverse through layers ─────────────────
       const betweenTemps: BetweenLayerDto[] = [];
+      const temperatureProfile: WallBalance['temperatureProfile'] = [
+        { x_mm: 0, tCelsius: kelvinToCelsius(tInner) },
+      ];
       let tCurrent   = tInner;
       let x          = 0;
       let layerIdx   = 0;
@@ -104,12 +107,16 @@ export class MultilayerWallService {
 
         tCurrent -= dT;
         x = xNext;
+        temperatureProfile.push({ x_mm: x * 1000, tCelsius: kelvinToCelsius(tCurrent) });
 
         if (tCurrent < tAmbient_K) { broke = true; break; }
       }
 
       if (broke) {
-        return { alphaInner, fluxInner_W, alphaOuter_Wm2K: 0, fluxOuter_W: 0, tOuter: tCurrent, betweenTemps, broke };
+        return {
+          alphaInner, fluxInner_W, alphaOuter_Wm2K: 0, fluxOuter_W: 0,
+          tOuter: tCurrent, betweenTemps, temperatureProfile, broke,
+        };
       }
 
       // ── Step C: outer surface HTC ─────────────────────────────────────────
@@ -118,7 +125,10 @@ export class MultilayerWallService {
       const alphaOuter_Wm2K = this.outerAlpha(tCurrent, tAmbient_K, lSurface, dSurface, innerEmissivity);
       const fluxOuter_W     = alphaOuter_Wm2K * (tCurrent - tAmbient_K) * sOuter;
 
-      return { alphaInner, fluxInner_W, alphaOuter_Wm2K, fluxOuter_W, tOuter: tCurrent, betweenTemps, broke };
+      return {
+        alphaInner, fluxInner_W, alphaOuter_Wm2K, fluxOuter_W,
+        tOuter: tCurrent, betweenTemps, temperatureProfile, broke,
+      };
     };
 
     // ── Step D: Q_inner − Q_outer = 0; a wall too cold to reach T_ambient has Q_outer = 0 ──
@@ -127,7 +137,9 @@ export class MultilayerWallService {
       return b.fluxInner_W - b.fluxOuter_W;
     };
     const tInner = brentq(balanceResidual, tAmbient_K, tFlame_K, MULTILAYER_WALL.ROOT_TOL_K).root;
-    const { alphaInner, fluxInner_W, alphaOuter_Wm2K, fluxOuter_W, tOuter, betweenTemps } = wallBalance(tInner);
+    const {
+      alphaInner, fluxInner_W, alphaOuter_Wm2K, fluxOuter_W, tOuter, betweenTemps, temperatureProfile,
+    } = wallBalance(tInner);
 
     // ── Gas cooling estimate (log-mean) ───────────────────────────────────────
     const tGasAverage_K = logMean(tFlame_K, tInner);
@@ -139,6 +151,7 @@ export class MultilayerWallService {
       tGasEnd_K,
       tGasAverage_K,
       betweenLayers:        betweenTemps,
+      temperatureProfile,
       fluxInner_W,
       fluxOuter_W,
       fluxInnerDensity_Wm2: sInner > 0 ? fluxInner_W / sInner : 0,

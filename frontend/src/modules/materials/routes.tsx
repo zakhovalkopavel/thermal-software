@@ -9,6 +9,10 @@ import { MaterialsLayout } from './components/MaterialsLayout';
 const SECTION_LOADERS: Partial<Record<(typeof MATERIALS_SECTIONS)[number]['route'], RouteObject['lazy']>> = {
   metals: () => import('./sections/metals/MetalsSection').then((module) => ({ Component: module.MetalsSection })),
   gases: () => import('./sections/gases/GasesSection').then((module) => ({ Component: module.GasesSection })),
+  'other-materials': () =>
+    import('./sections/other-materials/OtherMaterialsSection').then((module) => ({
+      Component: module.OtherMaterialsSection,
+    })),
   refractories: () =>
     import('./sections/refractories/RefractoriesSection').then((module) => ({ Component: module.RefractoriesSection })),
   'raw-materials': () =>

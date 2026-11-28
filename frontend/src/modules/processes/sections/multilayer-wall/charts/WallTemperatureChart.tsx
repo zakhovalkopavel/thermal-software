@@ -13,10 +13,10 @@ const Y_AXES: ChartAxis[] = [{ title: 'T', unit: '°C' }];
 export function WallTemperatureChart({ calculation, result, pinned }: WallTemperatureChartProps) {
   const series = useMemo<XYSeries[]>(
     () => [
-      { name: 'Current', emphasis: true, showMarkers: true, data: toWallProfile(calculation.input, result) },
-      ...pinned.map((variant): XYSeries => ({ name: variant.label, dashStyle: 'Dash', showMarkers: true, data: variant.points })),
+      { name: 'Current', emphasis: true, data: toWallProfile(result) },
+      ...pinned.map((variant): XYSeries => ({ name: variant.label, dashStyle: 'Dash', data: variant.points })),
     ],
-    [calculation, result, pinned],
+    [result, pinned],
   );
   const bands = useMemo(() => toWallBands(calculation), [calculation]);
   const gasC = kelvinToCelsius(result.tGasAverage_K);
@@ -29,7 +29,7 @@ export function WallTemperatureChart({ calculation, result, pinned }: WallTemper
   return (
     <XYLineChart
       title="Temperature through the wall"
-      caption="Straight segments between the interface temperatures returned by the backend (the internal finite-difference profile is not returned)."
+      caption="Finite-difference profile with material conductivity λ evaluated at the local temperature in each step."
       xAxis={X_AXIS}
       yAxes={Y_AXES}
       series={series}

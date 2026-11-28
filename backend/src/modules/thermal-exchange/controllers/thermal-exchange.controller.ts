@@ -15,7 +15,8 @@ export class ThermalExchangeController {
     description:
       'Brent root finding on the inner surface temperature so that inner and outer heat ' +
       'fluxes balance. Supports flat, cylindrical and spherical geometries. ' +
-      'Layers are listed inside → outside; each may be a refractory or metal material.',
+      'Layers are listed inside → outside; each may be a refractory or metal material. ' +
+      'Returns the finite-difference temperature profile with λ evaluated at local T.',
   })
   @ApiBody({
     type: MultilayerWallInputDto,

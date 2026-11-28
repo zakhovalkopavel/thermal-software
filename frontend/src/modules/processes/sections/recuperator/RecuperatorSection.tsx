@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react';
 import { Alert, Box, Button, Checkbox, FormControlLabel, Stack, Typography } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import { CalculateButton, CalculatorPage, EnumSelect, ResultPanel } from '@/shared/ui/calc';
+import { MaterialPicker, WALL_MATERIAL_PICKER_KINDS } from '../../../materials';
+import type { MaterialPickerSelection } from '../../../materials';
 import { AdvancedFields } from '../../components/AdvancedFields';
-import { MaterialPropertyLookup } from '../../components/MaterialPropertyLookup';
 import { NumberFieldGrid } from '../../components/NumberFieldGrid';
 import { useFuels } from '../../hooks/useFuels';
 import type { CombustionHandOff } from '../../types/combustion-hand-off.type';
@@ -45,6 +46,8 @@ export function RecuperatorSection() {
   const handOffLabel = COMBUSTION_MODES.find((item) => item.mode === handOff?.mode)?.label;
 
   const setValue = (key: RecuperatorFieldKey, value: number | null) => setDraft((previous) => ({ ...previous, values: { ...previous.values, [key]: value } }));
+
+  const setWallMaterial = (wallMaterial: MaterialPickerSelection | null) => setDraft((previous) => ({ ...previous, wallMaterial }));
 
   const calculate = () => {
     try {
@@ -106,12 +109,19 @@ export function RecuperatorSection() {
             label="Smoke turbulence correction"
           />
           <Typography variant="subtitle2">Wall and insulation</Typography>
-          <NumberFieldGrid fields={RECUPERATOR_FIELDS.materials} values={draft.values} onChange={setValue} columns={3} />
-          <MaterialPropertyLookup
-            title="Take wall λ / ε from material"
-            onApplyLambda={(lambda) => setValue('refractoryLambda_WmK', lambda)}
-            onApplyEmissivity={(emissivity) => setValue('refractoryEmissivity', emissivity)}
+          <MaterialPicker
+            kinds={WALL_MATERIAL_PICKER_KINDS}
+            value={draft.wallMaterial}
+            onChange={setWallMaterial}
+            label="Wall material"
+            size="small"
           />
+          {draft.wallMaterial ? (
+            <Alert severity="info">Wall λ and ε are taken from this material at the local wall temperature of each balance section.</Alert>
+          ) : (
+            <NumberFieldGrid fields={RECUPERATOR_FIELDS.wallOverrides} values={draft.values} onChange={setValue} columns={2} />
+          )}
+          <NumberFieldGrid fields={RECUPERATOR_FIELDS.materials} values={draft.values} onChange={setValue} columns={3} />
           <AdvancedFields>
             <NumberFieldGrid fields={RECUPERATOR_FIELDS.advanced} values={draft.values} onChange={setValue} />
           </AdvancedFields>

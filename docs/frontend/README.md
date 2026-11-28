@@ -20,7 +20,7 @@ The UI is split into two feature modules:
 
 ---
 
-## Materials module — six sections
+## Materials module — seven sections
 
 Each section is self-contained: it selects its own kind of material, sets conditions and calculates the properties that kind has. There is no cross-kind "select any material" page.
 
@@ -28,6 +28,7 @@ Each section is self-contained: it selects its own kind of material, sets condit
 |---------|---------|--------------|
 | **Metals** | Known metal grades | Select grade + T → λ(T), ε(T) |
 | **Gases** | Pure gases and gas mixtures | Select gas or mixture composition + T, P → Cp, Cv, γ, μ, ν, ρ, λ, Pr |
+| **Other materials** | Full compound catalogue (organic / inorganic, any phase) | Search compound → identity; gas Cp/μ/λ/… when gas equations exist |
 | **Refractories** | Known refractory / insulation products (catalogue) | Select product + T → λ(T), ε(T), table over a T range |
 | **Raw materials** | Library materials by category (oxides, silicates, clays, binders, carbides, nitrides, glasses, phosphates, …) | Select material → composition, reference properties; for mix raw materials λ_eff(T), Cp(T) at a chosen porosity |
 | **Glasses** | Glass qualities *calculated from composition* | Enter oxide composition in **wt%** or **mol%** (or start from a preset) → viscosity, fixed points, T(η) |
@@ -38,6 +39,7 @@ flowchart LR
   subgraph materials [Materials module]
     Metals
     Gases
+    OtherMaterials
     Refractories
     RawMaterials
     Glasses

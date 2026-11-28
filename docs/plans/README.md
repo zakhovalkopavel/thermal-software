@@ -7,7 +7,7 @@ Technical plans behind [`../PROJECT_ROADMAP.md`](../PROJECT_ROADMAP.md). Each pl
 |---|---|---|---|
 | 1 | Source-extractor as the one door to every source | [`SOURCE_EXTRACTOR_MIGRATION.md`](SOURCE_EXTRACTOR_MIGRATION.md) | 🟡 design accepted |
 | 2 | Database with versioned datasets | [`DATABASE_AND_VERSIONING.md`](DATABASE_AND_VERSIONING.md) | 🔵 planned |
-| 3 | Remaining legacy gap (recuperator `λ(T)`) | [`LEGACY_GAPS_CLOSURE.md`](LEGACY_GAPS_CLOSURE.md) | 🔵 planned |
+| 3 | Remaining legacy gap (recuperator `λ(T)`) | [`LEGACY_GAPS_CLOSURE.md`](LEGACY_GAPS_CLOSURE.md) | ✅ done |
 | 4 | Heat-treatment data through the extractor | [`HEAT_TREATMENT_DATA.md`](HEAT_TREATMENT_DATA.md) | 🟣 research / data risk |
 | 4a | Quench source analysis and pick list | [`QUENCH_SOURCE_PICKLIST.md`](QUENCH_SOURCE_PICKLIST.md) | 🟣 research |
 | 4b | Algorithm for predicting salt-solution properties | [`SOLUTION_PROPERTY_ALGORITHM.md`](SOLUTION_PROPERTY_ALGORITHM.md) | 🟣 research |

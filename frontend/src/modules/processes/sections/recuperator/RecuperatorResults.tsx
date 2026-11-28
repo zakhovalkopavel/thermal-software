@@ -5,6 +5,7 @@ import { CounterFlowChart } from './charts/CounterFlowChart';
 import { EnergyBalanceChart } from './charts/EnergyBalanceChart';
 import { FlameTemperatureChart } from './charts/FlameTemperatureChart';
 import { VelocitiesChart } from './charts/VelocitiesChart';
+import { WallPropertyChart } from './charts/WallPropertyChart';
 import type { RecuperatorResultsProps } from './types/recuperator-results-props.type';
 
 const celsiusHint = (kelvin: number) => `${formatValue(kelvinToCelsius(kelvin))} °C`;
@@ -57,6 +58,7 @@ export function RecuperatorResults({ input, result }: RecuperatorResultsProps) {
         </Alert>
       )}
       <CounterFlowChart input={input} result={result} />
+      <WallPropertyChart result={result} />
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 4 }}>
           <EnergyBalanceChart input={input} result={result} />

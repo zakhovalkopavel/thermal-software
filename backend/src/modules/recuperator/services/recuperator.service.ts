@@ -31,7 +31,7 @@ export class RecuperatorService {
     const {
       tAirStart_K,
       holeForm, d0_m, refractoryThickness_m, nAir, nSmoke,
-      wantedRecuperatorLength_m, refractoryLambda_WmK, refractoryEmissivity,
+      wantedRecuperatorLength_m,
       surfaceEmissivity, surfaceArea_m2, thermalInsulationThickness_m,
     } = dto;
 
@@ -84,7 +84,7 @@ export class RecuperatorService {
         wAirStart_ms, wSmokeStart_ms, sAir_m2, sSmoke_m2,
         lAir_m, lSmoke_m, dAir_m, dSmoke_m,
         rayLengthSmoke_m, rayLengthAir_m,
-        refractoryThickness_m, refractoryLambda_WmK, refractoryEmissivity,
+        refractoryThickness_m,
         wantedRecuperatorLength_m, turbulence,
         surfaceArea_m2, thermalInsulationThickness_m, surfaceEmissivity,
         dto,
@@ -134,13 +134,13 @@ export class RecuperatorService {
       smokeComp, mSmoke_kgs, tSmokeStart_K, tAirStart_K,
     );
 
-    const { alphaAvg, deltaT_lm, L_recuperator } = this.balance.computeLength(
+    const { alphaAvg, deltaT_lm, L_recuperator, tWall1_K, tWall2_K } = this.balance.computeLength(
       tSmokeStart_K, tSmokeEnd_K, tAirStart_K, tAirEnd_K,
       qAir, lAir_m, lSmoke_m, dAir_m, dSmoke_m,
       wAirStart_ms, wSmokeStart_ms,
       rayLengthSmoke_m, rayLengthAir_m,
       smokeComp, composition.before,
-      refractoryThickness_m, refractoryLambda_WmK, refractoryEmissivity,
+      refractoryThickness_m,
       wantedRecuperatorLength_m, turbulence, dto,
     );
 
@@ -148,6 +148,8 @@ export class RecuperatorService {
     const maxFlameTemp_K = airPreheat_K === 0
       ? flue.tFlame_K
       : this.combustion.flueGas(dto.combustion, airPreheat_K).tFlame_K;
+
+    const wallPropertyProfile = this.balance.wallPropertyProfile(dto, tWall1_K, tWall2_K);
 
     return {
       recuperatorLength_m:   L_recuperator,
@@ -171,6 +173,7 @@ export class RecuperatorService {
       wAirStart_ms,
       wAirEnd_ms,
       mFuel_kgh: mFuel_kgs * 3600,
+      ...(dto.wallMaterial ? { wallMaterial: dto.wallMaterial, wallPropertyProfile } : {}),
     };
   }
 

@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { GasPropertiesService } from '../../thermodynamics/services/gas-properties.service';
 import { Species } from '../../thermodynamics/enums/species.enum';
 import { RecuperatorHtcService } from '../../thermal-exchange/services/recuperator-htc.service';
+import { MultilayerWallService } from '../../thermal-exchange/services/multilayer-wall.service';
 import { SmokeCompositionDto } from '../../thermal-exchange/dto/smoke-composition.dto';
+import { WallMaterialKey } from '../../thermal-exchange/types/wall-material-key.type';
 import { RecuperatorInputDto } from '../dto/recuperator-input.dto';
+import { WallPropertyPointDto } from '../dto/wall-property-point.dto';
 import { RECUPERATOR } from '../constants/recuperator.constants';
-import { COMBUSTION } from '../../combustion/constants';
 import { logMean } from '../../../common/utils/math';
 
 type GasMoleFractions = SmokeCompositionDto;
@@ -18,6 +20,7 @@ export class RecuperatorBalanceService {
   constructor(
     private readonly htc: RecuperatorHtcService,
     private readonly gasProps: GasPropertiesService,
+    private readonly wallMaterials: MultilayerWallService,
   ) {}
 
   criterion(
@@ -30,7 +33,7 @@ export class RecuperatorBalanceService {
     lAir_m: number, lSmoke_m: number,
     dAir_m: number, dSmoke_m: number,
     rayLengthSmoke_m: number, rayLengthAir_m: number,
-    wallThickness_m: number, wallLambda_WmK: number, wallEmissivity: number,
+    wallThickness_m: number,
     wantedLength_m: number, turbulence: boolean,
     surfaceArea_m2: number, insulationThickness_m: number, surfaceEmissivity: number,
     dto: RecuperatorInputDto,
@@ -38,12 +41,6 @@ export class RecuperatorBalanceService {
     // Validate bounds
     if (tSmokeEnd_K <= tAirStart_K || tSmokeEnd_K >= tSmokeStart_K) return RECUPERATOR.ENERGY_CRITERIA_ERROR;
     if (tAirEnd_K   >= tSmokeStart_K || tAirEnd_K   <= tAirStart_K)  return RECUPERATOR.ENERGY_CRITERIA_ERROR;
-
-    const atm = COMBUSTION.ATMOSPHERIC_PRESSURE_PA;
-    const rhoAirEnd    = atm / (RECUPERATOR.R_SPECIFIC_DRY_AIR_J_KGK * tAirEnd_K);
-    const rhoSmokeEnd  = atm / (RECUPERATOR.R_SPECIFIC_DRY_AIR_J_KGK * tSmokeEnd_K);
-    const wAirEnd_ms   = mAir_kgs   / (rhoAirEnd   * sAir_m2);
-    const wSmokeEnd_ms = mSmoke_kgs / (rhoSmokeEnd  * sSmoke_m2);
 
     const [qSmoke, qAir] = this.energyFlows(
       tSmokeStart_K, tSmokeEnd_K, tAirStart_K, tAirEnd_K,
@@ -58,7 +55,7 @@ export class RecuperatorBalanceService {
       wAirStart_ms, wSmokeStart_ms,
       rayLengthSmoke_m, rayLengthAir_m,
       smokeComp, airComp,
-      wallThickness_m, wallLambda_WmK, wallEmissivity,
+      wallThickness_m,
       wantedLength_m, turbulence, dto,
     );
 
@@ -74,25 +71,20 @@ export class RecuperatorBalanceService {
     wAirStart_ms: number, wSmokeStart_ms: number,
     rayLengthSmoke_m: number, rayLengthAir_m: number,
     smokeComp: GasMoleFractions, airComp: GasMoleFractions,
-    wallThickness_m: number, wallLambda_WmK: number, wallEmissivity: number,
+    wallThickness_m: number,
     wantedLength_m: number, turbulence: boolean,
     dto: RecuperatorInputDto,
-  ): { alphaAvg: number; deltaT_lm: number; L_recuperator: number } {
+  ): { alphaAvg: number; deltaT_lm: number; L_recuperator: number; tWall1_K: number; tWall2_K: number } {
     const lm = logMean;
 
     // Wall surface temperature at each cross-section
-    const tWall1 = lm(tSmokeStart_K, tAirEnd_K);
-    const tWall2 = lm(tSmokeEnd_K,   tAirStart_K);
+    const tWall1_K = lm(tSmokeStart_K, tAirEnd_K);
+    const tWall2_K = lm(tSmokeEnd_K,   tAirStart_K);
 
-    const smokeMoles: Record<string, number> = {
-      [Species.N2]: smokeComp.N2, [Species.O2]: smokeComp.O2,
-      [Species.CO2]: smokeComp.CO2, [Species.CO]: smokeComp.CO,
-      [Species.H2O]: smokeComp.H2O, [Species.H2]: smokeComp.H2,
-    };
-    const mSmokeSmall = this.gasProps.molecularWeight(smokeMoles as any);
-
-    const htcAt = (tSmoke: number, tAir: number, tWall: number, wAir: number, wSmoke: number) =>
-      this.htc.calculate({
+    const htcAt = (tSmoke: number, tAir: number, tWall: number, wAir: number, wSmoke: number) => {
+      const wallLambda_WmK = this.wallLambda(dto, tWall);
+      const wallEmissivity = this.wallEmissivity(dto, tWall);
+      return this.htc.calculate({
         tSmoke_K: tSmoke, wSmoke_ms: wSmoke,
         smokeComposition: smokeComp as any,
         dSmoke_m, lSmoke_m, rayLengthSmoke_m,
@@ -104,9 +96,10 @@ export class RecuperatorBalanceService {
         length_m: wantedLength_m,
         enableSmokeTurbulence: turbulence,
       });
+    };
 
-    const r1 = htcAt(tSmokeStart_K, tAirEnd_K,   tWall1, wAirStart_ms,  wSmokeStart_ms);
-    const r2 = htcAt(tSmokeEnd_K,   tAirStart_K,  tWall2, wAirStart_ms,  wSmokeStart_ms);
+    const r1 = htcAt(tSmokeStart_K, tAirEnd_K,   tWall1_K, wAirStart_ms,  wSmokeStart_ms);
+    const r2 = htcAt(tSmokeEnd_K,   tAirStart_K,  tWall2_K, wAirStart_ms,  wSmokeStart_ms);
 
     const alphaAvg   = lm(r1.alphaOverall_Wm2K, r2.alphaOverall_Wm2K);
     const dt1        = tSmokeStart_K - tAirEnd_K;
@@ -116,7 +109,24 @@ export class RecuperatorBalanceService {
       ? qAir / (alphaAvg * deltaT_lm * lAir_m)
       : wantedLength_m;
 
-    return { alphaAvg, deltaT_lm, L_recuperator };
+    return { alphaAvg, deltaT_lm, L_recuperator, tWall1_K, tWall2_K };
+  }
+
+  wallPropertyProfile(dto: RecuperatorInputDto, tMin_K: number, tMax_K: number): WallPropertyPointDto[] | undefined {
+    if (!dto.wallMaterial) return undefined;
+    const lo = Math.min(tMin_K, tMax_K);
+    const hi = Math.max(tMin_K, tMax_K);
+    const n = RECUPERATOR.WALL_PROPERTY_PROFILE_POINTS;
+    const points: WallPropertyPointDto[] = [];
+    for (let i = 0; i < n; i++) {
+      const T_K = lo + ((hi - lo) * i) / (n - 1);
+      points.push({
+        T_K,
+        lambda_WmK: this.wallLambda(dto, T_K),
+        emissivity: this.wallEmissivity(dto, T_K),
+      });
+    }
+    return points;
   }
 
   /** Gas enthalpy change [W] using cpMixture */
@@ -143,5 +153,25 @@ export class RecuperatorBalanceService {
     const qSmoke = this.gasEnergy(smokeComp, mSmoke_kgs, tSmokeStart_K, tSmokeEnd_K);
     const qAir   = this.gasEnergy(airComp,   mAir_kgs,   tAirEnd_K,     tAirStart_K);
     return [qSmoke, qAir];
+  }
+
+  private wallLambda(dto: RecuperatorInputDto, T_K: number): number {
+    if (dto.wallMaterial) {
+      return this.wallMaterials.getLambda(dto.wallMaterial as WallMaterialKey, T_K);
+    }
+    if (dto.refractoryLambda_WmK == null) {
+      throw new BadRequestException('Provide wallMaterial or refractoryLambda_WmK');
+    }
+    return dto.refractoryLambda_WmK;
+  }
+
+  private wallEmissivity(dto: RecuperatorInputDto, T_K: number): number {
+    if (dto.wallMaterial) {
+      return this.wallMaterials.getEmissivity(dto.wallMaterial as WallMaterialKey, T_K);
+    }
+    if (dto.refractoryEmissivity == null) {
+      throw new BadRequestException('Provide wallMaterial or refractoryEmissivity');
+    }
+    return dto.refractoryEmissivity;
   }
 }

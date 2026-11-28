@@ -16,7 +16,7 @@
 | **Refractory** | ~85% | All 11 services + RefractoryThermalService + material catalogue (read-only) + mix composition; tests partially complete |
 | **Thermodynamics** | ~55% | All 8 services + 3 controllers implemented; tests partial |
 | **Common thermal library** | ~70% | 16 gas compounds, composition, numeric utils |
-| **Frontend** | ~55% | Materials hub (gases, metals, refractories, glasses, mineral compositions / blend+phase); processes module; shared calc/charts UI |
+| **Frontend** | ~55% | Materials hub (gases, metals, other materials / compound catalogue, refractories, glasses, mineral compositions / blend+phase); processes module; shared calc/charts UI |
 | **Furnace** | — | Superseded — see Combustion (bed mode) + Thermodynamics; do not create `modules/furnace/` |
 | **Recuperator** | 100% | Implemented — 4 modules: combustion, metals, thermal-exchange, recuperator |
 | **Combustion** | 100% | `backend/src/modules/combustion/` — 4 modes (solid direct, two-step, fluid, kinetic bed) on one enthalpy/equilibrium core; hydrocarbon gases + MAP-gas preset |
@@ -263,9 +263,9 @@ Historical plan: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md) (banne
 **Path:** `backend/src/modules/thermal-exchange/`
 - [x] `thermal-exchange.module.ts`
 - [x] `enums/wall-geometry.enum.ts` — FLAT, CYLINDER, SPHERE
-- [x] `services/multilayer-wall.service.ts` — inner surface temperature via `brentq` on Q_inner − Q_outer (September 2026, replaced binary search; `endFactor` input removed), FD traverse, outer cooling
+- [x] `services/multilayer-wall.service.ts` — inner surface temperature via `brentq` on Q_inner − Q_outer (September 2026, replaced binary search; `endFactor` input removed), FD traverse with λ(T), returns `temperatureProfile`, outer cooling
 - [x] `services/recuperator-htc.service.ts` — overall HTC; air-side supports mixed compositions (air+steam, air+smoke); radiation via `gasRadiationHTC` when H₂O/CO₂ present
-- [x] `dto/layer.dto.ts`, `multilayer-wall-input.dto.ts`, `multilayer-wall-result.dto.ts`
+- [x] `dto/layer.dto.ts`, `multilayer-wall-input.dto.ts`, `multilayer-wall-result.dto.ts`, `wall-temperature-point.dto.ts`
 - [x] `dto/recuperator-htc-input.dto.ts` — optional `airComposition` (defaults to pure air)
 - [x] `controllers/thermal-exchange.controller.ts` → `POST /thermal-exchange/multilayer-wall`
 
@@ -274,8 +274,8 @@ Historical plan: [`STEP_02_FURNACE_MODULE.md`](STEP_02_FURNACE_MODULE.md) (banne
 - [x] `recuperator.module.ts`
 - [x] `enums/hole-form.enum.ts` — SQUARE, CIRCLE, TRIANGLE, CIRCLE_IN_RING
 - [x] `services/recuperator-geometry.service.ts` — areas, perimeters, dEq, ray lengths
-- [x] `services/recuperator.service.ts` — 8-neighbour grid-search optimizer
-- [x] `dto/recuperator-input.dto.ts`, `recuperator-result.dto.ts`
+- [x] `services/recuperator.service.ts` — 8-neighbour grid-search optimizer; optional `wallMaterial` → λ(T)/ε(T) via `MultilayerWallService`, returns `wallPropertyProfile`
+- [x] `dto/recuperator-input.dto.ts`, `recuperator-result.dto.ts`, `wall-property-point.dto.ts`
 - [x] `controllers/recuperator.controller.ts` → `POST /recuperator/calculate`
 
 ### Common utilities

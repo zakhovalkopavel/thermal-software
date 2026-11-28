@@ -10,7 +10,7 @@
 
 ## Goal
 
-Create the single **Materials** module that hosts six sections — **Metals**, **Gases**, **Refractories**, **Raw materials**, **Glasses**, **Mineral compositions** — each self-contained (its own selection, conditions, calculation and charts), with a shared layout, shared catalogue API and a reusable `MaterialPicker`.
+Create the single **Materials** module that hosts seven sections — **Metals**, **Gases**, **Other materials**, **Refractories**, **Raw materials**, **Glasses**, **Mineral compositions** — each self-contained (its own selection, conditions, calculation and charts), with a shared layout, shared catalogue API and a reusable `MaterialPicker`.
 
 Material data already exists in the backend but most of it has **no list endpoint**. This step specifies read-only endpoints that expose the existing library data (allowed by the backend change policy in [README.md](README.md)), so the frontend never duplicates material tables.
 

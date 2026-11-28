@@ -11,7 +11,7 @@ const COMBUSTION = toCombustionModeInput(toCombustionRequest(RECUPERATOR_DEFAULT
 const DRAFT = RECUPERATOR_DEFAULTS.draft;
 
 describe('recuperator › recuperator-request', () => {
-  it('maps the circular-channel example', () => {
+  it('maps the circular-channel example with wall material', () => {
     expect(toRecuperatorInput(DRAFT, COMBUSTION)).toMatchInlineSnapshot(`
       {
         "combustion": {
@@ -32,17 +32,30 @@ describe('recuperator › recuperator-request', () => {
         "holeForm": "circle",
         "nAir": 100,
         "nSmoke": 81,
-        "refractoryEmissivity": 0.85,
-        "refractoryLambda_WmK": 1.2,
         "refractoryThickness_m": 0.003,
         "smokeTurbulence": false,
         "surfaceArea_m2": 5,
         "surfaceEmissivity": 0.9,
         "tAirStart_K": 573,
         "thermalInsulationThickness_m": 0.05,
+        "wallMaterial": "chamotte_solid",
         "wantedRecuperatorLength_m": 1.5,
       }
     `);
+  });
+
+  it('requires scalar λ / ε when no wall material is selected', () => {
+    const withoutMaterial = { ...DRAFT, wallMaterial: null };
+    expect(() => toRecuperatorInput(withoutMaterial, COMBUSTION)).toThrow('Enter Wall λ.');
+    expect(
+      toRecuperatorInput(
+        {
+          ...withoutMaterial,
+          values: { ...DRAFT.values, refractoryLambda_WmK: 1.2, refractoryEmissivity: 0.85 },
+        },
+        COMBUSTION,
+      ),
+    ).toMatchObject({ refractoryLambda_WmK: 1.2, refractoryEmissivity: 0.85 });
   });
 
   it('sends h₀ and passes for circle-in-ring only', () => {

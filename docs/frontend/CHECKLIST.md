@@ -51,6 +51,13 @@ Track implementation against [README.md](README.md). Tick an item only when it w
 - [x] Property-vs-T chart (ρ, ν on log axis); mixture pie
 - [x] Cp methods comparison in J/(mol·K)
 
+## STEP 12 — Other materials
+
+- [x] Materials hub + nav entry (`/materials/other-materials`)
+- [x] Full compound-catalogue search (organic / inorganic, any phase)
+- [x] Identity cards (name, formula, CAS, class, group, id); `?compound=` deep link
+- [x] Gas property sweep when gas-bounds succeed; identity-only when not gas-capable
+
 ## STEP 06 — Refractories
 
 - [x] Spec (Step 6)

@@ -16,11 +16,14 @@ export const RECUPERATOR_FIELDS = {
     { key: 'nPasses', label: 'Air passes', min: 1, helperText: 'Default 1' },
   ] satisfies NumberFieldSpec<RecuperatorFieldKey>[],
   materials: [
-    { key: 'refractoryLambda_WmK', label: 'Wall λ', unit: 'W/(m·K)', min: 0.01, required: true },
-    { key: 'refractoryEmissivity', label: 'Wall ε', min: 0, max: 1, required: true },
     { key: 'thermalInsulationThickness_m', label: 'Insulation thickness', unit: 'm', min: 0, required: true },
     { key: 'surfaceEmissivity', label: 'Outer shell ε', min: 0, max: 1, required: true },
     { key: 'surfaceArea_m2', label: 'Outer surface area', unit: 'm²', min: 0, required: true },
+  ] satisfies NumberFieldSpec<RecuperatorFieldKey>[],
+  /** Scalar fallbacks when no wall material is selected. */
+  wallOverrides: [
+    { key: 'refractoryLambda_WmK', label: 'Wall λ', unit: 'W/(m·K)', min: 0.01, required: true },
+    { key: 'refractoryEmissivity', label: 'Wall ε', min: 0, max: 1, required: true },
   ] satisfies NumberFieldSpec<RecuperatorFieldKey>[],
   advanced: [
     { key: 'airPreheat_K', label: 'Air preheat offset', unit: 'K', helperText: 'Added to the combustion air T for the max flame T; default 0' },

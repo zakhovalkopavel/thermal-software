@@ -29,12 +29,12 @@ describe('materials › material-picker-options', () => {
     expect(options).toHaveLength(REFRACTORIES.length);
     expect([...new Set(options.map((option) => option.groupLabel))]).toMatchInlineSnapshot(`
       [
+        "Insulation",
         "Refractory products · Chamotte",
         "Refractory products · Mullite",
         "Refractory products · Quartz",
         "Refractory products · Alumina",
         "Refractory products · Carbide",
-        "Refractory products · Insulation",
       ]
     `);
   });

@@ -10,4 +10,6 @@ export type CompoundAutocompleteOption = {
   formula: string | null;
   displayFormula?: string;
   cas?: string | null;
+  className?: string;
+  group?: string;
 };
