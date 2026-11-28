@@ -3,4 +3,5 @@ export { FlowGeometry } from './flow-geometry.enum';
 export { BodyGeometry } from './body-geometry.enum';
 export { CorrelationName   } from './correlation-name.enum';
 export { CorrelationFamily } from './correlation-family.enum';
+export { FluidPhase } from './fluid-phase.enum';
 

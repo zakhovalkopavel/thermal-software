@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Alert, Box, Checkbox, FormControlLabel, MenuItem, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { CalculateButton, CalculatorPage, GasCompositionInput, ResultPanel } from '@/shared/ui/calc';
-import { useGasList } from '../../../materials';
+import { CompoundAutocomplete, useGasList } from '../../../materials';
+import type { CompoundSelection } from '../../../materials';
 import { AdvancedFields } from '../../components/AdvancedFields';
 import { NumberFieldGrid } from '../../components/NumberFieldGrid';
 import { HtcResults } from './HtcResults';
@@ -61,7 +62,7 @@ export function HtcCalculator() {
   return (
     <CalculatorPage
       title="Heat-transfer coefficient"
-      description="Re, Pr, Gr, Ra, Nu and the convective heat-transfer coefficient for a flow geometry and gas."
+      description="Re, Pr, Gr, Ra, Nu and the convective heat-transfer coefficient for a flow geometry and gas or liquid."
       inputs={
         <Stack
           component="form"
@@ -103,6 +104,7 @@ export function HtcCalculator() {
             >
               <ToggleButton value="named">Single gas</ToggleButton>
               <ToggleButton value="mixture">Mixture</ToggleButton>
+              <ToggleButton value="liquid">Liquid</ToggleButton>
             </ToggleButtonGroup>
             {draft.fluidMode === 'named' ? (
               <TextField select size="small" fullWidth label="Gas" value={gasSpecies.includes(draft.fluid) ? draft.fluid : ''} onChange={(event) => patch({ fluid: event.target.value })}>
@@ -112,8 +114,24 @@ export function HtcCalculator() {
                   </MenuItem>
                 ))}
               </TextField>
-            ) : (
+            ) : draft.fluidMode === 'mixture' ? (
               <GasCompositionInput value={draft.composition} onChange={(composition) => patch({ composition })} species={gasSpecies} />
+            ) : (
+              <CompoundAutocomplete
+                label="Liquid"
+                value={draft.liquidCompound}
+                includeRegistry={false}
+                gasesOnly={false}
+                liquidsOnly
+                onChange={(selection: CompoundSelection | null) =>
+                  patch({
+                    liquidCompound:
+                      selection?.source === 'compound'
+                        ? { source: 'compound', id: selection.id, label: selection.label }
+                        : null,
+                  })
+                }
+              />
             )}
           </Stack>
           <NumberFieldGrid fields={HTC_FIELDS.main} values={draft.values} onChange={setValue} columns={3} />

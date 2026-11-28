@@ -56,7 +56,7 @@ Track implementation against [README.md](README.md). Tick an item only when it w
 - [x] Materials hub + nav entry (`/materials/other-materials`)
 - [x] Full compound-catalogue search (organic / inorganic, any phase)
 - [x] Identity cards (name, formula, CAS, class, group, id); `?compound=` deep link
-- [x] Gas property sweep when gas-bounds succeed; identity-only when not gas-capable
+- [x] Gas / liquid property sweep when phase bounds succeed (phase toggle when both); identity-only when neither
 
 ## STEP 06 — Refractories
 
@@ -109,7 +109,7 @@ Track implementation against [README.md](README.md). Tick an item only when it w
 
 ## STEP 11 — Processes: advanced
 
-- [x] HTC / dimensionless with dynamic geometry fields (single gas or mixture; "air" is not offered because the dimensionless endpoint returns 500 for it — backend bug awaiting approval) + body-geometry tab
+- [x] HTC / dimensionless with dynamic geometry fields (single gas, mixture, or liquid via catalogue `liquidsOnly`; "air" is not offered because the dimensionless endpoint returns 500 for it — backend bug awaiting approval) + body-geometry tab
 - [x] Recuperator (combustion from the Step 10 forms or handed off from Combustion; no solver-limit fields — the DTO has none besides the target length)
 - [x] Thermal distribution (criteria + at depth + profile + average; `plate`, `auto` and `V_over_A` are not offered — they need `halfThickness` / `V` / `A`, which the DTO rejects; ξ axis follows the backend: 0 = centre, 1 = surface)
 - [x] λ taken from a Materials item (metal or refractory at a chosen T; recuperator also takes ε)

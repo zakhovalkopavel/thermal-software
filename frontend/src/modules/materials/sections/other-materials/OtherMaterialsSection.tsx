@@ -3,10 +3,12 @@ import { Alert, Stack } from '@mui/material';
 import { CalculatorPage, ResultPanel } from '@/shared/ui/calc';
 import { useSearchParamState } from '@/shared/hooks/useSearchParamState';
 import { useCompoundGasBounds } from '../../hooks/useCompoundGasBounds';
+import { useCompoundLiquidBounds } from '../../hooks/useCompoundLiquidBounds';
 import { useCompoundSearch } from '../../hooks/useCompoundSearch';
 import { applyGasTemperatureBounds } from '../../mappers/apply-gas-temperature-bounds.mapper';
 import { toTemperatureGrid } from '../../mappers/temperature-grid.mapper';
 import type { CompoundSelection } from '../../types/compound-selection.type';
+import type { FluidPhase } from '../../types/fluid-phase.type';
 import type { TemperatureSweep } from '../../types/temperature-sweep.type';
 import { usePureGasProperties } from '../gases/hooks/usePureGasProperties';
 import { OTHER_MATERIALS_UI } from './constants/other-materials-ui.constants';
@@ -21,6 +23,7 @@ export function OtherMaterialsSection() {
   const [selection, setSelection] = useState<CompoundSelection | null>(() => selectionFromCompoundParam(compoundParam));
   const [sweep, setSweep] = useState<TemperatureSweep>(OTHER_MATERIALS_UI.defaultSweep);
   const [pressure, setPressure] = useState<number | null>(OTHER_MATERIALS_UI.defaultPressure_Pa);
+  const [phase, setPhase] = useState<FluidPhase>('gas');
   const [request, setRequest] = useState<OtherMaterialRequest | null>(null);
   const [identityOnly, setIdentityOnly] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -28,14 +31,16 @@ export function OtherMaterialsSection() {
   const compoundId = selection?.source === 'compound' ? selection.id : null;
   const needsEnrichment = Boolean(compoundId && selection?.source === 'compound' && !selection.formula);
   const enrich = useCompoundSearch(compoundId ?? '', false, needsEnrichment);
-  const bounds = useCompoundGasBounds(compoundId, pressure);
-  const gasResult = usePureGasProperties(
+  const gasBounds = useCompoundGasBounds(compoundId, pressure);
+  const liquidBounds = useCompoundLiquidBounds(compoundId, pressure);
+  const propsResult = usePureGasProperties(
     request
       ? {
           mode: request.mode,
           gases: [request.compound],
           temperatures_K: request.temperatures_K,
           P_Pa: request.P_Pa,
+          phase: request.phase,
         }
       : null,
   );
@@ -57,34 +62,67 @@ export function OtherMaterialsSection() {
     });
   }, [compoundId, enrich.data]);
 
+  const gasCapable = Boolean(gasBounds.data?.Tmin_K != null || gasBounds.data?.Tmax_K != null);
+  const liquidCapable = Boolean(liquidBounds.data?.capable);
+  const activeBounds = phase === 'liquid' ? liquidBounds.data : gasBounds.data;
+
   useEffect(() => {
-    if (!bounds.data) return;
-    const nextBounds = bounds.data;
+    if (!activeBounds) return;
+    const nextBounds = activeBounds;
     setSweep((current) => {
       const next = applyGasTemperatureBounds(current, nextBounds);
       if (next.value === current.value && next.from === current.from && next.to === current.to) return current;
       return next;
     });
-  }, [bounds.data?.Tmin_K, bounds.data?.Tmax_K, bounds.data?.P_Pa, compoundId]);
+  }, [
+    activeBounds?.Tmin_K,
+    activeBounds?.Tmax_K,
+    activeBounds?.P_Pa,
+    compoundId,
+    phase,
+  ]);
 
-  const gasCapable = Boolean(bounds.data);
-  const gasChecked = Boolean(compoundId) && !bounds.isFetching && (bounds.isFetched || bounds.isError);
+  useEffect(() => {
+    if (!compoundId) return;
+    if (liquidCapable && !gasCapable) setPhase('liquid');
+    else if (gasCapable && !liquidCapable) setPhase('gas');
+  }, [compoundId, gasCapable, liquidCapable]);
+
+  const boundsChecked =
+    Boolean(compoundId)
+    && !gasBounds.isFetching
+    && !liquidBounds.isFetching
+    && (gasBounds.isFetched || gasBounds.isError)
+    && (liquidBounds.isFetched || liquidBounds.isError);
+
   const boundsHint = useMemo(() => {
-    if (!bounds.data?.boilingPoint_K) return null;
-    const Tb = bounds.data.boilingPoint_K.toFixed(2);
+    if (!activeBounds) return null;
+    if (phase === 'liquid') {
+      const Tm = liquidBounds.data?.meltingPoint_K;
+      const Tb = liquidBounds.data?.boilingPoint_K;
+      const parts = [
+        Tm != null ? `Tm ${Tm.toFixed(2)} K` : null,
+        Tb != null ? `Tb ${Tb.toFixed(2)} K` : null,
+        liquidBounds.data?.Tmax_K != null ? `correlations to ${liquidBounds.data.Tmax_K.toFixed(0)} K` : null,
+      ].filter(Boolean);
+      return parts.length ? `Liquid · ${parts.join(' · ')}` : null;
+    }
+    if (!gasBounds.data?.boilingPoint_K) return null;
+    const Tb = gasBounds.data.boilingPoint_K.toFixed(2);
     const source =
-      bounds.data.boilingPointSource === 'vaporPressure'
-        ? `Tb at ${(bounds.data.P_Pa / 1000).toFixed(1)} kPa`
+      gasBounds.data.boilingPointSource === 'vaporPressure'
+        ? `Tb at ${(gasBounds.data.P_Pa / 1000).toFixed(1)} kPa`
         : 'normal Tb (≈1 atm)';
-    const max = bounds.data.Tmax_K != null ? ` · correlations to ${bounds.data.Tmax_K.toFixed(0)} K` : '';
-    return `Gas above ${Tb} K (${source})${max}${bounds.data.message ? ` — ${bounds.data.message}` : ''}`;
-  }, [bounds.data]);
+    const max = gasBounds.data.Tmax_K != null ? ` · correlations to ${gasBounds.data.Tmax_K.toFixed(0)} K` : '';
+    return `Gas above ${Tb} K (${source})${max}${gasBounds.data.message ? ` — ${gasBounds.data.message}` : ''}`;
+  }, [activeBounds, gasBounds.data, liquidBounds.data, phase]);
 
   const changeSelection = (next: CompoundSelection | null) => {
     setSelection(next);
     setRequest(null);
     setIdentityOnly(false);
     setFormError(null);
+    setPhase('gas');
     const id = next?.source === 'compound' ? next.id : null;
     if (id !== compoundParam) setCompoundParam(id);
   };
@@ -94,9 +132,10 @@ export function OtherMaterialsSection() {
       setFormError('Select a compound from the catalogue.');
       return;
     }
-    if (!gasCapable) {
-      if (!gasChecked) {
-        setFormError('Checking gas-phase data for this compound…');
+    const canCalculate = gasCapable || liquidCapable;
+    if (!canCalculate) {
+      if (!boundsChecked) {
+        setFormError('Checking phase data for this compound…');
         return;
       }
       setRequest(null);
@@ -104,6 +143,7 @@ export function OtherMaterialsSection() {
       setFormError(null);
       return;
     }
+    const effectivePhase: FluidPhase = liquidCapable && !gasCapable ? 'liquid' : gasCapable && !liquidCapable ? 'gas' : phase;
     if (pressure === null) {
       setFormError('Enter pressure.');
       return;
@@ -115,6 +155,7 @@ export function OtherMaterialsSection() {
         P_Pa: pressure,
         unit: sweep.unit,
         mode: sweep.mode,
+        phase: effectivePhase,
       });
       setIdentityOnly(false);
       setFormError(null);
@@ -129,7 +170,7 @@ export function OtherMaterialsSection() {
   return (
     <CalculatorPage
       title="Other materials"
-      description="Search the full compound catalogue — organic and inorganic, any phase. Gas properties are calculated when the record has gas thermo and transport."
+      description="Search the full compound catalogue — organic and inorganic, any phase. Gas or liquid properties when the record has thermo and transport for that phase."
       inputs={
         <OtherMaterialForm
           selection={selection}
@@ -138,31 +179,38 @@ export function OtherMaterialsSection() {
           onSweepChange={setSweep}
           pressure_Pa={pressure}
           onPressureChange={setPressure}
+          phase={phase}
+          onPhaseChange={setPhase}
           gasCapable={gasCapable}
-          gasChecked={gasChecked}
+          liquidCapable={liquidCapable}
+          boundsChecked={boundsChecked}
           boundsHint={boundsHint}
           onCalculate={calculate}
-          loading={gasResult.isLoading || bounds.isFetching}
+          loading={propsResult.isLoading || gasBounds.isFetching || liquidBounds.isFetching}
           formError={formError}
         />
       }
       results={
         <ResultPanel
-          loading={Boolean(request) && gasResult.isLoading}
-          error={request ? gasResult.firstError : null}
+          loading={Boolean(request) && propsResult.isLoading}
+          error={request ? propsResult.firstError : null}
           hasResult={Boolean(showIdentity)}
         >
           {compoundSelection && (
             <Stack spacing={2}>
               <OtherMaterialIdentity selection={compoundSelection} />
               {identityOnly && !request && (
-                <Alert severity="info">Showing catalogue identity only — no gas-phase calculation for this compound.</Alert>
+                <Alert severity="info">
+                  Showing catalogue identity only — no gas or liquid calculation for this compound.
+                </Alert>
               )}
-              {request && gasResult.isComplete && !gasResult.allFailed && (
-                <OtherMaterialResults request={request} rows={gasResult.rows} />
+              {request && propsResult.isComplete && !propsResult.allFailed && (
+                <OtherMaterialResults request={request} rows={propsResult.rows} />
               )}
-              {request && gasResult.allFailed && (
-                <Alert severity="warning">Gas property endpoints failed for this compound at the selected conditions.</Alert>
+              {request && propsResult.allFailed && (
+                <Alert severity="warning">
+                  Property endpoints failed for this compound at the selected conditions ({request.phase}).
+                </Alert>
               )}
             </Stack>
           )}

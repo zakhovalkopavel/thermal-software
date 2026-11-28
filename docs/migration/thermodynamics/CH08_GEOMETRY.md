@@ -127,9 +127,10 @@ export type KnownFluid =
   | 'air'
   | 'N2' | 'O2' | 'CO2' | 'CO' | 'H2' | 'H2O' | 'CH4'
   | 'SO2' | 'SO3' | 'NO' | 'NO2' | 'NH3'
-  | 'water'          // liquid water
+  | 'water'          // legacy alias → gas H2O; liquid water = phase:'liquid' + compoundId 'water' (or fluid H2O)
   | 'gas_mix';       // arbitrary mixture — requires composition field
 ```
+
 
 ---
 

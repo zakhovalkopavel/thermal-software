@@ -218,9 +218,9 @@ Maps geometry key to the correct dimension from `GeometryDimsDto`
 Resolves fluid properties from the flat fluid interface, then delegates to
 `DimensionlessNumbersService`.
 
-Implements **Mode B** fluid resolution: given `{fluid, T_fluid_K, P_Pa}`, calls
-`GasPropertiesService + TransportService` to obtain `{ρ, μ, Cp, λ, ν}` before
-passing them to the pure-math service.
+Implements **Mode B** fluid resolution: given `{fluid|compoundId, T_fluid_K, P_Pa, phase?}`,
+obtains `{ρ, μ, Cp, λ, ν}` via `CompoundFluidPropsService` (gas EOS / mixture path, or liquid
+equation buckets when `phase: 'liquid'`) before passing them to the pure-math service.
 
 ### Public methods
 

@@ -1,3 +1,5 @@
+import type { FluidPhase } from '../../../types/fluid-phase.type';
+
 export type FluidBaseInput = {
   fluid?: string;
   compoundId?: string;
@@ -5,4 +7,5 @@ export type FluidBaseInput = {
   T_fluid_K: number;
   P_Pa?: number;
   fractionType?: 'mole' | 'mass';
+  phase?: FluidPhase;
 };

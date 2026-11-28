@@ -1,1 +1,1 @@
-export type FluidMode = 'named' | 'mixture';
+export type FluidMode = 'named' | 'mixture' | 'liquid';

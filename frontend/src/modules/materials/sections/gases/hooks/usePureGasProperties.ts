@@ -13,12 +13,18 @@ function speciesKey(gas: PureGasSpeciesRef): string {
   return gas.source === 'registry' ? gas.key : gas.id;
 }
 
-function toFluidInput(gas: PureGasSpeciesRef, T_K: number, P_Pa: number): FluidBaseInput {
-  const base = { T_fluid_K: T_K, P_Pa };
+function toFluidInput(
+  gas: PureGasSpeciesRef,
+  T_K: number,
+  P_Pa: number,
+  phase?: FluidBaseInput['phase'],
+): FluidBaseInput {
+  const base = { T_fluid_K: T_K, P_Pa, ...(phase ? { phase } : {}) };
   return gas.source === 'registry' ? { ...base, fluid: gas.key } : { ...base, compoundId: gas.id };
 }
 
 export function usePureGasProperties(request: PureGasRequest | null) {
+  const phase = request?.phase;
   const points = request
     ? request.gases.flatMap((gas) =>
         request.temperatures_K.map((T_K) => ({ gas, T_K, P_Pa: request.P_Pa, key: speciesKey(gas) })),
@@ -27,16 +33,16 @@ export function usePureGasProperties(request: PureGasRequest | null) {
 
   return useQueries({
     queries: points.flatMap(({ gas, T_K, P_Pa }) => {
-      const input = toFluidInput(gas, T_K, P_Pa);
+      const input = toFluidInput(gas, T_K, P_Pa, phase);
       return [
         {
-          queryKey: ['materials', 'gas-cp', speciesKey(gas), T_K, P_Pa],
+          queryKey: ['materials', 'gas-cp', speciesKey(gas), T_K, P_Pa, phase ?? 'gas'],
           queryFn: () => fluidPropertiesApi.cp(input),
           staleTime: Infinity,
           retry: false,
         },
         {
-          queryKey: ['materials', 'gas-prandtl', speciesKey(gas), T_K, P_Pa],
+          queryKey: ['materials', 'gas-prandtl', speciesKey(gas), T_K, P_Pa, phase ?? 'gas'],
           queryFn: () => prandtlApi.calculate(input),
           staleTime: Infinity,
           retry: false,

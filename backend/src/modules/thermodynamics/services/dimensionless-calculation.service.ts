@@ -8,6 +8,7 @@ import { DimensionlessResultDto } from '../dto/dimensionless/dimensionless-resul
 import { GeometryDimsDto } from '../dto/geometry/geometry-dims.dto';
 import { ResolvedDimensionlessPropsDto } from '../dto/dimensionless/resolved-dimensionless-props.dto';
 import { ScalarDimensionlessResultDto } from '../dto/dimensionless/scalar-dimensionless-result.dto';
+import { FluidPhase } from '../enums/fluid-phase.enum';
 import { Species } from '../enums/species.enum';
 import { PHYSICAL_CONSTANTS } from '../../../common/thermal/constants/physical.constants';
 import { STANDARD_CONDITIONS } from '../../../common/thermal/constants/standard-conditions.constants';
@@ -21,6 +22,7 @@ import { FLUID_REGISTRY } from '../../../common/thermal/compound/gas';
 import { CompoundValueBuilder } from '../../../common/thermal/utils/compound-data';
 import { FlatFluidInput } from '../types/flat-fluid-input.type';
 import { ResolvedFluidProps } from '../types/resolved-fluid-props.type';
+import { LiquidFluidResolve } from '../utils/liquid-fluid-resolve';
 
 /**
  * Service responsible for orchestrating dimensionless number calculations.
@@ -46,6 +48,7 @@ export class DimensionlessCalculationService {
       composition: dto.composition,
       T_fluid_K: T,
       P_Pa: dto.P_Pa,
+      phase: dto.phase,
     });
     if (!fluid)
       throw new Error('Could not resolve fluid properties — supply fluid name, compoundId, or composition + T_fluid_K');
@@ -64,6 +67,7 @@ export class DimensionlessCalculationService {
       composition: dto.composition,
       T_fluid_K: dto.T_fluid_K,
       P_Pa: dto.P_Pa,
+      phase: dto.phase,
     });
     if (!fluid)
       throw new Error('Could not resolve fluid properties — supply fluid name or composition + T_fluid_K');
@@ -82,6 +86,7 @@ export class DimensionlessCalculationService {
       composition: dto.composition,
       T_fluid_K: T,
       P_Pa: dto.P_Pa,
+      phase: dto.phase,
     });
     if (!fluid)
       throw new Error('Could not resolve fluid properties — supply fluid name, compoundId, or composition + T_fluid_K');
@@ -101,6 +106,7 @@ export class DimensionlessCalculationService {
       composition: dto.composition,
       T_fluid_K: T,
       P_Pa: dto.P_Pa,
+      phase: dto.phase,
     });
     if (!fluid)
       throw new Error('Could not resolve fluid properties — supply fluid name, compoundId, or composition + T_fluid_K');
@@ -133,6 +139,10 @@ export class DimensionlessCalculationService {
     if (!T || T <= 0) return null;
 
     const P = input.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
+
+    if (input.phase === FluidPhase.Liquid) {
+      return this.resolveLiquidFluid(input, T, P);
+    }
 
     if (input.compoundId) {
       try {
@@ -196,6 +206,29 @@ export class DimensionlessCalculationService {
     };
   }
 
+  private resolveLiquidFluid(
+    input: FlatFluidInput,
+    T: number,
+    P: number,
+  ): ResolvedFluidProps | null {
+    if (LiquidFluidResolve.hasComposition(input.composition)) return null;
+    try {
+      const { compound } = LiquidFluidResolve.compound(input.fluid, input.compoundId);
+      const props = this.compoundFluidProps.resolve(compound, T, P);
+      return {
+        rho_kg_m3: props.rho_kg_m3,
+        mu_Pa_s: props.mu_Pa_s,
+        Cp_J_kgK: props.Cp_J_kgK,
+        lambda: props.lambda,
+        nu_m2s: props.nu_m2s,
+        validity: props.validity,
+        mixtureValidity: props.mixtureValidity,
+      };
+    } catch {
+      return null;
+    }
+  }
+
   /**
    * Resolve Re, Pr, Gr, Ra, λ, ν — fluid props via `resolveFluid`.
    */
@@ -211,6 +244,7 @@ export class DimensionlessCalculationService {
       composition: dto.composition,
       T_fluid_K: T,
       P_Pa: P,
+      phase: dto.phase,
     });
     if (!fluid) {
       throw new Error(

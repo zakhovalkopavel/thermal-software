@@ -1,7 +1,8 @@
-import { Alert, Stack, Typography } from '@mui/material';
+import { Alert, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { CalculateButton, NumberField } from '@/shared/ui/calc';
 import { CompoundAutocomplete } from '../../components/CompoundAutocomplete';
 import { TemperatureSweepFields } from '../../components/TemperatureSweepFields';
+import type { FluidPhase } from '../../types/fluid-phase.type';
 import type { OtherMaterialFormProps } from './types/other-material-form-props.type';
 
 export function OtherMaterialForm({
@@ -11,13 +12,19 @@ export function OtherMaterialForm({
   onSweepChange,
   pressure_Pa,
   onPressureChange,
+  phase,
+  onPhaseChange,
   gasCapable,
-  gasChecked,
+  liquidCapable,
+  boundsChecked,
   boundsHint,
   onCalculate,
   loading,
   formError,
 }: OtherMaterialFormProps) {
+  const canCalculate = gasCapable || liquidCapable;
+  const bothPhases = gasCapable && liquidCapable;
+
   return (
     <Stack
       component="form"
@@ -36,17 +43,28 @@ export function OtherMaterialForm({
       />
       {selection?.source === 'compound' && (
         <Typography variant="body2" color="text.secondary">
-          Catalogue search covers organic and inorganic compounds in every phase. Gas thermo is calculated when the record
-          has usable gas equations.
+          Catalogue search covers organic and inorganic compounds. Gas or liquid properties are calculated when the record
+          has usable transport equations for that phase.
         </Typography>
       )}
-      {selection && gasChecked && !gasCapable && (
+      {selection && boundsChecked && !canCalculate && (
         <Alert severity="info">
-          No gas-phase thermo/transport for this compound yet — identity only. Solids and liquids stay catalogue lookup for
-          now.
+          No gas or liquid thermo/transport for this compound yet — identity only (typical for solids without tabulated
+          fluid properties).
         </Alert>
       )}
-      {gasCapable && (
+      {bothPhases && (
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          value={phase}
+          onChange={(_, next: FluidPhase | null) => next && onPhaseChange(next)}
+        >
+          <ToggleButton value="gas">Gas</ToggleButton>
+          <ToggleButton value="liquid">Liquid</ToggleButton>
+        </ToggleButtonGroup>
+      )}
+      {canCalculate && (
         <>
           <NumberField
             label="Pressure"
@@ -60,7 +78,7 @@ export function OtherMaterialForm({
         </>
       )}
       {formError && <Alert severity="warning">{formError}</Alert>}
-      <CalculateButton loading={loading} disabled={!selection || (gasCapable && pressure_Pa === null)} />
+      <CalculateButton loading={loading} disabled={!selection || (canCalculate && pressure_Pa === null)} />
     </Stack>
   );
 }

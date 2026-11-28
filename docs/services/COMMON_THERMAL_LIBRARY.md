@@ -278,6 +278,12 @@ gas-phase species skipped; `(a)` / `(s)` / `(cr)` preferred) via `CompoundSolidD
 (NASA `(L)` keys via `CompoundLiquidData`; optional preferred key such as `CaO(L)`). Used by
 Engine C ideal-liquid Gibbs minimisation. Gas transport is not required.
 
+`CompoundLiquidValue.forTransport(id)` builds a liquid transport `CompoundValue` with liquid
+`heatCapacity`, `viscosity`, `thermalConductivity` and `density` [kg/m³] buckets (required).
+Used by fluid / HTC APIs when `phase: 'liquid'`. `CompoundPropertyResolver.densityResult` evaluates
+ρ; `CompoundFluidPropsService` uses the density bucket instead of gas EOS. `CompoundLiquidBounds`
+and `GET /compounds/:id/liquid-bounds` report the liquid T window; search supports `liquidsOnly`.
+
 When no NASA key is set but `enthalpyFormation298`, `entropy298` and Cp exist,
 `enthalpy` / `entropy` / `gibbsEnergy` use `SolidThermoFromCp` at
 \(T_{ref}=298.15\) K (`STANDARD_CONDITIONS.THERMOCHEMICAL_REFERENCE_TEMPERATURE_K`):

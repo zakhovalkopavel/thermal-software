@@ -34,6 +34,44 @@ export class CompoundFluidPropsService {
     T_K: number,
     P_Pa: number = STANDARD_CONDITIONS.PRESSURE_PA,
   ): CompoundFluidProps {
+    if (compound.density?.values.length) {
+      return this.resolveLiquid(compound, T_K);
+    }
+    return this.resolveGas(compound, T_K, P_Pa);
+  }
+
+  /** Liquid: μ, λ, ρ, Cp from equation buckets (no gas EOS / CoolProp residual). */
+  private resolveLiquid(compound: CompoundValue, T_K: number): CompoundFluidProps {
+    const M = compound.Mr;
+    const resolver = new CompoundPropertyResolver(compound);
+    const cpR = resolver.heatCapacityResult(T_K);
+    const muR = resolver.viscosityResult(T_K);
+    const lamR = resolver.thermalConductivityResult(T_K);
+    const rhoR = resolver.densityResult(T_K);
+    const rho_kg_m3 = rhoR.value;
+    return {
+      M,
+      Cp_J_molK: cpR.value,
+      Cp_J_kgK: cpR.value / M,
+      mu_Pa_s: muR.value,
+      lambda: lamR.value,
+      rho_kg_m3,
+      nu_m2s: muR.value / rho_kg_m3,
+      validity: this.pickWorstValidity(
+        [cpR.validity, muR.validity, lamR.validity, rhoR.validity],
+        T_K,
+      ),
+      cpValidity: cpR.validity,
+      muValidity: muR.validity,
+      lambdaValidity: lamR.validity,
+    };
+  }
+
+  private resolveGas(
+    compound: CompoundValue,
+    T_K: number,
+    P_Pa: number,
+  ): CompoundFluidProps {
     const M = compound.Mr;
     const mole = this.moleComposition(compound);
 

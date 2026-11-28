@@ -15,4 +15,5 @@ export type CompoundSearchDoc = {
   class: string;
   group: string;
   gasesCapable: boolean;
+  liquidsCapable: boolean;
 }

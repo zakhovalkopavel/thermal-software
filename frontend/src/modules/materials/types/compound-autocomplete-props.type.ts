@@ -10,6 +10,8 @@ export type CompoundAutocompleteProps = {
   includeRegistry?: boolean;
   /** Restrict catalogue search to gas-capable compounds (default true). */
   gasesOnly?: boolean;
+  /** Restrict catalogue search to liquid-capable compounds (default false). */
+  liquidsOnly?: boolean;
   /** Registry keys / compound ids to hide (selected value always kept). */
   excludeIds?: string[];
 };

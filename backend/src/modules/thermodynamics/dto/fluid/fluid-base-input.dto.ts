@@ -1,8 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsIn, IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
-import { KnownFluid, KnownFluids } from '../../types';
+import { IsEnum, IsIn, IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
 import { STANDARD_CONDITIONS } from '../../../../common/thermal';
+import { FluidPhase } from '../../enums/fluid-phase.enum';
+import { KnownFluid, KnownFluids } from '../../types';
 
 /**
  * Shared base for all single-fluid property requests.
@@ -11,6 +12,7 @@ import { STANDARD_CONDITIONS } from '../../../../common/thermal';
  *   - Provide `fluid` as a `FLUID_REGISTRY` key (real compound) or `gas_mix`.
  *   - Provide `composition` (mole fractions by Species key) when `fluid = 'gas_mix'`
  *     or when no `fluid` is given.
+ *   - `phase: 'liquid'` + `compoundId` (or water/`H2O`) uses liquid transport equations.
  *   - `T_fluid_K` is always required (validated at service level so the error
  *     message is uniform across endpoints).
  *   - `P_Pa` defaults to atmospheric pressure (101 325 Pa).
@@ -30,7 +32,7 @@ export class FluidBaseInputDto {
   @ApiPropertyOptional({
     description:
       'Catalogue compoundId from GET /compounds/search (name with spaces as `_`; `_1`/`_2`/… on collisions). '
-      + 'Alternative to `fluid`.',
+      + 'Alternative to `fluid`. Required for most liquids (`phase: liquid`).',
     example: 'carbon_dioxide',
   })
   @IsOptional() @IsString()
@@ -50,6 +52,16 @@ export class FluidBaseInputDto {
   @ApiPropertyOptional({ description: `Pressure [Pa], default ${STANDARD_CONDITIONS.PRESSURE_PA}` })
   @IsOptional() @IsNumber()
   P_Pa?: number;
+
+  @ApiPropertyOptional({
+    enum: FluidPhase,
+    description:
+      'Fluid phase. Default gas. Liquid uses catalogue liquid μ, λ, ρ, Cp '
+      + '(compoundId, or water/H2O). Mixtures are not supported for liquid.',
+    default: FluidPhase.Gas,
+  })
+  @IsOptional() @IsEnum(FluidPhase)
+  phase?: FluidPhase;
 
   @ApiPropertyOptional({ enum: ['mole', 'mass'], description: 'Fraction type, default mole' })
   @IsOptional() @IsString()

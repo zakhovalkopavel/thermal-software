@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { GasPropertiesService } from './gas-properties.service';
 import { TransportService } from './transport.service';
 import { CompoundFluidPropsService } from './compound-fluid-props.service';
-import { Species, CorrelationName } from '../enums';
+import { Species, CorrelationName, FluidPhase } from '../enums';
 import { PHYSICAL_CONSTANTS, STANDARD_CONDITIONS } from '../../../common/thermal';
 import { FLUID_REGISTRY } from '../../../common/thermal/compound/gas';
 import { CompoundValue } from '../../../common/thermal/types/compound-value.type';
@@ -20,6 +20,7 @@ import type { FluidListEntry } from '../types/fluid-list-entry.type';
 import type { GeometryListEntry } from '../types/geometry-list-entry.type';
 import type { CorrelationListEntry } from '../types/correlation-list-entry.type';
 import { GasDensity } from '../utils/density/gas-density';
+import { LiquidFluidResolve } from '../utils/liquid-fluid-resolve';
 
 /**
  * FluidPropertyService — orchestration for /thermodynamics/fluid/*.
@@ -44,7 +45,17 @@ export class FluidPropertyService {
     const named = this._resolveNamedCompound(dto);
 
     if (named) {
-      const props = this.compoundFluidProps.resolve(named.compound, T);
+      const props = this.compoundFluidProps.resolve(named.compound, T, dto.P_Pa);
+      const isLiquid = dto.phase === FluidPhase.Liquid || Boolean(named.compound.density?.values.length);
+      if (isLiquid) {
+        return {
+          Cp_J_kgK: props.Cp_J_kgK,
+          molecularWeight_kg_mol: props.M,
+          species: named.label,
+          T_K: T,
+          validity: props.cpValidity,
+        };
+      }
       const Cv_J_kgK = props.Cp_J_kgK - PHYSICAL_CONSTANTS.GAS_CONSTANT_J_MOLK / props.M;
       return {
         Cp_J_kgK: props.Cp_J_kgK,
@@ -111,6 +122,13 @@ export class FluidPropertyService {
     const P = dto.P_Pa ?? STANDARD_CONDITIONS.PRESSURE_PA;
     const named = this._resolveNamedCompound(dto);
     if (named) {
+      if (named.compound.density?.values.length) {
+        const props = this.compoundFluidProps.resolve(named.compound, T, P);
+        return {
+          rho_kg_m3: props.rho_kg_m3,
+          molecularWeight_kg_mol: named.compound.Mr, T_K: T, P_Pa: P,
+        };
+      }
       return {
         rho_kg_m3: GasDensity.forCompound(named.compound, T, P),
         molecularWeight_kg_mol: named.compound.Mr, T_K: T, P_Pa: P,
@@ -198,11 +216,15 @@ export class FluidPropertyService {
 
   /**
    * Resolve a pure named fluid from `fluid` (registry) or `compoundId` (catalogue).
+   * Liquid phase uses `CompoundLiquidValue.forTransport`.
    * Returns null when the request is a composition / gas_mix path.
    */
   private _resolveNamedCompound(
     dto: FluidBaseInputDto,
   ): { compound: CompoundValue; label: string } | null {
+    if (dto.phase === FluidPhase.Liquid) {
+      return this._resolveLiquidCompound(dto);
+    }
     if (dto.compoundId) {
       if (dto.fluid && dto.fluid !== 'gas_mix') {
         throw new BadRequestException('Provide either fluid or compoundId, not both');
@@ -220,7 +242,17 @@ export class FluidPropertyService {
     return null;
   }
 
+  private _resolveLiquidCompound(
+    dto: FluidBaseInputDto,
+  ): { compound: CompoundValue; label: string } {
+    if (LiquidFluidResolve.hasComposition(dto.composition)) {
+      throw new BadRequestException('Liquid phase does not support composition mixtures');
+    }
+    return LiquidFluidResolve.compound(dto.fluid, dto.compoundId);
+  }
+
   private _validateNoCompositionConflict(dto: FluidBaseInputDto): void {
+    if (dto.phase === FluidPhase.Liquid) return;
     if (dto.compoundId && dto.composition && Object.keys(dto.composition).length > 0) {
       throw new BadRequestException('composition must not be provided when compoundId is set');
     }

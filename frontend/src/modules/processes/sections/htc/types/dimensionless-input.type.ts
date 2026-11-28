@@ -1,6 +1,8 @@
 export type DimensionlessInput = {
   geometry: string;
   fluid?: string;
+  compoundId?: string;
+  phase?: 'gas' | 'liquid';
   composition?: Record<string, number>;
   T_fluid_K?: number;
   T_surface_K?: number;

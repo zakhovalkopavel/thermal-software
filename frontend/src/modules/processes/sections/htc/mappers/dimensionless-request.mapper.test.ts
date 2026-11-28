@@ -48,4 +48,30 @@ describe('htc › dimensionless-request', () => {
     expect(() => toDimensionlessInput(DRAFT, geometry('pipe_annulus'))).toThrow('Enter dimension b.');
     expect(() => toDimensionlessInput({ ...DRAFT, fluidMode: 'named', fluid: '' }, geometry('pipe_circular'))).toThrow('Select a fluid.');
   });
+
+  it('sends a liquid catalogue compound with phase liquid', () => {
+    const input = toDimensionlessInput(
+      {
+        ...DRAFT,
+        fluidMode: 'liquid',
+        liquidCompound: { source: 'compound', id: 'water', label: 'water' },
+        values: { ...DRAFT.values, T_fluid_K: 300, T_surface_K: 320, w_m_s: 1 },
+      },
+      geometry('pipe_circular'),
+    );
+    expect(input).toMatchObject({
+      compoundId: 'water',
+      phase: 'liquid',
+      geometry: 'pipe_circular',
+      T_fluid_K: 300,
+    });
+    expect(input).not.toHaveProperty('fluid');
+    expect(input).not.toHaveProperty('composition');
+  });
+
+  it('rejects liquid mode without a compound', () => {
+    expect(() => toDimensionlessInput({ ...DRAFT, fluidMode: 'liquid', liquidCompound: null }, geometry('pipe_circular'))).toThrow(
+      'Select a liquid.',
+    );
+  });
 });

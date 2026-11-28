@@ -31,4 +31,11 @@ describe('compound search', () => {
   it('returns an empty list for a blank query', () => {
     expect(CompoundSearch.search('   ')).toEqual([]);
   });
+
+  it('liquidsOnly returns water and excludes compounds without liquid transport', () => {
+    const water = CompoundSearch.search('water', { limit: 10, liquidsOnly: true });
+    expect(water.some((hit) => hit.compoundId === 'water')).toBe(true);
+    const lime = CompoundSearch.search('lime', { limit: 10, liquidsOnly: true });
+    expect(lime.every((hit) => hit.compoundId !== 'lime')).toBe(true);
+  });
 });

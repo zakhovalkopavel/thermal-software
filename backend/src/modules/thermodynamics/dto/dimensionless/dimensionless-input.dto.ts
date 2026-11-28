@@ -4,6 +4,7 @@ import {
 import { Type, Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { FlowGeometry } from '../../enums/flow-geometry.enum';
+import { FluidPhase } from '../../enums/fluid-phase.enum';
 import { FlowRegime } from '../../types/flow-regime.type';
 import { CorrelationName } from '../../types/correlation-name.type';
 import { KnownFluid } from '../../types/known-fluid.type';
@@ -68,6 +69,16 @@ export class DimensionlessInputDto {
     example: { N2: 0.79, O2: 0.21 },
   })
   @IsOptional() @IsObject() composition?: Record<string, number>;
+
+  @ApiPropertyOptional({
+    enum: FluidPhase,
+    description:
+      'Fluid phase. Default gas. Liquid uses catalogue liquid μ, λ, ρ, Cp '
+      + '(compoundId, or water/H2O). Mixtures are not supported for liquid.',
+    default: FluidPhase.Gas,
+  })
+  @IsOptional() @IsEnum(FluidPhase)
+  phase?: FluidPhase;
 
   @ApiPropertyOptional({
     description: `Fluid bulk temperature [K]. Default: ${T_DEFAULT} K (ISO 1 standard temperature). Must be > 0.`,

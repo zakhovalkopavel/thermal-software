@@ -13,10 +13,16 @@ export function toDimensionlessInput(draft: HtcDraft, geometry: FlowGeometryInfo
   const missing = geometry.requiredDims.find((key) => draft.dims[key] === null || draft.dims[key] === undefined);
   if (missing) throw new Error(`Enter dimension ${GEOMETRY_DIMENSIONS[missing]?.label ?? missing}.`);
   if (draft.fluidMode === 'named' && !draft.fluid) throw new Error('Select a fluid.');
+  if (draft.fluidMode === 'liquid' && !draft.liquidCompound) throw new Error('Select a liquid.');
 
   const dimensionKeys = [...geometry.requiredDims, ...(geometry.optionalDims ?? [])];
   const dimensions = withoutNulls(Object.fromEntries(dimensionKeys.map((key) => [key, draft.dims[key] ?? null]))) as Record<string, number>;
-  const fluid = draft.fluidMode === 'mixture' ? { fluid: HTC_UI.gasMixFluid, composition: draft.composition } : { fluid: draft.fluid };
+  const fluid =
+    draft.fluidMode === 'mixture'
+      ? { fluid: HTC_UI.gasMixFluid, composition: draft.composition }
+      : draft.fluidMode === 'liquid'
+        ? { compoundId: draft.liquidCompound!.id, phase: 'liquid' as const }
+        : { fluid: draft.fluid };
 
   return {
     geometry: geometry.key,

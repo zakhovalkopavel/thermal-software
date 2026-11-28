@@ -14,7 +14,7 @@ export const MATERIALS_SECTIONS = [
   {
     route: 'other-materials',
     label: 'Other materials',
-    description: 'Any compound from the catalogue (organic, inorganic, solid, liquid, gas) → identity and gas properties when available',
+    description: 'Any compound from the catalogue (organic, inorganic, solid, liquid, gas) → identity and gas/liquid properties when available',
     step: 12,
   },
   {

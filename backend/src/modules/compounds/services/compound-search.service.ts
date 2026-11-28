@@ -4,7 +4,12 @@ import { CompoundSearchHitDto } from '../dto/compound-search-hit.dto';
 
 @Injectable()
 export class CompoundSearchService {
-  search(q: string | undefined, limit?: number, gasesOnly?: boolean): CompoundSearchHitDto[] {
-    return CompoundSearch.search(q ?? '', { limit, gasesOnly });
+  search(
+    q: string | undefined,
+    limit?: number,
+    gasesOnly?: boolean,
+    liquidsOnly?: boolean,
+  ): CompoundSearchHitDto[] {
+    return CompoundSearch.search(q ?? '', { limit, gasesOnly, liquidsOnly });
   }
 }

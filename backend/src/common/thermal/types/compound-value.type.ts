@@ -1,9 +1,10 @@
 import { EquationValue } from './equation-value.type';
 
 /**
- * Thermophysical data for a pure component — gas or condensed (solid) phase.
- * Gas compounds carry viscosity / thermal conductivity; solids built with
- * `CompoundValueBuilder.forSolid` omit them (and may add `entropy298`).
+ * Thermophysical data for a pure component — gas, liquid, or solid phase.
+ * Gas compounds carry viscosity / thermal conductivity; liquids built with
+ * `CompoundLiquidValue.forTransport` also carry `density` [kg/m³]; solids built with
+ * `CompoundValueBuilder.forSolid` omit transport (and may add `entropy298`).
  *
  * Property resolution order (hidden from callers — use CompoundPropertyResolver):
  *   Each multi-value property has a `def` index that selects the default
@@ -101,6 +102,15 @@ export type CompoundValue = {
 
   /** Thermal conductivity λ [W/(m·K)]; absent for solids */
   readonly thermalConductivity?: {
+    def: number;
+    values: EquationValue[];
+  };
+
+  /**
+   * Mass density ρ [kg/m³] from liquid-density correlations (PPDS-10, Yaws, …).
+   * Present on liquid transport compounds; absent for gases (EOS density) and solids.
+   */
+  readonly density?: {
     def: number;
     values: EquationValue[];
   };

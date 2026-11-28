@@ -1,3 +1,4 @@
+import type { CompoundSelection } from '../../../../materials';
 import type { FluidMode } from './fluid-mode.type';
 import type { HtcFieldKey } from './htc-field-key.type';
 
@@ -6,6 +7,8 @@ export type HtcDraft = {
   dims: Record<string, number | null>;
   fluidMode: FluidMode;
   fluid: string;
+  /** Catalogue compound for `fluidMode === 'liquid'`. */
+  liquidCompound: Extract<CompoundSelection, { source: 'compound' }> | null;
   composition: Record<string, number>;
   values: Record<HtcFieldKey, number | null>;
   /** Empty string = let the backend choose. */

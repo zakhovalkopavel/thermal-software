@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsIn, IsNumber, IsObject, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { FlowGeometry } from '../../enums/flow-geometry.enum';
+import { FluidPhase } from '../../enums/fluid-phase.enum';
 import { GeometryDimsDto } from '../geometry/geometry-dims.dto';
 import { KnownFluid } from '../../types/known-fluid.type';
 import { KnownFluids } from '../../utils/known-fluids';
@@ -65,6 +66,16 @@ export class ReynoldsInputDto {
     example: { N2: 0.79, O2: 0.21 },
   })
   @IsOptional() @IsObject() composition?: Record<string, number>;
+
+  @ApiPropertyOptional({
+    enum: FluidPhase,
+    description:
+      'Fluid phase. Default gas. Liquid uses catalogue liquid μ, λ, ρ, Cp '
+      + '(compoundId, or water/H2O).',
+    default: FluidPhase.Gas,
+  })
+  @IsOptional() @IsEnum(FluidPhase)
+  phase?: FluidPhase;
 
   @ApiPropertyOptional({
     description: 'Fluid bulk temperature [K]. Must be > 0.',

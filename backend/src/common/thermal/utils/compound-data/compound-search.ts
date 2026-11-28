@@ -1,5 +1,6 @@
 import { COMPOUND_SEARCH_LIMITS } from './constants/compound-search-limits.constants';
 import { COMPOUND_SEARCH_RANK } from './constants/compound-search-rank.constants';
+import { CompoundLiquidValue } from './compound-liquid-value';
 import { CompoundText } from './compound-text';
 import { CompoundDataIndexEntry } from './types/dataset/compound-data-index-entry.type';
 import { CompoundSearchDoc } from './types/search/compound-search-doc.type';
@@ -26,6 +27,7 @@ export class CompoundSearch {
     const scored: CompoundSearchHit[] = [];
     for (const doc of CompoundSearch.docsOrBuild()) {
       if (options.gasesOnly && !doc.gasesCapable) continue;
+      if (options.liquidsOnly && !doc.liquidsCapable) continue;
       const score = CompoundSearch.scoreDoc(doc, query);
       if (score <= 0) continue;
       scored.push(CompoundSearch.toHit(doc, score));
@@ -82,6 +84,7 @@ export class CompoundSearch {
         class: meta.class,
         group: meta.group,
         gasesCapable: CompoundSearch.isGasesCapable(meta),
+        liquidsCapable: CompoundLiquidValue.hasTransport(meta),
       });
     }
     return out;

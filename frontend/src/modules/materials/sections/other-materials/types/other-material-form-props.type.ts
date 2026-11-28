@@ -1,4 +1,5 @@
 import type { CompoundSelection } from '../../../types/compound-selection.type';
+import type { FluidPhase } from '../../../types/fluid-phase.type';
 import type { TemperatureSweep } from '../../../types/temperature-sweep.type';
 
 export type OtherMaterialFormProps = {
@@ -8,9 +9,12 @@ export type OtherMaterialFormProps = {
   onSweepChange: (sweep: TemperatureSweep) => void;
   pressure_Pa: number | null;
   onPressureChange: (pressure_Pa: number | null) => void;
+  phase: FluidPhase;
+  onPhaseChange: (phase: FluidPhase) => void;
   gasCapable: boolean;
-  /** True once gas-bounds has settled for the current compound. */
-  gasChecked: boolean;
+  liquidCapable: boolean;
+  /** True once gas- and liquid-bounds have settled for the current compound. */
+  boundsChecked: boolean;
   boundsHint: string | null;
   onCalculate: () => void;
   loading: boolean;

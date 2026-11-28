@@ -177,6 +177,22 @@ export class CompoundPropertyResolver {
     return EquationValidity.evaluateEquation(resolveEntry(bucket, preferred, T), T);
   }
 
+  // ─── Density ────────────────────────────────────────────────────────────────
+
+  /**
+   * Mass density ρ [kg/m³] at temperature T [K] from the liquid `density` bucket.
+   * @param preferred  Index or RefKey to select approximation; default uses `def`.
+   */
+  density(T: number, preferred?: PreferredApprox): number {
+    return this.densityResult(T, preferred).value;
+  }
+
+  densityResult(T: number, preferred?: PreferredApprox): EvaluationResult {
+    const bucket = this.compound.density;
+    if (!bucket?.values.length) return CompoundPropertyResolver.unavailable(T, 'No density data');
+    return EquationValidity.evaluateEquation(resolveEntry(bucket, preferred, T), T);
+  }
+
   // ─── Internals ──────────────────────────────────────────────────────────────
 
   /** NASA first, then the Cp-integral path (ΔHf°298 + S°298 + Cp), else NaN. */

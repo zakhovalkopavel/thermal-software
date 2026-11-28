@@ -12,12 +12,16 @@ uses the **same flat fluid-identification fields** — never a nested object:
 | Field | Type | Description |
 |-------|------|-------------|
 | `fluid` | `string` | Key of `FLUID_REGISTRY` (`common/thermal/compound/gas`) or `"gas_mix"`. |
+| `compoundId` | `string` | Catalogue id from `GET /compounds/search` (alternative to `fluid`). |
 | `composition` | `Record<Species, number>` | Mole fractions — required when `fluid = "gas_mix"` or `fluid` is absent. Must sum to 1. |
+| `phase` | `'gas' \| 'liquid'` | Default `gas`. Liquid uses catalogue liquid μ, λ, ρ, Cp (`compoundId`, or water/`H2O`). |
 | `T_fluid_K` | `number` | Bulk temperature [K]. Always explicit; no magic defaults in DTOs (defaults only where documented). |
 | `P_Pa` | `number` | Absolute pressure [Pa]. Default: `STANDARD_CONDITIONS.PRESSURE_PA` (101 325 Pa). |
 
 **Rule:** exactly one of `fluid` or `composition` must be provided; using both is allowed only
-when `fluid = "gas_mix"`.
+when `fluid = "gas_mix"`. With `phase: 'liquid'`, supply `compoundId` (or `fluid: water`/`H2O`);
+mixtures are not supported.
+
 
 ### Single source of truth for named fluids
 

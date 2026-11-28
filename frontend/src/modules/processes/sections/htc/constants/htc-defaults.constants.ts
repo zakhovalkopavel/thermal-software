@@ -8,6 +8,7 @@ const DRAFT: HtcDraft = {
   dims: { a: 0.05 },
   fluidMode: 'mixture',
   fluid: HTC_UI.defaultNamedFluid,
+  liquidCompound: null,
   composition: { N2: 0.72, CO2: 0.12, H2O: 0.1, O2: 0.06 },
   values: { T_fluid_K: 1200, T_surface_K: 800, w_m_s: 5, P_Pa: null, g_m_s2: null },
   forceRegime: '',

@@ -25,4 +25,13 @@ export class CompoundSearchQueryDto {
   @Transform(({ value }) => value === true || value === 'true' || value === '1')
   @IsBoolean()
   gasesOnly?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'When true, only compounds with liquid μ, λ, ρ and Cp usable for liquid fluid / HTC APIs',
+    default: false,
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true' || value === '1')
+  @IsBoolean()
+  liquidsOnly?: boolean;
 }

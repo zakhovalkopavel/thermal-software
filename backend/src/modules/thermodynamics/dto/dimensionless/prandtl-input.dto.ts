@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
+import { IsEnum, IsIn, IsNumber, IsObject, IsOptional, IsString, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { FluidPhase } from '../../enums/fluid-phase.enum';
 import { KnownFluid } from '../../types/known-fluid.type';
 import { KnownFluids } from '../../utils/known-fluids';
 import { STANDARD_CONDITIONS } from '../../../../common/thermal';
@@ -41,6 +42,16 @@ export class PrandtlInputDto {
     example: { N2: 0.79, O2: 0.21 },
   })
   @IsOptional() @IsObject() composition?: Record<string, number>;
+
+  @ApiPropertyOptional({
+    enum: FluidPhase,
+    description:
+      'Fluid phase. Default gas. Liquid uses catalogue liquid μ, λ, ρ, Cp '
+      + '(compoundId, or water/H2O).',
+    default: FluidPhase.Gas,
+  })
+  @IsOptional() @IsEnum(FluidPhase)
+  phase?: FluidPhase;
 
   @ApiProperty({
     description: 'Fluid temperature [K] at which Pr is evaluated. Must be > 0.',

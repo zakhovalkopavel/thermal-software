@@ -4,6 +4,7 @@ import { GasPropertiesService } from '../../../../src/modules/thermodynamics/ser
 import { TransportService } from '../../../../src/modules/thermodynamics/services/transport.service';
 import { CompoundFluidPropsService } from '../../../../src/modules/thermodynamics/services/compound-fluid-props.service';
 import { FlowGeometry } from '../../../../src/modules/thermodynamics/enums/flow-geometry.enum';
+import { FluidPhase } from '../../../../src/modules/thermodynamics/enums/fluid-phase.enum';
 import { Species } from '../../../../src/modules/thermodynamics/enums/species.enum';
 import { STANDARD_CONDITIONS } from '../../../../src/common/thermal/constants/standard-conditions.constants';
 
@@ -50,6 +51,42 @@ describe('DimensionlessCalculationService', () => {
 
     it('returns null for unknown fluid without composition', () => {
       expect(service.resolveFluid({ fluid: 'unobtainium', T_fluid_K: 300 })).toBeNull();
+    });
+
+    it('resolves liquid water via compoundId with liquid density and high Pr', () => {
+      const fluid = service.resolveFluid({
+        compoundId: 'water',
+        phase: FluidPhase.Liquid,
+        T_fluid_K: 298.15,
+        P_Pa: STANDARD_CONDITIONS.PRESSURE_PA,
+      });
+      expect(fluid).not.toBeNull();
+      expect(fluid!.rho_kg_m3).toBeGreaterThan(990);
+      expect(fluid!.mu_Pa_s).toBeGreaterThan(5e-4);
+      expect(fluid!.lambda).toBeGreaterThan(0.5);
+      const Pr = (fluid!.mu_Pa_s * fluid!.Cp_J_kgK) / fluid!.lambda;
+      expect(Pr).toBeGreaterThan(5);
+    });
+
+    it('resolves liquid water via fluid H2O alias', () => {
+      const fluid = service.resolveFluid({
+        fluid: 'H2O',
+        phase: FluidPhase.Liquid,
+        T_fluid_K: 298.15,
+      });
+      expect(fluid).not.toBeNull();
+      expect(fluid!.rho_kg_m3).toBeGreaterThan(990);
+    });
+
+    it('rejects liquid gas_mix', () => {
+      expect(
+        service.resolveFluid({
+          fluid: 'gas_mix',
+          phase: FluidPhase.Liquid,
+          T_fluid_K: 300,
+          composition: { [Species.N2]: 1 },
+        }),
+      ).toBeNull();
     });
   });
 
@@ -111,6 +148,23 @@ describe('DimensionlessCalculationService', () => {
       expect(res.Pr).toBeGreaterThan(0.5);
       expect(res.Nu).toBeGreaterThan(0);
       expect(res.correlation).toBeTruthy();
+    });
+
+    it('nusselt returns finite Nu and h for liquid water in a pipe', () => {
+      const res = service.nusselt({
+        geometry: FlowGeometry.PIPE_CIRCULAR,
+        dimensions: { a: 0.01 },
+        compoundId: 'water',
+        phase: FluidPhase.Liquid,
+        T_fluid_K: 300,
+        T_surface_K: 320,
+        w_m_s: 0.5,
+      });
+      expect(res.Pr).toBeGreaterThan(5);
+      expect(res.Re).toBeGreaterThan(0);
+      expect(res.Nu).toBeGreaterThan(0);
+      expect(Number.isFinite(res.Nu)).toBe(true);
+      expect(res.h_W_m2K).toBeGreaterThan(0);
     });
 
     it('throws when fluid cannot be resolved', () => {

@@ -28,12 +28,18 @@ export function CompoundAutocomplete({
   disabled,
   includeRegistry = true,
   gasesOnly = true,
+  liquidsOnly = false,
   excludeIds = [],
 }: CompoundAutocompleteProps) {
   const [inputValue, setInputValue] = useState('');
   const debouncedQ = useDebouncedValue(inputValue, COMPOUND_AUTOCOMPLETE.debounce_ms);
-  const gasList = useGasList(includeRegistry);
-  const search = useCompoundSearch(debouncedQ, gasesOnly, debouncedQ.trim().length > 0);
+  const gasList = useGasList(includeRegistry && !liquidsOnly);
+  const search = useCompoundSearch(
+    debouncedQ,
+    gasesOnly,
+    debouncedQ.trim().length > 0,
+    liquidsOnly,
+  );
 
   const registryOptions = useMemo(() => {
     if (!includeRegistry || !gasList.data) return [];

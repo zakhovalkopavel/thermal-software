@@ -23,7 +23,9 @@ export type { CompoundSearchHit } from './types/search/compound-search-hit.type'
 export type { CompoundSearchOptions } from './types/search/compound-search-options.type';
 export type { CompoundSearchDoc } from './types/search/compound-search-doc.type';
 export { CompoundGasBounds } from './compound-gas-bounds';
+export { CompoundLiquidBounds } from './compound-liquid-bounds';
 export type { GasTemperatureBounds } from './types/bounds/gas-temperature-bounds.type';
+export type { LiquidTemperatureBounds } from './types/bounds/liquid-temperature-bounds.type';
 export type { BoilingPointSource } from './types/bounds/boiling-point-source.type';
 export type { CompoundDataIndexEntry } from './types/dataset/compound-data-index-entry.type';
 export type { CompoundDataIndexFile } from './types/dataset/compound-data-index-file.type';

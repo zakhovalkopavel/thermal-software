@@ -6,6 +6,7 @@ export const MATERIALS_QUERY_KEYS = {
   gases: ['materials', 'gases'] as const,
   compoundSearch: ['materials', 'compounds', 'search'] as const,
   compoundGasBounds: ['materials', 'compounds', 'gas-bounds'] as const,
+  compoundLiquidBounds: ['materials', 'compounds', 'liquid-bounds'] as const,
   refractories: ['materials', 'refractories'] as const,
   groups: ['materials', 'groups'] as const,
   group: (route: MaterialGroupRoute) => ['materials', 'group', route] as const,

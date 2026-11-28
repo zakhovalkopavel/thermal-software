@@ -8,6 +8,7 @@ export function OtherMaterialResults({ request, rows }: OtherMaterialResultsProp
     gases: [request.compound],
     temperatures_K: request.temperatures_K,
     P_Pa: request.P_Pa,
+    phase: request.phase,
   };
 
   return <PureGasResults request={gasRequest} rows={rows} gasList={[]} temperatureUnit={request.unit} />;
